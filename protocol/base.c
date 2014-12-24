@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <stdio.h>
 #include "protocol.h"
 
 ssize_t CRPSend(int packetID, void *data, size_t length, int fd)
@@ -25,12 +26,14 @@ ssize_t CRPRecv(CRPBaseHeader **header, int fd)
     ret = recv(fd, &h, sizeof(CRPBaseHeader), MSG_WAITALL | MSG_PEEK);
     if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
     {
+        perror("recv");
         return -1;
     }
     CRPBaseHeader *packet = (CRPBaseHeader *) malloc(h.totalLength);
     ret = recv(fd, packet, h.totalLength, MSG_WAITALL);
     if (ret != h.totalLength)
     {
+        perror("recv");
         free(packet);
         return -1;
     }
