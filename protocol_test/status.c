@@ -12,6 +12,7 @@ int TestPacketHello()
         perror("");
         return 0;
     }
+
     CRPBaseHeader *packet;
     if (-1 == CRPRecv(&packet, recvfd))
     {
@@ -23,6 +24,7 @@ int TestPacketHello()
         log_error("Hello", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
+
     CRPPacketHello *msgHello = CRPHelloCast(packet);
     if (msgHello->protocolVersion != 0x78 ||
         msgHello->clientVersion != 0x21 ||
