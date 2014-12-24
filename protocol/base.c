@@ -1,8 +1,7 @@
-#include <protocol.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include "protocol.h"
 
 ssize_t CRPSend(int packetID, void *data, size_t length, int fd)
 {
@@ -11,8 +10,9 @@ ssize_t CRPSend(int packetID, void *data, size_t length, int fd)
     header->totalLength = (CRP_LENGTH_TYPE) (sizeof(CRPBaseHeader) + length);
     header->dataLength = (CRP_LENGTH_TYPE) length;
     header->packetID = packetID;
-    memcpy(header->data, data, length);
-    ssize_t len = write(fd, header, header->totalLength);
+    if (length)
+        memcpy(header->data, data, length);
+    ssize_t len = send(fd, header, header->totalLength, 0);
     free(header);
     return len;
 }

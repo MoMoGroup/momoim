@@ -2,4 +2,8 @@
 
 typedef struct
 {
-} CRPPacketLogout;
+} CRPPacketLoginLogout;
+
+CRPPacketLoginLogout *CRPLoginLogoutCast(CRPBaseHeader *base);
+
+int CRPLoginLogoutSend(int sockfd);

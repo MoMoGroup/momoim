@@ -2,4 +2,8 @@
 
 typedef struct
 {
-} CRPPacketNop;
+} CRPPacketKeepAlive;
+
+CRPPacketKeepAlive *CRPKeepAliveCast(CRPBaseHeader *base);
+
+int CRPKeepAliveSend(int sockfd);

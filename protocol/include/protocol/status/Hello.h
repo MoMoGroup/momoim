@@ -1,7 +1,14 @@
 #pragma once
 
+#include "stdint.h"
 typedef struct
 {
-    unsigned int protocolVersion;
-    char username[16];
+    uint8_t protocolVersion;
+    uint32_t clientVersion;
+    uint32_t sessionState;
 } CRPPacketHello;
+
+
+CRPPacketHello *CRPHelloCast(CRPBaseHeader *base);
+
+int CRPHelloSend(int sockfd, uint8_t protocolVersion, uint32_t clientVersion, uint32_t sessionState);

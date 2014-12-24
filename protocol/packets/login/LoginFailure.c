@@ -11,5 +11,6 @@ CRPPacketLoginFailure *CRPLoginLoginFailureCast(CRPBaseHeader *base)
 
 int CRPLoginLoginFailureSend(int sockfd, char *reason)
 {
-    CRPSend(CRP_PACKET_LOGIN_FAILURE, reason, strlen(reason), sockfd);
+
+    return CRPSend(CRP_PACKET_LOGIN_FAILURE, reason, strlen(reason), sockfd) != -1;
 }

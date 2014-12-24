@@ -12,4 +12,4 @@ typedef struct
 
 CRPPacketLogin *CRPLoginLoginCast(CRPBaseHeader *base);
 
-int CRPLoginLoginSend(int sockfd, char *reason);
+int CRPLoginLoginSend(int sockfd, uint8_t username_len, char *username, char *password);

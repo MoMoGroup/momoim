@@ -2,4 +2,8 @@
 
 typedef struct
 {
-} CRPPacketLoginSuccess;
+} CRPPacketOK;
+
+CRPPacketOK *CRPOKCast(CRPBaseHeader *base);
+
+int CRPOKSend(int sockfd);
