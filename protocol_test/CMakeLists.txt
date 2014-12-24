@@ -5,7 +5,7 @@ SET(PROTOCOL_SOURCE_FILE
     main.c
     status.c
     logintest.c
-    message.c
+    message.c #增加代码文件
     )
 add_executable(protocol_test ${PROTOCOL_SOURCE_FILE})
 target_link_libraries(protocol_test protocol)

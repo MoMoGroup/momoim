@@ -16,7 +16,7 @@ int main()
 
 
     status_test();
-    message_test();
+    message_test(); //函数声明
     login_test();
 
     close(sendfd);

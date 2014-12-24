@@ -21,12 +21,13 @@ int TestPacketMessage() {
         log_error("message", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
-
+//包数据检测正确与否
     CRPPacketTextMessage *msgHello = CRPTextMessageCast(packet);
     if (msgHello->userid != 0x78 ||
             msgHello->sendtime != 0x21 ||
             msgHello->message_len != 8 ||
-            memcmp(msgHello->message, "JDKAJDKA", 8)) {
+            memcmp(msgHello->message, "JDKAJDKA", 8)
+            ) {
 
         log_error("message", "包数据错误\n");
         return 0;
@@ -35,5 +36,5 @@ int TestPacketMessage() {
 }
 
 int message_test() {
-    TestPacketMessage();
+    TestPacketMessage(); //调用检测函数
 }
