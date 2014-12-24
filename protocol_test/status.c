@@ -9,7 +9,6 @@ int TestPacketHello()
     if (!CRPHelloSend(sendfd, 0x78, 0x21, 0x32))
     {
         log_error("Hello", "Send返回失败\n");
-        perror("");
         return 0;
     }
 

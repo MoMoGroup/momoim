@@ -1,8 +1,7 @@
 #pragma once
 
-typedef struct
-{
-}CRPPacketCrash;
+typedef struct {
+} CRPPacketCrash;
 
 CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base);
 

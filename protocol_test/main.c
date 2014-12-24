@@ -15,7 +15,8 @@ int main()
     log_info("PROTOCOL_TEST", "Test Begin\n");
 
 
-   // status_test();
+    status_test();
+    message_test();
     login_test();
 
     close(sendfd);

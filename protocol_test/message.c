@@ -1,0 +1,39 @@
+#include <protocol/message/TextMessage.h>
+#include <logger.h>
+#include <protocol/packets.h>
+#include <stdio.h>
+#include <string.h>
+#include "test.h"
+
+int TestPacketMessage() {
+    if (!CRPTextMessageSend(sendfd, 0x78, 0x21, 8, "JDKAJDKA")) {
+        log_error("message", "Send返回失败\n");
+        perror("");
+        return 0;
+    }
+
+    CRPBaseHeader *packet;
+    if (-1 == CRPRecv(&packet, recvfd)) {
+        log_error("message", "Recv返回失败\n");
+        return 0;
+    }
+    if (packet->packetID != CRP_PACKET_MESSAGE_TEXT) {
+        log_error("message", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
+        return 0;
+    }
+
+    CRPPacketTextMessage *msgHello = CRPTextMessageCast(packet);
+    if (msgHello->userid != 0x78 ||
+            msgHello->sendtime != 0x21 ||
+            msgHello->message_len != 8 ||
+            memcmp(msgHello->message, "JDKAJDKA", 8)) {
+
+        log_error("message", "包数据错误\n");
+        return 0;
+    }
+    log_info("message", "通过\n");
+}
+
+int message_test() {
+    TestPacketMessage();
+}
