@@ -1,18 +1,20 @@
-#include <unistd.h>
 #include <logger.h>
+#include <sys/socket.h>
 #include "test.h"
+#include <unistd.h>
 
 int sendfd, recvfd;
 
 int main()
 {
-    int pipefd[2];
-    pipe(pipefd);
-    recvfd = pipefd[0];
-    sendfd = pipefd[1];
+    int fd[2];
+    socketpair(AF_UNIX, SOCK_STREAM, 0, fd);
+    recvfd = fd[0];
+    sendfd = fd[1];
 
-    log_info("PROTOCOL_TEST", "Test Begin");
+    log_info("PROTOCOL_TEST", "Test Begin\n");
     status_test();
-
+    close(sendfd);
+    close(recvfd);
     return 0;
 }
