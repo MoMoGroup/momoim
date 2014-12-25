@@ -5,4 +5,4 @@ typedef struct {
 
 CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base);
 
-int CRPCrastSend(int sockfd);
+int CRPCrashSend(int sockfd);
