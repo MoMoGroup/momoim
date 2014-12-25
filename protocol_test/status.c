@@ -35,7 +35,6 @@ int TestPacketHello()
     }
     log_info("Hello", "通过\n");
 }
-
 int status_test()
 {
     TestPacketHello();
