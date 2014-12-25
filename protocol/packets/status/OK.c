@@ -1,6 +1,6 @@
 #include <protocol/base.h>
 #include <protocol/status/OK.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 #include <stddef.h>
 
 CRPPacketOK *CRPOKCast(CRPBaseHeader *base)

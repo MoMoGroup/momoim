@@ -2,7 +2,8 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <stdio.h>
-#include "protocol.h"
+
+#include <protocol/base.h>
 
 ssize_t CRPSend(int packetID, void *data, size_t length, int fd)
 {

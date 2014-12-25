@@ -1,6 +1,6 @@
 #include <protocol/base.h>
 #include <protocol/status/Hello.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 
 
 CRPPacketHello *CRPHelloCast(CRPBaseHeader *base)

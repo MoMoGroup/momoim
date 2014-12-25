@@ -1,6 +1,6 @@
 #include <protocol/base.h>
 #include <protocol/login/LoginFailure.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 #include <string.h>
 
 

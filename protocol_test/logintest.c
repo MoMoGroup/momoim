@@ -1,6 +1,6 @@
 #include <protocol/status/Hello.h>
 #include <logger.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 #include <stdio.h>
 #include <protocol/login/Login.h>
 #include <string.h>

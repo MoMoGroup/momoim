@@ -1,6 +1,6 @@
 #include <protocol/base.h>
 #include <protocol/status/Crash.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 #include <stddef.h>
 
 CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base) {
