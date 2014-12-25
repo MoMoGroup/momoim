@@ -40,7 +40,7 @@ void UserRemoveFromPoll(OnlineUser *user)
 
 void *ListenMain(void *listenSocket)
 {
-    log_info("SERVER-LISTENER", "Preparing to accept connection..\n");
+    log_info("SERVER-LISTENER", "Waiting connection..\n");
     int sockfd = *(int *) listenSocket;
 
     InitJobManger();
@@ -54,10 +54,10 @@ void *ListenMain(void *listenSocket)
     ServerIOPoll = epoll_create1(0);
 
     struct epoll_event event = {
-            .data.ptr=0,
+            .data.ptr=NULL,
             .events=EPOLLET | EPOLLIN
     };
-    epoll_ctl(ServerIOPoll, EPOLL_CTL_ADD, sockfd, &event);
+    epoll_ctl(ServerIOPoll, EPOLL_CTL_ADD, sockfd, &event); //将监听socket加入epoll(data.ptr==NULL)
 
     struct epoll_event *events = calloc(64, sizeof event);
     while (!server_exit)
@@ -65,7 +65,7 @@ void *ListenMain(void *listenSocket)
         int n = epoll_wait(ServerIOPoll, events, 64, -1);
         for (i = 0; i < n; i++)
         {
-            if (events[i].data.ptr == 0)
+            if (events[i].data.ptr == NULL)
             {
                 int fd;
                 struct sockaddr_in addr;
@@ -91,6 +91,7 @@ void *ListenMain(void *listenSocket)
         }
 
     }
+    free(events);
 
     return (void *) -1;
 }

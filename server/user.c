@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <logger.h>
 #include <user.h>
+#include <packets.h>
 
 pthread_mutex_t UsersTableLock = {0};
 UsersTable OnlineUsers = {
@@ -59,28 +60,32 @@ void deleteUser(OnlineUser *user)
 */
 int processUser(OnlineUser *user, CRPBaseHeader *packet)
 {
+    int ret = 1;
+    void *(*packetCast)(CRPBaseHeader *base) = PacketsDataCastMap[packet->packetID];
+    if (packetCast == NULL)
+    {
+        return 0;
+    }
+    int(*packetProcessor)(OnlineUser *user, void *packet) = PacketsProcessMap[packet->packetID];
+    if (packetProcessor != NULL)
+    {
+        void *data = packetCast(packet);
+        ret = packetProcessor(user, data);
+        if (data != packet->data)
+        {
+            free(data);
+        }
+    }
+    else
+    {
+        log_warning("UserProc", "Packet %d has no handler.\n", packet->packetID);
+    }
+    return ret;
 
     switch (packet->packetID)
     {
         case CRP_PACKET_HELLO:
         {
-            if (user->status == OUS_PENDING_HELLO)
-            {
-                CRPPacketHello *message = (CRPPacketHello *) packet->data;
-                if (message->protocolVersion != 1)
-                {
-                    //log_info("UserProc", "Try to use wrong protocol to login.\n");
-                    CRPLoginLoginFailureSend(user->fd, "Wrong protocol version.");
-                    break;
-                }
-                log_info("UserProc", "Hello.\n");
-                CRPOKSend(user->fd);
-                user->status = OUS_PENDING_LOGIN;
-            }
-            else
-            {
-
-            }
         }
             break;
         case CRP_PACKET_LOGIN_LOGOUT:

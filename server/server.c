@@ -1,16 +1,14 @@
+#include "server.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <sys/socket.h>
-#include <pthread.h>
+#include <arpa/inet.h>
 #include <logger.h>
-#include <server.h>
-#include <netinet/in.h>
 
 int server_exit = 0;
 
 pthread_t ThreadListener;
-#define LISTEN_PORT 4072
+#define LISTEN_PORT 8014
 
 int main(int argc, char **argv)
 {
@@ -22,9 +20,9 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
     struct sockaddr_in addr = {
-            .sin_family=AF_INET,
-            .sin_port=htons(LISTEN_PORT),
-            .sin_addr.s_addr=htons(INADDR_ANY)
+            .sin_family = AF_INET,
+            .sin_port = htons(LISTEN_PORT),
+            .sin_addr.s_addr = htons(INADDR_ANY)
     };
 
     int on = 1;

@@ -23,10 +23,10 @@ void *WorkerMain(void *arg)
         OnlineUser *user = PollJob();
 
         CRPBaseHeader *header;
-        ret = CRPRecv(&header, user->fd);
-        if (ret == -1)
+        header = CRPRecv(user->fd);
+        if (header == NULL)
         {
-            log_warning("WorkerMain", "Wrong packet received. Killing user(%d).\n", user->uid);
+            log_warning("WorkerMain", "Protocol Fail. Killing user(%d).\n", user->uid);
             free(header);
             epoll_ctl(ServerIOPoll, EPOLL_CTL_DEL, user->fd, NULL);
             shutdown(user->fd, SHUT_RDWR);

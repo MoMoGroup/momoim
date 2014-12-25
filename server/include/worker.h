@@ -3,7 +3,7 @@
 #include <semaphore.h>
 #include <pthread.h>
 
-
+//事务处理器
 typedef struct
 {
     int workerId;
@@ -15,4 +15,5 @@ typedef struct
 
 } WorkerType;
 
+//事务处理器主线程
 void *WorkerMain(void *arg);

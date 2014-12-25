@@ -1,5 +1,7 @@
 #pragma once
-
+/**
+* 用于确认客户端在线
+*/
 typedef struct
 {
 } CRPPacketKeepAlive;
