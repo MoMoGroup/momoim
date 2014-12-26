@@ -7,6 +7,11 @@ SET(SERVER_SOURCE_FILE
     server.c
     user.c
     worker.c
+    sqlite3.c
+
+    data/base.c
+    data/auth.c
+
     packets/status/Crash.c
     packets/status/Hello.c
     packets/status/KeepAlive.c
@@ -20,3 +25,5 @@ add_executable(server ${SERVER_SOURCE_FILE})
 target_link_libraries(server protocol)
 target_link_libraries(server logger)
 target_link_libraries(server pthread)
+target_link_libraries(server dl)
+target_link_libraries(server ssl)

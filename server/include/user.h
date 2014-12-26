@@ -15,19 +15,23 @@ typedef enum
     OUS_ONLINE = 0x10
 } OnlineUserStatus;
 
+typedef struct struOnlineUserInfo
+{
+    uint32_t uid;
+
+} OnlineUserInfo;
 //在线用户数据
 typedef
 struct struOnlineUser
 {
-    int fd;
-    unsigned int uid;
+    int sockfd;
+    OnlineUserInfo *info;
     OnlineUserStatus status;
 
     pthread_mutex_t writeLock;
     struct struOnlineUser *prev;
     struct struOnlineUser *next;
 } OnlineUser;
-
 //在线用户链表
 typedef struct
 {

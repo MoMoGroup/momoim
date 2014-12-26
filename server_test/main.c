@@ -4,6 +4,7 @@
 #include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
+#include<openssl/md5.h>
 
 int main()
 {
@@ -30,7 +31,9 @@ int main()
     }
 
     log_info("Login", "Sending Login Request\n");
-    CRPLoginLoginSend(sockfd, 5, "12345", "1234567890123456");
+    unsigned char hash[16];
+    MD5((unsigned char *) "pass", 4, hash);
+    CRPLoginLoginSend(sockfd, "username", hash);
     if (header->packetID != CRP_PACKET_OK)
     {
         log_error("Login", "Recv Packet:%d\n", header->packetID);

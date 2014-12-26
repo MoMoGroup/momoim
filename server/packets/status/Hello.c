@@ -8,17 +8,17 @@ int ProcessPacketStatusHello(OnlineUser *user, CRPPacketHello *packet)
     {
         if (packet->protocolVersion != 1)
         {
-            //log_info("UserProc", "Try to use wrong protocol to login.\n");
-            CRPStatusFailureSend(user->fd, "Wrong protocol version.");
+            CRPFailureSend(user->sockfd, "Incompatible protocol version.");
             return 0;
         }
         log_info("UserProc", "Hello.\n");
-        CRPOKSend(user->fd);
+        CRPOKSend(user->sockfd);
         user->status = OUS_PENDING_LOGIN;
+        return 1;
     }
     else
     {
-        CRPStatusFailureSend(user->fd, "Wrong protocol version.");
+        CRPFailureSend(user->sockfd, "Wrong protocol version.");
         return 0;
     }
 }

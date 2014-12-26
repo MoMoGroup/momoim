@@ -1,54 +1,44 @@
 #include "server.h"
+#include "data/base.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <logger.h>
+#include <jobs.h>
 
 int server_exit = 0;
+WorkerType worker[WORKER_COUNT];
 
 pthread_t ThreadListener;
-#define LISTEN_PORT 8014
 
+void initWorker(int id, WorkerType *worker)
+{
+    worker->workerId = id;
+    sem_init(&worker->ready, 0, 0);
+    pthread_mutex_init(&worker->lock, NULL);
+    pthread_create(&worker->WorkerThread, NULL, WorkerMain, worker);
+}
 int main(int argc, char **argv)
 {
-    int sockfd;
-    sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sockfd == -1)
+    if (!DataModuleInit())
     {
-        perror("socket");
+        log_error("SERVER-MAIN", "Fail to initliaze data module.\n");
         return EXIT_FAILURE;
     }
-    struct sockaddr_in addr = {
-            .sin_family = AF_INET,
-            .sin_port = htons(LISTEN_PORT),
-            .sin_addr.s_addr = htons(INADDR_ANY)
-    };
 
-    int on = 1;
-    if ((setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
+    InitJobManger();
+
+    int i;
+    for (i = 0; i < WORKER_COUNT; i++)
     {
-        perror("setsockopt reuse address");
-        goto failexit;
-    }
-    if (-1 == bind(sockfd, (struct sockaddr *) &addr, sizeof addr))
-    {
-        perror("bind");
-        goto failexit;
+        initWorker(i, worker + i);
     }
 
-    if (-1 == listen(sockfd, 50))
-    {
-        perror("listen");
-        goto failexit;
-    }
-    log_info("SERVER-MAIN", "Listenning on TCP %d\n", LISTEN_PORT);
-    pthread_create(&ThreadListener, NULL, ListenMain, &sockfd);
+    pthread_create(&ThreadListener, NULL, ListenMain, NULL);
     pthread_join(ThreadListener, NULL);
-    close(sockfd);
+
+    DataModuleFinalize();
     return EXIT_SUCCESS;
 
-    failexit:
-    close(sockfd);
-    return EXIT_FAILURE;
 }

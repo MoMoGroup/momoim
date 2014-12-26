@@ -23,22 +23,22 @@ void *WorkerMain(void *arg)
         OnlineUser *user = PollJob();
 
         CRPBaseHeader *header;
-        header = CRPRecv(user->fd);
+        header = CRPRecv(user->sockfd);
         if (header == NULL)
         {
-            log_warning("WorkerMain", "Protocol Fail. Killing user(%d).\n", user->uid);
+            log_warning("WorkerMain", "Protocol Fail. Killing user.\n");
             free(header);
-            epoll_ctl(ServerIOPoll, EPOLL_CTL_DEL, user->fd, NULL);
-            shutdown(user->fd, SHUT_RDWR);
-            close(user->fd);
+            epoll_ctl(ServerIOPoll, EPOLL_CTL_DEL, user->sockfd, NULL);
+            shutdown(user->sockfd, SHUT_RDWR);
+            close(user->sockfd);
             deleteUser(user);
             continue;
         }
         if (processUser(user, header) == 0)
         {
             free(header);
-            shutdown(user->fd, SHUT_RDWR);
-            close(user->fd);
+            shutdown(user->sockfd, SHUT_RDWR);
+            close(user->sockfd);
             deleteUser(user);
             continue;
         }

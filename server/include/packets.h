@@ -15,7 +15,7 @@ int ProcessPacketStatusCrash(OnlineUser *user, CRPPacketCrash *packet);
 
 int ProcessPacketLoginLogin(OnlineUser *user, CRPPacketLogin *packet);
 
-int ProcessPacketStatusFailure(OnlineUser *user, CRPPacketStatusFailure *packet);
+int ProcessPacketStatusFailure(OnlineUser *user, CRPPacketFailure *packet);
 
 int ProcessPacketLoginLogout(OnlineUser *user, CRPPacketLoginLogout *packet);
 

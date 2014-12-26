@@ -10,6 +10,7 @@ typedef struct
     CRP_LENGTH_TYPE totalLength; //协议包总长度，也用于支持不同协议版本
     CRP_LENGTH_TYPE dataLength;  //数据块总长度，用于接下来接收数据块
     uint16_t packetID;           //包ID，用于区分不同数据包
+    uint32_t sessionID;          //消息会话ID
     char data[0];                //包数据部分
 } CRPBaseHeader;
 

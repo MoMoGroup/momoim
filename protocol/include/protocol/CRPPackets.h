@@ -1,13 +1,15 @@
 #pragma once
 
 #include <stddef.h>
+#include "protocol/login/Login.h"
+#include "protocol/login/Accept.h"
+#include "protocol/login/Logout.h"
+
 #include "protocol/status/Hello.h"
 #include "protocol/status/KeepAlive.h"
 #include "protocol/status/OK.h"
 #include "protocol/status/Failure.h"
 #include "protocol/status/Crash.h"
-#include "protocol/login/Login.h"
-#include "protocol/login/Logout.h"
 #include "protocol/message/TextMessage.h"
 
 typedef enum
@@ -20,6 +22,7 @@ typedef enum
 
     CRP_PACKET_LOGIN__START = 0x10, //登陆类数据包开始
     CRP_PACKET_LOGIN_LOGIN,         //登陆
+    CRP_PACKET_LOGIN_ACCEPT,         //登陆
     CRP_PACKET_LOGIN_LOGOUT,        //登出
 
     CRP_PACKET_MESSAGE__START = 0x20, //消息类数据包开始

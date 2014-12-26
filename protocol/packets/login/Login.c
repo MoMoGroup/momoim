@@ -7,16 +7,19 @@
 
 CRPPacketLogin *CRPLoginLoginCast(CRPBaseHeader *base)
 {
-    return (CRPPacketLogin *) base->data;
+    CRPPacketLogin *packet = malloc(base->dataLength + 1);
+    memcpy(packet, base->data, base->dataLength);
+    ((char *) packet)[base->dataLength] = 0;
+    return packet;
 }
 
-int CRPLoginLoginSend(int sockfd, uint8_t username_len, char *username, char *password)
+int CRPLoginLoginSend(int sockfd, const char *username, const unsigned char *password)
 {
-    CRPPacketLogin *packet = (CRPPacketLogin *) malloc(sizeof(CRPPacketLogin) + username_len);
-    packet->username_len = username_len;
+    uint8_t n = (uint8_t) strlen(username);
+    CRPPacketLogin *packet = (CRPPacketLogin *) malloc(sizeof(CRPPacketLogin) + n);
     memcpy(packet->password, password, 16);
-    memcpy(packet->username, username, username_len);
-    ssize_t ret = CRPSend(CRP_PACKET_LOGIN_LOGIN, packet, sizeof(CRPPacketLogin) + username_len, sockfd);
+    memcpy(packet->username, username, n);
+    ssize_t ret = CRPSend(CRP_PACKET_LOGIN_LOGIN, packet, sizeof(CRPPacketLogin) + n, sockfd);
     free(packet);
     return ret != -1;
 }

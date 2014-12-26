@@ -10,18 +10,10 @@
 #include <user.h>
 #include <jobs.h>
 #include <arpa/inet.h>
+#include <unistd.h>
 
+#define LISTEN_PORT 8014
 int ServerIOPoll;
-
-WorkerType worker[WORKER_COUNT];
-
-void initWorker(int id, WorkerType *worker)
-{
-    worker->workerId = id;
-    sem_init(&worker->ready, 0, 0);
-    pthread_mutex_init(&worker->lock, NULL);
-    pthread_create(&worker->WorkerThread, NULL, WorkerMain, worker);
-}
 
 void UserJoinToPoll(OnlineUser *user)
 {
@@ -29,27 +21,49 @@ void UserJoinToPoll(OnlineUser *user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    epoll_ctl(ServerIOPoll, EPOLL_CTL_ADD, user->fd, &event);
+    epoll_ctl(ServerIOPoll, EPOLL_CTL_ADD, user->sockfd, &event);
 }
 
 void UserRemoveFromPoll(OnlineUser *user)
 {
-    epoll_ctl(ServerIOPoll, EPOLL_CTL_DEL, user->fd, NULL);
+    epoll_ctl(ServerIOPoll, EPOLL_CTL_DEL, user->sockfd, NULL);
 
 }
 
 void *ListenMain(void *listenSocket)
 {
-    log_info("SERVER-LISTENER", "Waiting connection..\n");
-    int sockfd = *(int *) listenSocket;
-
-    InitJobManger();
-
-    int i;
-    for (i = 0; i < WORKER_COUNT; i++)
+    int sockfd;
+    sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sockfd == -1)
     {
-        initWorker(i, worker + i);
+        perror("socket");
+        return NULL;
     }
+    struct sockaddr_in addr = {
+            .sin_family = AF_INET,
+            .sin_port = htons(LISTEN_PORT),
+            .sin_addr.s_addr = htons(INADDR_ANY)
+    };
+
+    int on = 1;
+    if ((setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
+    {
+        perror("setsockopt reuse address");
+        close(sockfd);
+        return NULL;
+    }
+    if (-1 == bind(sockfd, (struct sockaddr *) &addr, sizeof addr))
+    {
+        perror("bind");
+        return NULL;
+    }
+
+    if (-1 == listen(sockfd, 50))
+    {
+        perror("listen");
+        return NULL;
+    }
+    log_info("SERVER-MAIN", "Listenning on TCP %d\n", LISTEN_PORT);
 
     ServerIOPoll = epoll_create1(0);
 
@@ -63,7 +77,7 @@ void *ListenMain(void *listenSocket)
     while (!server_exit)
     {
         int n = epoll_wait(ServerIOPoll, events, 64, -1);
-        for (i = 0; i < n; i++)
+        for (int i = 0; i < n; i++)
         {
             if (events[i].data.ptr == NULL)
             {

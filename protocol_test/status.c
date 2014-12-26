@@ -37,13 +37,14 @@ int TestPacketHello()
     }
     log_info("Hello", "通过\n");
     free(packet);
+    return 1;
 }
 
 //loginfailue test
 int Testfail()
 {
 
-    if (!CRPStatusFailureSend(sendfd, "dada"))
+    if (!CRPFailureSend(sendfd, "dada"))
     {
         log_error("Loginfailue", "loginfailu返回失败\n");
         return 0;
@@ -62,7 +63,7 @@ int Testfail()
         return 0;
     }
 
-    CRPPacketStatusFailure *msgHello = CRPStatusFailureCast(packet);
+    CRPPacketFailure *msgHello = CRPFailureCast(packet);
     if (memcmp(msgHello->reason, "dada", 4))
     {
 
@@ -71,11 +72,12 @@ int Testfail()
     }
     log_info("Loginout", "Login通过\n");
     free(packet);
-
+    return 1;
 }
 
 int status_test()
 {
     TestPacketHello();
     Testfail();
+    return 1;
 }
