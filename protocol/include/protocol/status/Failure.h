@@ -6,9 +6,9 @@
 typedef struct
 {
     char reason[0];
-} CRPPacketStatusFailure;
+} CRPPacketFailure;
 
 
-CRPPacketStatusFailure *CRPStatusFailureCast(CRPBaseHeader *base);
+CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base);
 
-int CRPStatusFailureSend(int sockfd, char *reason);
+int CRPFailureSend(int sockfd, char *reason);

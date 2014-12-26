@@ -9,7 +9,7 @@
 int TestPacketLogin()
 {
 //login test
-    if (!CRPLoginLoginSend(sendfd, 3, "xia", "1234561234567890"))
+    if (!CRPLoginLoginSend(sendfd, "xia", "1234561234567890"))
     {
         log_error("Login", "login返回失败\n");
         perror("");
@@ -30,15 +30,48 @@ int TestPacketLogin()
     }
 
     CRPPacketLogin *msgHello = CRPLoginLoginCast(packet);
-    if (msgHello->username_len != 3 ||
-            memcmp(msgHello->username, "xia", 3) ||
-            memcmp(msgHello->password, "1234561234567890", 16))
+    if (memcmp(msgHello->username, "xia", 3) ||
+        memcmp(msgHello->password, "1234561234567890", 16))
     {
 
         log_error("Login", "包数据错误\n");
         return 0;
     }
     log_info("Login", "Login通过\n");
+    free(packet);
+
+}
+
+int LogAccept()
+{
+
+    if (!CRPLoginAcceptSend(sendfd, 0x12345678))
+    {
+        log_error("LoginAccept", "login返回失败\n");
+        return 0;
+    }
+
+
+    CRPBaseHeader *packet = CRPRecv(recvfd);
+    if (packet == NULL)
+    {
+        log_error("LoginAccept", "Recv返回失败\n");
+        return 0;
+    }
+    if (packet->packetID != CRP_PACKET_LOGIN_ACCEPT)
+    {
+        log_error("LoginAccept", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_LOGIN_ACCEPT, packet->packetID);
+        return 0;
+    }
+
+    CRPPacketLoginAccept *msgHello = CRPLoginAcceptCast(packet);
+    if (msgHello->uid != 0x12345678)
+    {
+
+        log_error("LoginAccept", "包数据错误\n");
+        return 0;
+    }
+    log_info("LoginAccept", "LoginAccept通过\n");
     free(packet);
 
 }
@@ -76,5 +109,6 @@ int Logout()
 int login_test()
 {
     TestPacketLogin();
+    LogAccept();
     Logout();
 }

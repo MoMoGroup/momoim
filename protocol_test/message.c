@@ -40,9 +40,11 @@ int TestPacketMessage()
     }
     log_info("message", "通过\n");
     free(packet);
+    return 1;
 }
 
 int message_test()
 {
     TestPacketMessage(); //调用检测函数
+    return 1;
 }

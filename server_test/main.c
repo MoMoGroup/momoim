@@ -4,6 +4,9 @@
 #include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
+#include<openssl/md5.h>
+#include <stdlib.h>
+#include<string.h>
 
 int main()
 {
@@ -30,22 +33,30 @@ int main()
     }
 
     log_info("Login", "Sending Login Request\n");
-    CRPLoginLoginSend(sockfd, 5, "12345", "1234567890123456");
-    if (header->packetID != CRP_PACKET_OK)
-    {
-        log_error("Login", "Recv Packet:%d\n", header->packetID);
-        return 1;
-    }
+    unsigned char hash[16];
+    MD5((unsigned char *) "s", 1, hash);
+    CRPLoginLoginSend(sockfd, "a", hash);
+
     log_info("Login", "Waiting OK\n");
     header = CRPRecv(sockfd);
-    if (header->packetID != CRP_PACKET_OK)
+    switch (header->packetID)
     {
-        log_error("Login", "Recv Packet:%d\n", header->packetID);
-        return 1;
-    }
-    else
-    {
-        log_info("Login", "Login Done\n");
+        case CRP_PACKET_LOGIN_ACCEPT:
+            log_info("Login", "Successful");
+            break;
+        case CRP_PACKET_FAILURE:
+        {
+            CRPPacketFailure *failure = CRPFailureCast(header);
+            char *s = (char *) malloc(header->dataLength + 1);
+            memcpy(s, failure->reason, header->dataLength);
+            s[header->dataLength] = 0;
+            log_error("Login", s);
+            break;
+        };
+        default:
+            log_error("Login", "Recv Packet:%d\n", header->packetID);
+            break;
+
     }
     return 0;
 }

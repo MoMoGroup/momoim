@@ -1,10 +1,16 @@
+#include <gtk/gtk.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <protocol/status/Hello.h>
 #include <logger.h>
-#include <gtk/gtk.h>
-#include <protocol.h>
+#include <protocol/CRPPackets.h>
+#include<openssl/md5.h>
+#include <stdlib.h>
 
+//#define NAME    "root"
+//#define PWD     "123456"
+GtkWidget *username, *passwd;
 gboolean drag = FALSE;   // 只在左键按下时拖动窗体
 int nX = 0;
 int nY = 0;
@@ -38,7 +44,16 @@ void * sendhello(void *M)
     }
 
     log_info("Login", "Sending Login Request\n");
-    CRPLoginLoginSend(sockfd, 5, "12345", "1234567890123456");
+    gchar *name, *pwd;
+    name = gtk_entry_get_text(GTK_ENTRY(username));
+    pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
+    log_info("Login", "Sending Login Request\n");
+    unsigned char hash[16];
+
+    MD5((unsigned char *) pwd, 1, hash);
+    CRPLoginLoginSend(sockfd, name, hash);
+
+    //CRPLoginLoginSend(sockfd, "12345", "1234567890123456");
 
     return 0;
 }
@@ -65,6 +80,7 @@ void	on_button_clicked()
     image3 = gtk_image_new_from_file("玩命登陆.png");
     gtk_layout_put(GTK_LAYOUT(layout2), image3, 40, 60);
     gtk_widget_show_all(layout2);
+
 
     pthread_join(mythread, &retu);
 }
@@ -132,15 +148,7 @@ static gint motion_notify_event(GtkWidget * widget, GdkEventButton * event,
 
 {
     GdkModifierType state;
-    //gint x,y;
-//    if(event->type ==GDK_MOTION_NOTIFY)
-//    {
-//        gdk_window_get_pointer(window, &x,&y, &state);
-//    }
-   // else {
-          // nX = event->x;  // 取得鼠标相对于窗口的位置
-            //nY = event->y;
-     //   }
+
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
    if(flag==1)

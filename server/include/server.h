@@ -1,8 +1,11 @@
 #pragma once
 
 #include <pthread.h>
+#include <sqlite3.h>
 #include "worker.h"
 #include "user.h"
+
+extern int userdb;
 
 //socket监听线程主函数
 void *ListenMain(void *listenSocket);
