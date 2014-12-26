@@ -107,8 +107,10 @@ static gint button_release_event(GtkWidget * widget, GdkEventButton * event,
         gpointer data)         // 鼠标抬起事件
 
 {
+    nX = event->x;  // 取得鼠标相对于窗口的位置
 
-    if (event->button == 1)
+    nY = event->y;
+    if (event->button == 1&&(nX>75&&nX<205)&&(nY>302&&nY<335))
     {
        gtk_image_set_from_file((GtkImage *) image4, "登陆按钮.png");
         on_button_clicked();
