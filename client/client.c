@@ -65,6 +65,7 @@ void *sendhello(void *M)
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
     {
         log_info("登录成功", "登录成功\n");
+        gtk_widget_show_all(pendingLayout);
     }
 
 
