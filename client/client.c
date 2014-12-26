@@ -1,4 +1,10 @@
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <logger.h>
 #include <gtk/gtk.h>
+#include <protocol.h>
+
 
 gboolean drag = FALSE;   // 只在左键按下时拖动窗体
 int nX = 0;
@@ -7,17 +13,61 @@ GtkWidget *window;
 GtkWidget *layout;
 GtkWidget * image4,*image8;
 
-void	on_button_clicked(GtkWidget* button, gpointer userdata)
+void *sendhello(void *M)
 {
-    GtkWidget *dialog;
-//创建带确认按钮的对话框，父控件为空
-    dialog = gtk_message_dialog_new(NULL,
-            GTK_DIALOG_MODAL |GTK_DIALOG_DESTROY_WITH_PARENT,
-            GTK_MESSAGE_INFO,
-            GTK_BUTTONS_OK,
-            (gchar*)userdata);
-    gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
-    gtk_widget_destroy(dialog);//销毁对话框
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in server_addr = {
+            .sin_family=AF_INET,
+            .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+            .sin_port=htons(8014)
+    };
+    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+    {
+        perror("Connect");
+        return 1;
+    }
+    log_info("Hello", "Sending Hello\n");
+    CRPHelloSend(sockfd, 1, 1, 1);
+    CRPBaseHeader *header;
+    log_info("Hello", "Waiting OK\n");
+    header = CRPRecv(sockfd);
+    if (header->packetID != CRP_PACKET_OK)
+    {
+        log_error("Hello", "Recv Packet:%d\n", header->packetID);
+        return 1;
+    }
+
+    log_info("Login", "Sending Login Request\n");
+    CRPLoginLoginSend(sockfd, 5, "12345", "1234567890123456");
+
+    return 0;
+}
+
+void	on_button_clicked()
+{ pthread_t mythread;
+    void *retu;
+    pthread_create(&mythread, NULL, sendhello, NULL);
+
+    gtk_widget_show(window);
+
+
+    gtk_widget_destroy(layout);//销毁layout对话框
+
+    GtkWidget *image1, *image2, *image3, *image4, *layout2;
+    layout2 = gtk_layout_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER (window), layout2);
+    image1 = gtk_image_new_from_file("背景.png");
+    gtk_layout_put(GTK_LAYOUT(layout2), image1, 0, 0);//起始坐标
+
+    image2 = gtk_image_new_from_file("狗狗.png");
+    gtk_layout_put(GTK_LAYOUT(layout2), image2, 45, 150);
+
+    image3 = gtk_image_new_from_file("玩命登陆.png");
+    gtk_layout_put(GTK_LAYOUT(layout2), image3, 40, 60);
+    gtk_widget_show_all(layout2);
+
+
+    pthread_join(mythread, &retu);
 }
 
 static gint button_press_event(GtkWidget * widget,
@@ -34,15 +84,20 @@ static gint button_press_event(GtkWidget * widget,
         drag = TRUE;
 
         gtk_image_set_from_file((GtkImage *)image4, "登陆按钮2.png");
+
+       // gtk_layout_put(GTK_LAYOUT(layout), event->button, 70, 300);
+       // gtk_button_set_relief(event->button, GTK_RELIEF_NONE);
     }
 
-    if (event->button == 1&&(nX>260&&nX<283)&&(nY>=0&&nY<10))       // 判断是否左键按下
-
-    {
-        drag = TRUE;
-
-        gtk_image_set_from_file((GtkImage *)image8, "关闭2.png");
-    }
+//    if (event->button == 1&&(nX>260&&nX<283)&&(nY>=0&&nY<10))       // 判断是否左键按下
+//
+//    {
+//        drag = TRUE;
+//
+//        gtk_image_set_from_file((GtkImage *)image8, "关闭2.png");
+//
+//
+//    }
     return TRUE;
 
 }
@@ -56,7 +111,8 @@ static gint button_release_event(GtkWidget * widget, GdkEventButton * event,
     if (event->button == 1)
     {
        gtk_image_set_from_file((GtkImage *) image4, "登陆按钮.png");
-        gtk_image_set_from_file((GtkImage *)image8, "关闭2.png");
+        on_button_clicked();
+        //gtk_image_set_from_file((GtkImage *)image8, "关闭2.png");
         drag = FALSE;
     }
     return TRUE;
@@ -149,6 +205,16 @@ int main( int argc, char *argv[])
 
     image6 = gtk_image_new_from_file("密码.png");
     gtk_layout_put(GTK_LAYOUT(layout), image6, 35, 260);
+
+    GtkWidget *box, *username, *passwd;
+    username = gtk_entry_new();
+    passwd = gtk_entry_new();
+
+    gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
+    gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
+
+    gtk_layout_put(GTK_LAYOUT(layout), username, 85, 220);
+    gtk_layout_put(GTK_LAYOUT(layout), passwd, 85, 260);
 
     image7 = gtk_image_new_from_file("注册账号.png");
     gtk_layout_put(GTK_LAYOUT(layout), image7,5, 380);
