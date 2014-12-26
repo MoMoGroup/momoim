@@ -8,24 +8,24 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 
-//#define NAME    "root"
-//#define PWD     "123456"
 GtkWidget *username, *passwd;
 gboolean drag = FALSE;   // 只在左键按下时拖动窗体
 int nX = 0;
 int nY = 0;
 GtkWidget *window;
-GtkWidget *layout;
+GtkWidget *loginLayout,*pendingLayout;
 GtkWidget *image4, *image8;
 
-void *sendhello(void *M) {
+void *sendhello(void *M)
+{
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
+    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+    {
         perror("Connect");
         return 1;
     }
@@ -34,7 +34,8 @@ void *sendhello(void *M) {
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
-    if (header->packetID != CRP_PACKET_OK) {
+    if (header->packetID != CRP_PACKET_OK)
+    {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 1;
     }
@@ -43,47 +44,62 @@ void *sendhello(void *M) {
     gchar *name, *pwd;
     name = gtk_entry_get_text(GTK_ENTRY(username));
     pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
-    log_info("Login", "Sending Login Request\n");
+
     unsigned char hash[16];
-
     MD5((unsigned char *) pwd, 1, hash);
-    CRPLoginLoginSend(sockfd, name, hash);
+    CRPLoginLoginSend(sockfd, name, hash);//发送用户名密码
 
-    //CRPLoginLoginSend(sockfd, "12345", "1234567890123456");
+
+    header = CRPRecv(sockfd);
+    if (header->packetID == CRP_PACKET_FAILURE)
+    {
+        //密码错误
+        log_info("登录失败", "登录失败\n");
+         gtk_widget_destroy(pendingLayout);
+        //gtk_container_add(GTK_CONTAINER (window), layout);
+         gtk_widget_show_all(loginLayout);
+        return 1;
+    }
+    if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
+    {
+        log_info("登录成功", "登录成功\n");
+    }
+
 
     return 0;
 }
 
-void on_button_clicked() {
+void on_button_clicked()
+{
     pthread_t mythread;
-    void *retu;
-    pthread_create(&mythread, NULL, sendhello, NULL);
 
-    gtk_widget_show(window);
+    gtk_widget_hide(loginLayout);//移除layout
 
+    //gtk_widget_destroy(layout);//销毁layout对话框
 
-    gtk_widget_destroy(layout);//销毁layout对话框
-
-    GtkWidget *image1, *image2, *image3, *image4, *layout2;
-    layout2 = gtk_layout_new(NULL, NULL);
-    gtk_container_add(GTK_CONTAINER (window), layout2);
+    GtkWidget *image1, *image2, *image3;
+    pendingLayout = gtk_layout_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER (window), pendingLayout);
     image1 = gtk_image_new_from_file("背景.png");
-    gtk_layout_put(GTK_LAYOUT(layout2), image1, 0, 0);//起始坐标
+    gtk_layout_put(GTK_LAYOUT(pendingLayout), image1, 0, 0);//起始坐标
 
     image2 = gtk_image_new_from_file("狗狗.png");
-    gtk_layout_put(GTK_LAYOUT(layout2), image2, 45, 150);
+    gtk_layout_put(GTK_LAYOUT(pendingLayout), image2, 45, 150);
 
     image3 = gtk_image_new_from_file("玩命登陆.png");
-    gtk_layout_put(GTK_LAYOUT(layout2), image3, 40, 60);
-    gtk_widget_show_all(layout2);
+    gtk_layout_put(GTK_LAYOUT(pendingLayout), image3, 40, 60);
 
 
-    pthread_join(mythread, &retu);
+    gtk_widget_show_all(pendingLayout);//显示layout2
+    pthread_create(&mythread, NULL, sendhello, NULL);
+
+
 }
 
 static gint button_press_event(GtkWidget *widget,
 
-        GdkEventButton *event, gpointer data) {
+        GdkEventButton *event, gpointer data)
+{
     nX = event->x;  // 取得鼠标相对于窗口的位置
 
     nY = event->y;
@@ -119,7 +135,8 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     nX = event->x;  // 取得鼠标相对于窗口的位置
 
     nY = event->y;
-    if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335)) {
+    if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335))
+    {
         gtk_image_set_from_file((GtkImage *) image4, "登陆按钮.png");
         on_button_clicked();
         //gtk_image_set_from_file((GtkImage *)image8, "关闭2.png");
@@ -135,7 +152,8 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
 {
 
-    if (drag) {
+    if (drag)
+    {
 
         int x, y;
 
@@ -155,7 +173,8 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     GtkWidget *image1, *image2, *image3, *image5, *image6, *image7;
 
     //初始化GTK+程序
@@ -191,27 +210,27 @@ int main(int argc, char *argv[]) {
             G_CALLBACK(button_release_event), window);
 
 
-    layout = gtk_layout_new(NULL, NULL);
-    gtk_container_add(GTK_CONTAINER (window), layout);
-    gtk_widget_show(layout);
+    loginLayout = gtk_layout_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER (window), loginLayout);
+    gtk_widget_show(loginLayout);
 
     image1 = gtk_image_new_from_file("背景.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image1, 0, 0);//起始坐标
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image1, 0, 0);//起始坐标
 
     image2 = gtk_image_new_from_file("头像.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image2, 65, 30);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image2, 65, 30);
 
     image3 = gtk_image_new_from_file("白色.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image3, 25, 200);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image3, 25, 200);
 
     image4 = gtk_image_new_from_file("登陆按钮.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image4, 70, 300);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image4, 70, 300);
 
     image5 = gtk_image_new_from_file("账号.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image5, 35, 220);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image5, 35, 220);
 
     image6 = gtk_image_new_from_file("密码.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image6, 35, 260);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image6, 35, 260);
 
 //    GtkWidget *username, *passwd;
     username = gtk_entry_new();
@@ -221,14 +240,14 @@ int main(int argc, char *argv[]) {
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
 
-    gtk_layout_put(GTK_LAYOUT(layout), username, 85, 220);
-    gtk_layout_put(GTK_LAYOUT(layout), passwd, 85, 260);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), username, 85, 220);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), passwd, 85, 260);
 
     image7 = gtk_image_new_from_file("注册账号.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image7, 5, 380);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image7, 5, 380);
 
     image8 = gtk_image_new_from_file("关闭.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image8, 260, 0);
+    gtk_layout_put(GTK_LAYOUT(loginLayout), image8, 260, 0);
 
     gtk_widget_show_all(window);
 
