@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-pthread_mutex_t logger_output_lock = {0};
+pthread_mutex_t logger_output_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void log_info(const char *section, const char *format, ...)
 {

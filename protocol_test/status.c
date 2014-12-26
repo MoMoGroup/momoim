@@ -1,7 +1,9 @@
 #include <protocol/status/Hello.h>
 #include <logger.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "test.h"
 
 int TestPacketHello()
@@ -12,8 +14,8 @@ int TestPacketHello()
         return 0;
     }
 
-    CRPBaseHeader *packet;
-    if (-1 == CRPRecv(&packet, recvfd))
+    CRPBaseHeader *packet = CRPRecv(recvfd);
+    if (packet == NULL)
     {
         log_error("Hello", "Recv返回失败\n");
         return 0;
@@ -34,8 +36,46 @@ int TestPacketHello()
         return 0;
     }
     log_info("Hello", "通过\n");
+    free(packet);
 }
+
+//loginfailue test
+int Testfail()
+{
+
+    if (!CRPStatusFailureSend(sendfd, "dada"))
+    {
+        log_error("Loginfailue", "loginfailu返回失败\n");
+        return 0;
+    }
+
+
+    CRPBaseHeader *packet = CRPRecv(recvfd);
+    if (packet == NULL)
+    {
+        log_error("Login", "Recv返回失败\n");
+        return 0;
+    }
+    if (packet->packetID != CRP_PACKET_FAILURE)
+    {
+        log_error("Login", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
+        return 0;
+    }
+
+    CRPPacketStatusFailure *msgHello = CRPStatusFailureCast(packet);
+    if (memcmp(msgHello->reason, "dada", 4))
+    {
+
+        log_error("Loginout", "包数据错误\n");
+        return 0;
+    }
+    log_info("Loginout", "Login通过\n");
+    free(packet);
+
+}
+
 int status_test()
 {
     TestPacketHello();
+    Testfail();
 }

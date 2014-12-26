@@ -1,6 +1,6 @@
 #include <protocol/base.h>
 #include <protocol/message/TextMessage.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 #include <string.h>
 #include <stdlib.h>
 

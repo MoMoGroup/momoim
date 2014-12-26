@@ -1,6 +1,6 @@
 #include <protocol/base.h>
 #include <protocol/login/Login.h>
-#include <protocol/packets.h>
+#include <protocol/CRPPackets.h>
 #include <string.h>
 #include <stdlib.h>
 
