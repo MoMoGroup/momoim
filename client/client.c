@@ -56,6 +56,7 @@ static gint button_release_event(GtkWidget * widget, GdkEventButton * event,
     if (event->button == 1)
     {
        gtk_image_set_from_file((GtkImage *) image4, "登陆按钮.png");
+        gtk_image_set_from_file((GtkImage *)image8, "关闭2.png");
         drag = FALSE;
     }
     return TRUE;
