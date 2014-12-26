@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include <pwd.h>
+
 
 
 void on_button_clicked(GtkWidget *button, gpointer userdata)
@@ -34,7 +34,6 @@ int main(int argc, char *argv[])
 
 
 
-
     layout = gtk_layout_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER (window), layout);
 
@@ -49,7 +48,7 @@ int main(int argc, char *argv[])
     gtk_layout_put(GTK_LAYOUT(layout), image3, 25, 200);
 
     image4 = gtk_image_new_from_file("登陆按钮.png");
-    gtk_layout_put(GTK_LAYOUT(layout), image4, 70, 300);
+    //gtk_layout_put(GTK_LAYOUT(layout), image4, 70, 300);
 
     image5 = gtk_image_new_from_file("账号.png");
     gtk_layout_put(GTK_LAYOUT(layout), image5, 35, 220);
@@ -59,15 +58,11 @@ int main(int argc, char *argv[])
 
 
     GtkWidget *box, *username, *passwd;
-    //box= gtk_fixed_new();
-
-    //gtk_container_add(GTK_CONTAINER (layout), box);
-
     username = gtk_entry_new();
     passwd = gtk_entry_new();
 
-    gtk_entry_set_visibility(GTK_ENTRY(passwd),FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(passwd),'*');
+    gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
+    gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
 
     gtk_layout_put(GTK_LAYOUT(layout), username, 85, 220);
     gtk_layout_put(GTK_LAYOUT(layout), passwd, 85, 260);
@@ -78,6 +73,16 @@ int main(int argc, char *argv[])
 
     image8 = gtk_image_new_from_file("关闭.png");
     gtk_layout_put(GTK_LAYOUT(layout), image8, 260, 0);
+
+
+    button = gtk_button_new();
+
+    gtk_button_set_image (button,image4);
+    g_signal_connect(G_OBJECT(button), "clicked",
+            G_CALLBACK(on_button_clicked), (gpointer) "你好，\n世界！");
+    gtk_layout_put(GTK_LAYOUT(layout), button, 70, 300);
+    gtk_button_set_relief (button,
+            GTK_RELIEF_NONE);
 
 //   button = gtk_button_new_with_label("登陆");
 //   g_signal_connect(G_OBJECT(button), "clicked",
