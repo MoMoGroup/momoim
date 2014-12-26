@@ -5,6 +5,9 @@
 #include <gtk/gtk.h>
 #include <protocol.h>
 
+GtkWidget *window;
+GtkWidget *layout;
+
 void *sendhello(void *M)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -13,7 +16,8 @@ void *sendhello(void *M)
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
+    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+    {
         perror("Connect");
         return 1;
     }
@@ -22,51 +26,61 @@ void *sendhello(void *M)
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
-    if (header->packetID != CRP_PACKET_OK) {
+    if (header->packetID != CRP_PACKET_OK)
+    {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 1;
     }
 
     log_info("Login", "Sending Login Request\n");
     CRPLoginLoginSend(sockfd, 5, "12345", "1234567890123456");
-    if (header->packetID != CRP_PACKET_OK) {
-        log_error("Login", "Recv Packet:%d\n", header->packetID);
-        return 1;
-    }
-    log_info("Login", "Waiting OK\n");
-    header = CRPRecv(sockfd);
-    if (header->packetID != CRP_PACKET_OK) {
-        log_error("Login", "Recv Packet:%d\n", header->packetID);
-        return 1;
-    }
-    else {
-        log_info("Login", "Login Done\n");
-    }
+
     return 0;
 }
 
-void on_button_clicked(GtkWidget *button, gpointer userdata) {
+void on_button_clicked(GtkWidget *button, gpointer userdata)
+{
 
     pthread_t mythread;
     void *retu;
     pthread_create(&mythread, NULL, sendhello, NULL);
 
+    gtk_widget_show(window);
 
-    GtkWidget *dialog;
+
+//   GtkWidget *dialog;
 //创建带确认按钮的对话框，父控件为空
-    dialog = gtk_message_dialog_new(NULL,
-            GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-            GTK_MESSAGE_INFO,
-            GTK_BUTTONS_OK,
-            (gchar *) userdata);
-    gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
-    gtk_widget_destroy(userdata);//销毁对话框
+//    dialog = gtk_message_dialog_new(NULL,
+//            GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+//            GTK_MESSAGE_INFO,
+//            GTK_BUTTONS_OK,
+//            (gchar *) userdata);
+//  gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
+
+    gtk_widget_destroy(layout);//销毁layout对话框
+
+    GtkWidget *image1, *image2, *image3, *image4, *layout2;
+    layout2 = gtk_layout_new(NULL, NULL);
+    gtk_container_add(GTK_CONTAINER (window), layout2);
+    image1 = gtk_image_new_from_file("背景.png");
+    gtk_layout_put(GTK_LAYOUT(layout2), image1, 0, 0);//起始坐标
+
+    image2 = gtk_image_new_from_file("狗狗.png");
+    gtk_layout_put(GTK_LAYOUT(layout2), image2, 45, 150);
+
+    image3 = gtk_image_new_from_file("玩命登陆.png");
+    gtk_layout_put(GTK_LAYOUT(layout2), image3, 40, 60);
+
+    gtk_widget_show_all(layout2);
+
+
     pthread_join(mythread, &retu);
 }
 
-int main(int argc, char *argv[]) {
-    GtkWidget *window;
-    GtkWidget *layout;
+int main(int argc, char *argv[])
+{
+
+
     GtkWidget *image1, *image2, *image3, *image4, *image5, *image6, *image7, *image8;
     GtkWidget *button;
 
@@ -130,13 +144,9 @@ int main(int argc, char *argv[]) {
     gtk_layout_put(GTK_LAYOUT(layout), button, 70, 300);
     gtk_button_set_relief(button, GTK_RELIEF_NONE);
 
-//   button = gtk_button_new_with_label("登陆");
-//   g_signal_connect(G_OBJECT(button), "clicked",
-//            G_CALLBACK(on_button_clicked), (gpointer) "你好，\n世界！");
-//    gtk_layout_put(GTK_LAYOUT(layout), button, 70, 300);
-//   gtk_widget_set_size_request(button, 130, 40);//按钮大小
 
-    gtk_widget_show_all(window);
+    gtk_widget_show(window);
+    gtk_widget_show_all(layout);
 
     gtk_main();
 
