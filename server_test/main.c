@@ -32,8 +32,8 @@ int main()
 
     log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];
-    MD5((unsigned char *) "pass", 4, hash);
-    CRPLoginLoginSend(sockfd, "username", hash);
+    MD5((unsigned char *) "s", 1, hash);
+    CRPLoginLoginSend(sockfd, "a", hash);
     if (header->packetID != CRP_PACKET_OK)
     {
         log_error("Login", "Recv Packet:%d\n", header->packetID);

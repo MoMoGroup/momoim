@@ -6,4 +6,4 @@ int AuthInit();
 
 void AuthFinalize();
 
-int AuthUser(const char *user, const unsigned char *hashKey, int *uid);
+int AuthUser(const char *user, const unsigned char *hashKey, uint32_t *uid);
