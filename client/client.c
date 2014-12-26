@@ -74,7 +74,7 @@ void *sendhello(void *M)
 void on_button_clicked()
 {
     pthread_t mythread;
-
+    flag=0;
     gtk_widget_hide(loginLayout);//移除layout
 
     //gtk_widget_destroy(layout);//销毁layout对话框
@@ -105,25 +105,35 @@ static gint button_press_event(GtkWidget * widget,
 {
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
-    if (event->button == 1&&(nX>75&&nX<205)&&(nY>302&&nY<335)&&flag==1)       // 判断是否左键按下
-
+    if(event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
-        drag = TRUE;
-        gtk_image_set_from_file((GtkImage *)image4, "登陆按钮2.png");
-    }
+         if (event->button == 1&&(nX>75&&nX<205)&&(nY>302&&nY<335)&&flag==1)       // 判断是否左键按下
 
-   if (event->button == 1&&(nX>260&&nX<280)&&(nY>2&&nY<25)&&flag==1)       // 判断是否在关闭图标区域中
+         {
+             drag = TRUE;
+             gtk_image_set_from_file((GtkImage *)image4, "登陆按钮2.png");
+         }
 
-    {
-        drag = TRUE;
-        gtk_image_set_from_file((GtkImage *)image8, "关闭2.png"); //置换图标
+         if (event->button == 1&&(nX>260&&nX<280)&&(nY>2&&nY<25)&&flag==1)       // 判断是否在关闭图标区域中
 
-    }
-    if (event->button == 1&&(nX>5&&nX<62)&&(nY>380&&nY<395)&&flag==1)       // 判断是否左键按下
+         {
+             drag = TRUE;
+             gtk_image_set_from_file((GtkImage *)image8, "关闭2.png"); //置换图标
 
-    {
-        drag = TRUE;
-        gtk_image_set_from_file((GtkImage *)image7, "注册账号2.png");
+         }else        if (event->button == 1&&(nX>5&&nX<62)&&(nY>380&&nY<395)&&flag==1)       // 判断是否左键按下
+
+        {
+            drag = TRUE;
+            gtk_image_set_from_file((GtkImage *)image7, "注册账号2.png");
+        }else{
+    //17:22添加的效果
+   // if(event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
+    //{
+        if (event->button == 1)
+        { //gtk_widget_get_toplevel 返回顶层窗口 就是window!!
+            gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
+                    event->x_root, event->y_root, event->time);
+        }}
     }
     return TRUE;
 
@@ -137,17 +147,16 @@ static gint button_release_event(GtkWidget * widget, GdkEventButton * event,
 
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
-    if (event->button == 1&&(nX>75&&nX<205)&&(nY>302&&nY<335)&&flag==1)  //判断是否在登陆区域中
+    if (event->button == 1&(nX>75&&nX<205)&&(nY>302&&nY<335)&flag==1)  //判断是否在登陆区域中
     {
        gtk_image_set_from_file((GtkImage *) image4, "登陆按钮.png");
         on_button_clicked();
         drag = FALSE;
     }
 
-    if (event->button == 1&&(nX>260&&nX<280)&&(nY>2&&nY<25)&&flag==1)       // 判断是否是点击关闭图标
+    if (event->button == 1&&flag==1)       // 判断是否是点击关闭图标
 
     {
-        drag = TRUE;
         gtk_image_set_from_file((GtkImage *)image8, "关闭.png");
         drag = FALSE;
     }
@@ -173,16 +182,19 @@ static gint motion_notify_event(GtkWidget * widget, GdkEventButton * event,
        {
            gtk_image_set_from_file((GtkImage *) image4, "登陆按钮.png");
        }
+//       if((nX<=260&&nX>=280)&&(nY<=2&&nY>=25))
+//           gtk_image_set_from_file((GtkImage *)image8, "关闭.png");
    }
-    if (drag)
-    {
-        int x, y;
-        GtkWidget *window = (GtkWidget *) data;
-        gtk_window_get_position((GtkWindow *) window, &x, &y);         // 取窗体绝对坐标
 
-        gtk_window_move((GtkWindow *) window, x + event->x - nX, //x是当前窗口的绝对坐标，event->x是鼠标相对窗口的x坐标， nX是鼠标按下时记录的坐标，这三个量都是不变的，，窗口怎么会移动呢？？？？
-                y + event->y - nY);// 移动窗体
-    }
+//    if (drag)
+//    {
+//        int x, y;
+//        GtkWidget *window = (GtkWidget *) data;
+//        gtk_window_get_position((GtkWindow *) window, &x, &y);         // 取窗体绝对坐标
+//
+//        gtk_window_move((GtkWindow *) window, x + event->x - nX, //x是当前窗口的绝对坐标，event->x是鼠标相对窗口的x坐标， nX是鼠标按下时记录的坐标，这三个量都是不变的，，窗口怎么会移动呢？？？？
+//                y + event->y - nY);// 移动窗体
+//    }
     return TRUE;
 }
 
