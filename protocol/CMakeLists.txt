@@ -9,7 +9,7 @@ SET(LIBPROTOCOL_SRC
     packets/status/KeepAlive.c
     packets/status/OK.c
     packets/status/Crash.c
-    
+
     packets/message/TextMessage.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
