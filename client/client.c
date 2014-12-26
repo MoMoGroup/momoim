@@ -3,11 +3,9 @@
 #include <stdio.h>
 #include <logger.h>
 #include <gtk/gtk.h>
-#include "../protocol/include/protocol/status/Hello.h"
-#include "../protocol/include/protocol/CRPPackets.h"
-#include "../protocol/include/protocol/login/Login.h"
+#include <protocol.h>
 
-void *doit(void *M)
+void *sendhello(void *M)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
@@ -51,7 +49,7 @@ void on_button_clicked(GtkWidget *button, gpointer userdata) {
 
     pthread_t mythread;
     void *retu;
-    pthread_create(&mythread, NULL, doit, NULL);
+    pthread_create(&mythread, NULL, sendhello, NULL);
 
 
     GtkWidget *dialog;
