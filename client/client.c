@@ -1,9 +1,59 @@
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <logger.h>
 #include <gtk/gtk.h>
+#include "../protocol/include/protocol/status/Hello.h"
+#include "../protocol/include/protocol/CRPPackets.h"
+#include "../protocol/include/protocol/login/Login.h"
 
-
-
-void on_button_clicked(GtkWidget *button, gpointer userdata)
+void *doit(void *M)
 {
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    struct sockaddr_in server_addr = {
+            .sin_family=AF_INET,
+            .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+            .sin_port=htons(8014)
+    };
+    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
+        perror("Connect");
+        return 1;
+    }
+    log_info("Hello", "Sending Hello\n");
+    CRPHelloSend(sockfd, 1, 1, 1);
+    CRPBaseHeader *header;
+    log_info("Hello", "Waiting OK\n");
+    header = CRPRecv(sockfd);
+    if (header->packetID != CRP_PACKET_OK) {
+        log_error("Hello", "Recv Packet:%d\n", header->packetID);
+        return 1;
+    }
+
+    log_info("Login", "Sending Login Request\n");
+    CRPLoginLoginSend(sockfd, 5, "12345", "1234567890123456");
+    if (header->packetID != CRP_PACKET_OK) {
+        log_error("Login", "Recv Packet:%d\n", header->packetID);
+        return 1;
+    }
+    log_info("Login", "Waiting OK\n");
+    header = CRPRecv(sockfd);
+    if (header->packetID != CRP_PACKET_OK) {
+        log_error("Login", "Recv Packet:%d\n", header->packetID);
+        return 1;
+    }
+    else {
+        log_info("Login", "Login Done\n");
+    }
+    return 0;
+}
+
+void on_button_clicked(GtkWidget *button, gpointer userdata) {
+
+    pthread_t mythread;
+    void *retu;
+    pthread_create(&mythread, NULL, doit, NULL);
+
+
     GtkWidget *dialog;
 //创建带确认按钮的对话框，父控件为空
     dialog = gtk_message_dialog_new(NULL,
@@ -13,10 +63,10 @@ void on_button_clicked(GtkWidget *button, gpointer userdata)
             (gchar *) userdata);
     gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
     gtk_widget_destroy(userdata);//销毁对话框
+    pthread_join(mythread, &retu);
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     GtkWidget *window;
     GtkWidget *layout;
     GtkWidget *image1, *image2, *image3, *image4, *image5, *image6, *image7, *image8;
@@ -77,12 +127,10 @@ int main(int argc, char *argv[])
 
     button = gtk_button_new();
 
-    gtk_button_set_image (button,image4);
-    g_signal_connect(G_OBJECT(button), "clicked",
-            G_CALLBACK(on_button_clicked), (gpointer) "你好，\n世界！");
+    gtk_button_set_image(button, image4);
+    g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(on_button_clicked), (gpointer) "你好，\n世界！");
     gtk_layout_put(GTK_LAYOUT(layout), button, 70, 300);
-    gtk_button_set_relief (button,
-            GTK_RELIEF_NONE);
+    gtk_button_set_relief(button, GTK_RELIEF_NONE);
 
 //   button = gtk_button_new_with_label("登陆");
 //   g_signal_connect(G_OBJECT(button), "clicked",
