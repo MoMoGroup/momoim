@@ -17,7 +17,10 @@ GtkWidget * image4,*image8,*image7;
 int flag=1;
 GtkWidget *loginLayout,*pendingLayout;
 
-
+int DeleteEvent() {
+    gtk_main_quit();
+    return TRUE;
+}
 void *sendhello(void *M)
 {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -150,6 +153,7 @@ static gint button_release_event(GtkWidget * widget, GdkEventButton * event,
     {
         drag = TRUE;
         gtk_image_set_from_file((GtkImage *)image8, "关闭.png");
+        DeleteEvent();
         drag = FALSE;
     }
 
