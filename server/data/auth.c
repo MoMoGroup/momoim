@@ -53,7 +53,7 @@ int AuthUser(const char *user, const unsigned char *hashKey, uint32_t *uid)
     }
     else
     {
-        *uid = sqlite3_column_int(authStmt, 0);
+        *uid = (uint32_t) sqlite3_column_int(authStmt, 0);
     }
 
     cleanup:
