@@ -1,6 +1,9 @@
 #include <gtk/gtk.h>
-#include <string.h>
+#include <protocol/info/Data.h>
 #include "MainInterface.h"
+
+extern CRPPacketInfoData userdata;
+extern gchar *uidname;
 
 int maininterface() {
 
@@ -33,8 +36,9 @@ int maininterface() {
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
 
     GtkWidget *userid;
-    userid = gtk_label_new("Nick name");
-    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 140, 90);
+    //g_print(userdata.nickName);
+    userid = gtk_label_new(userdata.nickName);
+    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
     gtk_widget_show_all(window);
     //gtk_main();
