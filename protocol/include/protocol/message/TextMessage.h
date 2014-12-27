@@ -3,7 +3,7 @@
 #include "../base.h"
 #include <stdint.h>
 
-typedef struct
+CRP_STRUCTURE
 {
     uint32_t userid;
     uint32_t sendtime;

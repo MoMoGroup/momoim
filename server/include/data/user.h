@@ -1,6 +1,6 @@
 #pragma once
 
-#include "common/friends.h"
+#include "imcommon/friends.h"
 
 void UserGetDir(char *path, uint32_t uid, const char *relPath);
 

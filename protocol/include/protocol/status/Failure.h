@@ -3,7 +3,7 @@
 /**
 * 通用失败包，表示上一个操作失败
 */
-typedef struct
+CRP_STRUCTURE
 {
     char reason[0];
 } CRPPacketFailure;

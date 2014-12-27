@@ -8,7 +8,7 @@
 * 请求好友列表
 */
 
-typedef struct
+CRP_STRUCTURE
 {
     unsigned char data[0];
 } CRPPacketFriendData;

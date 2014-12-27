@@ -3,7 +3,7 @@
 * 登出当前回话，返回PENDING_LOGIN状态
 * 不应在PENDING_HELLO状态发送此包
 */
-typedef struct
+CRP_STRUCTURE
 {
 } CRPPacketLoginLogout;
 

@@ -3,7 +3,7 @@
 /**
 * 通用接受包，表示上一个操作已接受
 */
-typedef struct
+CRP_STRUCTURE
 {
 } CRPPacketOK;
 

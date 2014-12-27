@@ -4,7 +4,8 @@
 */
 #include "../base.h"
 #include <stdint.h>
-typedef struct
+
+CRP_STRUCTURE
 {
     uint8_t protocolVersion;
     uint32_t clientVersion;
