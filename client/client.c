@@ -81,19 +81,21 @@ void on_button_clicked() {
     flag = 0;
     //gtk_widget_destroy(layout);销毁layout对话框
 
-    GtkWidget *image1, *image2, *image3;
+    GtkWidget *image1, *image2, *image3,*image4;
     pendingLayout = gtk_fixed_new();
 
     gtk_container_add(GTK_CONTAINER (frameLayout), pendingLayout);
     image1 = gtk_image_new_from_file("背景.png");
     gtk_fixed_put(GTK_FIXED(pendingLayout), image1, 0, 0);//起始坐标
 
-    image2 = gtk_image_new_from_file("狗狗.png");
+    image2 = gtk_image_new_from_file("奔跑.png");
     gtk_fixed_put(GTK_FIXED(pendingLayout), image2, 45, 150);
 
     image3 = gtk_image_new_from_file("玩命登陆.png");
     gtk_fixed_put(GTK_FIXED(pendingLayout), image3, 40, 60);
 
+    image4 = gtk_image_new_from_file("取消.png");
+    gtk_fixed_put(GTK_FIXED(pendingLayout), image4, 70, 115);
 
     gtk_widget_show_all(pendingLayout);//显示layout2
 
@@ -104,31 +106,39 @@ void on_button_clicked() {
 
 static gint button_press_event(GtkWidget *widget,
 
-        GdkEventButton *event, gpointer data) {
+        GdkEventButton *event, gpointer data)
+{
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
-        if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && flag == 1)       // 判断是否左键按下
+        if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && flag == 1)       // 判断是否左键按下且在区域内
 
         {
+            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
             gtk_image_set_from_file((GtkImage *) image4, "登陆按钮2.png");// 判断是否在关闭图标区域中
-
         }
         else if (event->button == 1 && (nX > 260 && nX < 280) && (nY > 2 && nY < 25) && flag == 1)
         {
+            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
             gtk_image_set_from_file((GtkImage *) image8, "关闭2.png"); //置换图标
-
         }
         else if (event->button == 1 && (nX > 5 && nX < 62) && (nY > 380 && nY < 395) && flag == 1)       // 判断是否左键按下
 
         {
-
+            //gtk_widget_realize(widget);
+            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
             gtk_image_set_from_file((GtkImage *) image7, "注册账号2.png");
+        }
+        else if(event->button == 1 &&(nX > 75 && nX < 202) && (nY > 117&& nY < 150) && flag ==0)
+        {
+            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+            g_print("hello");
         }
         else
         {
-            if (event->button == 1)
+            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+            if (event->button == 1 )
             { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
                 gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                         event->x_root, event->y_root, event->time);
@@ -157,7 +167,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     {
         gtk_image_set_from_file((GtkImage *) image8, "关闭.png");
         if((nX > 260 && nX < 280) && (nY > 2 && nY < 25))
-        DeleteEvent();
+            DeleteEvent();
     }
 
     return TRUE;
@@ -244,7 +254,6 @@ int main(int argc, char *argv[])
     image6 = gtk_image_new_from_file("密码.png");
     gtk_fixed_put(GTK_FIXED(loginLayout), image6, 35, 260);
 
-//    GtkWidget *username, *passwd;
     username = gtk_entry_new();
     passwd = gtk_entry_new();
 
