@@ -19,19 +19,29 @@ typedef struct struOnlineUserInfo
 {
     uint32_t uid;
 
-} OnlineUserInfo;
+} UserOnlineInfo;
+
+typedef struct __attribute__ ((packed))
+{
+    uint32_t uid;
+    char nickName[32];
+    char sex;
+} UserInfo;
+
 //在线用户数据
 typedef
 struct struOnlineUser
 {
     int sockfd;
-    OnlineUserInfo *info;
+    UserOnlineInfo *info;
     OnlineUserStatus status;
 
     pthread_mutex_t writeLock;
     struct struOnlineUser *prev;
     struct struOnlineUser *next;
 } OnlineUser;
+
+
 //在线用户链表
 typedef struct
 {
@@ -39,16 +49,27 @@ typedef struct
     OnlineUser *last;
     int count;
 } UsersTable;
-//在线的小伙伴们！！
-extern UsersTable OnlineUsers;
-//用户表写锁
-extern pthread_mutex_t UsersTableLock;
 
 //创建一个在线用户对象
-OnlineUser *createUser(int fd);
+OnlineUser *OnlineUserNew(int fd);
 
 //处理用户消息
 int processUser(OnlineUser *user, CRPBaseHeader *packet);
 
 //删除一个在线用户对象
-void deleteUser(OnlineUser *user);
+void OnlineUserDelete(OnlineUser *user);
+
+UserInfo *UserGetInfo(uint32_t uid);
+
+void UserGetDir(char *path, uint32_t uid, const char *relPath);
+
+void UserCreateDirectory(uint32_t uid);
+
+void UserCreateInfoFile(uint32_t uid, char *path);
+
+UserOnlineInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid);
+
+//在线的小伙伴们！！
+extern UsersTable OnlineUsers;
+//用户表写锁
+extern pthread_mutex_t UsersTableLock;

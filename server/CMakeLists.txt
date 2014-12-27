@@ -16,9 +16,13 @@ SET(SERVER_SOURCE_FILE
     packets/status/Hello.c
     packets/status/KeepAlive.c
     packets/status/OK.c
-    packets/login/Login.c
     packets/status/Failure.c
+
+    packets/info/Query.c
+
+    packets/login/Login.c
     packets/login/Logout.c
+
     packets/message/TextMessage.c
     )
 add_executable(server ${SERVER_SOURCE_FILE})

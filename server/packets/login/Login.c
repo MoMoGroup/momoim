@@ -9,6 +9,7 @@ int ProcessPacketLoginLogin(OnlineUser *user, CRPPacketLogin *packet)
     {
         uint32_t uid;
         int ret = AuthUser(packet->username, packet->password, &uid);
+
         if (ret != 0)
         {
             log_info("Login-Login", "User %s Login failure.", packet->username);
@@ -16,9 +17,18 @@ int ProcessPacketLoginLogin(OnlineUser *user, CRPPacketLogin *packet)
         }
         else
         {
-            log_info("Login-Login", "User %s (ID:%u) Login Successful.", packet->username, uid);
-            CRPLoginAcceptSend(user->sockfd, uid);
-            user->status = OUS_ONLINE;
+            user->info = UserCreateOnlineInfo(user, uid);
+            if (user->info == NULL)
+            {
+                log_warning("Login-Login", "User %s Login failure. Cannot Create Online Info", packet->username);
+                CRPFailureSend(user->sockfd, "Server Failure.");
+            }
+            else
+            {
+                log_info("Login-Login", "User %s (ID:%u) Login Successful.", packet->username, uid);
+                CRPLoginAcceptSend(user->sockfd, uid);
+                user->status = OUS_ONLINE;
+            }
         }
     }
     else

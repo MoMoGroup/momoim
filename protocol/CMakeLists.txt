@@ -1,6 +1,9 @@
 include_directories(include)
 SET(LIBPROTOCOL_SRC
     base.c
+    packets/info/Query.c
+    packets/info/Data.c
+
     packets/login/Login.c
     packets/login/Accept.c
     packets/login/Logout.c

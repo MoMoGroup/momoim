@@ -10,12 +10,16 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_KEEP_ALIVE]         = (void *(*)(CRPBaseHeader *base)) CRPKeepAliveCast,
         [CRP_PACKET_HELLO]              = (void *(*)(CRPBaseHeader *base)) CRPHelloCast,
         [CRP_PACKET_OK]                 = (void *(*)(CRPBaseHeader *base)) CRPOKCast,
+        [CRP_PACKET_FAILURE]            = (void *(*)(CRPBaseHeader *base)) CRPFailureCast,
         [CRP_PACKET_CRASH]              = (void *(*)(CRPBaseHeader *base)) CRPCrashCast,
 
         [CRP_PACKET_LOGIN__START]       = (void *(*)(CRPBaseHeader *base)) NULL,
         [CRP_PACKET_LOGIN_LOGIN]        = (void *(*)(CRPBaseHeader *base)) CRPLoginLoginCast,
-        [CRP_PACKET_FAILURE]      = (void *(*)(CRPBaseHeader *base)) CRPFailureCast,
         [CRP_PACKET_LOGIN_LOGOUT]       = (void *(*)(CRPBaseHeader *base)) CRPLoginLogoutCast,
+
+        [CRP_PACKET_INFO__START]        = (int (*)(CRPBaseHeader *base)) NULL,
+        [CRP_PACKET_INFO_QUERY]         = (int (*)(CRPBaseHeader *base)) CRPInfoQueryCast,
+        [CRP_PACKET_INFO_DATA]          = (int (*)(CRPBaseHeader *base)) CRPInfoDataCast,
 
         [CRP_PACKET_MESSAGE__START]     = (void *(*)(CRPBaseHeader *base)) NULL,
         [CRP_PACKET_MESSAGE_TEXT]       = (void *(*)(CRPBaseHeader *base)) CRPTextMessageCast,

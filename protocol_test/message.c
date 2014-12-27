@@ -1,4 +1,3 @@
-#include <protocol/message/TextMessage.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include <stdio.h>

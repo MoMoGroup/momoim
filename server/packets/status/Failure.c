@@ -3,5 +3,5 @@
 
 int ProcessPacketStatusFailure(OnlineUser *user, CRPPacketFailure *packet)
 {
-
+    return 1;
 }
