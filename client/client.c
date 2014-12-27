@@ -79,7 +79,7 @@ static void create_surfaces2() {
 
 static void
 destroy_surfaces() {
-    g_print("destroying surfaces");
+    g_print("destroying surfaces1");
     cairo_surface_destroy(surface1);
     cairo_surface_destroy(surface2);
     cairo_surface_destroy(surface3);
