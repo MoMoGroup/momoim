@@ -11,6 +11,7 @@ SET(SERVER_SOURCE_FILE
 
     data/base.c
     data/auth.c
+    data/user.c
 
     packets/status/Crash.c
     packets/status/Hello.c

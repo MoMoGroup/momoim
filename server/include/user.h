@@ -18,15 +18,9 @@ typedef enum
 typedef struct struOnlineUserInfo
 {
     uint32_t uid;
-
+    char *userDir;
 } UserOnlineInfo;
 
-typedef struct __attribute__ ((packed))
-{
-    uint32_t uid;
-    char nickName[32];
-    char sex;
-} UserInfo;
 
 //在线用户数据
 typedef
@@ -59,13 +53,6 @@ int processUser(OnlineUser *user, CRPBaseHeader *packet);
 //删除一个在线用户对象
 void OnlineUserDelete(OnlineUser *user);
 
-UserInfo *UserGetInfo(uint32_t uid);
-
-void UserGetDir(char *path, uint32_t uid, const char *relPath);
-
-void UserCreateDirectory(uint32_t uid);
-
-void UserCreateInfoFile(uint32_t uid, char *path);
 
 UserOnlineInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid);
 

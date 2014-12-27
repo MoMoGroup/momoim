@@ -1,6 +1,7 @@
 #include <protocol/CRPPackets.h>
 #include <user.h>
 #include <stdlib.h>
+#include <data/user.h>
 
 int ProcessPacketInfoQuery(OnlineUser *user, CRPPacketInfoQuery *packet)
 {
