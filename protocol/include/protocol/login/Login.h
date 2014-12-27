@@ -13,6 +13,7 @@ typedef struct
 /**
 * 登陆包转换
 */
+__attribute_malloc__
 CRPPacketLogin *CRPLoginLoginCast(CRPBaseHeader *base);
 
 /**

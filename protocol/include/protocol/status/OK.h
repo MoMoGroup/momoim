@@ -7,6 +7,7 @@ typedef struct
 {
 } CRPPacketOK;
 
+__attribute_malloc__
 CRPPacketOK *CRPOKCast(CRPBaseHeader *base);
 
 int CRPOKSend(int sockfd);

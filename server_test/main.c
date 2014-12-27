@@ -7,8 +7,6 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 #include<string.h>
-#include <protocol/base.h>
-#include <protocol/info/Data.h>
 
 int main()
 {
@@ -60,9 +58,10 @@ int main()
             return 1;
 
     }
+
     CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
     uint32_t uid = ac->uid;
-    CRPInfoQuerySend(sockfd, uid);
+    CRPInfoRequestSend(sockfd, uid);
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_INFO_DATA)
     {
@@ -72,5 +71,9 @@ int main()
     {
         log_info("User", "Info Failure\n");
     }
+
+    CRPFriendRequestSend(sockfd);
+
+
     return 0;
 }

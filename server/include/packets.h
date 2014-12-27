@@ -21,7 +21,9 @@ int ProcessPacketLoginLogout(OnlineUser *user, CRPPacketLoginLogout *packet);
 
 int ProcessPacketMessageTextMessage(OnlineUser *user, CRPPacketTextMessage *packet);
 
-int ProcessPacketInfoQuery(OnlineUser *user, CRPPacketInfoQuery *packet);
+int ProcessPacketInfoRequest(OnlineUser *user, CRPPacketInfoRequest *packet);
+
+int ProcessPacketFriendRequest(OnlineUser *user, CRPPacketFriendRequest *packet);
 
 //数据包处理函数映射
 extern int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, void *packet);

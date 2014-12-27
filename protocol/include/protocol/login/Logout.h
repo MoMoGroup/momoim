@@ -10,6 +10,7 @@ typedef struct
 /**
 * 登出包转换
 */
+__attribute_malloc__
 CRPPacketLoginLogout *CRPLoginLogoutCast(CRPBaseHeader *base);
 
 /**

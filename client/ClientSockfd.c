@@ -56,7 +56,6 @@ int mysockfd() {
     MD5((unsigned char *) pwd, 1, hash);
     CRPLoginLoginSend(sockfd, name, hash);//发送用户名密码
 
-    free(header);
 
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE) {
@@ -75,7 +74,7 @@ int mysockfd() {
         uint32_t uid = ac->uid;
         if (ac != header->data)
             free(ac);
-        CRPInfoQuerySend(sockfd, uid);
+        //CRPInfoQuerySend(sockfd, uid);
         free(header);
         header = CRPRecv(sockfd);
         if (header->packetID == CRP_PACKET_INFO_DATA) {
