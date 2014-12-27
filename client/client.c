@@ -176,7 +176,7 @@ static gint button_press_event(GtkWidget *widget,
 // 鼠标抬起事件
 static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)        
+        gpointer data)
 
 {
 
