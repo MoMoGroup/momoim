@@ -7,6 +7,8 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 #include<string.h>
+#include <protocol/base.h>
+#include <protocol/info/Data.h>
 
 int main()
 {
@@ -42,7 +44,7 @@ int main()
     switch (header->packetID)
     {
         case CRP_PACKET_LOGIN_ACCEPT:
-            log_info("Login", "Successful");
+            log_info("Login", "Successful\n");
             break;
         case CRP_PACKET_FAILURE:
         {
@@ -51,12 +53,24 @@ int main()
             memcpy(s, failure->reason, header->dataLength);
             s[header->dataLength] = 0;
             log_error("Login", s);
-            break;
+            return 1;
         };
         default:
             log_error("Login", "Recv Packet:%d\n", header->packetID);
-            break;
+            return 1;
 
+    }
+    CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
+    uint32_t uid = ac->uid;
+    CRPInfoQuerySend(sockfd, uid);
+    header = CRPRecv(sockfd);
+    if (header->packetID == CRP_PACKET_INFO_DATA)
+    {
+        log_info("User", "Nick%s\n", (CRPInfoDataCast(header)->nickName));
+    }
+    else
+    {
+        log_info("User", "Info Failure\n");
     }
     return 0;
 }

@@ -3,5 +3,5 @@
 
 int ProcessPacketLoginLogout(OnlineUser *user, CRPPacketLoginLogout *packet)
 {
-
+    return 0;
 }

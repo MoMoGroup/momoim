@@ -3,5 +3,5 @@
 
 int ProcessPacketStatusKeepAlive(OnlineUser *user, CRPPacketKeepAlive *packet)
 {
-
+    return 1;
 }

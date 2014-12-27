@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include "ClientSockfd.h"
+#include "MainInterface.h"
 #include <cairo.h>
 
 GtkWidget *image4, *image7, *image8, *image10;
@@ -14,6 +15,7 @@ cairo_surface_t *surface71, *surface72, *surface81, *surface82, *surface83,*surf
 int flag = 1;
 GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 
+//关闭窗口
 static void
 create_surfaces1() {
     GtkWidget *image1, *image2, *image3, *image5, *image6;
@@ -108,6 +110,7 @@ void *sendhello(void *M) {
 }
 
 void on_button_clicked() {
+
     pthread_t mythread;
     gtk_widget_hide(loginLayout);//隐藏loginlayout
     flag = 0;
@@ -128,8 +131,7 @@ void on_button_clicked() {
 
 static gint button_press_event(GtkWidget *widget,
 
-        GdkEventButton *event, gpointer data)   //鼠标点击事件
-{
+        GdkEventButton *event, gpointer data) {
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下

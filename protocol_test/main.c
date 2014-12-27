@@ -14,7 +14,7 @@ int main()
 
     log_info("PROTOCOL_TEST", "Test Begin\n");
 
-
+    info_test();
     status_test();
     message_test(); //函数声明
     login_test();

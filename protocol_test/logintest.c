@@ -9,7 +9,7 @@
 int TestPacketLogin()
 {
 //login test
-    if (!CRPLoginLoginSend(sendfd, "xia", "1234561234567890"))
+    if (!CRPLoginLoginSend(sendfd, "xia", (const unsigned char *) "1234561234567890"))
     {
         log_error("Login", "login返回失败\n");
         perror("");
@@ -39,7 +39,7 @@ int TestPacketLogin()
     }
     log_info("Login", "Login通过\n");
     free(packet);
-
+    return 0;
 }
 
 int LogAccept()
@@ -73,7 +73,7 @@ int LogAccept()
     }
     log_info("LoginAccept", "LoginAccept通过\n");
     free(packet);
-
+    return 0;
 }
 
 //logout test
@@ -103,6 +103,7 @@ int Logout()
 
     free(packet);
     log_info("Loginout", "Login通过\n");
+    return 0;
 }
 
 
@@ -111,4 +112,5 @@ int login_test()
     TestPacketLogin();
     LogAccept();
     Logout();
+    return 0;
 }

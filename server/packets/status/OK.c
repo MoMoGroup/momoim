@@ -3,5 +3,5 @@
 
 int ProcessPacketStatusOK(OnlineUser *user, CRPPacketOK *packet)
 {
-
+    return 1;
 }

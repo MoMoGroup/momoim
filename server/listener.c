@@ -95,7 +95,7 @@ void *ListenMain(void *listenSocket)
                          ntohs(addr.sin_port),
                          worker->workerId
                 );
-                UserJoinToPoll(createUser(fd));
+                UserJoinToPoll(OnlineUserNew(fd));
             }
             else
             {
