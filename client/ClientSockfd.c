@@ -66,7 +66,7 @@ int mysockfd() {
 
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;
-        CRPInfoQuerySend(sockfd, uid);
+        CRPInfoRequestSend(sockfd, uid);
         header = CRPRecv(sockfd);
         if (header->packetID == CRP_PACKET_INFO_DATA) {
             log_info("User", "Nick%s\n", (CRPInfoDataCast(header)->nickName));
