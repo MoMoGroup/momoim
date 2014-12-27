@@ -31,11 +31,11 @@ void on_button_clicked() {
     pendingLayout = gtk_fixed_new();
 
     gtk_container_add(GTK_CONTAINER (frameLayout), pendingLayout);
-    image1 = gtk_image_new_from_file("背景.png");
-    gtk_fixed_put(GTK_FIXED(pendingLayout), image1, 0, 0);//起始坐标
+    //image1 = gtk_image_new_from_file("背景.png");
+   // gtk_fixed_put(GTK_FIXED(pendingLayout), image1, 0, 0);//起始坐标
 
-    image2 = gtk_image_new_from_file("奔跑.png");
-    gtk_fixed_put(GTK_FIXED(pendingLayout), image2, 45, 150);
+    image2 = gtk_image_new_from_file("等待.gif");
+    gtk_fixed_put(GTK_FIXED(pendingLayout), image2, -150, 0);
 
     image3 = gtk_image_new_from_file("玩命登陆.png");
     gtk_fixed_put(GTK_FIXED(pendingLayout), image3, 40, 60);

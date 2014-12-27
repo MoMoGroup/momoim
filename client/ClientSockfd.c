@@ -12,7 +12,6 @@ extern int flag;
 extern GtkWidget *loginLayout, *pendingLayout;
 extern GtkWidget *username, *passwd;
 extern GtkWidget *window;
-
 int mysockfd() {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
@@ -58,7 +57,6 @@ int mysockfd() {
         log_info("登录成功", "登录成功\n");
         gtk_widget_destroy(loginLayout);//销毁loginlayout对话框
         gtk_container_add(GTK_CONTAINER(window), pendingLayout);
-
         gtk_widget_show_all(pendingLayout);
     }
     return 0;
