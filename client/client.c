@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include "ClientSockfd.h"
+#include "MainInterface.h"
 
 GtkWidget *username, *passwd;
 int nX = 0;
@@ -10,6 +11,7 @@ GtkWidget *image4, *image8, *image7;
 int flag = 1;
 GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 
+//关闭窗口
 int DeleteEvent() {
     gtk_main_quit();
     return TRUE;
@@ -21,6 +23,7 @@ void *sendhello(void *M) {
 }
 
 void on_button_clicked() {
+
     pthread_t mythread;
 
     gtk_widget_hide(loginLayout);//隐藏loginlayout
@@ -69,7 +72,6 @@ static gint button_press_event(GtkWidget *widget,
         else if (event->button == 1 && (nX > 5 && nX < 62) && (nY > 380 && nY < 395) && flag == 1)       // 判断是否左键按下
 
         {
-
             gtk_image_set_from_file((GtkImage *) image7, "注册账号2.png");
         }
         else
@@ -133,9 +135,9 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
 int main(int argc, char *argv[])
 {
+
+
     GtkWidget *image1, *image2, *image3, *image5, *image6;
-
-
 
     //初始化GTK+程序
     gtk_init(&argc, &argv);
