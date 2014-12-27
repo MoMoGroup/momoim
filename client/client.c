@@ -6,8 +6,8 @@
 
 GtkWidget *image4, *image7, *image8, *image10;
 GtkWidget *username, *passwd;
-int nX = 0;
-int nY = 0;
+extern int nX = 0;
+extern int nY = 0;
 GtkWidget *window;
 
 cairo_surface_t *surface1, *surface2, *surface3, *surface41, *surface42, *surface43, *surface5, *surface6;
@@ -99,7 +99,7 @@ destroy_surfaces() {
     cairo_surface_destroy(surface10_3);
 }
 
-int DeleteEvent() {
+extern int DeleteEvent() {
     gtk_main_quit();
     return TRUE;
 }
@@ -155,7 +155,6 @@ static gint button_press_event(GtkWidget *widget,
         else if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 350) && flag == 0) {   //设置第二界面取消按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
             gtk_image_set_from_surface((GtkImage *) image10, surface10_3);//设置鼠标光标
-            g_print("hello");
         }
         else {                                                                               //设置在非按钮区域内移动窗口
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
@@ -169,9 +168,10 @@ static gint button_press_event(GtkWidget *widget,
 
 }
 
+// 鼠标抬起事件
 static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)         // 鼠标抬起事件
+        gpointer data)
 
 {
 
@@ -243,8 +243,10 @@ int main(int argc, char *argv[]) {
     gtk_init(&argc, &argv);
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
     g_signal_connect(G_OBJECT(window), "delete_event",
             G_CALLBACK(gtk_main_quit), NULL);
+
     gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置
     // gtk_window_set_resizable (GTK_WINDOW (window), FALSE);//窗口不可改变
