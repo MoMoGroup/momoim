@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <protocol/info/Data.h>
 #include "MainInterface.h"
 #include <cairo.h>
 GtkWidget *background, *headx, *search, *friend,*closebut;
@@ -8,11 +9,8 @@ cairo_surface_t *surface1, *surface2, *surface3, *surface4,*surface51,*surface52
 int X = 0;
 int Y = 0;
 
-
-//int DeleteEvent() {
-//    gtk_main_quit();
-//    return TRUE;
-//}
+extern CRPPacketInfoData userdata;
+extern gchar *uidname;
 
 static void create_surfaces() {
 
@@ -117,7 +115,8 @@ int maininterface() {
     gtk_window_set_default_size(GTK_WINDOW(window), 284, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
-
+    MainLayout = gtk_fixed_new();
+    frameLayout = gtk_layout_new(NULL, NULL);
     gtk_widget_set_events(window,  // 设置窗体获取鼠标事件
 
             GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
@@ -135,17 +134,15 @@ int maininterface() {
             G_CALLBACK(button_release_event), window);
 
     GtkWidget *userid;
-    MainLayout = gtk_fixed_new();
-    userid = gtk_label_new("Nick name");
-    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 140, 90);
-    
-    frameLayout = gtk_layout_new(NULL, NULL);
+    //g_print(userdata.nickName);
+    userid = gtk_label_new(userdata.nickName);
+    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
     create_surfaces();
     gtk_widget_show_all(window);
     //gtk_main();
-    //destroy_surfaces();
+
     return 0;
 }

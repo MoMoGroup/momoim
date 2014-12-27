@@ -7,12 +7,19 @@
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
+#include <protocol/base.h>
+#include <stdlib.h>
+#include <string.h>
+#include <protocol/info/Data.h>
 #include "MainInterface.h"
 
 extern int flag;
 extern GtkWidget *loginLayout, *pendingLayout;
 extern GtkWidget *username, *passwd;
 extern GtkWidget *window;
+extern int sockfd;
+CRPPacketInfoData userdata;
+gchar *uidname;
 
 gboolean mythread(gpointer user_data) {
     gtk_widget_destroy(window);
@@ -66,10 +73,20 @@ int mysockfd() {
 
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;
-        CRPInfoQuerySend(sockfd, uid);
+        if (ac != header->data)
+            free(ac);
+        CRPInfoRequestSend(sockfd, uid);
+        free(header);
         header = CRPRecv(sockfd);
         if (header->packetID == CRP_PACKET_INFO_DATA) {
-            log_info("User", "Nick%s\n", (CRPInfoDataCast(header)->nickName));
+            //log_info("User", "Nick%s\n", (CRPInfoDataCast(header)->nickName));
+            CRPPacketInfoData *ac = CRPInfoDataCast(header);
+            memcpy(&userdata, ac, sizeof(CRPPacketInfoData));
+            if (ac != header->data)
+                free(ac);
+            //uidname=CRPInfoDataCast(header)->nickName;
+            //g_print(uidname);
+            free(header);
             gdk_threads_add_idle(mythread, NULL);
         }
         else {

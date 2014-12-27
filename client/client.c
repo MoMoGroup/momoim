@@ -3,11 +3,16 @@
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include <cairo.h>
+#include <bits/sigthread.h>
+#include <sys/socket.h>
+#include <logger.h>
 
 GtkWidget *image4, *image7, *image8, *image10;
 GtkWidget *username, *passwd;
-extern int nX = 0;
-extern int nY = 0;
+pthread_t thread1;
+int sockfd;
+int nX = 0;
+int nY = 0;
 GtkWidget *window;
 
 cairo_surface_t *surface1, *surface2, *surface3, *surface41, *surface42, *surface43, *surface5, *surface6;
@@ -111,7 +116,7 @@ void *sendhello(void *M) {
 
 void on_button_clicked() {
 
-    pthread_t mythread;
+
     gtk_widget_hide(loginLayout);//隐藏loginlayout
     flag = 0;
     //gtk_widget_destroy(layout);销毁layout对话框
@@ -124,7 +129,7 @@ void on_button_clicked() {
     create_surfaces2();
     gtk_widget_show_all(pendingLayout);//显示layout2
 
-    pthread_create(&mythread, NULL, sendhello, NULL);
+    pthread_create(&thread1, NULL, sendhello, NULL);
 
 
 }
@@ -171,7 +176,7 @@ static gint button_press_event(GtkWidget *widget,
 // 鼠标抬起事件
 static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)
+        gpointer data)        
 
 {
 
@@ -192,6 +197,13 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     else if (flag == 0) {                                         //设置取消按钮
         if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
             gtk_image_set_from_surface((GtkImage *) image10, surface10_1);
+            if ((nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
+                close(sockfd);
+                pthread_cancel(thread1);
+                flag = 1;
+                gtk_widget_destroy(pendingLayout);
+                gtk_widget_show_all(loginLayout);
+            }
         }
     }
 
@@ -219,6 +231,7 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
         }
         else{
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+
             gtk_image_set_from_surface((GtkImage *) image8, surface81);
             gtk_image_set_from_surface((GtkImage *) image4, surface41);
         }
@@ -229,8 +242,10 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
             gtk_image_set_from_surface((GtkImage *) image10, surface10_2);
         }
         else {
+
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
             gtk_image_set_from_surface((GtkImage *) image10, surface10_1);
+
         }
     }
 

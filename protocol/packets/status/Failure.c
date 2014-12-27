@@ -2,11 +2,14 @@
 #include "protocol/status/Failure.h"
 #include <protocol/CRPPackets.h>
 #include <string.h>
-
+#include <stdlib.h>
 
 CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base)
 {
-    return (CRPPacketFailure *) base->data;
+    CRPPacketFailure *data = (CRPPacketFailure *) malloc(base->dataLength + 1);
+    memcpy(data, base->data, base->dataLength);
+    data->reason[base->dataLength] = 0;
+    return data;
 }
 
 int CRPFailureSend(int sockfd, char *reason)

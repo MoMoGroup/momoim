@@ -1,4 +1,6 @@
 #pragma once
 
-extern int maininterface();
+
 extern int DeleteEvent();
+extern int mysockfd();
+extern int maininterface();

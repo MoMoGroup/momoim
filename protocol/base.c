@@ -17,9 +17,9 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_LOGIN_LOGIN]        = (void *(*)(CRPBaseHeader *base)) CRPLoginLoginCast,
         [CRP_PACKET_LOGIN_LOGOUT]       = (void *(*)(CRPBaseHeader *base)) CRPLoginLogoutCast,
 
-        [CRP_PACKET_INFO__START]        = (int (*)(CRPBaseHeader *base)) NULL,
-        [CRP_PACKET_INFO_QUERY]         = (int (*)(CRPBaseHeader *base)) CRPInfoQueryCast,
-        [CRP_PACKET_INFO_DATA]          = (int (*)(CRPBaseHeader *base)) CRPInfoDataCast,
+        [CRP_PACKET_INFO__START]        = (void *(*)(CRPBaseHeader *base)) NULL,
+        [CRP_PACKET_INFO_REQUEST]         = (void *(*)(CRPBaseHeader *base)) CRPInfoRequestCast,
+        [CRP_PACKET_INFO_DATA]          = (void *(*)(CRPBaseHeader *base)) CRPInfoDataCast,
 
         [CRP_PACKET_MESSAGE__START]     = (void *(*)(CRPBaseHeader *base)) NULL,
         [CRP_PACKET_MESSAGE_TEXT]       = (void *(*)(CRPBaseHeader *base)) CRPTextMessageCast,

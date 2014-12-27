@@ -3,12 +3,14 @@
 /**
 * 在任意一方发生无法恢复的错误时，应向对方发送崩溃包
 */
-typedef struct {
+CRP_STRUCTURE
+{
 } CRPPacketCrash;
 
 /**
 * 崩溃包转换
 */
+__attribute_malloc__
 CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base);
 
 /**

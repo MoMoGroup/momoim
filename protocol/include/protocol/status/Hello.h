@@ -4,7 +4,8 @@
 */
 #include "../base.h"
 #include <stdint.h>
-typedef struct
+
+CRP_STRUCTURE
 {
     uint8_t protocolVersion;
     uint32_t clientVersion;
@@ -12,6 +13,7 @@ typedef struct
 } CRPPacketHello;
 
 
+__attribute_malloc__
 CRPPacketHello *CRPHelloCast(CRPBaseHeader *base);
 
 int CRPHelloSend(int sockfd, uint8_t protocolVersion, uint32_t clientVersion, uint32_t sessionState);

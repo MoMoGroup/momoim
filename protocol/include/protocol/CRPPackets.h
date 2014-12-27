@@ -1,7 +1,10 @@
 #pragma once
 
 #include <stddef.h>
-#include "protocol/info/Query.h"
+#include "protocol/friend/Request.h"
+#include "protocol/friend/Data.h"
+
+#include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
 
 #include "protocol/login/Login.h"
@@ -26,14 +29,19 @@ typedef enum
 
     CRP_PACKET_LOGIN__START = 0x10, //登陆类数据包开始
     CRP_PACKET_LOGIN_LOGIN,         //登陆
-    CRP_PACKET_LOGIN_ACCEPT,         //登陆
+    CRP_PACKET_LOGIN_ACCEPT,        //登陆
     CRP_PACKET_LOGIN_LOGOUT,        //登出
 
     CRP_PACKET_INFO__START = 0x20,
-    CRP_PACKET_INFO_QUERY,          //用户资料请求报
+    CRP_PACKET_INFO_REQUEST,        //用户资料请求报
     CRP_PACKET_INFO_DATA,           //用户资料回复
 
-    CRP_PACKET_MESSAGE__START = 0x30, //消息类数据包开始
+    CRP_PACKET_FRIEND__START = 0x30,
+    CRP_PACKET_FRIEND_REQUEST,      //请求好友列表
+    CRP_PACKET_FRIEND_DATA,         //答复好友列表
+
+
+    CRP_PACKET_MESSAGE__START = 0x40, //消息类数据包开始
     CRP_PACKET_MESSAGE_TEXT,        //文本消息
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID

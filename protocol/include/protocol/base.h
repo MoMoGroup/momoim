@@ -3,8 +3,9 @@
 #include <sys/types.h>
 #include <stdint.h>
 typedef __uint16_t CRP_LENGTH_TYPE;
+#define CRP_STRUCTURE typedef struct __attribute__ ((packed))
 
-typedef struct
+CRP_STRUCTURE
 {
     unsigned int magicCode /* 0x464F5573 */;
     CRP_LENGTH_TYPE totalLength; //协议包总长度，也用于支持不同协议版本

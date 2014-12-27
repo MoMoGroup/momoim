@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <data/user.h>
 
-int ProcessPacketInfoQuery(OnlineUser *user, CRPPacketInfoQuery *packet)
+int ProcessPacketInfoRequest(OnlineUser *user, CRPPacketInfoRequest *packet)
 {
     if (user->status == OUS_ONLINE)
     {

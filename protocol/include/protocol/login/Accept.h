@@ -4,7 +4,7 @@
 */
 #include <stdint.h>
 
-typedef struct
+CRP_STRUCTURE
 {
     uint32_t uid;
 } CRPPacketLoginAccept;
@@ -12,6 +12,7 @@ typedef struct
 /**
 * 登陆包转换
 */
+__attribute_malloc__
 CRPPacketLoginAccept *CRPLoginAcceptCast(CRPBaseHeader *base);
 
 /**

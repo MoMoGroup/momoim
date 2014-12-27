@@ -1,5 +1,6 @@
 include_directories(../logger/include)
 include_directories(../protocol/include)
+include_directories(../imcommon/include)
 SET(SERVER_TEST_SOURCE_FILE
     main.c
     )
