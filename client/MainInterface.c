@@ -117,7 +117,9 @@ int maininterface() {
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
-    gtk_widget_set_events(window,  // 设置窗体获取鼠标事件
+
+    // 设置窗体获取鼠标事件
+    gtk_widget_set_events(window,
 
             GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
 
