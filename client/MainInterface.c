@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <string.h>
 #include "MainInterface.h"
 
 int maininterface() {
@@ -30,6 +31,10 @@ int maininterface() {
 
     friend = gtk_image_new_from_file("好友.png");
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
+
+    GtkWidget *userid;
+    userid = gtk_label_new("Nick name");
+    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 140, 90);
 
     gtk_widget_show_all(window);
     //gtk_main();
