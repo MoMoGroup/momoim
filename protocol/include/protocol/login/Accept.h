@@ -4,7 +4,7 @@
 */
 #include <stdint.h>
 
-typedef struct
+CRP_STRUCTURE
 {
     uint32_t uid;
 } CRPPacketLoginAccept;

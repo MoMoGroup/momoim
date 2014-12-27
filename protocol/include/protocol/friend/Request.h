@@ -7,7 +7,7 @@
 * 请求好友列表
 */
 
-typedef struct
+CRP_STRUCTURE
 {
 } CRPPacketFriendRequest;
 

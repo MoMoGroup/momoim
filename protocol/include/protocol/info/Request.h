@@ -7,7 +7,7 @@
 * 客户端请求用户资料
 */
 
-typedef struct
+CRP_STRUCTURE
 {
     uint32_t uid;
 } CRPPacketInfoRequest;

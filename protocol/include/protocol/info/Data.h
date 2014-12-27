@@ -7,7 +7,7 @@
 * 服务端回复用户资料
 */
 
-typedef struct
+CRP_STRUCTURE
 {
     uint32_t uid;
     char nickName[32];

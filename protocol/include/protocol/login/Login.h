@@ -4,7 +4,8 @@
 */
 #include <stdint.h>
 #include <protocol/base.h>
-typedef struct
+
+CRP_STRUCTURE
 {
     unsigned char password[16];
     char username[0];

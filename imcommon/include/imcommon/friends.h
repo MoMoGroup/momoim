@@ -24,10 +24,10 @@ typedef struct __attribute__ ((packed))
     UserGroup *groups;
 } UserFriends;
 
-size_t UserFriendsSize(UserFriends *friends);
+extern size_t UserFriendsSize(UserFriends *friends);
 
-int UserFriendsEncode(UserFriends *from, unsigned char *to);
+extern int UserFriendsEncode(UserFriends *from, unsigned char *to);
 
-UserFriends *UserFriendsDecode(unsigned char *from);
+extern UserFriends *UserFriendsDecode(unsigned char *from);
 
-void UserFriendsFree(UserFriends *friends);
+extern void UserFriendsFree(UserFriends *friends);

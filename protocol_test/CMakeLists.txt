@@ -1,6 +1,7 @@
 include_directories(include)
 include_directories(../logger/include)
 include_directories(../protocol/include)
+include_directories(../imcommon/include)
 SET(PROTOCOL_SOURCE_FILE
     main.c
     status.c

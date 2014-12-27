@@ -2,7 +2,7 @@
 /**
 * 用于确认客户端在线
 */
-typedef struct
+CRP_STRUCTURE
 {
 } CRPPacketKeepAlive;
 
