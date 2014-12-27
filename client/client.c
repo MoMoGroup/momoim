@@ -3,15 +3,20 @@
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include <cairo.h>
+#include <bits/sigthread.h>
+#include <sys/socket.h>
+#include <logger.h>
 
 GtkWidget *image4, *image7, *image8, *image10;
 GtkWidget *username, *passwd;
+pthread_t thread1;
+int sockfd;
 int nX = 0;
 int nY = 0;
 GtkWidget *window;
 
 cairo_surface_t *surface1, *surface2, *surface3, *surface41, *surface42, *surface43, *surface5, *surface6;
-cairo_surface_t *surface71, *surface72, *surface81, *surface82, *surface83,*surface9, *surface10_1, *surface10_2, *surface10_3;
+cairo_surface_t *surface71, *surface72, *surface81, *surface82, *surface83, *surface9, *surface10_1, *surface10_2, *surface10_3;
 int flag = 1;
 GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 
@@ -111,7 +116,7 @@ void *sendhello(void *M) {
 
 void on_button_clicked() {
 
-    pthread_t mythread;
+
     gtk_widget_hide(loginLayout);//隐藏loginlayout
     flag = 0;
     //gtk_widget_destroy(layout);销毁layout对话框
@@ -124,7 +129,7 @@ void on_button_clicked() {
     create_surfaces2();
     gtk_widget_show_all(pendingLayout);//显示layout2
 
-    pthread_create(&mythread, NULL, sendhello, NULL);
+    pthread_create(&thread1, NULL, sendhello, NULL);
 
 
 }
@@ -155,7 +160,6 @@ static gint button_press_event(GtkWidget *widget,
         else if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 350) && flag == 0) {   //设置第二界面取消按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
             gtk_image_set_from_surface((GtkImage *) image10, surface10_3);//设置鼠标光标
-            g_print("hello");
         }
         else {                                                                               //设置在非按钮区域内移动窗口
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
@@ -174,7 +178,6 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
         gpointer data)         // 鼠标抬起事件
 
 {
-
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
     if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && flag == 1)  //判断是否在登陆区域中，设置登陆按钮
@@ -192,6 +195,14 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     else if (flag == 0) {                                         //设置取消按钮
         if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
             gtk_image_set_from_surface((GtkImage *) image10, surface10_1);
+            if ((nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
+                g_print("hello");
+                close(sockfd);
+                pthread_cancel(thread1);
+                flag = 1;
+                gtk_widget_destroy(pendingLayout);
+                gtk_widget_show_all(loginLayout);
+            }
         }
     }
 
@@ -210,15 +221,16 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
             gtk_image_set_from_surface((GtkImage *) image4, surface43);
         }
-        else if ((nX > 247 && nX < 280) && (nY > 2 && nY < 25)){
+        else if ((nX > 247 && nX < 280) && (nY > 2 && nY < 25)) {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
             gtk_image_set_from_surface((GtkImage *) image8, surface83);
         }
-        else if((nX > 5 && nX < 62) && (nY > 380 && nY < 395)) {
+        else if ((nX > 5 && nX < 62) && (nY > 380 && nY < 395)) {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
         }
-        else{
+        else {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+
             gtk_image_set_from_surface((GtkImage *) image8, surface81);
             gtk_image_set_from_surface((GtkImage *) image4, surface41);
         }
@@ -229,8 +241,10 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
             gtk_image_set_from_surface((GtkImage *) image10, surface10_2);
         }
         else {
+
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
             gtk_image_set_from_surface((GtkImage *) image10, surface10_1);
+
         }
     }
 

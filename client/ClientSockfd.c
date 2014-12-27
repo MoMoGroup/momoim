@@ -17,6 +17,7 @@ extern int flag;
 extern GtkWidget *loginLayout, *pendingLayout;
 extern GtkWidget *username, *passwd;
 extern GtkWidget *window;
+extern int sockfd;
 CRPPacketInfoData userdata;
 gchar *uidname;
 
@@ -74,7 +75,7 @@ int mysockfd() {
         uint32_t uid = ac->uid;
         if (ac != header->data)
             free(ac);
-        //CRPInfoQuerySend(sockfd, uid);
+        CRPInfoRequestSend(sockfd, uid);
         free(header);
         header = CRPRecv(sockfd);
         if (header->packetID == CRP_PACKET_INFO_DATA) {
