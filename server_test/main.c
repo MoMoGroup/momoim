@@ -36,7 +36,7 @@ int main()
 
     log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];
-    MD5((unsigned char *) "s", 1, hash);
+    MD5((unsigned char *) "d", 1, hash);
     CRPLoginLoginSend(sockfd, "a", hash);
 
     log_info("Login", "Waiting OK\n");

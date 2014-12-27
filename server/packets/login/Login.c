@@ -2,9 +2,11 @@
 #include <user.h>
 #include <data/auth.h>
 #include <logger.h>
+#include <unistd.h>
 
 int ProcessPacketLoginLogin(OnlineUser *user, CRPPacketLogin *packet)
 {
+    sleep(2);
     if (user->status == OUS_PENDING_LOGIN)
     {
         uint32_t uid;
