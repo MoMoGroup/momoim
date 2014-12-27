@@ -21,6 +21,10 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_INFO_REQUEST]         = (void *(*)(CRPBaseHeader *base)) CRPInfoRequestCast,
         [CRP_PACKET_INFO_DATA]          = (void *(*)(CRPBaseHeader *base)) CRPInfoDataCast,
 
+        [CRP_PACKET_FRIEND__START]        = (void *(*)(CRPBaseHeader *base)) NULL,
+        [CRP_PACKET_FRIEND_REQUEST]         = (void *(*)(CRPBaseHeader *base)) CRPFriendRequestCast,
+        [CRP_PACKET_FRIEND_DATA]          = (void *(*)(CRPBaseHeader *base)) CRPFriendDataCast,
+
         [CRP_PACKET_MESSAGE__START]     = (void *(*)(CRPBaseHeader *base)) NULL,
         [CRP_PACKET_MESSAGE_TEXT]       = (void *(*)(CRPBaseHeader *base)) CRPTextMessageCast,
 };
@@ -47,14 +51,12 @@ CRPBaseHeader *CRPRecv(int fd)
     ret = recv(fd, &h, sizeof(CRPBaseHeader), MSG_PEEK);
     if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
     {
-        perror("recv");
         return NULL;
     }
     CRPBaseHeader *packet = (CRPBaseHeader *) malloc(h.totalLength);
     ret = recv(fd, packet, h.totalLength, MSG_WAITALL);
     if (ret != h.totalLength)
     {
-        perror("recv");
         free(packet);
         return NULL;
     }

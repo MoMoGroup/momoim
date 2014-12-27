@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <stdio.h>
 #include <sys/mman.h>
+#include <string.h>
 
 #include "user.h"
 #include "data/user.h"
@@ -59,13 +60,13 @@ void UserCreateInfoFile(uint32_t uid, char *path)
 
 int UserSaveInfoFile(UserInfo *info, char *path)
 {
-    int fd = open(path, O_CREAT | O_WRONLY, 0600);
+    int fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0600);
     if (fd == -1)
     {
         log_error("User", "Cannot create user info file %s.\n", path);
         return 1;
     }
-    write(fd, &info, sizeof(info));
+    write(fd, info, sizeof(UserInfo));
     close(fd);
     return 0;
 }
@@ -102,11 +103,15 @@ void UserFreeInfo(UserInfo *friends)
 
 void UserCreateFriendsFile(char *path)
 {
+    uint32_t mfriends[] = {
+            10000
+    };
     UserGroup groups[] = {
             {
                     .groupId=0,
                     .groupName="Friends",
-                    .friendCount=0
+                    .friendCount=1,
+                    .friends=mfriends
             },
             {
                     .groupId=UINT8_MAX,
@@ -115,7 +120,7 @@ void UserCreateFriendsFile(char *path)
             }
     };
     UserFriends friends = {
-            .groupCount=1,
+            .groupCount=2,
             .groups=groups
     };
     UserSaveFriendsFile(&friends, path);
@@ -123,16 +128,23 @@ void UserCreateFriendsFile(char *path)
 
 int UserSaveFriendsFile(UserFriends *friends, char *path)
 {
-    int fd = open(path, O_CREAT | O_WRONLY, 0600);
+    int fd = open(path, O_CREAT | O_RDWR | O_TRUNC, 0600);
     if (fd == -1)
     {
-        log_error("User", "Cannot create user info file %s.\n", path);
+        log_error("User", "Cannot create user friends file %s.\n", path);
         return 1;
     }
     size_t length = UserFriendsSize(friends);
-    void *addr = mmap(NULL, length, PROT_WRITE, MAP_PRIVATE, fd, 0);
+    if (lseek(fd, length - 1, SEEK_SET) == -1)
+    {
+        log_error("User", "Cannot expand user friends file %s.\n", path);
+        return 3;
+    }
+    write(fd, "\0", 1);
+    void *addr = mmap(NULL, length, PROT_WRITE, MAP_SHARED, fd, 0);
     if (addr == MAP_FAILED)
     {
+        log_error("User", "Cannot mmap user friends file %s.%s\n", path, strerror(errno));
         close(fd);
         return 2;
     }

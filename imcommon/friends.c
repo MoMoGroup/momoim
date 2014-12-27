@@ -1,15 +1,15 @@
 #include <string.h>
 #include <stdlib.h>
-#include "imcommon/friends.h"
+#include <imcommon/friends.h>
 
 size_t UserFriendsSize(UserFriends *friends)
 {
     size_t length = sizeof(friends->groupCount) +
                     friends->groupCount * (uint16_t) (
-                            sizeof(friends->groups) -
+                            sizeof(*friends->groups) -
                             sizeof(friends->groups->friends)
                     );
-    for (int i = 0; i < length; ++i)
+    for (int i = 0; i < friends->groupCount; ++i)
     {
         length += friends->groups[i].friendCount * sizeof(*(friends->groups[i].friends));
     }
@@ -23,10 +23,11 @@ int UserFriendsEncode(UserFriends *friends, unsigned char *p)
     for (int j = 0; j < friends->groupCount; ++j)
     {
         UserGroup *group = friends->groups + j;
-        memcpy(p, &group, sizeof(UserGroup) - sizeof(group->friends));//2.Write Group Info (WITHOUT FRIENDS)
+        memcpy(p, group, sizeof(UserGroup) - sizeof(group->friends));//2.Write Group Info (WITHOUT FRIENDS)
+        p += sizeof(UserGroup) - sizeof(group->friends);
         for (int i = 0; i < group->friendCount; ++i)
         {
-            memcpy(p, &group->friends[i], sizeof(*group->friends));  //3.Write Friends
+            memcpy(p, group->friends + i, sizeof(*group->friends));  //3.Write Friends
             p += sizeof(*group->friends);
         }
     }
