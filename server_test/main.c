@@ -73,7 +73,27 @@ int main()
     }
 
     CRPFriendRequestSend(sockfd);
-
+    header = CRPRecv(sockfd);
+    if (header->packetID == CRP_PACKET_FRIEND_DATA)
+    {
+        UserFriends *friends = UserFriendsDecode(header->data);
+        log_info("Friends", "Group Count:%d\n", friends->groupCount);
+        for (int i = 0; i < friends->groupCount; ++i)
+        {
+            UserGroup *group = friends->groups + i;
+            log_info(group->groupName, "GroupID:%d\n", group->groupId);
+            log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
+            for (int j = 0; j < group->friendCount; ++j)
+            {
+                log_info(group->groupName, "Friend:%u\n", group->friends[j]);
+            }
+        }
+        UserFriendsFree(friends);
+    }
+    else
+    {
+        log_info("User", "Friends Failure\n");
+    }
 
     return 0;
 }

@@ -31,6 +31,10 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, void *packet) =
         [CRP_PACKET_INFO_REQUEST]       = (int (*)(OnlineUser *user, void *packet)) ProcessPacketInfoRequest,
         [CRP_PACKET_INFO_DATA]          = (int (*)(OnlineUser *user, void *packet)) NULL,
 
+        [CRP_PACKET_FRIEND__START]      = (int (*)(OnlineUser *user, void *packet)) NULL,
+        [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(OnlineUser *user, void *packet)) ProcessPacketFriendRequest,
+        [CRP_PACKET_FRIEND_DATA]        = (int (*)(OnlineUser *user, void *packet)) NULL,
+
         [CRP_PACKET_MESSAGE__START]     =(int (*)(OnlineUser *user, void *packet)) NULL,
         [CRP_PACKET_MESSAGE_TEXT]       =(int (*)(OnlineUser *user, void *packet)) ProcessPacketMessageTextMessage,
 };
