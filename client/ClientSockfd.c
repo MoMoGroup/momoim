@@ -14,10 +14,12 @@ extern GtkWidget *loginLayout, *pendingLayout;
 extern GtkWidget *username, *passwd;
 extern GtkWidget *window;
 
-gboolean mythread() {
+gboolean mythread(gpointer user_data) {
     gtk_widget_destroy(window);
     maininterface();
+    return 0;
 }
+
 int mysockfd() {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
@@ -40,7 +42,7 @@ int mysockfd() {
     }
 
     log_info("Login", "Sending Login Request\n");
-    gchar *name, *pwd;
+    const gchar *name, *pwd;
     name = gtk_entry_get_text(GTK_ENTRY(username));
     pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
 
@@ -62,14 +64,24 @@ int mysockfd() {
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT) {
         log_info("登录成功", "登录成功\n");
 
-        gdk_threads_add_idle(mythread, NULL);
+        CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
+        uint32_t uid = ac->uid;
+        CRPInfoQuerySend(sockfd, uid);
+        header = CRPRecv(sockfd);
+        if (header->packetID == CRP_PACKET_INFO_DATA) {
+            log_info("User", "Nick%s\n", (CRPInfoDataCast(header)->nickName));
+            gdk_threads_add_idle(mythread, NULL);
+        }
+        else {
+            log_info("User", "Info Failure\n");
+        }
+        return 0;
+
         //销毁loginlayout对话框
         //gtk_container_add(GTK_CONTAINER(window), pendingLayout);
 
         //gtk_widget_show_all(pendingLayout);
 
-
     }
-
     return 0;
 }

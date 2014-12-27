@@ -128,13 +128,16 @@ int maininterface() {
 
     g_signal_connect(G_OBJECT(window), "button_press_event",
             G_CALLBACK(button_press_event), window);       // 加入事件回调
-
     g_signal_connect(G_OBJECT(window), "motion_notify_event",
             G_CALLBACK(motion_notify_event), window);
 
     g_signal_connect(G_OBJECT(window), "button_release_event",
             G_CALLBACK(button_release_event), window);
 
+    GtkWidget *userid;
+    userid = gtk_label_new("Nick name");
+    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 140, 90);
+    
     frameLayout = gtk_layout_new(NULL, NULL);
     MainLayout = gtk_fixed_new();
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
