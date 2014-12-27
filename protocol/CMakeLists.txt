@@ -1,7 +1,12 @@
 include_directories(include)
+include_directories(../imcommon/include)
+
 SET(LIBPROTOCOL_SRC
     base.c
-    packets/info/Query.c
+    packets/friend/Request.c
+    packets/friend/Data.c
+
+    packets/info/Request.c
     packets/info/Data.c
 
     packets/login/Login.c
@@ -17,3 +22,4 @@ SET(LIBPROTOCOL_SRC
     packets/message/TextMessage.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
+target_link_libraries(protocol imcommon)

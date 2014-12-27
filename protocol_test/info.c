@@ -6,7 +6,7 @@
 
 int TestInfoQuery()
 {
-    if (!CRPInfoQuerySend(sendfd, 0xabcdef01))
+    if (!CRPInfoRequestSend(sendfd, 0xabcdef01))
     {
         log_error("InfoQuery", "Send返回失败\n");
         perror("");
@@ -19,13 +19,13 @@ int TestInfoQuery()
         log_error("InfoQuery", "Recv返回失败\n");
         return 0;
     }
-    if (packet->packetID != CRP_PACKET_INFO_QUERY)
+    if (packet->packetID != CRP_PACKET_INFO_REQUEST)
     {
         log_error("InfoQuery", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
 
-    CRPPacketInfoQuery *msgHello = CRPInfoQueryCast(packet);
+    CRPPacketInfoRequest *msgHello = CRPInfoRequestCast(packet);
     if (msgHello->uid != 0xabcdef01)
     {
 

@@ -1,11 +1,13 @@
 #include <fcntl.h>
-#include <user.h>
 #include <logger.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <stdio.h>
+#include <sys/mman.h>
+
+#include "user.h"
 #include "data/user.h"
 
 //Get User Directory Path
@@ -41,7 +43,7 @@ void UserCreateDirectory(uint32_t uid)
     sprintf(path, "%s/info", userDir);
     UserCreateInfoFile(uid, path);
 
-    sprintf(path, "%s/group", userDir);
+    sprintf(path, "%s/friends", userDir);
     UserCreateFriendsFile(path);
 }
 
@@ -52,14 +54,20 @@ void UserCreateInfoFile(uint32_t uid, char *path)
             .nickName="Baby",
             .sex=0
     };
+    UserSaveInfoFile(&info, path);
+}
+
+int UserSaveInfoFile(UserInfo *info, char *path)
+{
     int fd = open(path, O_CREAT | O_WRONLY, 0600);
     if (fd == -1)
     {
         log_error("User", "Cannot create user info file %s.\n", path);
-        return;
+        return 1;
     }
     write(fd, &info, sizeof(info));
     close(fd);
+    return 0;
 }
 
 UserInfo *UserGetInfo(uint32_t uid)
@@ -86,7 +94,79 @@ UserInfo *UserGetInfo(uint32_t uid)
     return info;
 }
 
+void UserFreeInfo(UserInfo *friends)
+{
+    if (friends)
+        free(friends);
+}
+
 void UserCreateFriendsFile(char *path)
 {
+    UserGroup groups[] = {
+            {
+                    .groupId=0,
+                    .groupName="Friends",
+                    .friendCount=0
+            },
+            {
+                    .groupId=UINT8_MAX,
+                    .groupName="Blacklist",
+                    .friendCount=0
+            }
+    };
+    UserFriends friends = {
+            .groupCount=1,
+            .groups=groups
+    };
+    UserSaveFriendsFile(&friends, path);
+};
 
+int UserSaveFriendsFile(UserFriends *friends, char *path)
+{
+    int fd = open(path, O_CREAT | O_WRONLY, 0600);
+    if (fd == -1)
+    {
+        log_error("User", "Cannot create user info file %s.\n", path);
+        return 1;
+    }
+    size_t length = UserFriendsSize(friends);
+    void *addr = mmap(NULL, length, PROT_WRITE, MAP_PRIVATE, fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        close(fd);
+        return 2;
+    }
+
+    UserFriendsEncode(friends, addr);
+    munmap(addr, length);
+    close(fd);
+    return 0;
+}
+
+UserFriends *UserGetFriends(uint32_t uid)
+{
+    UserFriends *friends = NULL;
+    char friendFile[30];
+    UserGetDir(friendFile, uid, "friends");
+    int fd = open(friendFile, O_RDONLY);
+    if (fd == -1)
+    {
+        log_error("User", "Cannot read user friends file %s.\n", friendFile);
+        return NULL;
+    }
+    //Map File To Memory
+    struct stat statBuf;
+    if (fstat(fd, &statBuf))
+        goto cleanup;
+    size_t len = (size_t) statBuf.st_size;
+    void *addr = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (addr == MAP_FAILED)
+        goto cleanup;
+
+    friends = UserFriendsDecode(addr);
+    cleanup:
+    if (addr && addr != MAP_FAILED)
+        munmap(addr, len);
+    close(fd);
+    return friends;
 }

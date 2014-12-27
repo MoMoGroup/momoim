@@ -28,8 +28,8 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, void *packet) =
 
 
         [CRP_PACKET_INFO__START]        = (int (*)(OnlineUser *user, void *packet)) NULL,
-        [CRP_PACKET_INFO_QUERY]          = (int (*)(OnlineUser *user, void *packet)) ProcessPacketInfoQuery,
-        [CRP_PACKET_INFO_DATA]        = (int (*)(OnlineUser *user, void *packet)) NULL,
+        [CRP_PACKET_INFO_REQUEST]       = (int (*)(OnlineUser *user, void *packet)) ProcessPacketInfoRequest,
+        [CRP_PACKET_INFO_DATA]          = (int (*)(OnlineUser *user, void *packet)) NULL,
 
         [CRP_PACKET_MESSAGE__START]     =(int (*)(OnlineUser *user, void *packet)) NULL,
         [CRP_PACKET_MESSAGE_TEXT]       =(int (*)(OnlineUser *user, void *packet)) ProcessPacketMessageTextMessage,
@@ -98,7 +98,13 @@ void OnlineUserDelete(OnlineUser *user)
 {
     shutdown(user->sockfd, SHUT_RDWR);
     close(user->sockfd);
-    free(user->info);
+
+    if (user->info)
+    {
+        if (user->info->userDir)
+            free(user->info->userDir);
+        free(user->info);
+    }
     pthread_mutex_lock(&UsersTableLock);
     if (OnlineUsers.first == user)
     {
@@ -117,8 +123,10 @@ void OnlineUserDelete(OnlineUser *user)
 
 UserOnlineInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid)
 {
-    char userDir[20];
+    char userDir[30];
+    uint8_t userDirSize;
     UserGetDir(userDir, uid, "");
+    userDirSize = (uint8_t) strlen(userDir);
     struct stat buf;
     if (stat(userDir, &buf) || !S_ISDIR(buf.st_mode))
     {
@@ -127,6 +135,8 @@ UserOnlineInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid)
     UserOnlineInfo *info = (UserOnlineInfo *) malloc(sizeof(OnlineUser));
     memset(info, 0, sizeof(UserOnlineInfo));
     info->uid = uid;
-
+    info->userDir = (char *) malloc(userDirSize + 1);
+    memcpy(info->userDir, userDir, userDirSize);
+    info->userDir[userDirSize] = 0;
     return info;
 }

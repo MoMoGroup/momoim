@@ -14,6 +14,7 @@ typedef struct
     char sex;
 } CRPPacketInfoData;
 
+__attribute_malloc__
 CRPPacketInfoData *CRPInfoDataCast(CRPBaseHeader *base);
 
 int CRPInfoDataSend(int sockfd, uint32_t uid, char *nick, char sex);

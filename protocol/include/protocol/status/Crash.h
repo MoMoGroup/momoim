@@ -9,6 +9,7 @@ typedef struct {
 /**
 * 崩溃包转换
 */
+__attribute_malloc__
 CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base);
 
 /**

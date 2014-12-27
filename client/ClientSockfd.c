@@ -2,7 +2,6 @@
 #include"ClientSockfd.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <stdio.h>
 #include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>

@@ -8,7 +8,7 @@ typedef struct
     char reason[0];
 } CRPPacketFailure;
 
-
+__attribute_malloc__
 CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base);
 
 int CRPFailureSend(int sockfd, char *reason);
