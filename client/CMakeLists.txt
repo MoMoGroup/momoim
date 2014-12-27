@@ -9,6 +9,7 @@ add_definitions(${GTK3_CFLAGS_OTHER})
 
 SET(CLIENT_SOURCE_FILE
     client.c
+    ClientSockfd.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)
