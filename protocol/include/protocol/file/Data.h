@@ -10,6 +10,7 @@
 
 CRP_STRUCTURE
 {
+    size_t length;
     char data[0];
 } CRPPacketFileData;
 

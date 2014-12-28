@@ -6,8 +6,9 @@
 typedef struct __attribute__ ((packed))
 {
     uint32_t uid;
-    char nickName[32];
     char sex;
+    char nickName[32];
+    unsigned char icon[16];
 } UserInfo;
 
 typedef struct __attribute__ ((packed))

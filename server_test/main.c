@@ -7,6 +7,7 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 #include<string.h>
+#include <protocol/base.h>
 
 int main()
 {
@@ -22,7 +23,7 @@ int main()
         return 1;
     }
     log_info("Hello", "Sending Hello\n");
-    CRPHelloSend(sockfd, 1, 1, 1);
+    CRPHelloSend(sockfd, 0, 1, 1, 1);
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
@@ -35,7 +36,7 @@ int main()
     log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];
     MD5((unsigned char *) "s", 1, hash);
-    CRPLoginLoginSend(sockfd, "a", hash);
+    CRPLoginLoginSend(sockfd, 0, "a", hash);
 
     log_info("Login", "Waiting OK\n");
     header = CRPRecv(sockfd);
@@ -61,39 +62,62 @@ int main()
 
     CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
     uint32_t uid = ac->uid;
-    CRPInfoRequestSend(sockfd, uid);
-    header = CRPRecv(sockfd);
-    if (header->packetID == CRP_PACKET_INFO_DATA)
-    {
-        log_info("User", "Nick%s\n", (CRPInfoDataCast(header)->nickName));
-    }
-    else
-    {
-        log_info("User", "Info Failure\n");
-    }
 
-    CRPFriendRequestSend(sockfd);
-    header = CRPRecv(sockfd);
-    if (header->packetID == CRP_PACKET_FRIEND_DATA)
+    CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
+    CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
+    while (1)
     {
-        UserFriends *friends = UserFriendsDecode((unsigned char *) header->data);
-        log_info("Friends", "Group Count:%d\n", friends->groupCount);
-        for (int i = 0; i < friends->groupCount; ++i)
+        header = CRPRecv(sockfd);
+        switch (header->packetID)
         {
-            UserGroup *group = friends->groups + i;
-            log_info(group->groupName, "GroupID:%d\n", group->groupId);
-            log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
-            for (int j = 0; j < group->friendCount; ++j)
+            case CRP_PACKET_INFO_DATA:
             {
-                log_info(group->groupName, "Friend:%u\n", group->friends[j]);
+                CRPPacketInfoData *infoData = CRPInfoDataCast(header);
+                log_info("User", "Nick:%s\n", infoData->nickName);
+                CRPFileRequestSend(sockfd, 1, 0, infoData->icon);
+                if (infoData != header->data)
+                    free(infoData);
+                break;
+            }
+            case CRP_PACKET_FILE_DATA_START:
+
+                break;
+            case CRP_PACKET_FILE_DATA:
+                log_info("Icon", "Recv data %lu bytes.\n", header->dataLength);
+                break;
+            case CRP_PACKET_FILE_DATA_END:
+            {
+                CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
+                if (packet->code == 0)
+                {
+                    log_info("Icon", "Recv Successful\n");
+                }
+                else
+                {
+                    log_info("Icon", "Recv Fail with code %d", (int) packet->code);
+                }
+                if (packet != header->data)
+                    free(packet);
+                break;
+            }
+            case CRP_PACKET_FRIEND_DATA:
+            {
+                UserFriends *friends = UserFriendsDecode((unsigned char *) header->data);
+                log_info("Friends", "Group Count:%d\n", friends->groupCount);
+                for (int i = 0; i < friends->groupCount; ++i)
+                {
+                    UserGroup *group = friends->groups + i;
+                    log_info(group->groupName, "GroupID:%d\n", group->groupId);
+                    log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
+                    for (int j = 0; j < group->friendCount; ++j)
+                    {
+                        log_info(group->groupName, "Friend:%u\n", group->friends[j]);
+                    }
+                }
+                UserFriendsFree(friends);
+                break;
             }
         }
-        UserFriendsFree(friends);
     }
-    else
-    {
-        log_info("User", "Friends Failure\n");
-    }
-
     return 0;
 }

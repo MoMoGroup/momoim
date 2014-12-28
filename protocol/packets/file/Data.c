@@ -1,9 +1,12 @@
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
+#include <stdlib.h>
 
 CRPPacketFileData *CRPFileDataCast(CRPBaseHeader *base)
 {
-    return (CRPPacketFileData *) base->data;
+    CRPPacketFileData *packet = (CRPPacketFileData *) malloc(sizeof(CRPPacketFileData) + base->dataLength);
+    packet->length = base->dataLength;
+    return packet;
 }
 
 int CRPFileDataSend(int sockfd, uint32_t sessionID, size_t length, char *data)

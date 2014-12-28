@@ -2,6 +2,10 @@
 
 #include "imcommon/friends.h"
 
+int UserInit();
+
+void UserFinalize();
+
 void UserGetDir(char *path, uint32_t uid, const char *relPath);
 
 void UserCreateDirectory(uint32_t uid);

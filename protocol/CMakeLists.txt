@@ -21,6 +21,7 @@ SET(LIBPROTOCOL_SRC
 
     packets/file/Data.c
     packets/file/Request.c
+    packets/file/DataStart.c
     packets/file/DataEnd.c
     packets/file/StoreRequest.c
 

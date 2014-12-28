@@ -13,7 +13,8 @@ SET(SERVER_SOURCE_FILE
 
     data/base.c
     data/auth.c
-    data/friends.c
+    data/user.c
+    data/file.c
 
     packets/file/Request.c
     packets/file/Data.c

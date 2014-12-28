@@ -11,6 +11,21 @@
 #include "user.h"
 #include "data/user.h"
 
+int UserInit()
+{
+    if (mkdir("user", 0700) != 0 && errno != EEXIST)
+    {
+        log_error("User", "Cannot create user directory\n");
+        return 0;
+    }
+    return 1;
+}
+
+void UserFinalize()
+{
+
+}
+
 //Get User Directory Path
 //17 characters at least
 void UserGetDir(char *path, uint32_t uid, const char *relPath)
@@ -21,12 +36,6 @@ void UserGetDir(char *path, uint32_t uid, const char *relPath)
 void UserCreateDirectory(uint32_t uid)
 {
     char userDir[20], path[100];
-    sprintf(userDir, "user");
-    if (mkdir(userDir, 0700) != 0 && errno != EEXIST)
-    {
-        log_error("User", "Cannot create directory %s\n", userDir);
-        return;
-    }
     sprintf(userDir, "user/%02d", uid % 100);
     if (mkdir(userDir, 0700) != 0 && errno != EEXIST)
     {
@@ -53,7 +62,10 @@ void UserCreateInfoFile(uint32_t uid, char *path)
     UserInfo info = {
             .uid=uid,
             .nickName="Baby",
-            .sex=0
+            .sex=0,
+            .icon={
+                    [15]=1
+            }
     };
     UserSaveInfoFile(&info, path);
 }
