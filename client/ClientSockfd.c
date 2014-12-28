@@ -77,8 +77,9 @@ int mysockfd() {
         if (ac != header->data) {
             free(ac);
         }
-        CRPInfoRequestSend(sockfd, 0, uid);
         free(header);
+        CRPInfoRequestSend(sockfd, 0, uid);
+        CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
         while (1) {
             header = CRPRecv(sockfd);
             switch (header->packetID) {
