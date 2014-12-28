@@ -8,6 +8,7 @@ SET(PROTOCOL_SOURCE_FILE
     logintest.c
     message.c
     info.c
+    frienddata.c
     )
 add_executable(protocol_test ${PROTOCOL_SOURCE_FILE})
 target_link_libraries(protocol_test protocol)

@@ -18,6 +18,7 @@ int main()
     status_test();
     message_test(); //函数声明
     login_test();
+    fridata_test();
 
     close(sendfd);
     close(recvfd);
