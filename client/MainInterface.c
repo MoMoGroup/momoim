@@ -2,6 +2,8 @@
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
 #include <cairo.h>
+#include <logger.h>
+
 GtkWidget *background, *headx, *search, *friend,*closebut;
 GtkWidget *window;
 GtkWidget *frameLayout, *MainLayout;
@@ -135,6 +137,7 @@ int maininterface() {
     g_signal_connect(G_OBJECT(window), "button_release_event",
             G_CALLBACK(button_release_event), window);
 
+    create_surfaces();
     GtkWidget *userid;
     //g_print(userdata.nickName);
     userid = gtk_label_new(userdata.nickName);
@@ -142,7 +145,7 @@ int maininterface() {
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
-    create_surfaces();
+
     gtk_widget_show_all(window);
     //gtk_main();
 
