@@ -22,7 +22,7 @@ int main()
         return 1;
     }
     log_info("Hello", "Sending Hello\n");
-    CRPHelloSend(sockfd, 1, 1, 1);
+    CRPHelloSend(sockfd, 0, 1, 1, 1);
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
@@ -35,7 +35,7 @@ int main()
     log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];
     MD5((unsigned char *) "s", 1, hash);
-    CRPLoginLoginSend(sockfd, "a", hash);
+    CRPLoginLoginSend(sockfd, 0, "a", hash);
 
     log_info("Login", "Waiting OK\n");
     header = CRPRecv(sockfd);
@@ -61,7 +61,7 @@ int main()
 
     CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
     uint32_t uid = ac->uid;
-    CRPInfoRequestSend(sockfd, uid);
+    CRPInfoRequestSend(sockfd, 0, uid);
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_INFO_DATA)
     {
@@ -72,7 +72,7 @@ int main()
         log_info("User", "Info Failure\n");
     }
 
-    CRPFriendRequestSend(sockfd);
+    CRPFriendRequestSend(sockfd, 0);
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FRIEND_DATA)
     {

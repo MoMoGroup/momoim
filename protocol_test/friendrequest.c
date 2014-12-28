@@ -1,3 +1,4 @@
+#include <protocol/friend/Request.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include <stdio.h>
