@@ -76,7 +76,7 @@ int main()
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FRIEND_DATA)
     {
-        UserFriends *friends = UserFriendsDecode(header->data);
+        UserFriends *friends = UserFriendsDecode((unsigned char *) header->data);
         log_info("Friends", "Group Count:%d\n", friends->groupCount);
         for (int i = 0; i < friends->groupCount; ++i)
         {

@@ -19,6 +19,11 @@ SET(LIBPROTOCOL_SRC
     packets/status/OK.c
     packets/status/Crash.c
 
+    packets/file/Data.c
+    packets/file/Request.c
+    packets/file/DataEnd.c
+    packets/file/StoreRequest.c
+
     packets/message/TextMessage.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})

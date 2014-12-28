@@ -10,7 +10,7 @@ CRPPacketLoginAccept *CRPLoginAcceptCast(CRPBaseHeader *base)
 /**
 * 发送登陆包
 */
-int CRPLoginAcceptSend(int sockfd, uint32_t uid)
+int CRPLoginAcceptSend(int sockfd, uint32_t sessionID, uint32_t uid)
 {
-    return CRPSend(CRP_PACKET_LOGIN_ACCEPT, &uid, sizeof(uid), sockfd) != 0;
+    return CRPSend(CRP_PACKET_LOGIN_ACCEPT, sessionID, &uid, sizeof(uid), sockfd) != -1;
 }

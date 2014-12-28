@@ -16,4 +16,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFriendData *CRPFriendDataCast(CRPBaseHeader *base);
 
-int CRPFriendDataSend(int sockfd, UserFriends *friends);
+int CRPFriendDataSend(int sockfd, uint32_t sessionID, UserFriends *friends);

@@ -10,4 +10,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketOK *CRPOKCast(CRPBaseHeader *base);
 
-int CRPOKSend(int sockfd);
+int CRPOKSend(int sockfd, uint32_t sessionID);

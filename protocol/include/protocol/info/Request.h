@@ -15,4 +15,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketInfoRequest *CRPInfoRequestCast(CRPBaseHeader *base);
 
-int CRPInfoRequestSend(int sockfd, uint32_t uid);
+int CRPInfoRequestSend(int sockfd, uint32_t sessionID, uint32_t uid);

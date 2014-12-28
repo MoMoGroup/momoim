@@ -18,15 +18,14 @@ void *WorkerMain(void *arg)
     while (!server_exit)
     {
         user = PollJob();
+        pthread_mutex_lock(&user->sockLock);
+        header = CRPRecv(user->sockfd);     //由于CRPRecv会分两次recv接收数据,期间不可打断.所以必须加锁保护.
+        pthread_mutex_unlock(&user->sockLock);
+        UserJoinToPoll(user);
 
-        header = CRPRecv(user->sockfd);
         if (header == NULL || processUser(user, header) == 0)
         {
             OnlineUserDelete(user);
-        }
-        else
-        {
-            UserJoinToPoll(user);
         }
         free(header);
     }

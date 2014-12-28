@@ -7,6 +7,11 @@
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
 
+#include "protocol/file/Request.h"
+#include "protocol/file/Data.h"
+#include "protocol/file/DataEnd.h"
+#include "protocol/file/StoreRequest.h"
+
 #include "protocol/login/Login.h"
 #include "protocol/login/Accept.h"
 #include "protocol/login/Logout.h"
@@ -40,8 +45,13 @@ typedef enum
     CRP_PACKET_FRIEND_REQUEST,      //请求好友列表
     CRP_PACKET_FRIEND_DATA,         //答复好友列表
 
+    CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
+    CRP_PACKET_FILE_REQUEST,       //请求文件
+    CRP_PACKET_FILE_DATA,          //响应数据
+    CRP_PACKET_FILE_DATA_END,      //响应数据结束
+    CRP_PACKET_FILE_STORE_REQUEST,      //请求存储新文件
 
-    CRP_PACKET_MESSAGE__START = 0x40, //消息类数据包开始
+    CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
     CRP_PACKET_MESSAGE_TEXT,        //文本消息
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID

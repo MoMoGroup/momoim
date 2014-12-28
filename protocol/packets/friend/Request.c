@@ -7,7 +7,7 @@ CRPPacketFriendRequest *CRPFriendRequestCast(CRPBaseHeader *base)
     return (CRPPacketFriendRequest *) base->data;
 }
 
-int CRPFriendRequestSend(int sockfd)
+int CRPFriendRequestSend(int sockfd, uint32_t sessionID)
 {
-    return CRPSend(CRP_PACKET_FRIEND_REQUEST, NULL, 0, sockfd) != 0;
+    return CRPSend(CRP_PACKET_FRIEND_REQUEST, sessionID, NULL, 0, sockfd) != -1;
 }

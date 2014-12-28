@@ -4,7 +4,7 @@
 #include <logger.h>
 #include <unistd.h>
 
-int ProcessPacketLoginLogin(OnlineUser *user, CRPPacketLogin *packet)
+int ProcessPacketLoginLogin(OnlineUser *user, uint32_t session, CRPPacketLogin *packet)
 {
     sleep(1);//For Debugger Only
     if (user->status == OUS_PENDING_LOGIN)
@@ -15,7 +15,7 @@ int ProcessPacketLoginLogin(OnlineUser *user, CRPPacketLogin *packet)
         if (ret != 0)
         {
             log_info("Login-Login", "User %s Login failure.\n", packet->username);
-            CRPFailureSend(user->sockfd, "Login Failure.");
+            CRPFailureSend(user->sockfd, session, "Login Failure.");
         }
         else
         {
@@ -23,19 +23,19 @@ int ProcessPacketLoginLogin(OnlineUser *user, CRPPacketLogin *packet)
             if (user->info == NULL)
             {
                 log_warning("Login-Login", "User %s Login failure. Cannot Create Online Info\n", packet->username);
-                CRPFailureSend(user->sockfd, "Server Failure.");
+                CRPFailureSend(user->sockfd, session, "Server Failure.");
             }
             else
             {
                 log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
-                CRPLoginAcceptSend(user->sockfd, uid);
+                CRPLoginAcceptSend(user->sockfd, session, uid);
                 user->status = OUS_ONLINE;
             }
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, "Status Error");
+        CRPFailureSend(user->sockfd, session, "Status Error");
     }
     return 1;
 }

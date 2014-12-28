@@ -18,4 +18,4 @@ CRPPacketLoginAccept *CRPLoginAcceptCast(CRPBaseHeader *base);
 /**
 * 发送登陆包
 */
-int CRPLoginAcceptSend(int sockfd, uint32_t uid);
+int CRPLoginAcceptSend(int sockfd, uint32_t sessionID, uint32_t uid);

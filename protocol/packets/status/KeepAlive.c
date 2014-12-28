@@ -8,7 +8,7 @@ CRPPacketKeepAlive *CRPKeepAliveCast(CRPBaseHeader *base)
     return (CRPPacketKeepAlive *) base->data;
 }
 
-int CRPKeepAliveSend(int sockfd)
+int CRPKeepAliveSend(int sockfd, uint32_t sessionID)
 {
-    return CRPSend(CRP_PACKET_KEEP_ALIVE, NULL, 0, sockfd) != 0;
+    return CRPSend(CRP_PACKET_KEEP_ALIVE, sessionID, NULL, 0, sockfd) != -1;
 }

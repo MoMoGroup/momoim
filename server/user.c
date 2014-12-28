@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <data/user.h>
+#include <server.h>
 
 pthread_mutex_t UsersTableLock = PTHREAD_MUTEX_INITIALIZER;
 UsersTable OnlineUsers = {
@@ -15,28 +16,33 @@ UsersTable OnlineUsers = {
         .last=NULL
 };
 
-int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, void *packet) = {
-        [CRP_PACKET_KEEP_ALIVE]         =(int (*)(OnlineUser *user, void *packet)) ProcessPacketStatusKeepAlive,
-        [CRP_PACKET_HELLO]              =(int (*)(OnlineUser *user, void *packet)) ProcessPacketStatusHello,
-        [CRP_PACKET_OK]                 =(int (*)(OnlineUser *user, void *packet)) ProcessPacketStatusOK,
-        [CRP_PACKET_FAILURE]            =(int (*)(OnlineUser *user, void *packet)) ProcessPacketStatusFailure,
-        [CRP_PACKET_CRASH]              =(int (*)(OnlineUser *user, void *packet)) ProcessPacketStatusCrash,
+int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t session, void *packet) = {
+        [CRP_PACKET_KEEP_ALIVE]         = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketStatusKeepAlive,
+        [CRP_PACKET_HELLO]              = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketStatusHello,
+        [CRP_PACKET_OK]                 = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketStatusOK,
+        [CRP_PACKET_FAILURE]            = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketStatusFailure,
+        [CRP_PACKET_CRASH]              = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketStatusCrash,
 
-        [CRP_PACKET_LOGIN__START]       =(int (*)(OnlineUser *user, void *packet)) NULL,
-        [CRP_PACKET_LOGIN_LOGIN]        =(int (*)(OnlineUser *user, void *packet)) ProcessPacketLoginLogin,
-        [CRP_PACKET_LOGIN_LOGOUT]       =(int (*)(OnlineUser *user, void *packet)) ProcessPacketLoginLogout,
+        [CRP_PACKET_LOGIN__START]       = (int (*)(OnlineUser *user, uint32_t session, void *packet)) NULL,
+        [CRP_PACKET_LOGIN_LOGIN]        = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketLoginLogin,
+        [CRP_PACKET_LOGIN_LOGOUT]       = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketLoginLogout,
 
+        [CRP_PACKET_INFO__START]        = (int (*)(OnlineUser *user, uint32_t session, void *packet)) NULL,
+        [CRP_PACKET_INFO_REQUEST]       = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketInfoRequest,
+        [CRP_PACKET_INFO_DATA]          = (int (*)(OnlineUser *user, uint32_t session, void *packet)) NULL,
 
-        [CRP_PACKET_INFO__START]        = (int (*)(OnlineUser *user, void *packet)) NULL,
-        [CRP_PACKET_INFO_REQUEST]       = (int (*)(OnlineUser *user, void *packet)) ProcessPacketInfoRequest,
-        [CRP_PACKET_INFO_DATA]          = (int (*)(OnlineUser *user, void *packet)) NULL,
+        [CRP_PACKET_FRIEND__START]      = (int (*)(OnlineUser *user, uint32_t session, void *packet)) NULL,
+        [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketFriendRequest,
+        [CRP_PACKET_FRIEND_DATA]        = (int (*)(OnlineUser *user, uint32_t session, void *packet)) NULL,
 
-        [CRP_PACKET_FRIEND__START]      = (int (*)(OnlineUser *user, void *packet)) NULL,
-        [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(OnlineUser *user, void *packet)) ProcessPacketFriendRequest,
-        [CRP_PACKET_FRIEND_DATA]        = (int (*)(OnlineUser *user, void *packet)) NULL,
+        [CRP_PACKET_FILE__START]        = (int (*)(OnlineUser *user, uint32_t session, void *packet)) NULL,
+        [CRP_PACKET_FILE_REQUEST]       = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketFileRequest,
+        [CRP_PACKET_FILE_DATA]          = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketFileData,
+        [CRP_PACKET_FILE_DATA_END]      = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketFileDataEnd,
+        [CRP_PACKET_FILE_STORE_REQUEST] = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketFileStoreRequest,
 
-        [CRP_PACKET_MESSAGE__START]     =(int (*)(OnlineUser *user, void *packet)) NULL,
-        [CRP_PACKET_MESSAGE_TEXT]       =(int (*)(OnlineUser *user, void *packet)) ProcessPacketMessageTextMessage,
+        [CRP_PACKET_MESSAGE__START]     = (int (*)(OnlineUser *user, uint32_t session, void *packet)) NULL,
+        [CRP_PACKET_MESSAGE_TEXT]       = (int (*)(OnlineUser *user, uint32_t session, void *packet)) ProcessPacketMessageTextMessage,
 };
 
 /**
@@ -55,10 +61,10 @@ int processUser(OnlineUser *user, CRPBaseHeader *packet)
     if (data == NULL)
         return 0;
 
-    int(*packetProcessor)(OnlineUser *, void *) = PacketsProcessMap[packet->packetID];
+    int(*packetProcessor)(OnlineUser *, uint32_t, void *) = PacketsProcessMap[packet->packetID];
     if (packetProcessor != NULL)
     {
-        ret = packetProcessor(user, data);
+        ret = packetProcessor(user, packet->sessionID, data);
         if (data != packet->data)
         {
             free(data);
@@ -77,6 +83,7 @@ OnlineUser *OnlineUserNew(int fd)
 
     user->sockfd = fd;
     pthread_mutex_init(&user->writeLock, NULL);
+    pthread_mutex_init(&user->sockLock, NULL);
     user->status = OUS_PENDING_HELLO;
 
     pthread_mutex_lock(&UsersTableLock);
@@ -100,6 +107,7 @@ OnlineUser *OnlineUserNew(int fd)
 
 void OnlineUserDelete(OnlineUser *user)
 {
+    UserRemoveFromPoll(user);
     shutdown(user->sockfd, SHUT_RDWR);
     close(user->sockfd);
 

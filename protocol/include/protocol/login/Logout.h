@@ -16,4 +16,4 @@ CRPPacketLoginLogout *CRPLoginLogoutCast(CRPBaseHeader *base);
 /**
 * 发送登出包
 */
-int CRPLoginLogoutSend(int sockfd);
+int CRPLoginLogoutSend(int sockfd, uint32_t sessionID);
