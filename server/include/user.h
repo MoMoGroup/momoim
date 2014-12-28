@@ -14,7 +14,7 @@ typedef enum
 
     OUS_ONLINE = 0x10
 } OnlineUserStatus;
-//在线用户信息
+//在线用户基本信息
 typedef struct struOnlineUserInfo
 {
     uint32_t uid;
@@ -26,6 +26,7 @@ typedef struct struUserCancelableOperation
 {
     uint32_t id;
     int cancel;
+    void *data;
 
     struct struUserCancelableOperation *prev;
     struct struUserCancelableOperation *next;
@@ -49,12 +50,10 @@ typedef struct struOnlineUser
 
 
     UserCancelableOperationTable operations;
-    pthread_mutex_t writeLock;
     pthread_mutex_t sockLock;
     struct struOnlineUser *prev;
     struct struOnlineUser *next;
 } OnlineUser;
-
 
 //在线用户链表
 typedef struct
@@ -65,7 +64,7 @@ typedef struct
 } UsersTable;
 
 //处理用户消息
-int processUser(OnlineUser *user, CRPBaseHeader *packet);
+int ProcessUser(OnlineUser *user, CRPBaseHeader *packet);
 
 //创建一个在线用户对象
 OnlineUser *OnlineUserNew(int fd);

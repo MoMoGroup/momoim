@@ -7,7 +7,8 @@
 #include "test.h"
 
 int TestPacketInfoData() {
-    if (!CRPInfoDataSend(sendfd, 0, 0x77, "baby", 'm')) {
+    if (!CRPInfoDataSend(sendfd, 0, 0, 0x77, "baby", 'm'))
+    {
         log_error("infodata", "Send返回失败\n");
         perror("");
         return 0;

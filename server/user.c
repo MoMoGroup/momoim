@@ -48,7 +48,7 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t sessio
 /**
 * Server Process User Message
 */
-int processUser(OnlineUser *user, CRPBaseHeader *packet)
+int ProcessUser(OnlineUser *user, CRPBaseHeader *packet)
 {
     int ret = 1;
     void *data;
@@ -82,7 +82,6 @@ OnlineUser *OnlineUserNew(int fd)
     OnlineUser *user = (OnlineUser *) calloc(1, sizeof(OnlineUser));
 
     user->sockfd = fd;
-    pthread_mutex_init(&user->writeLock, NULL);
     pthread_mutex_init(&user->sockLock, NULL);
     pthread_rwlock_init(&user->operations.lock, NULL);
 

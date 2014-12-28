@@ -19,11 +19,12 @@ void *WorkerMain(void *arg)
     {
         user = PollJob();
         pthread_mutex_lock(&user->sockLock);
-        header = CRPRecv(user->sockfd);     //由于CRPRecv会分两次recv接收数据,期间不可打断.所以必须加锁保护.
+        header = CRPRecv(user->sockfd);     //由于CRPRecv会分两次recv接收数据,第一次获取协议头,第二次获取整个数据包.
+        //在此期间,重新进入CRPRecv将导致协议失败
         pthread_mutex_unlock(&user->sockLock);
         UserJoinToPoll(user);
 
-        if (header == NULL || processUser(user, header) == 0)
+        if (header == NULL || ProcessUser(user, header) == 0)
         {
             OnlineUserDelete(user);
         }

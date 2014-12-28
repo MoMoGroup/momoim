@@ -3,6 +3,7 @@
 #include "MainInterface.h"
 #include <cairo.h>
 #include <logger.h>
+#include <imcommon/friends.h>
 
 GtkWidget *background, *headx, *search, *friend,*closebut;
 GtkWidget *window;
@@ -13,6 +14,94 @@ int Y = 0;
 
 extern CRPPacketInfoData userdata;
 extern gchar *uidname;
+
+
+GdkPixbuf *pixbuf;
+cairo_t *cr;
+GtkWidget *vbox;
+enum {
+    PIXBUF_COL,
+};
+
+
+GtkTreeModel *createModel() {
+    char *files[] = {
+            "分组1",
+            "分组2",
+            "分组3",
+            "分组4",
+    };
+    gchar *stocks[] = {
+            "好友.png",
+            "好友.png",
+            "好友.png",
+            "好友.png",
+            "好友.png",
+    };
+
+    gchar *stockNames[] = {
+            "头像",
+            "头像2",
+            "头像",
+            "头像2",
+            "头像",
+    };
+
+    GtkTreeIter iter1, iter2;
+    GtkTreeStore *store;
+    gint i, j;
+    cairo_surface_t *surface;
+    cairo_surface_t *surfaceIcon;
+
+    store = gtk_tree_store_new(1, GDK_TYPE_PIXBUF);
+    for (i = 0; i < 4; i++) {
+        surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
+        cr = cairo_create(surface);
+        cairo_move_to(cr, 0, 20);
+        cairo_set_font_size(cr, 14);
+        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_show_text(cr, files[i]);
+        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
+        gtk_tree_store_append(store, &iter1, NULL);
+        gtk_tree_store_set(store, &iter1,
+                PIXBUF_COL, pixbuf,
+                -1);
+
+        gdk_pixbuf_unref(pixbuf);
+
+        for (j = 0; j < 4; j++) {
+            pixbuf = gdk_pixbuf_new_from_file(stocks[j], NULL);
+            gint w = gdk_pixbuf_get_width(pixbuf);
+            gint h = gdk_pixbuf_get_height(pixbuf);
+            //加载一个图片
+            surfaceIcon = cairo_image_surface_create_from_png(stocks[j]);
+            //创建画布
+            surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
+            //创建画笔
+            cr = cairo_create(surface);
+            //把画笔和图片相结合。
+            cairo_set_source_surface(cr, surfaceIcon, 0, 0);
+            //把图用画笔画在画布中
+            cairo_paint(cr);
+            //设置源的颜色
+            cairo_set_source_rgb(cr, 0, 0, 0);
+            //从图像的w+10,30区域开始加入字体
+            cairo_move_to(cr, w + 10, 30);
+            cairo_set_font_size(cr, 12);
+            cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+            cairo_show_text(cr, stockNames[j]);
+            pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
+            gtk_tree_store_append(store, &iter2, &iter1);
+            gtk_tree_store_set(store, &iter2,
+                    PIXBUF_COL, pixbuf,
+                    -1);
+            gdk_pixbuf_unref(pixbuf);
+        }
+    }
+    cairo_destroy(cr);
+    return GTK_TREE_MODEL(store);
+}
+
 
 static void create_surfaces() {
 
@@ -42,7 +131,7 @@ static void create_surfaces() {
 
 static void
 destroy_surfaces() {
-    //g_print("destroying surfaces2");
+    g_print("destroying surfaces2");
     cairo_surface_destroy(surface1);
     cairo_surface_destroy(surface2);
     cairo_surface_destroy(surface3);
@@ -85,7 +174,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *)closebut, surface51);  //设置关闭按钮
         if ((X > 247 && X < 280) && (Y > 2 && Y < 25)) {
             destroy_surfaces();
-          DeleteEvent();
+            DeleteEvent();
         }
     }
 
@@ -113,11 +202,18 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
 int maininterface() {
 
+    GtkWidget *treeView;
+    GtkCellRenderer *renderer;
+    GtkTreeViewColumn *column;//列表
+    vbox = gtk_box_new(TRUE, 5);
+
     //gtk_init(&argc, &argv);
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_default_size(GTK_WINDOW(window), 284, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+
+
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
 
@@ -146,6 +242,25 @@ int maininterface() {
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
+
+
+    treeView = gtk_tree_view_new_with_model(createModel());//list
+    //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
+    gtk_tree_view_set_headers_visible(treeView,0);//去掉头部空白
+
+
+    renderer = gtk_cell_renderer_pixbuf_new();
+    column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
+            "pixbuf", PIXBUF_COL,
+            NULL);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeView), column);
+    gtk_tree_view_column_set_resizable(column,TRUE);
+
+    GtkScrolledWindow *sw= gtk_scrolled_window_new(NULL, NULL);
+
+    gtk_container_add(GTK_CONTAINER(sw), treeView);
+    gtk_fixed_put(GTK_FIXED(MainLayout), sw, 0, 225);
+    gtk_widget_set_size_request(sw, 284, 360);
 
     gtk_widget_show_all(window);
     //gtk_main();
