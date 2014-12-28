@@ -7,6 +7,7 @@ CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base) {
     return (CRPPacketCrash *) base->data;
 }
 
-int CRPCrashSend(int sockfd) {
-    return CRPSend(CRP_PACKET_CRASH, 0, NULL, 0, sockfd) != 0;
+int CRPCrashSend(int sockfd, uint32_t sessionID)
+{
+    return CRPSend(CRP_PACKET_CRASH, sessionID, NULL, 0, sockfd) != 0;
 }

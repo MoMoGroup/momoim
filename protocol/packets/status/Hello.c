@@ -8,7 +8,7 @@ CRPPacketHello *CRPHelloCast(CRPBaseHeader *base)
     return (CRPPacketHello *) base->data;
 }
 
-int CRPHelloSend(int sockfd, uint8_t protocolVersion, uint32_t clientVersion, uint32_t sessionState)
+int CRPHelloSend(int sockfd, uint32_t sessionID, uint8_t protocolVersion, uint32_t clientVersion, uint32_t sessionState)
 {
     CRPPacketHello packet = {
             .protocolVersion=protocolVersion,
@@ -16,5 +16,5 @@ int CRPHelloSend(int sockfd, uint8_t protocolVersion, uint32_t clientVersion, ui
             .sessionState=sessionState
     };
 
-    return CRPSend(CRP_PACKET_HELLO, 0, &packet, sizeof(packet), sockfd) != -1;
+    return CRPSend(CRP_PACKET_HELLO, sessionID, &packet, sizeof(packet), sockfd) != -1;
 }

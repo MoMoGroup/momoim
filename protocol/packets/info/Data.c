@@ -8,12 +8,12 @@ CRPPacketInfoData *CRPInfoDataCast(CRPBaseHeader *base)
     return (CRPPacketInfoData *) base->data;
 }
 
-int CRPInfoDataSend(int sockfd, uint32_t uid, char *nick, char sex)
+int CRPInfoDataSend(int sockfd, uint32_t sessionID, uint32_t uid, char *nick, char sex)
 {
     CRPPacketInfoData data = {
             .uid=uid,
             .sex=sex
     };
     memcpy(data.nickName, nick, sizeof(data.nickName));
-    return CRPSend(CRP_PACKET_INFO_DATA, 0, &data, sizeof(data), sockfd) != 0;
+    return CRPSend(CRP_PACKET_INFO_DATA, sessionID, &data, sizeof(data), sockfd) != 0;
 }

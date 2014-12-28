@@ -12,8 +12,8 @@ CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base)
     return data;
 }
 
-int CRPFailureSend(int sockfd, char *reason)
+int CRPFailureSend(int sockfd, uint32_t sessionID, char *reason)
 {
 
-    return CRPSend(CRP_PACKET_FAILURE, 0, reason, strlen(reason), sockfd) != -1;
+    return CRPSend(CRP_PACKET_FAILURE, sessionID, reason, strlen(reason), sockfd) != -1;
 }

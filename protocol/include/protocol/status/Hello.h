@@ -16,4 +16,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketHello *CRPHelloCast(CRPBaseHeader *base);
 
-int CRPHelloSend(int sockfd, uint8_t protocolVersion, uint32_t clientVersion, uint32_t sessionState);
+int CRPHelloSend(int sockfd, uint32_t sessionID, uint8_t protocolVersion, uint32_t clientVersion, uint32_t sessionState);

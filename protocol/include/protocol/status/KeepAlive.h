@@ -9,4 +9,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketKeepAlive *CRPKeepAliveCast(CRPBaseHeader *base);
 
-int CRPKeepAliveSend(int sockfd);
+int CRPKeepAliveSend(int sockfd, uint32_t sessionID);

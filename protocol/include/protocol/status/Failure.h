@@ -11,4 +11,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base);
 
-int CRPFailureSend(int sockfd, char *reason);
+int CRPFailureSend(int sockfd, uint32_t sessionID, char *reason);

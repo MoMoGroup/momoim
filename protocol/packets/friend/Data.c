@@ -7,13 +7,13 @@ CRPPacketFriendData *CRPFriendDataCast(CRPBaseHeader *base)
     return (CRPPacketFriendData *) base->data;
 }
 
-int CRPFriendDataSend(int sockfd, UserFriends *friends)
+int CRPFriendDataSend(int sockfd, uint32_t sessionID, UserFriends *friends)
 {
     size_t size = UserFriendsSize(friends);
     void *data = malloc(size);
     UserFriendsEncode(friends, data);
 
-    ssize_t ret = CRPSend(CRP_PACKET_FRIEND_DATA, 0, data, size, sockfd);
+    ssize_t ret = CRPSend(CRP_PACKET_FRIEND_DATA, sessionID, data, size, sockfd);
     free(data);
 
     return ret != 0;

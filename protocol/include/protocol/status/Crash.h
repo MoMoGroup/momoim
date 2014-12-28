@@ -16,4 +16,4 @@ CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base);
 /**
 * 发送崩溃包
 */
-int CRPCrashSend(int sockfd);
+int CRPCrashSend(int sockfd, uint32_t sessionID);

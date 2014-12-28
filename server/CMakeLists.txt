@@ -15,6 +15,10 @@ SET(SERVER_SOURCE_FILE
     data/auth.c
     data/friends.c
 
+    packets/file/Request.c
+    packets/file/Data.c
+    packets/file/DataEnd.c
+    packets/file/StoreRequest.c
 
     packets/status/Crash.c
     packets/status/Hello.c
