@@ -42,7 +42,7 @@ static void create_surfaces() {
 
 static void
 destroy_surfaces() {
-    g_print("destroying surfaces2");
+    //g_print("destroying surfaces2");
     cairo_surface_destroy(surface1);
     cairo_surface_destroy(surface2);
     cairo_surface_destroy(surface3);
@@ -83,9 +83,10 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         gtk_image_set_from_surface((GtkImage *)closebut, surface51);  //设置关闭按钮
-      if ((X > 247 && X < 280) && (Y > 2 && Y < 25))
+        if ((X > 247 && X < 280) && (Y > 2 && Y < 25)) {
+            destroy_surfaces();
           DeleteEvent();
-        destroy_surfaces();
+        }
     }
 
     return TRUE;
