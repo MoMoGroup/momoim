@@ -36,6 +36,6 @@
     return 1;
 }*/
 int fridata_test() {
-    TestPacketFriendData(); //调用检测函数
+    //TestPacketFriendData(); //调用检测函数
     return 1;
 }

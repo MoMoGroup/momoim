@@ -19,6 +19,7 @@ int main()
     message_test(); //函数声明
     login_test();
     fridata_test();
+    friend_request();
 
     close(sendfd);
     close(recvfd);

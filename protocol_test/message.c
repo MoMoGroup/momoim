@@ -7,7 +7,7 @@
 
 int TestPacketMessage()
 {
-    if (!CRPTextMessageSend(sendfd, 0x78, 0x21, 8, "JDKAJDKA"))
+    if (!CRPTextMessageSend(sendfd, 0, 0x78, 0x21, 8, "JDKAJDKA"))
     {
         log_error("message", "Send返回失败\n");
         perror("");

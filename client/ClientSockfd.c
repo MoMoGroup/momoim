@@ -39,7 +39,7 @@ int mysockfd() {
         return 0;
     }
     log_info("Hello", "Sending Hello\n");
-    CRPHelloSend(sockfd, 1, 1, 1);
+    CRPHelloSend(sockfd, 0, 1, 1, 1);
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
@@ -55,7 +55,7 @@ int mysockfd() {
 
     unsigned char hash[16];
     MD5((unsigned char *) pwd, 1, hash);
-    CRPLoginLoginSend(sockfd, name, hash);//发送用户名密码
+    CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
 
 
     header = CRPRecv(sockfd);
@@ -75,7 +75,7 @@ int mysockfd() {
         uint32_t uid = ac->uid;
         if (ac != header->data)
             free(ac);
-        CRPInfoRequestSend(sockfd, uid);
+        CRPInfoRequestSend(sockfd, 0, uid);
         free(header);
         header = CRPRecv(sockfd);
         if (header->packetID == CRP_PACKET_INFO_DATA) {
