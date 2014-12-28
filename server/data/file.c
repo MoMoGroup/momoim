@@ -37,7 +37,6 @@ int DataFileExist(unsigned char *key)
 {
     char buf[6 + FileDepthLevel * 3 + (16 - FileDepthLevel) * 2 + 1];
     DataFilePath(key, buf);
-    log_info("DEBUG", "%s", buf);
     return !access(buf, F_OK);
 }
 
