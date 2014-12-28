@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <data/user.h>
+#include <server.h>
 
 pthread_mutex_t UsersTableLock = PTHREAD_MUTEX_INITIALIZER;
 UsersTable OnlineUsers = {
@@ -82,6 +83,7 @@ OnlineUser *OnlineUserNew(int fd)
 
     user->sockfd = fd;
     pthread_mutex_init(&user->writeLock, NULL);
+    pthread_mutex_init(&user->sockLock, NULL);
     user->status = OUS_PENDING_HELLO;
 
     pthread_mutex_lock(&UsersTableLock);
@@ -105,6 +107,7 @@ OnlineUser *OnlineUserNew(int fd)
 
 void OnlineUserDelete(OnlineUser *user)
 {
+    UserRemoveFromPoll(user);
     shutdown(user->sockfd, SHUT_RDWR);
     close(user->sockfd);
 

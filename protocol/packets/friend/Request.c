@@ -9,5 +9,5 @@ CRPPacketFriendRequest *CRPFriendRequestCast(CRPBaseHeader *base)
 
 int CRPFriendRequestSend(int sockfd, uint32_t sessionID)
 {
-    return CRPSend(CRP_PACKET_FRIEND_REQUEST, sessionID, NULL, 0, sockfd) != 0;
+    return CRPSend(CRP_PACKET_FRIEND_REQUEST, sessionID, NULL, 0, sockfd) != -1;
 }

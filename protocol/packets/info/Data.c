@@ -15,5 +15,5 @@ int CRPInfoDataSend(int sockfd, uint32_t sessionID, uint32_t uid, char *nick, ch
             .sex=sex
     };
     memcpy(data.nickName, nick, sizeof(data.nickName));
-    return CRPSend(CRP_PACKET_INFO_DATA, sessionID, &data, sizeof(data), sockfd) != 0;
+    return CRPSend(CRP_PACKET_INFO_DATA, sessionID, &data, sizeof(data), sockfd) != -1;
 }

@@ -14,5 +14,5 @@ int CRPFileStoreRequestSend(int sockfd, uint32_t sessionID, size_t length, uint8
             .length=length
     };
     memcpy(storeRequest.key, key, 16);
-    return CRPSend(CRP_PACKET_FILE_STORE_REQUEST, sessionID, &storeRequest, sizeof(storeRequest), sockfd) != 0;
+    return CRPSend(CRP_PACKET_FILE_STORE_REQUEST, sessionID, &storeRequest, sizeof(storeRequest), sockfd) != -1;
 }

@@ -8,5 +8,5 @@ CRPPacketFileDataEnd *CRPFileDataEndCast(CRPBaseHeader *base)
 
 int CRPFileDataEndSend(int sockfd, uint32_t sessionID)
 {
-    return CRPSend(CRP_PACKET_FILE_DATA_END, sessionID, NULL, 0, sockfd) != 0;
+    return CRPSend(CRP_PACKET_FILE_DATA_END, sessionID, NULL, 0, sockfd) != -1;
 }

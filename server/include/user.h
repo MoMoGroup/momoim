@@ -31,6 +31,7 @@ struct struOnlineUser
     OnlineUserStatus status;
 
     pthread_mutex_t writeLock;
+    pthread_mutex_t sockLock;
     struct struOnlineUser *prev;
     struct struOnlineUser *next;
 } OnlineUser;

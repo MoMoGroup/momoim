@@ -16,5 +16,5 @@ int CRPFriendDataSend(int sockfd, uint32_t sessionID, UserFriends *friends)
     ssize_t ret = CRPSend(CRP_PACKET_FRIEND_DATA, sessionID, data, size, sockfd);
     free(data);
 
-    return ret != 0;
+    return ret != -1;
 }

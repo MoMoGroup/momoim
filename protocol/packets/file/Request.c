@@ -14,5 +14,5 @@ int CRPFileRequestSend(int sockfd, uint32_t sessionID, uint8_t type, unsigned ch
                     .type=type
             };
     memcpy(request.key, key, sizeof(request.key));
-    return CRPSend(CRP_PACKET_FILE_REQUEST, sessionID, &request, sizeof(CRPPacketFileRequest), sockfd) != 0;
+    return CRPSend(CRP_PACKET_FILE_REQUEST, sessionID, &request, sizeof(CRPPacketFileRequest), sockfd) != -1;
 }

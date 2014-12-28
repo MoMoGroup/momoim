@@ -18,15 +18,12 @@ void *WorkerMain(void *arg)
     while (!server_exit)
     {
         user = PollJob();
-
         header = CRPRecv(user->sockfd);
+        UserJoinToPoll(user);
+
         if (header == NULL || processUser(user, header) == 0)
         {
             OnlineUserDelete(user);
-        }
-        else
-        {
-            UserJoinToPoll(user);
         }
         free(header);
     }
