@@ -8,7 +8,7 @@
 
 int TestPacketHello()
 {
-    if (!CRPHelloSend(sendfd, 0x78, 0x21, 0x32))
+    if (!CRPHelloSend(sendfd, 0, 0x78, 0x21, 0x32))
     {
         log_error("Hello", "Send返回失败\n");
         return 0;
@@ -44,7 +44,7 @@ int TestPacketHello()
 int Testfail()
 {
 
-    if (!CRPFailureSend(sendfd, "dada"))
+    if (!CRPFailureSend(sendfd, 0, "dada"))
     {
         log_error("Loginfailue", "loginfailu返回失败\n");
         return 0;

@@ -9,6 +9,9 @@ SET(PROTOCOL_SOURCE_FILE
     message.c
     info.c
     frienddata.c
+    friendrequest.c
+    infodata.c
+    inforequest.c
     )
 add_executable(protocol_test ${PROTOCOL_SOURCE_FILE})
 target_link_libraries(protocol_test protocol)

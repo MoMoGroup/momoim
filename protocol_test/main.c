@@ -16,10 +16,12 @@ int main()
 
     info_test();
     status_test();
-    message_test(); //函数声明
+    message_test();
     login_test();
     fridata_test();
-    friend_request();
+    frirequest_test();
+    infodata_test();
+    inforequest_test();
 
     close(sendfd);
     close(recvfd);
