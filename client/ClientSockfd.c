@@ -18,6 +18,7 @@ extern GtkWidget *loginLayout, *pendingLayout;
 extern GtkWidget *username, *passwd;
 extern GtkWidget *window;
 extern int sockfd;
+UserFriends *friends;
 CRPPacketInfoData userdata;
 gchar *uidname;
 
@@ -73,8 +74,65 @@ int mysockfd() {
 
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;
-        if (ac != header->data)
+        if (ac != header->data) {
             free(ac);
+        }
+        CRPInfoRequestSend(sockfd, 0, uid);
+        free(header);
+        while (1) {
+            header = CRPRecv(sockfd);
+            switch (header->packetID) {
+                case CRP_PACKET_INFO_DATA: {
+                    CRPPacketInfoData *ac = CRPInfoDataCast(header);
+                    memcpy(&userdata, ac, sizeof(CRPPacketInfoData));
+                    if (ac != header->data)
+                        free(ac);
+                    free(header);
+                    break;
+                }
+                case CRP_PACKET_FILE_DATA_START:
+
+                    break;
+                case CRP_PACKET_FILE_DATA:
+                    header->sessionID;
+                    log_info("Icon", "Recv data %lu bytes.\n", header->dataLength);
+                    break;
+                case CRP_PACKET_FILE_DATA_END: {
+                    CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
+                    if (packet->code == 0) {
+                        log_info("Icon", "Recv Successful\n");
+                    }
+                    else {
+                        log_info("Icon", "Recv Fail with code %d", (int) packet->code);
+                    }
+                    if (packet != header->data)
+                        free(packet);
+                    break;
+                }
+                case CRP_PACKET_FRIEND_DATA: {
+                    friends = UserFriendsDecode((unsigned char *) header->data);
+                    gdk_threads_add_idle(mythread, NULL);
+/*                log_info("Friends", "Group Count:%d\n", friends->groupCount);
+                for (int i = 0; i < friends->groupCount; ++i)
+                {
+                    UserGroup *group = friends->groups + i;
+                    log_info(group->groupName, "GroupID:%d\n", group->groupId);
+                    log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
+                    for (int j = 0; j < group->friendCount; ++j)
+                    {
+                        log_info(group->groupName, "Friend:%u\n", group->friends[j]);
+                    }
+                }
+                UserFriendsFree(friends);*/
+                    break;
+                }
+            }
+        }
+        /*uint32_t uid = ac->uid;
+        if (ac != header->data) {
+            free(ac);
+        }
+
         CRPInfoRequestSend(sockfd, 0, uid);
         free(header);
         header = CRPRecv(sockfd);
@@ -97,7 +155,7 @@ int mysockfd() {
         //销毁loginlayout对话框
         //gtk_container_add(GTK_CONTAINER(window), pendingLayout);
 
-        //gtk_widget_show_all(pendingLayout);
+        //gtk_widget_show_all(pendingLayout);*/
 
     }
     return 0;

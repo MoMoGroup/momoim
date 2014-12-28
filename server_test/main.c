@@ -74,7 +74,7 @@ int main()
             {
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
                 log_info("User", "Nick:%s\n", infoData->nickName);
-                CRPFileRequestSend(sockfd, 1, 0, infoData->icon);
+                CRPFileRequestSend(sockfd, 10, 0, infoData->icon);
                 if (infoData != header->data)
                     free(infoData);
                 break;
@@ -83,6 +83,7 @@ int main()
 
                 break;
             case CRP_PACKET_FILE_DATA:
+                header->sessionID;
                 log_info("Icon", "Recv data %lu bytes.\n", header->dataLength);
                 break;
             case CRP_PACKET_FILE_DATA_END:
