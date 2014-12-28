@@ -82,7 +82,6 @@ OnlineUser *OnlineUserNew(int fd)
     OnlineUser *user = (OnlineUser *) calloc(1, sizeof(OnlineUser));
 
     user->sockfd = fd;
-    pthread_mutex_init(&user->writeLock, NULL);
     pthread_mutex_init(&user->sockLock, NULL);
     pthread_rwlock_init(&user->operations.lock, NULL);
 

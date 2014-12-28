@@ -7,7 +7,6 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 #include<string.h>
-#include <protocol/base.h>
 
 int main()
 {
@@ -62,7 +61,8 @@ int main()
 
     CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
     uint32_t uid = ac->uid;
-
+    if (ac != header->data)
+        free(ac);
     CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
     CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
     while (1)
@@ -80,8 +80,13 @@ int main()
                 break;
             }
             case CRP_PACKET_FILE_DATA_START:
-
+            {
+                CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
+                log_info("Icon", "%lu bytes will be received\n", packet->dataLength);
+                if (packet != header->data)
+                    free(packet);
                 break;
+            };
             case CRP_PACKET_FILE_DATA:
                 log_info("Icon", "Recv data %lu bytes.\n", header->dataLength);
                 break;
@@ -118,6 +123,7 @@ int main()
                 break;
             }
         }
+        free(header);
     }
     return 0;
 }
