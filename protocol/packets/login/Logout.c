@@ -11,5 +11,5 @@ CRPPacketLoginLogout *CRPLoginLogoutCast(CRPBaseHeader *base)
 
 int CRPLoginLogoutSend(int sockfd)
 {
-    return CRPSend(CRP_PACKET_LOGIN_LOGOUT, NULL, 0, sockfd) != -1;
+    return CRPSend(CRP_PACKET_LOGIN_LOGOUT, 0, NULL, 0, sockfd) != -1;
 }

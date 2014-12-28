@@ -21,7 +21,7 @@ int CRPLoginLoginSend(int sockfd, const char *username, const unsigned char *pas
     CRPPacketLogin *packet = (CRPPacketLogin *) malloc(sizeof(CRPPacketLogin) + n);
     memcpy(packet->password, password, 16);
     memcpy(packet->username, username, n);
-    ssize_t ret = CRPSend(CRP_PACKET_LOGIN_LOGIN, packet, sizeof(CRPPacketLogin) + n, sockfd);
+    ssize_t ret = CRPSend(CRP_PACKET_LOGIN_LOGIN, 0, packet, sizeof(CRPPacketLogin) + n, sockfd);
     free(packet);
     return ret != -1;
 }

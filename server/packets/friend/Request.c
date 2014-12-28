@@ -27,7 +27,7 @@ int ProcessPacketFriendRequest(OnlineUser *user, CRPPacketFriendRequest *packet)
             CRPFailureSend(user->sockfd, "Fail to mmap file.");
             return 1;
         }
-        CRPSend(CRP_PACKET_FRIEND_DATA, hey, buf.st_size, user->sockfd);
+        CRPSend(CRP_PACKET_FRIEND_DATA, 0, hey, buf.st_size, user->sockfd);
         munmap(hey, buf.st_size);
         close(fd);
     }

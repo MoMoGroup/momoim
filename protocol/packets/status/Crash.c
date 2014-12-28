@@ -8,5 +8,5 @@ CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base) {
 }
 
 int CRPCrashSend(int sockfd) {
-    return CRPSend(CRP_PACKET_CRASH, NULL, 0, sockfd) != 0;
+    return CRPSend(CRP_PACKET_CRASH, 0, NULL, 0, sockfd) != 0;
 }

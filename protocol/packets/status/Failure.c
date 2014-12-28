@@ -15,5 +15,5 @@ CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base)
 int CRPFailureSend(int sockfd, char *reason)
 {
 
-    return CRPSend(CRP_PACKET_FAILURE, reason, strlen(reason), sockfd) != -1;
+    return CRPSend(CRP_PACKET_FAILURE, 0, reason, strlen(reason), sockfd) != -1;
 }

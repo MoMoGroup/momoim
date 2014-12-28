@@ -2,6 +2,9 @@
 
 #include <sys/types.h>
 #include <stdint.h>
+#include <monetary.h>
+#include <glob.h>
+
 typedef __uint16_t CRP_LENGTH_TYPE;
 #define CRP_STRUCTURE typedef struct __attribute__ ((packed))
 
@@ -16,7 +19,10 @@ CRP_STRUCTURE
 } CRPBaseHeader;
 
 //用于打包并发送CRP包
-ssize_t CRPSend(uint16_t packetID, void *data, size_t length, int fd);
+ssize_t CRPSend(uint16_t packetID, uint32_t sessionID, void *data, size_t length, int fd);
 
 //用于接收一个CRP包
 CRPBaseHeader *CRPRecv(int fd);
+
+//注意!该函数会尝试接收数据校验部分,如果成功接收校验头它也会阻塞当前线程!
+CRPBaseHeader *CRPRecvNonBlock(int fd);

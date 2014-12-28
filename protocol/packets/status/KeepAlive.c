@@ -10,5 +10,5 @@ CRPPacketKeepAlive *CRPKeepAliveCast(CRPBaseHeader *base)
 
 int CRPKeepAliveSend(int sockfd)
 {
-    return CRPSend(CRP_PACKET_KEEP_ALIVE, NULL, 0, sockfd) != 0;
+    return CRPSend(CRP_PACKET_KEEP_ALIVE, 0, NULL, 0, sockfd) != 0;
 }

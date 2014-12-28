@@ -17,7 +17,7 @@ int CRPTextMessageSend(int sockfd, uint32_t userid, uint32_t sendtime, __uint16_
     packet->userid = userid;
     packet->sendtime = sendtime;
     memcpy(packet->message, message, message_len);
-    ssize_t ret = CRPSend(CRP_PACKET_MESSAGE_TEXT, packet, sizeof(CRPPacketTextMessage) + message_len, sockfd);
+    ssize_t ret = CRPSend(CRP_PACKET_MESSAGE_TEXT, 0, packet, sizeof(CRPPacketTextMessage) + message_len, sockfd);
     free(packet);
     return ret != -1;
 }

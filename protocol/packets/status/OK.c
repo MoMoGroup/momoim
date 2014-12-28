@@ -16,5 +16,5 @@ CRPPacketOK *CRPOKCast(CRPBaseHeader *base)
 */
 int CRPOKSend(int sockfd)
 {
-    return CRPSend(CRP_PACKET_OK, NULL, 0, sockfd) != 0;
+    return CRPSend(CRP_PACKET_OK, 0, NULL, 0, sockfd) != 0;
 }

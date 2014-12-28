@@ -16,5 +16,5 @@ int CRPHelloSend(int sockfd, uint8_t protocolVersion, uint32_t clientVersion, ui
             .sessionState=sessionState
     };
 
-    return CRPSend(CRP_PACKET_HELLO, &packet, sizeof(packet), sockfd) != -1;
+    return CRPSend(CRP_PACKET_HELLO, 0, &packet, sizeof(packet), sockfd) != -1;
 }
