@@ -64,7 +64,7 @@ typedef struct
 } UsersTable;
 
 //处理用户消息
-int processUser(OnlineUser *user, CRPBaseHeader *packet);
+int ProcessUser(OnlineUser *user, CRPBaseHeader *packet);
 
 //创建一个在线用户对象
 OnlineUser *OnlineUserNew(int fd);

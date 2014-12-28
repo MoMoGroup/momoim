@@ -48,7 +48,7 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t sessio
 /**
 * Server Process User Message
 */
-int processUser(OnlineUser *user, CRPBaseHeader *packet)
+int ProcessUser(OnlineUser *user, CRPBaseHeader *packet)
 {
     int ret = 1;
     void *data;

@@ -24,7 +24,7 @@ void *WorkerMain(void *arg)
         pthread_mutex_unlock(&user->sockLock);
         UserJoinToPoll(user);
 
-        if (header == NULL || processUser(user, header) == 0)
+        if (header == NULL || ProcessUser(user, header) == 0)
         {
             OnlineUserDelete(user);
         }

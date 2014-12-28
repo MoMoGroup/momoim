@@ -40,12 +40,12 @@ int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRe
                 length = read(fd, buf, PAGE_SIZE);
                 if (length == 0)
                 {
-                    CRPFileDataEndSend(user->sockfd, session, CRP_PACKET_FILE_END_CODE::FEC_OK);//file end
+                    CRPFileDataEndSend(user->sockfd, session, FEC_OK);//file end
                     goto cleanup;
                 }
                 else if (length < 0)
                 {
-                    CRPFileDataEndSend(user->sockfd, session, CRP_PACKET_FILE_END_CODE::FEC_READ_ERROR);//Read unexpected
+                    CRPFileDataEndSend(user->sockfd, session, FEC_READ_ERROR);//Read unexpected
                     goto cleanup;
                 }
                 else
@@ -53,7 +53,7 @@ int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRe
                     CRPFileDataSend(user->sockfd, session, length, buf);
                 }
             }
-            CRPFileDataEndSend(user->sockfd, session, CRP_PACKET_FILE_END_CODE::FEC_CANCELED);//operation canceled
+            CRPFileDataEndSend(user->sockfd, session, FEC_CANCELED);//operation canceled
             cleanup:
             if (operation)
                 UserUnregisterOperation(user, operation);
