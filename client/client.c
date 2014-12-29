@@ -18,7 +18,7 @@ GtkWidget *window;
 cairo_surface_t *surface1, *surface2, *surface3, *surface41, *surface42, *surface43, *surface5, *surface6;
 cairo_surface_t *surface71, *surface72, *surface81, *surface82, *surface83,*surface9, *surface10_1, *surface10_2, *surface10_3;
 int flag = 1;
-GtkWidget *loginLayout, *pendingLayout, *frameLayout;
+GtkWidget *loginLayout, *pendingLayout, *chartlayout2;
 
 //关闭窗口
 static void
@@ -34,9 +34,9 @@ create_surfaces1() {
     surface6 = cairo_image_surface_create_from_png("密码.png");
     surface71 = cairo_image_surface_create_from_png("注册账号.png");
     surface72 = cairo_image_surface_create_from_png("注册账号2.png");
-    surface81 = cairo_image_surface_create_from_png("关闭1.png");
-    surface82 = cairo_image_surface_create_from_png("关闭2.png");
-    surface83 = cairo_image_surface_create_from_png("关闭3.png");
+    surface81 = cairo_image_surface_create_from_png("关闭按钮1.png");
+    surface82 = cairo_image_surface_create_from_png("关闭按钮2.png");
+    surface83 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
 
     image1 = gtk_image_new_from_surface(surface1);
@@ -124,7 +124,7 @@ void on_button_clicked() {
 
     pendingLayout = gtk_fixed_new();
 
-    gtk_container_add(GTK_CONTAINER (frameLayout), pendingLayout);
+    gtk_container_add(GTK_CONTAINER (chartlayout2), pendingLayout);
 
     create_surfaces2();
     gtk_widget_show_all(pendingLayout);//显示layout2
@@ -231,7 +231,6 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
         }
         else{
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-
             gtk_image_set_from_surface((GtkImage *) image8, surface81);
             gtk_image_set_from_surface((GtkImage *) image4, surface41);
         }
@@ -269,11 +268,8 @@ int main(int argc, char *argv[]) {
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);   // 去掉边框
 
     gtk_widget_set_events(window,  // 设置窗体获取鼠标事件
-
             GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
                     | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
                     | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
     g_signal_connect(G_OBJECT(window), "button_press_event",
@@ -287,16 +283,16 @@ int main(int argc, char *argv[]) {
     loginLayout = gtk_fixed_new();
     create_surfaces1();
 
-    frameLayout = gtk_layout_new(NULL, NULL);
+    chartlayout2 = gtk_layout_new(NULL, NULL);
 
-    gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window
-    gtk_container_add(GTK_CONTAINER (frameLayout), loginLayout);
+    gtk_container_add(GTK_CONTAINER (window), chartlayout2);//chartlayout2 加入到window
+    gtk_container_add(GTK_CONTAINER (chartlayout2), loginLayout);
 
     username = gtk_entry_new();
     passwd = gtk_entry_new();
 
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
+    gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');//
 
     gtk_fixed_put(GTK_FIXED(loginLayout), username, 85, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), passwd, 85, 260);
