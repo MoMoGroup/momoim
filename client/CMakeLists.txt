@@ -10,7 +10,7 @@ add_definitions(${GTK3_CFLAGS_OTHER})
 
 SET(CLIENT_SOURCE_FILE
     client.c
-    #chart.c
+    chart.c
     ClientSockfd.c
     MainInterface.c
     newuser.c
