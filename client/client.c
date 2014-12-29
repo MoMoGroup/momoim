@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
+#include "newuser.h"
 #include <cairo.h>
 #include <bits/sigthread.h>
 #include <sys/socket.h>
@@ -163,6 +164,7 @@ static gint button_press_event(GtkWidget *widget,
         {                                                                                           //设置注册按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
             gtk_image_set_from_surface((GtkImage *) imageregistered, sregistered2);
+            newface(); //调用注册界面
         }
         else if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 350) && flag == 0) {   //设置第二界面取消按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
