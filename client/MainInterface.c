@@ -252,6 +252,8 @@ int maininterface() {
     userid = gtk_label_new(userdata.nickName);
     //g_print(groupdata.nickName);
 //    log_info("组员信息", groupdata.nickName);
+    //g_print(groupdata.nickName);
+    log_info("组员信息", groupdata.nickName);
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window

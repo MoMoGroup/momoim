@@ -49,7 +49,7 @@ typedef enum
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件
     CRP_PACKET_FILE_DATA,          //响应数据
-    CRP_PACKET_FILE_DATA_START,      //响应数据结束
+    CRP_PACKET_FILE_DATA_START,      //响应数据开始
     CRP_PACKET_FILE_DATA_END,      //响应数据结束
     CRP_PACKET_FILE_STORE_REQUEST,      //请求存储新文件
 
