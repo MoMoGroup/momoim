@@ -13,6 +13,7 @@ int X = 0;
 int Y = 0;
 
 extern CRPPacketInfoData userdata;
+extern CRPPacketInfoData groupdata;
 extern gchar *uidname;
 
 
@@ -106,7 +107,7 @@ GtkTreeModel *createModel() {
 static void create_surfaces() {
 
     surface1 = cairo_image_surface_create_from_png("主背景.png");
-    surface2 = cairo_image_surface_create_from_png("头像2.png");
+    surface2 = cairo_image_surface_create_from_png(mulu);
     surface3 = cairo_image_surface_create_from_png("搜索.png");
     surface4 = cairo_image_surface_create_from_png("好友.png");
     surface51 = cairo_image_surface_create_from_png("关闭1.png");
@@ -238,6 +239,8 @@ int maininterface() {
     GtkWidget *userid;
     //g_print(userdata.nickName);
     userid = gtk_label_new(userdata.nickName);
+    //g_print(groupdata.nickName);
+    log_info("组员信息", groupdata.nickName);
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window

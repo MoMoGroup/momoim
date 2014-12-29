@@ -158,8 +158,7 @@ OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid)
 UserCancelableOperation *UserRegisterOperation(OnlineUser *user)
 {
     pthread_rwlock_wrlock(&user->operations.lock);
-    UserCancelableOperation *operation = (UserCancelableOperation *) malloc(sizeof(UserCancelableOperation));
-    operation->next = NULL;
+    UserCancelableOperation *operation = (UserCancelableOperation *) calloc(1, sizeof(UserCancelableOperation));
     if (user->operations.last == NULL)
     {
         user->operations.first = user->operations.last = operation;

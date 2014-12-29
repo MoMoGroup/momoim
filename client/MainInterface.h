@@ -8,3 +8,5 @@ extern int mysockfd();
 extern int maininterface();
 
 extern UserFriends *friends;
+extern UserGroup *group;
+extern char mulu[80];
