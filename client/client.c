@@ -10,7 +10,7 @@
 
 
 static GtkWidget *image4, *imageregistered, *imageclosebut, *imagecancel;
-static GtkWidget *username, *passwd;
+GtkWidget *username, *passwd;
 static pthread_t thread1;
 static int sockfd;
 static int nX = 0,nY=0;
@@ -21,7 +21,19 @@ static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *
 static int flag = 1;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 
+gboolean mythread(gpointer user_data)//合并
+{
+    gtk_widget_destroy(window);
+    maininterface();
+    return 0;
+}//合并
 
+gboolean destroyLayout(gpointer user_data){
+    flag = 1;
+
+    gtk_widget_destroy(pendingLayout);
+    gtk_widget_show_all(loginLayout);
+}
 //关闭窗口
 static void
 create_surfaces1() {

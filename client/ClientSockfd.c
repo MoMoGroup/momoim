@@ -19,11 +19,8 @@
 #include <grp.h>
 #include "MainInterface.h"
 
-extern int flag;
-extern GtkWidget *loginLayout, *pendingLayout;
-extern GtkWidget *username, *passwd;
-extern GtkWidget *window;
-extern int sockfd;
+
+int sockfd;
 UserFriends *friends;
 UserGroup *group;
 CRPPacketInfoData userdata, groupdata;
@@ -78,7 +75,7 @@ int mysockfd()
     {
         //密码错误
         log_info("登录失败", "登录失败\n");
-        flag = 1;
+
 
 
         //gtk_container_add(GTK_CONTAINER (window), layout);
