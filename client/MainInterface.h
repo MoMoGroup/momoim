@@ -12,5 +12,6 @@ extern UserFriends *friends;
 extern UserGroup *group;
 extern char mulu[80];
 
-extern int  mainchart();
+extern int mainchart();
+
 extern UserFriends *friends;

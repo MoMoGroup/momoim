@@ -142,27 +142,28 @@ destroy_surfaces() {
 
 }
 
-static gint button2_press_event(GtkWidget *widget,GdkEventButton *event, gpointer data){
-    if( (event->type == GDK_2BUTTON_PRESS && event->button == 0x1)) {
+static gint button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    if ((event->type == GDK_2BUTTON_PRESS && event->button == 0x1)) {
         GtkTreeSelection *treeSelection;
         treeSelection = gtk_tree_view_get_selection(treeView);
         GtkTreeModel *model;
         if (gtk_tree_selection_get_selected(treeSelection, &model, &iter2)) {
             //  gtk_tree_model_get(model, &iter2);
-            mainchart();
+//            mainchart();
         }
-        else if (event->type == GDK_BUTTON_PRESS && event->button == 0x1){
+        else if (event->type == GDK_BUTTON_PRESS && event->button == 0x1) {
 
         }
     }
     return 0;
 }
+
 //鼠标点击事件
-static gint button_press_event(GtkWidget *widget,GdkEventButton *event, gpointer data){
+static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     x = event->x;  // 取得鼠标相对于窗口的位置
     y = event->y;
 
-    if (event->button == 1 && (x > 247 && x < 280) && (y> 2 && y < 25)) {              //设置关闭按钮
+    if (event->button == 1 && (x > 247 && x < 280) && (y > 2 && y < 25)) {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) closebut, surface52); //置换图标
     }
@@ -205,7 +206,7 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
     x = event->x;  // 取得鼠标相对于窗口的位置
     y = event->y;
-    if ((x > 247 && x < 280) && (y > 2 && y < 25)){
+    if ((x > 247 && x < 280) && (y > 2 && y < 25)) {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
         gtk_image_set_from_surface((GtkImage *) closebut, surface53);
     }
@@ -257,13 +258,13 @@ int maininterface() {
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeView), column);
     gtk_tree_view_column_set_resizable(column,TRUE);
     //添加滚动条
-    GtkScrolledWindow *sw= gtk_scrolled_window_new(NULL,NULL);
+    GtkScrolledWindow *sw = gtk_scrolled_window_new(NULL, NULL);
     //设置滚动条常在状态
-    gtk_scrolled_window_set_policy (sw,
+    gtk_scrolled_window_set_policy(sw,
             GTK_POLICY_ALWAYS,
             GTK_POLICY_ALWAYS);
     //获取水平滚动条
-    GtkWidget* widget=gtk_scrolled_window_get_hscrollbar(sw);
+    GtkWidget *widget = gtk_scrolled_window_get_hscrollbar(sw);
 
     gtk_container_add(GTK_CONTAINER(sw), treeView);
     gtk_fixed_put(GTK_FIXED(MainLayout), sw, 0, 225);

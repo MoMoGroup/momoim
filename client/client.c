@@ -6,6 +6,7 @@
 #include <bits/sigthread.h>
 #include <sys/socket.h>
 #include <logger.h>
+#include "newuser.h"
 
 GtkWidget *image4, *image7, *image8, *image10;
 GtkWidget *username, *passwd;
@@ -156,6 +157,9 @@ static gint button_press_event(GtkWidget *widget,
         {                                                                                           //设置注册按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
             gtk_image_set_from_surface((GtkImage *) image7, surface72);
+            log_info("注册", "注册\n");
+            newface();
+
         }
         else if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 350) && flag == 0) {   //设置第二界面取消按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
