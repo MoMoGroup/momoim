@@ -3,7 +3,6 @@ project(final)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++11")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -std=gnu11")
-add_subdirectory(1)
 add_subdirectory(logger)
 add_subdirectory(imcommon)
 add_subdirectory(protocol)

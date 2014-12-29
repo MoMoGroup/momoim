@@ -7,7 +7,9 @@
 extern int DeleteEvent();
 extern int mysockfd();
 extern int maininterface();
+
 extern gboolean mythread(gpointer user_data);
+
 extern gboolean destroyLayout(gpointer user_data);
 extern UserFriends *friends;
 extern UserGroup *group;
