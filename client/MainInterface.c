@@ -10,7 +10,7 @@ static GtkWidget *window;
 static GtkWidget *treeView;
 static GtkWidget *frameLayout, *MainLayout;
 static GtkTreeIter iter1, iter2;
-static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surface3, *surface4,*surfaceclose51,*surfaceclose52,*surfaceclose53;
+static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage,*surfaceclose51,*surfaceclose52,*surfaceclose53;
 static int x = 0;
 static int y = 0;
 //static int treeviewflag=0;
@@ -110,8 +110,8 @@ static void create_surfaces() {
 
     surfacemainbackgroud = cairo_image_surface_create_from_png("主背景.png");
     surfacehead2 = cairo_image_surface_create_from_png("头像2.png");
-    surface3 = cairo_image_surface_create_from_png("搜索.png");
-    surface4 = cairo_image_surface_create_from_png("好友.png");
+    surfaceresearch = cairo_image_surface_create_from_png("搜索.png");
+    surfacefriendimage = cairo_image_surface_create_from_png("好友.png");
    surfaceclose51 = cairo_image_surface_create_from_png("关闭按钮1.png");
     surfaceclose52 = cairo_image_surface_create_from_png("关闭按钮2.png");
     surfaceclose53 = cairo_image_surface_create_from_png("关闭按钮3.png");
@@ -122,10 +122,10 @@ static void create_surfaces() {
     headx = gtk_image_new_from_surface(surfacehead2 );
     gtk_fixed_put(GTK_FIXED(MainLayout), headx, 2, 10);
 
-    search = gtk_image_new_from_surface(surface3);
+    search = gtk_image_new_from_surface(surfaceresearch);
     gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
 
-    friend = gtk_image_new_from_surface(surface4);
+    friend = gtk_image_new_from_surface(surfacefriendimage);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
     closebut = gtk_image_new_from_surface(surfaceclose51);
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut, 247, 0);
@@ -137,8 +137,8 @@ destroy_surfaces() {
     g_print("destroying surfaces2");
     cairo_surface_destroy(surfacemainbackgroud);
     cairo_surface_destroy(surfacehead2);
-    cairo_surface_destroy(surface3);
-    cairo_surface_destroy(surface4);
+    cairo_surface_destroy(surfaceresearch);
+    cairo_surface_destroy(surfacefriendimage);
 
 }
 
