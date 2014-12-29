@@ -5,16 +5,16 @@ GtkWidget *newwindow;
 GtkWidget *zhuceLayout;
 GtkWidget *mnickname, *username, *passwd1, *passwd2;
 GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mminfo, *endwind;
-cairo_surface_t *surface1, *surface2, *surface3, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
+cairo_surface_t *sflowerbackgroud, *surface2, *surfaceresearch, *surfacefriendimage, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
 int mx = 0;
 int my = 0;
 
 static void create_zhucefaces() {
 
-    surface1 = cairo_image_surface_create_from_png("注册背景.png");
+    sflowerbackgroud = cairo_image_surface_create_from_png("注册背景.png");
     surface2 = cairo_image_surface_create_from_png("注册标题.png");
-    surface3 = cairo_image_surface_create_from_png("注册按钮.png");
-    surface4 = cairo_image_surface_create_from_png("资料1.png");
+    surfaceresearch = cairo_image_surface_create_from_png("注册按钮.png");
+    surfacefriendimage = cairo_image_surface_create_from_png("资料1.png");
     surface5 = cairo_image_surface_create_from_png("资料2.png");
     surface6 = cairo_image_surface_create_from_png("资料3.png");
     surface7 = cairo_image_surface_create_from_png("资料4.png");
@@ -23,16 +23,16 @@ static void create_zhucefaces() {
     surface82 = cairo_image_surface_create_from_png("关闭2.png");
     surface83 = cairo_image_surface_create_from_png("关闭3.png");
 
-    background = gtk_image_new_from_surface(surface1);
+    background = gtk_image_new_from_surface(sflowerbackgroud);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), background, 0, 0);//起始坐标
 
     headline = gtk_image_new_from_surface(surface2);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), headline, 2, 10);
 
-    mminfo = gtk_image_new_from_surface(surface3);
+    mminfo = gtk_image_new_from_surface(surfaceresearch);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), mminfo, 255, 400);
 
-    nickid = gtk_image_new_from_surface(surface4);
+    nickid = gtk_image_new_from_surface(surfacefriendimage);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), nickid, -2, 80);
 
     nick = gtk_image_new_from_surface(surface5);
@@ -52,10 +52,10 @@ static void create_zhucefaces() {
 static void
 destroy_surfaces() {
     g_print("destroying surfaces2");
-    cairo_surface_destroy(surface1);
+    cairo_surface_destroy(sflowerbackgroud);
     cairo_surface_destroy(surface2);
-    cairo_surface_destroy(surface3);
-    cairo_surface_destroy(surface4);
+    cairo_surface_destroy(surfaceresearch);
+    cairo_surface_destroy(surfacefriendimage);
     cairo_surface_destroy(surface5);
     cairo_surface_destroy(surface6);
     cairo_surface_destroy(surface7);

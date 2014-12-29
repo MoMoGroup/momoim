@@ -9,7 +9,7 @@
 
 
 
-static GtkWidget *image4, *imageregistered, *imageclosebut, *imagecancel;
+static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
 static pthread_t thread1;
 static int sockfd;
@@ -18,7 +18,7 @@ static GtkWidget *window;
 
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd;
 static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3,*slandimage, *scancel10_1, *scancel10_2, *scancel10_3;
-static int flag = 1;
+static int login_hind_flag = 1;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 
 gboolean mythread(gpointer user_data)//合并
@@ -29,7 +29,7 @@ gboolean mythread(gpointer user_data)//合并
 }//合并
 
 gboolean destroyLayout(gpointer user_data){
-    flag = 1;
+    login_hind_flag = 1;
 
     gtk_widget_destroy(pendingLayout);
     gtk_widget_show_all(loginLayout);
@@ -67,8 +67,8 @@ create_surfaces1() {
     imagewhite = gtk_image_new_from_surface(swhite);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
 
-    image4 = gtk_image_new_from_surface(slandbut1);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image4, 70, 300);
+    imagelandbut = gtk_image_new_from_surface(slandbut1);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagelandbut, 70, 300);
 
     imageaccount = gtk_image_new_from_surface(saccount);
     gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 35, 220);
@@ -128,7 +128,7 @@ void on_button_clicked() {
 
 
     gtk_widget_hide(loginLayout);//隐藏loginlayout
-    flag = 0;
+    login_hind_flag = 0;
     //gtk_widget_destroy(layout);销毁layout对话框
 
 
@@ -148,23 +148,23 @@ static gint button_press_event(GtkWidget *widget,
     nY = event->y;
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
-        if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && flag == 1)    // 判断是否左键按下且在区域内,设置登陆按钮
+        if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && login_hind_flag == 1)    // 判断是否左键按下且在区域内,设置登陆按钮
 
         {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-            gtk_image_set_from_surface((GtkImage *) image4, slandbut2);
+            gtk_image_set_from_surface((GtkImage *) imagelandbut, slandbut2);
         }
-        else if (event->button == 1 && (nX > 247 && nX < 280) && (nY > 2 && nY < 25) && flag == 1) {              //设置关闭按钮
+        else if (event->button == 1 && (nX > 247 && nX < 280) && (nY > 2 && nY < 25) &&  login_hind_flag == 1) {              //设置关闭按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
             gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut2); //置换图标
         }
-        else if (event->button == 1 && (nX > 5 && nX < 62) && (nY > 380 && nY < 395) && flag == 1)       // 判断是否左键按下
+        else if (event->button == 1 && (nX > 5 && nX < 62) && (nY > 380 && nY < 395) &&  login_hind_flag == 1)       // 判断是否左键按下
 
         {                                                                                           //设置注册按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
             gtk_image_set_from_surface((GtkImage *) imageregistered, sregistered2);
         }
-        else if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 350) && flag == 0) {   //设置第二界面取消按钮
+        else if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 350) &&  login_hind_flag == 0) {   //设置第二界面取消按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
             gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_3);//设置鼠标光标
         }
@@ -189,25 +189,25 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
-    if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && flag == 1)  //判断是否在登陆区域中，设置登陆按钮
+    if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && login_hind_flag == 1)  //判断是否在登陆区域中，设置登陆按钮
     {
-        gtk_image_set_from_surface((GtkImage *) image4, slandbut1);
+        gtk_image_set_from_surface((GtkImage *) imagelandbut, slandbut1);
         on_button_clicked();
     }
-    else if (event->button == 1 && flag == 1)       // 判断是否是点击关闭图标
+    else if (event->button == 1 &&  login_hind_flag == 1)       // 判断是否是点击关闭图标
 
     {
         gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);  //设置关闭按钮
         if ((nX > 247 && nX < 280) && (nY > 2 && nY < 25))
             DeleteEvent();
     }
-    else if (flag == 0) {                                         //设置取消按钮
+    else if ( login_hind_flag == 0) {                                         //设置取消按钮
         if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
             gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
             if ((nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
                 close(sockfd);
                 pthread_cancel(thread1);
-                flag = 1;
+                login_hind_flag = 1;
                 gtk_widget_hide(pendingLayout);
                 gtk_widget_show_all(loginLayout);
             }
@@ -224,10 +224,10 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 {
     nX = event->x;  // 取得鼠标相对于窗口的位置
     nY = event->y;
-    if (flag == 1) {
+    if ( login_hind_flag == 1) {
         if ((nX > 75 && nX < 205) && (nY > 302 && nY < 335)) {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-            gtk_image_set_from_surface((GtkImage *) image4, slandbut3);
+            gtk_image_set_from_surface((GtkImage *) imagelandbut, slandbut3);
         }
         else if ((nX > 247 && nX < 280) && (nY > 2 && nY < 25)){
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
@@ -240,10 +240,10 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
 
             gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);
-            gtk_image_set_from_surface((GtkImage *) image4, slandbut1);
+            gtk_image_set_from_surface((GtkImage *) imagelandbut, slandbut1);
         }
     }
-    else if (flag == 0) {
+    else if ( login_hind_flag == 0) {
         if ((nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
             gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_2);
