@@ -32,6 +32,7 @@ SET(SERVER_SOURCE_FILE
 
     packets/login/Login.c
     packets/login/Logout.c
+    packets/login/Register.c
 
     packets/message/TextMessage.c
     )

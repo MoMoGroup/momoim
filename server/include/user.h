@@ -14,6 +14,13 @@ typedef enum
 
     OUS_ONLINE = 0x10
 } OnlineUserStatus;
+
+struct struOnlineUserInfo;
+struct struUserFileStoreOperation;
+struct struUserCancelableOperation;
+struct struUserCancelableOperationTable;
+struct struOnlineUser;
+
 //在线用户基本信息
 typedef struct struOnlineUserInfo
 {
@@ -21,6 +28,13 @@ typedef struct struOnlineUserInfo
     char *userDir;
 } OnlineUserInfo;
 
+typedef struct struUserFileStoreOperation
+{
+    size_t totalLength, remainLength;
+    unsigned char key[16];
+    char *tmpfile;
+    int fd;
+} UserFileStoreOperation;
 //可取消操作
 typedef struct struUserCancelableOperation
 {
@@ -28,12 +42,14 @@ typedef struct struUserCancelableOperation
     int cancel;
     void *data;
 
+    int (*oncancel)(struct struOnlineUser *, struct struUserCancelableOperation *);
+
     struct struUserCancelableOperation *prev;
     struct struUserCancelableOperation *next;
 } UserCancelableOperation;
 
-//在线用户链表
-typedef struct
+//用户操作表
+typedef struct struUserCancelableOperationTable
 {
     UserCancelableOperation *first;
     UserCancelableOperation *last;
@@ -74,7 +90,7 @@ void OnlineUserDelete(OnlineUser *user);
 
 OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid);
 
-UserCancelableOperation *UserRegisterOperation(OnlineUser *user);
+__attribute_malloc__ UserCancelableOperation *UserRegisterOperation(OnlineUser *user);
 
 void UserUnregisterOperation(OnlineUser *user, UserCancelableOperation *operation);
 

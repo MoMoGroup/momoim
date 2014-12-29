@@ -1,14 +1,11 @@
 #include <protocol/base.h>
-#include <protocol/login/Login.h>
 #include <protocol/CRPPackets.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 
 CRPPacketLogin *CRPLoginLoginCast(CRPBaseHeader *base)
 {
-    sleep(2);
     CRPPacketLogin *packet = malloc(base->dataLength + 1);
     memcpy(packet, base->data, base->dataLength);
     ((char *) packet)[base->dataLength] = 0;

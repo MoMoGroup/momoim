@@ -53,3 +53,10 @@ int DataFileCreate(unsigned char *key, int flags, mode_t mode)
     DataFilePath(key, buf);
     return open(buf, flags, mode);
 }
+
+int DataFileUnlink(unsigned char *key)
+{
+    char buf[6 + FileDepthLevel * 3 + (16 - FileDepthLevel) * 2 + 1];
+    DataFilePath(key, buf);
+    return unlink(buf);
+}
