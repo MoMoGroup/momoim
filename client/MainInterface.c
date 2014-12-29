@@ -13,7 +13,7 @@ static GtkTreeIter iter1, iter2;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surface3, *surface4,*surfaceclose51,*surfaceclose52,*surfaceclose53;
 static int x = 0;
 static int y = 0;
-static int treeviewflag=0;
+//static int treeviewflag=0;
 extern CRPPacketInfoData userdata;
 extern CRPPacketInfoData groupdata;
 extern gchar *uidname;
