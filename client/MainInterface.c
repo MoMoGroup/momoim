@@ -5,23 +5,23 @@
 #include <logger.h>
 #include <imcommon/friends.h>
 
-GtkWidget *background, *headx, *search, *friend,*closebut;
-GtkWidget *window;
-GtkWidget *treeView;
-GtkWidget *frameLayout, *MainLayout;
-GtkTreeIter iter1, iter2;
-cairo_surface_t *surface1, *surface2, *surface3, *surface4,*surface51,*surface52,*surface53;
-int x = 0;
-int y = 0;
-
+static GtkWidget *background, *headx, *search, *friend,*closebut;
+static GtkWidget *window;
+static GtkWidget *treeView;
+static GtkWidget *frameLayout, *MainLayout;
+static GtkTreeIter iter1, iter2;
+static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surface3, *surface4,*surfaceclose51,*surfaceclose52,*surfaceclose53;
+static int x = 0;
+static int y = 0;
+static int treeviewflag=0;
 extern CRPPacketInfoData userdata;
 extern CRPPacketInfoData groupdata;
 extern gchar *uidname;
 
-
-GdkPixbuf *pixbuf;
-cairo_t *cr;
-GtkWidget *vbox;
+static GtkTreeStore *store;
+static GdkPixbuf *pixbuf;
+static cairo_t *cr;
+static GtkWidget *vbox;
 enum {
     PIXBUF_COL,
 };
@@ -51,7 +51,7 @@ GtkTreeModel *createModel() {
     };
 
 
-    GtkTreeStore *store;
+
     gint i, j;
     cairo_surface_t *surface;
     cairo_surface_t *surfaceIcon;
@@ -75,7 +75,7 @@ GtkTreeModel *createModel() {
         for (j = 0; j < 4; j++) {
             pixbuf = gdk_pixbuf_new_from_file(stocks[j], NULL);
             gint w = gdk_pixbuf_get_width(pixbuf);
-            gint h = gdk_pixbuf_get_height(pixbuf);
+           // gint h = gdk_pixbuf_get_height(pixbuf);
             //加载一个图片
             surfaceIcon = cairo_image_surface_create_from_png(stocks[j]);
             //创建画布
@@ -108,18 +108,18 @@ GtkTreeModel *createModel() {
 
 static void create_surfaces() {
 
-    surface1 = cairo_image_surface_create_from_png("主背景.png");
-    surface2 = cairo_image_surface_create_from_png(mulu);
+    surfacemainbackgroud = cairo_image_surface_create_from_png("主背景.png");
+    surfacehead2 = cairo_image_surface_create_from_png("头像2.png");
     surface3 = cairo_image_surface_create_from_png("搜索.png");
     surface4 = cairo_image_surface_create_from_png("好友.png");
-    surface51 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    surface52 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    surface53 = cairo_image_surface_create_from_png("关闭按钮3.png");
+   surfaceclose51 = cairo_image_surface_create_from_png("关闭按钮1.png");
+    surfaceclose52 = cairo_image_surface_create_from_png("关闭按钮2.png");
+    surfaceclose53 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
-    background = gtk_image_new_from_surface(surface1);
+    background = gtk_image_new_from_surface(surfacemainbackgroud);
     gtk_fixed_put(GTK_FIXED(MainLayout), background, 0, 0);//起始坐标
 
-    headx = gtk_image_new_from_surface(surface2 );
+    headx = gtk_image_new_from_surface(surfacehead2 );
     gtk_fixed_put(GTK_FIXED(MainLayout), headx, 2, 10);
 
     search = gtk_image_new_from_surface(surface3);
@@ -127,7 +127,7 @@ static void create_surfaces() {
 
     friend = gtk_image_new_from_surface(surface4);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
-    closebut = gtk_image_new_from_surface(surface51);
+    closebut = gtk_image_new_from_surface(surfaceclose51);
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut, 247, 0);
 
 }
@@ -135,27 +135,40 @@ static void create_surfaces() {
 static void
 destroy_surfaces() {
     g_print("destroying surfaces2");
-    cairo_surface_destroy(surface1);
-    cairo_surface_destroy(surface2);
+    cairo_surface_destroy(surfacemainbackgroud);
+    cairo_surface_destroy(surfacehead2);
     cairo_surface_destroy(surface3);
     cairo_surface_destroy(surface4);
 
 }
 
-static gint button2_press_event(GtkWidget *widget,GdkEventButton *event, gpointer data){
-    if( (event->type == GDK_2BUTTON_PRESS && event->button == 0x1)) {
-        GtkTreeSelection *treeSelection;
-        treeSelection = gtk_tree_view_get_selection(treeView);
-        GtkTreeModel *model;
-        if (gtk_tree_selection_get_selected(treeSelection, &model, &iter2)) {
-            //  gtk_tree_model_get(model, &iter2);
-            mainchart();
-        }
-        else if (event->type == GDK_BUTTON_PRESS && event->button == 0x1){
-
-        }
+//树状视图双击列表事件
+gboolean button2_press_event(GtkWidget *widget , GdkEventButton *event, gpointer data)
+{
+    GtkWidget *menu = GTK_WIDGET(data);
+    if(event->type == GDK_BUTTON_PRESS)
+    {
+        if ( event->button == 0x1)
+            return FALSE;
+        if ( event->button == 0x2)
+            return FALSE;
+        if ( event->button == 0x3)
+            gtk_menu_popup(GTK_MENU(menu),NULL,NULL,NULL,NULL,event->button,event->time);
     }
-    return 0;
+    if(event->type == GDK_2BUTTON_PRESS && event->button == 0x1)
+    {
+        GtkTreeIter iter;
+        GtkWidget  *treeview = GTK_TREE_VIEW(widget);
+        GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+        gtk_tree_selection_get_selected(selection, &model, &iter);
+        if(gtk_tree_model_iter_has_child (model, &iter)==0)
+        {
+                mainchart();
+        }
+
+    }
+    return FALSE;
 }
 //鼠标点击事件
 static gint button_press_event(GtkWidget *widget,GdkEventButton *event, gpointer data){
@@ -164,13 +177,13 @@ static gint button_press_event(GtkWidget *widget,GdkEventButton *event, gpointer
 
     if (event->button == 1 && (x > 247 && x < 280) && (y> 2 && y < 25)) {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) closebut, surface52); //置换图标
+        gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose52); //置换图标
     }
     else{
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
         if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
             gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                    event->x_root, event->y_root, event->time);
 
         }
     }
@@ -188,7 +201,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        gtk_image_set_from_surface((GtkImage *)closebut, surface51);  //设置关闭按钮
+        gtk_image_set_from_surface((GtkImage *)closebut, surfaceclose51);  //设置关闭按钮
         if ((x > 247 && x < 280) && (y > 2 && y < 25)) {
             destroy_surfaces();
             DeleteEvent();
@@ -207,11 +220,11 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
     y = event->y;
     if ((x > 247 && x < 280) && (y > 2 && y < 25)){
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-        gtk_image_set_from_surface((GtkImage *) closebut, surface53);
+        gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose53);
     }
     else {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-        gtk_image_set_from_surface((GtkImage *) closebut,surface51);
+        gtk_image_set_from_surface((GtkImage *) closebut,surfaceclose51);
     }
 
     return 0;
@@ -237,6 +250,8 @@ int maininterface() {
     GtkWidget *userid;
     //g_print(userdata.nickName);
     userid = gtk_label_new(userdata.nickName);
+    //g_print(groupdata.nickName);
+//    log_info("组员信息", groupdata.nickName);
     //g_print(groupdata.nickName);
     log_info("组员信息", groupdata.nickName);
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
