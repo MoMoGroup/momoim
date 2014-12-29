@@ -7,10 +7,12 @@
 
 GtkWidget *background, *headx, *search, *friend,*closebut;
 GtkWidget *window;
+GtkWidget *treeView;
 GtkWidget *frameLayout, *MainLayout;
+GtkTreeIter iter1, iter2;
 cairo_surface_t *surface1, *surface2, *surface3, *surface4,*surface51,*surface52,*surface53;
-int X = 0;
-int Y = 0;
+int x = 0;
+int y = 0;
 
 extern CRPPacketInfoData userdata;
 extern gchar *uidname;
@@ -47,7 +49,7 @@ GtkTreeModel *createModel() {
             "头像",
     };
 
-    GtkTreeIter iter1, iter2;
+
     GtkTreeStore *store;
     gint i, j;
     cairo_surface_t *surface;
@@ -109,9 +111,9 @@ static void create_surfaces() {
     surface2 = cairo_image_surface_create_from_png("头像2.png");
     surface3 = cairo_image_surface_create_from_png("搜索.png");
     surface4 = cairo_image_surface_create_from_png("好友.png");
-    surface51 = cairo_image_surface_create_from_png("关闭1.png");
-    surface52 = cairo_image_surface_create_from_png("关闭2.png");
-    surface53 = cairo_image_surface_create_from_png("关闭3.png");
+    surface51 = cairo_image_surface_create_from_png("关闭按钮1.png");
+    surface52 = cairo_image_surface_create_from_png("关闭按钮2.png");
+    surface53 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
     background = gtk_image_new_from_surface(surface1);
     gtk_fixed_put(GTK_FIXED(MainLayout), background, 0, 0);//起始坐标
@@ -138,14 +140,28 @@ destroy_surfaces() {
     cairo_surface_destroy(surface4);
 
 }
+
+static gint button2_press_event(GtkWidget *widget,GdkEventButton *event, gpointer data){
+    if( (event->type == GDK_2BUTTON_PRESS && event->button == 0x1)) {
+        GtkTreeSelection *treeSelection;
+        treeSelection = gtk_tree_view_get_selection(treeView);
+        GtkTreeModel *model;
+        if (gtk_tree_selection_get_selected(treeSelection, &model, &iter2)) {
+            //  gtk_tree_model_get(model, &iter2);
+            mainchart();
+        }
+        else if (event->type == GDK_BUTTON_PRESS && event->button == 0x1){
+
+        }
+    }
+    return 0;
+}
 //鼠标点击事件
-static gint button_press_event(GtkWidget *widget,
+static gint button_press_event(GtkWidget *widget,GdkEventButton *event, gpointer data){
+    x = event->x;  // 取得鼠标相对于窗口的位置
+    y = event->y;
 
-        GdkEventButton *event, gpointer data){
-    X = event->x;  // 取得鼠标相对于窗口的位置
-    Y = event->y;
-
-    if (event->button == 1 && (X > 247 && X < 280) && (Y> 2 && Y < 25)) {              //设置关闭按钮
+    if (event->button == 1 && (x > 247 && x < 280) && (y> 2 && y < 25)) {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) closebut, surface52); //置换图标
     }
@@ -158,7 +174,7 @@ static gint button_press_event(GtkWidget *widget,
         }
     }
 
-    return TRUE;
+    return 0;
 }
 
 //鼠标抬起事件
@@ -166,19 +182,19 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data){
 
-    X = event->x;  // 取得鼠标相对于窗口的位置
-    Y = event->y;
+    x = event->x;  // 取得鼠标相对于窗口的位置
+    y = event->y;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
         gtk_image_set_from_surface((GtkImage *)closebut, surface51);  //设置关闭按钮
-        if ((X > 247 && X < 280) && (Y > 2 && Y < 25)) {
+        if ((x > 247 && x < 280) && (y > 2 && y < 25)) {
             destroy_surfaces();
             DeleteEvent();
         }
     }
 
-    return TRUE;
+    return 0;
 }
 
 //鼠标移动事件
@@ -186,9 +202,9 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data){
 
-    X = event->x;  // 取得鼠标相对于窗口的位置
-    Y = event->y;
-    if ((X > 247 && X < 280) && (Y > 2 && Y < 25)){
+    x = event->x;  // 取得鼠标相对于窗口的位置
+    y = event->y;
+    if ((x > 247 && x < 280) && (y > 2 && y < 25)){
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
         gtk_image_set_from_surface((GtkImage *) closebut, surface53);
     }
@@ -197,12 +213,11 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) closebut,surface51);
     }
 
-    return TRUE;
+    return 0;
 }
 
 int maininterface() {
 
-    GtkWidget *treeView;
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
     vbox = gtk_box_new(TRUE, 5);
@@ -216,23 +231,6 @@ int maininterface() {
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
-
-    // 设置窗体获取鼠标事件
-    gtk_widget_set_events(window,
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(window), "button_press_event",
-            G_CALLBACK(button_press_event), window);       // 加入事件回调
-    g_signal_connect(G_OBJECT(window), "motion_notify_event",
-            G_CALLBACK(motion_notify_event), window);
-
-    g_signal_connect(G_OBJECT(window), "button_release_event",
-            G_CALLBACK(button_release_event), window);
 
     create_surfaces();
     GtkWidget *userid;
@@ -248,21 +246,54 @@ int maininterface() {
     //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
     gtk_tree_view_set_headers_visible(treeView,0);//去掉头部空白
 
-
+    //添加树形视图
     renderer = gtk_cell_renderer_pixbuf_new();
     column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
             "pixbuf", PIXBUF_COL,
             NULL);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeView), column);
     gtk_tree_view_column_set_resizable(column,TRUE);
-
-    GtkScrolledWindow *sw= gtk_scrolled_window_new(NULL, NULL);
+    //添加滚动条
+    GtkScrolledWindow *sw= gtk_scrolled_window_new(NULL,NULL);
+    //设置滚动条常在状态
+    gtk_scrolled_window_set_policy (sw,
+            GTK_POLICY_ALWAYS,
+            GTK_POLICY_ALWAYS);
+    //获取水平滚动条
+    GtkWidget* widget=gtk_scrolled_window_get_hscrollbar(sw);
 
     gtk_container_add(GTK_CONTAINER(sw), treeView);
     gtk_fixed_put(GTK_FIXED(MainLayout), sw, 0, 225);
-    gtk_widget_set_size_request(sw, 284, 360);
+    gtk_widget_set_size_request(sw, 284, 358);
+    // 设置窗体获取鼠标事件
+    gtk_widget_set_events(window,
+
+            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+
+                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+
+                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+
+    gtk_widget_set_events(treeView, GDK_BUTTON_PRESS_MASK);
+
+    g_signal_connect(G_OBJECT(window), "button_press_event",
+            G_CALLBACK(button_press_event), window);       // 加入事件回调
+    g_signal_connect(G_OBJECT(window), "motion_notify_event",
+            G_CALLBACK(motion_notify_event), window);
+
+    g_signal_connect(G_OBJECT(window), "button_release_event",
+            G_CALLBACK(button_release_event), window);
+//
+//    g_signal_connect(G_OBJECT(treeView), "button_press_event",
+//            G_CALLBACK(button_press_event), treeView);
+//
+    g_signal_connect(G_OBJECT(treeView), "button_press_event",
+            G_CALLBACK(button2_press_event), treeView);
+
 
     gtk_widget_show_all(window);
+    //隐藏水平滚动条
+    gtk_widget_hide(widget);
     //gtk_main();
 
     return 0;
