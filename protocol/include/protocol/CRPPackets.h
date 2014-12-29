@@ -12,10 +12,12 @@
 #include "protocol/file/DataStart.h"
 #include "protocol/file/DataEnd.h"
 #include "protocol/file/StoreRequest.h"
+#include "protocol/file/StoreAccept.h"
 
 #include "protocol/login/Login.h"
 #include "protocol/login/Accept.h"
 #include "protocol/login/Logout.h"
+#include "protocol/login/Register.h"
 
 #include "protocol/status/Hello.h"
 #include "protocol/status/KeepAlive.h"
@@ -37,6 +39,7 @@ typedef enum
     CRP_PACKET_LOGIN_LOGIN,         //登陆
     CRP_PACKET_LOGIN_ACCEPT,        //登陆
     CRP_PACKET_LOGIN_LOGOUT,        //登出
+    CRP_PACKET_LOGIN_REGISTER,      //注册请求
 
     CRP_PACKET_INFO__START = 0x20,
     CRP_PACKET_INFO_REQUEST,        //用户资料请求报
@@ -49,9 +52,10 @@ typedef enum
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件
     CRP_PACKET_FILE_DATA,          //响应数据
-    CRP_PACKET_FILE_DATA_START,      //响应数据开始
+    CRP_PACKET_FILE_DATA_START,    //响应数据结束
     CRP_PACKET_FILE_DATA_END,      //响应数据结束
-    CRP_PACKET_FILE_STORE_REQUEST,      //请求存储新文件
+    CRP_PACKET_FILE_STORE_REQUEST, //请求存储新文件
+    CRP_PACKET_FILE_STORE_ACCEPT,  //接受新文件
 
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
     CRP_PACKET_MESSAGE_TEXT,        //文本消息

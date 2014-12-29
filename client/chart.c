@@ -93,7 +93,7 @@ static gint button_press_event(GtkWidget *widget,
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
 
-    if (event->button == 1 && (X > 391 && X < 473) && (Y> 513 && Y < 540)&&chardestroyflag==0) {     //设置发送按钮
+if (event->button == 1 && (X > 391 && X < 473) && (Y > 513 && Y < 540) && chardestroyflag == 0) {     //设置发送按钮
         g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend2); //置换图标
@@ -147,11 +147,12 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
             destroy_surfaces3();
             //DeleteEvent();
             gtk_widget_destroy(window);
-            chardestroyflag==1;
+    chardestroyflag == 1;
         }
         return 0;
     }
 }
+
 //鼠标移动事件
 static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
@@ -176,7 +177,7 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
     else if((X > 301 && X < 382) && (Y> 513 && Y < 540)&&chardestroyflag==0) {          //设置右下关闭按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose2); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose2); //置换图标 //置换图标
     }
     else if((X > 470 && X < 500) && (Y> 2 && Y < 25)&&chardestroyflag==0){         //设置右上关闭按钮
 

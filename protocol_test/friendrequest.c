@@ -20,7 +20,6 @@ int TestPacketFriRequest() {
         log_error("frirequest", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
-    CRPPacketFriendRequest *frirequest = CRPFriendRequestCast(packet);
     log_info("frirequest", "通过\n");
     free(packet);
     return 1;
