@@ -36,16 +36,14 @@ int fcount = 0;//好友数量
 
 
 
-int mysockfd()
-{
+int mysockfd() {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
-    {
+    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
         perror("Connect");
         return 0;
     }
@@ -54,8 +52,7 @@ int mysockfd()
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
-    if (header->packetID != CRP_PACKET_OK)
-    {
+    if (header->packetID != CRP_PACKET_OK) {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 0;
     }
@@ -71,8 +68,7 @@ int mysockfd()
 
 
     header = CRPRecv(sockfd);
-    if (header->packetID == CRP_PACKET_FAILURE)
-    {
+    if (header->packetID == CRP_PACKET_FAILURE) {
         //密码错误
         log_info("登录失败", "登录失败\n");
 
@@ -82,26 +78,22 @@ int mysockfd()
         g_idle_add(destroyLayout, NULL);
         return 1;
     }
-    if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
-    {
+    if (header->packetID == CRP_PACKET_LOGIN_ACCEPT) {
         log_info("登录成功", "登录成功\n");
         //登陆成功之后开始请求资料
         g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
-        if (ac != header->data)
-        {
+        if (ac != header->data) {
             free(ac);
         }
         free(header);
 
         CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
         CRPFriendRequestSend(sockfd, 1);  //请求用户好友列表
-        while (errno < 10000)
-        {
+        while (errno < 10000) {
             header = CRPRecv(sockfd);
-            switch (header->packetID)
-            {
+            switch (header->packetID) {
                 case CRP_PACKET_INFO_DATA: //用户资料回复
                 {
                     if (header->sessionID < 10000)//小于10000,用户的自己的
@@ -112,14 +104,12 @@ int mysockfd()
                         log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->icon);//发送头像请求
 
-                        if (infodata != header->data)
-                        {
+                        if (infodata != header->data) {
                             free(infodata);
                         }
                     }
 
-                    else
-                    {
+                    else {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
                         memcpy(&groupdata, infodata, sizeof(CRPPacketInfoData));
 
@@ -136,29 +126,24 @@ int mysockfd()
                     {
                         sprintf(mulu, "%s/momo/head.png", getpwuid(getuid())->pw_dir);
                         log_info("路径", "%s\n", mulu);
-                        if ((fp = fopen(mulu, "w")) == NULL)
-                        {
+                        if ((fp = fopen(mulu, "w")) == NULL) {
                             perror("openfile\n");
                         }
                         CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
                         log_info("Icon", "%lu bytes will be received\n", packet->dataLength);
-                        if (packet != header->data)
-                        {
+                        if (packet != header->data) {
                             free(packet);
                         }
                     }
-                    else
-                    {
+                    else {
                         sprintf(mulu2, "%s/momo/%u", getpwuid(getuid())->pw_dir, header->sessionID);
                         log_info("路径", "%s\n", mulu);
-                        if ((fp2 = fopen(mulu2, "w")) == NULL)
-                        {
+                        if ((fp2 = fopen(mulu2, "w")) == NULL) {
                             perror("openfile\n");
                         }
                         CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
                         log_info("Icon", "%lu bytes will be received\n", packet->dataLength);
-                        if (packet != header->data)
-                        {
+                        if (packet != header->data) {
                             free(packet);
                         }
                     }
@@ -167,37 +152,30 @@ int mysockfd()
                     break;
                 };
                 case CRP_PACKET_FILE_DATA://接受头像
-                    if (header->sessionID < 10000)
-                    {
+                    if (header->sessionID < 10000) {
                         fwrite(header->data, 1, header->dataLength, fp);
                     }
-                    else
-                    {
+                    else {
                         fwrite(header->data, 1, header->dataLength, fp2);
                     }
 
                     break;
 
-                case CRP_PACKET_FILE_DATA_END:
-                {
+                case CRP_PACKET_FILE_DATA_END: {
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
 
-                    if (header->sessionID < 10000)
-                    {
+                    if (header->sessionID < 10000) {
                         fclose(fp);
                     }
-                    else
-                    {
-                       fclose(fp2);
+                    else {
+                        fclose(fp2);
                     }
-                    if (packet != header->data)
-                    {
+                    if (packet != header->data) {
                         free(packet);
                     }
                     break;
                 }
-                case CRP_PACKET_FRIEND_DATA:
-                {
+                case CRP_PACKET_FRIEND_DATA: {
 
 
                     UserFriends *friends = UserFriendsDecode((unsigned char *) header->data);
