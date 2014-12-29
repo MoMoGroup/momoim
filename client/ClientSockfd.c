@@ -16,6 +16,7 @@
 #include <sys/stat.h>
 #include <imcommon/friends.h>
 #include <errno.h>
+#include <grp.h>
 #include "MainInterface.h"
 
 extern int flag;
@@ -88,7 +89,7 @@ int mysockfd()
     {
         log_info("登录成功", "登录成功\n");
         //登陆成功之后开始请求资料
-        g_idle_add(mythread, NULL);
+        g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
         if (ac != header->data)
@@ -111,7 +112,7 @@ int mysockfd()
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
                         memcpy(&userdata, infodata, sizeof(CRPPacketInfoData));//放到结构提里，保存昵称，性别等资料
 
-                        log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称获取成功
+                        log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->icon);//发送头像请求
 
                         if (infodata != header->data)
@@ -213,6 +214,7 @@ int mysockfd()
                         {
                             CRPInfoRequestSend(sockfd, group->friends[j], group->friends[j]); //请求用户资料,
                             log_info(group->groupName, "Friend:%u\n", group->friends[j]);
+
                         }
                     }
                     UserFriendsFree(friends);
