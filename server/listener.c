@@ -90,11 +90,6 @@ void *ListenMain(void *listenSocket)
                     log_error("SERVER-LISTENER", "accept failure:%s\n", strerror(errno));
                     continue;
                 }
-                log_info("SERVER-LISTENER", "[%s:%d]Assigned to worker %d.\n",
-                         inet_ntoa(addr.sin_addr),
-                         ntohs(addr.sin_port),
-                         worker->workerId
-                );
                 UserJoinToPoll(OnlineUserNew(fd));
             }
             else

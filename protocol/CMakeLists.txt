@@ -12,6 +12,7 @@ SET(LIBPROTOCOL_SRC
     packets/login/Login.c
     packets/login/Accept.c
     packets/login/Logout.c
+    packets/login/Register.c
 
     packets/status/Failure.c
     packets/status/Hello.c
@@ -21,8 +22,10 @@ SET(LIBPROTOCOL_SRC
 
     packets/file/Data.c
     packets/file/Request.c
+    packets/file/DataStart.c
     packets/file/DataEnd.c
     packets/file/StoreRequest.c
+    packets/file/StoreAccept.c
 
     packets/message/TextMessage.c
     )

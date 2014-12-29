@@ -3,6 +3,7 @@
 * 服务端接受登陆请求时，回发给客户端的消息
 */
 #include <stdint.h>
+#include <protocol/base.h>
 
 CRP_STRUCTURE
 {

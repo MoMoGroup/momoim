@@ -33,5 +33,7 @@ int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDa
 
 int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketFileStoreRequest *packet);
 
+int ProcessPacketLoginRegister(OnlineUser *user, uint32_t session, CRPPacketLoginRegister *packet);
+
 //数据包处理函数映射
 extern int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t session, void *packet);

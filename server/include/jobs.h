@@ -2,9 +2,6 @@
 
 #include "server.h"
 
-//事务队列
-extern OnlineUser *jobQueue[MAX_CLIENTS];
-
 //初始化事务管理器
 void InitJobManger(void);
 

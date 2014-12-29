@@ -10,11 +10,12 @@
 CRP_STRUCTURE
 {
     uint32_t uid;
-    char nickName[32];
     char sex;
+    char nickName[32];
+    unsigned char icon[16];
 } CRPPacketInfoData;
 
 __attribute_malloc__
 CRPPacketInfoData *CRPInfoDataCast(CRPBaseHeader *base);
 
-int CRPInfoDataSend(int sockfd, uint32_t sessionID, uint32_t uid, char *nick, char sex);
+int CRPInfoDataSend(int sockfd, uint32_t sessionID, uint32_t uid, char *nick, char sex, unsigned char *icon);

@@ -6,7 +6,7 @@
 
 int TestInfoQuery()
 {
-    if (!CRPInfoRequestSend(sendfd, 0xabcdef01))
+    if (!CRPInfoRequestSend(sendfd, 0, 0xabcdef01))
     {
         log_error("InfoQuery", "Send返回失败\n");
         perror("");

@@ -13,7 +13,8 @@ SET(SERVER_SOURCE_FILE
 
     data/base.c
     data/auth.c
-    data/friends.c
+    data/user.c
+    data/file.c
 
     packets/file/Request.c
     packets/file/Data.c
@@ -31,6 +32,7 @@ SET(SERVER_SOURCE_FILE
 
     packets/login/Login.c
     packets/login/Logout.c
+    packets/login/Register.c
 
     packets/message/TextMessage.c
     )

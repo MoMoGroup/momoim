@@ -5,8 +5,6 @@
 #include "worker.h"
 #include "user.h"
 
-extern int userdb;
-
 //socket监听线程主函数
 void *ListenMain(void *listenSocket);
 
@@ -21,8 +19,6 @@ extern pthread_t ThreadListener;
 #define WORKER_COUNT 8
 //事务处理器
 extern WorkerType worker[WORKER_COUNT];
-//epoll文件描述符
-extern int ServerIOPoll;
 
 //将一个用户加入到epoll中
 void UserJoinToPoll(OnlineUser *);

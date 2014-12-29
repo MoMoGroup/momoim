@@ -11,6 +11,21 @@
 #include "user.h"
 #include "data/user.h"
 
+int UserInit()
+{
+    if (mkdir("user", 0700) != 0 && errno != EEXIST)
+    {
+        log_error("User", "Cannot create user directory\n");
+        return 0;
+    }
+    return 1;
+}
+
+void UserFinalize()
+{
+
+}
+
 //Get User Directory Path
 //17 characters at least
 void UserGetDir(char *path, uint32_t uid, const char *relPath)
@@ -20,13 +35,7 @@ void UserGetDir(char *path, uint32_t uid, const char *relPath)
 
 void UserCreateDirectory(uint32_t uid)
 {
-    char userDir[20], path[100];
-    sprintf(userDir, "user");
-    if (mkdir(userDir, 0700) != 0 && errno != EEXIST)
-    {
-        log_error("User", "Cannot create directory %s\n", userDir);
-        return;
-    }
+    char userDir[20];
     sprintf(userDir, "user/%02d", uid % 100);
     if (mkdir(userDir, 0700) != 0 && errno != EEXIST)
     {
@@ -41,25 +50,28 @@ void UserCreateDirectory(uint32_t uid)
         return;
     }
 
-    sprintf(path, "%s/info", userDir);
-    UserCreateInfoFile(uid, path);
-
-    sprintf(path, "%s/friends", userDir);
-    UserCreateFriendsFile(path);
+    UserCreateInfoFile(uid);
+    UserCreateFriendsFile(uid);
 }
 
-void UserCreateInfoFile(uint32_t uid, char *path)
+void UserCreateInfoFile(uint32_t uid)
 {
     UserInfo info = {
             .uid=uid,
             .nickName="Baby",
-            .sex=0
+            .sex=0,
+            .icon={
+                    [15]=1
+            }
     };
-    UserSaveInfoFile(&info, path);
+    UserSaveInfoFile(uid, &info);
 }
 
-int UserSaveInfoFile(UserInfo *info, char *path)
+int UserSaveInfoFile(uint32_t uid, UserInfo *info)
 {
+    char path[100];
+    UserGetDir(path, uid, "info");
+
     int fd = open(path, O_CREAT | O_WRONLY | O_TRUNC, 0600);
     if (fd == -1)
     {
@@ -77,7 +89,7 @@ UserInfo *UserGetInfo(uint32_t uid)
     UserGetDir(infoFile, uid, "info");
     if (access(infoFile, R_OK))
     {
-        UserCreateInfoFile(uid, infoFile);
+        UserCreateInfoFile(uid);
         if (access(infoFile, R_OK))
         {
             return NULL;
@@ -101,16 +113,17 @@ void UserFreeInfo(UserInfo *friends)
         free(friends);
 }
 
-void UserCreateFriendsFile(char *path)
+void UserCreateFriendsFile(uint32_t uid)
 {
     uint32_t mfriends[] = {
-            10000
+            10000,
+            10001
     };
     UserGroup groups[] = {
             {
                     .groupId=0,
                     .groupName="Friends",
-                    .friendCount=1,
+                    .friendCount=2,
                     .friends=mfriends
             },
             {
@@ -123,11 +136,14 @@ void UserCreateFriendsFile(char *path)
             .groupCount=2,
             .groups=groups
     };
-    UserSaveFriendsFile(&friends, path);
+    UserSaveFriendsFile(uid, &friends);
 };
 
-int UserSaveFriendsFile(UserFriends *friends, char *path)
+int UserSaveFriendsFile(uint32_t uid, UserFriends *friends)
 {
+
+    char path[30];
+    UserGetDir(path, uid, "friends");
     int fd = open(path, O_CREAT | O_RDWR | O_TRUNC, 0600);
     if (fd == -1)
     {
@@ -158,12 +174,12 @@ int UserSaveFriendsFile(UserFriends *friends, char *path)
 UserFriends *UserGetFriends(uint32_t uid)
 {
     UserFriends *friends = NULL;
-    char friendFile[30];
-    UserGetDir(friendFile, uid, "friends");
-    int fd = open(friendFile, O_RDONLY);
+    char path[30];
+    UserGetDir(path, uid, "friends");
+    int fd = open(path, O_RDONLY);
     if (fd == -1)
     {
-        log_error("User", "Cannot read user friends file %s.\n", friendFile);
+        log_error("User", "Cannot read user friends file %s.\n", path);
         return NULL;
     }
     //Map File To Memory

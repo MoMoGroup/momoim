@@ -7,7 +7,7 @@
 
 typedef __uint16_t CRP_LENGTH_TYPE;
 #define CRP_STRUCTURE typedef struct __attribute__ ((packed))
-
+#define NILOBJ(x) ((x *) 0)
 CRP_STRUCTURE
 {
     unsigned int magicCode /* 0x464F5573 */;
