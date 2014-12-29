@@ -7,6 +7,7 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 #include<string.h>
+#include <protocol/base.h>
 
 int main()
 {
@@ -81,6 +82,7 @@ int main()
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
                 log_info("User", "Nick:%s\n", infoData->nickName);
                 CRPFileRequestSend(sockfd, 10, 0, infoData->icon);
+
                 if (infoData != header->data)
                     free(infoData);
                 break;
@@ -123,6 +125,7 @@ int main()
                     log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
                     for (int j = 0; j < group->friendCount; ++j)
                     {
+                        CRPInfoRequestSend(sockfd, 1, group->friends[j]); //请求用户资料
                         log_info(group->groupName, "Friend:%u\n", group->friends[j]);
                     }
                 }
