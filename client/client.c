@@ -6,129 +6,106 @@
 #include <bits/sigthread.h>
 #include <sys/socket.h>
 #include <logger.h>
-#include "newuser.h"
 
-GtkWidget *image4, *image7, *image8, *image10;
-GtkWidget *username, *passwd;
-pthread_t thread1;
-int sockfd;
-int nX = 0;
-int nY = 0;
-GtkWidget *window;
 
-cairo_surface_t *surface1, *surface2, *surface3, *surface41, *surface42, *surface43, *surface5, *surface6;
-cairo_surface_t *surface71, *surface72, *surface81, *surface82, *surface83,*surface9, *surface10_1, *surface10_2, *surface10_3;
-int flag = 1;
-GtkWidget *loginLayout, *pendingLayout, *chartlayout2;
+
+static GtkWidget *image4, *imageregistered, *imageclosebut, *imagecancel;
+static GtkWidget *username, *passwd;
+static pthread_t thread1;
+static int sockfd;
+static int nX = 0,nY=0;
+static GtkWidget *window;
+
+static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd;
+static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3,*slandimage, *scancel10_1, *scancel10_2, *scancel10_3;
+static int flag = 1;
+static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
+
 
 //关闭窗口
 static void
 create_surfaces1() {
-    GtkWidget *image1, *image2, *image3, *image5, *image6;
-    surface1 = cairo_image_surface_create_from_png("背景.png");
-    surface2 = cairo_image_surface_create_from_png("头像.png");
-    surface3 = cairo_image_surface_create_from_png("白色.png");
-    surface41 = cairo_image_surface_create_from_png("登陆按钮.png");
-    surface42 = cairo_image_surface_create_from_png("登陆按钮2.png");
-    surface43 = cairo_image_surface_create_from_png("登陆按钮3.png");
-    surface5 = cairo_image_surface_create_from_png("账号.png");
-    surface6 = cairo_image_surface_create_from_png("密码.png");
-    surface71 = cairo_image_surface_create_from_png("注册账号.png");
-    surface72 = cairo_image_surface_create_from_png("注册账号2.png");
-    surface81 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    surface82 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    surface83 = cairo_image_surface_create_from_png("关闭按钮3.png");
+    GtkWidget *imagebackground, *imagehead, *imagewhite, *imageaccount, *imagepasswd;
+    GtkWidget *iwait, *imainland;
 
+    sbackground = cairo_image_surface_create_from_png("背景.png");
+    sheadimage = cairo_image_surface_create_from_png("头像.png");
+    swhite = cairo_image_surface_create_from_png("白色.png");
+    slandbut1 = cairo_image_surface_create_from_png("登陆按钮.png");
+    slandbut2 = cairo_image_surface_create_from_png("登陆按钮2.png");
+    slandbut3 = cairo_image_surface_create_from_png("登陆按钮3.png");
+    saccount = cairo_image_surface_create_from_png("账号.png");
+    spasswd = cairo_image_surface_create_from_png("密码.png");
+    sregistered1 = cairo_image_surface_create_from_png("注册账号.png");
+    sregistered2 = cairo_image_surface_create_from_png("注册账号2.png");
+    sclosebut1 = cairo_image_surface_create_from_png("关闭按钮1.png");
+    sclosebut2 = cairo_image_surface_create_from_png("关闭按钮2.png");
+    sclosebut3 = cairo_image_surface_create_from_png("关闭按钮3.png");
+    slandimage = cairo_image_surface_create_from_png("登录.png");
+    scancel10_1 = cairo_image_surface_create_from_png("取消1.png");
+    scancel10_2 = cairo_image_surface_create_from_png("取消2.png");
+    scancel10_3 = cairo_image_surface_create_from_png("取消3.png");
 
-    image1 = gtk_image_new_from_surface(surface1);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image1, 0, 0);//起始坐标
+    imagebackground = gtk_image_new_from_surface(sbackground);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagebackground, 0, 0);//起始坐标
 
-    image2 = gtk_image_new_from_surface(surface2);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image2, 65, 30);
+    imagehead = gtk_image_new_from_surface(sheadimage);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
 
-    image3 = gtk_image_new_from_surface(surface3);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image3, 25, 200);
+    imagewhite = gtk_image_new_from_surface(swhite);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
 
-    image4 = gtk_image_new_from_surface(surface41);
+    image4 = gtk_image_new_from_surface(slandbut1);
     gtk_fixed_put(GTK_FIXED(loginLayout), image4, 70, 300);
 
-    image5 = gtk_image_new_from_surface(surface5);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image5, 35, 220);
+    imageaccount = gtk_image_new_from_surface(saccount);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 35, 220);
 
-    image6 = gtk_image_new_from_surface(surface6);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image6, 35, 260);
-    image7 = gtk_image_new_from_surface(surface71);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image7, 5, 380);
+    imagepasswd= gtk_image_new_from_surface(spasswd);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
+    imageregistered = gtk_image_new_from_surface(sregistered1);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imageregistered, 5, 380);
 
-    image8 = gtk_image_new_from_surface(surface81);
-    gtk_fixed_put(GTK_FIXED(loginLayout), image8, 247, 0);
+    imageclosebut = gtk_image_new_from_surface(sclosebut1);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imageclosebut, 247, 0);
+
+    iwait = gtk_image_new_from_file("等待.gif");
+    gtk_fixed_put(GTK_FIXED(pendingLayout),iwait, 0, 0);
+
+    imainland = gtk_image_new_from_surface(slandimage);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 80, 20);
+
+    imagecancel = gtk_image_new_from_surface(scancel10_1);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), imagecancel, 70, 310);
 }
 
-
-static void create_surfaces2() {
-    GtkWidget *image1, *image2;
-    surface9 = cairo_image_surface_create_from_png("玩命登陆.png");
-    surface10_1 = cairo_image_surface_create_from_png("取消1.png");
-    surface10_2 = cairo_image_surface_create_from_png("取消2.png");
-    surface10_3 = cairo_image_surface_create_from_png("取消3.png");
-
-    image1 = gtk_image_new_from_file("等待.gif");
-    gtk_fixed_put(GTK_FIXED(pendingLayout), image1, 0, 0);
-
-    image2 = gtk_image_new_from_surface(surface9);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), image2, 40, 50);
-
-    image10 = gtk_image_new_from_surface(surface10_1);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), image10, 70, 310);
-
-}
 
 static void
 destroy_surfaces() {
     g_print("destroying surfaces1");
-    cairo_surface_destroy(surface1);
-    cairo_surface_destroy(surface2);
-    cairo_surface_destroy(surface3);
-    cairo_surface_destroy(surface41);
-    cairo_surface_destroy(surface42);
-    cairo_surface_destroy(surface43);
-    cairo_surface_destroy(surface5);
-    cairo_surface_destroy(surface6);
-    cairo_surface_destroy(surface71);
-    cairo_surface_destroy(surface72);
-    cairo_surface_destroy(surface81);
-    cairo_surface_destroy(surface82);
-    cairo_surface_destroy(surface83);
-    cairo_surface_destroy(surface9);
-    cairo_surface_destroy(surface10_1);
-    cairo_surface_destroy(surface10_2);
-    cairo_surface_destroy(surface10_3);
+    cairo_surface_destroy(sbackground);
+    cairo_surface_destroy(sheadimage);
+    cairo_surface_destroy(swhite);
+    cairo_surface_destroy(slandbut1);
+    cairo_surface_destroy(slandbut2);
+    cairo_surface_destroy(slandbut3);
+    cairo_surface_destroy(saccount);
+    cairo_surface_destroy(spasswd);
+    cairo_surface_destroy(sregistered1);
+    cairo_surface_destroy(sregistered2);
+    cairo_surface_destroy(sclosebut1);
+    cairo_surface_destroy(sclosebut2);
+    cairo_surface_destroy(sclosebut3);
+    cairo_surface_destroy(slandimage);
+    cairo_surface_destroy(scancel10_1);
+    cairo_surface_destroy(scancel10_2);
+    cairo_surface_destroy(scancel10_3);
 }
 
 extern int DeleteEvent() {
     gtk_main_quit();
     return TRUE;
 }
-gboolean mythread(gpointer user_data)//合并
-{
-    gtk_widget_destroy(window);
-    maininterface();
-    return 0;
-}//合并
-
-gboolean destroyLayout(gpointer user_data){
-
-    gtk_widget_destroy(pendingLayout);
-    gtk_widget_show_all(loginLayout);
-}
-
-
-
-
-
-
-
-
 
 void *sendhello(void *M) {
     mysockfd();
@@ -143,11 +120,8 @@ void on_button_clicked() {
     //gtk_widget_destroy(layout);销毁layout对话框
 
 
-    pendingLayout = gtk_fixed_new();
+    gtk_container_add(GTK_CONTAINER (frameLayout), pendingLayout);
 
-    gtk_container_add(GTK_CONTAINER (chartlayout2), pendingLayout);
-
-    create_surfaces2();
     gtk_widget_show_all(pendingLayout);//显示layout2
 
     pthread_create(&thread1, NULL, sendhello, NULL);
@@ -166,24 +140,21 @@ static gint button_press_event(GtkWidget *widget,
 
         {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-            gtk_image_set_from_surface((GtkImage *) image4, surface42);
+            gtk_image_set_from_surface((GtkImage *) image4, slandbut2);
         }
         else if (event->button == 1 && (nX > 247 && nX < 280) && (nY > 2 && nY < 25) && flag == 1) {              //设置关闭按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-            gtk_image_set_from_surface((GtkImage *) image8, surface82); //置换图标
+            gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut2); //置换图标
         }
         else if (event->button == 1 && (nX > 5 && nX < 62) && (nY > 380 && nY < 395) && flag == 1)       // 判断是否左键按下
 
         {                                                                                           //设置注册按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-            gtk_image_set_from_surface((GtkImage *) image7, surface72);
-            log_info("注册", "注册\n");
-            newface();
-
+            gtk_image_set_from_surface((GtkImage *) imageregistered, sregistered2);
         }
         else if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 350) && flag == 0) {   //设置第二界面取消按钮
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-            gtk_image_set_from_surface((GtkImage *) image10, surface10_3);//设置鼠标光标
+            gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_3);//设置鼠标光标
         }
         else {                                                                               //设置在非按钮区域内移动窗口
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
@@ -193,7 +164,7 @@ static gint button_press_event(GtkWidget *widget,
             }
         }
     }
-    return TRUE;
+    return 0;
 
 }
 
@@ -208,30 +179,30 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     nY = event->y;
     if (event->button == 1 && (nX > 75 && nX < 205) && (nY > 302 && nY < 335) && flag == 1)  //判断是否在登陆区域中，设置登陆按钮
     {
-        gtk_image_set_from_surface((GtkImage *) image4, surface41);
+        gtk_image_set_from_surface((GtkImage *) image4, slandbut1);
         on_button_clicked();
     }
     else if (event->button == 1 && flag == 1)       // 判断是否是点击关闭图标
 
     {
-        gtk_image_set_from_surface((GtkImage *) image8, surface81);  //设置关闭按钮
+        gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);  //设置关闭按钮
         if ((nX > 247 && nX < 280) && (nY > 2 && nY < 25))
             DeleteEvent();
     }
     else if (flag == 0) {                                         //设置取消按钮
         if (event->button == 1 && (nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
-            gtk_image_set_from_surface((GtkImage *) image10, surface10_1);
+            gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
             if ((nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
                 close(sockfd);
                 pthread_cancel(thread1);
                 flag = 1;
-                gtk_widget_destroy(pendingLayout);
+                gtk_widget_hide(pendingLayout);
                 gtk_widget_show_all(loginLayout);
             }
         }
     }
 
-    return TRUE;
+    return 0;
 }
 
 static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
@@ -244,38 +215,40 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
     if (flag == 1) {
         if ((nX > 75 && nX < 205) && (nY > 302 && nY < 335)) {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-            gtk_image_set_from_surface((GtkImage *) image4, surface43);
+            gtk_image_set_from_surface((GtkImage *) image4, slandbut3);
         }
         else if ((nX > 247 && nX < 280) && (nY > 2 && nY < 25)){
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-            gtk_image_set_from_surface((GtkImage *) image8, surface83);
+            gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut3);
         }
         else if((nX > 5 && nX < 62) && (nY > 380 && nY < 395)) {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
         }
         else{
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-            gtk_image_set_from_surface((GtkImage *) image8, surface81);
-            gtk_image_set_from_surface((GtkImage *) image4, surface41);
+
+            gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);
+            gtk_image_set_from_surface((GtkImage *) image4, slandbut1);
         }
     }
     else if (flag == 0) {
         if ((nX > 75 && nX < 202) && (nY > 312 && nY < 355)) {
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-            gtk_image_set_from_surface((GtkImage *) image10, surface10_2);
+            gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_2);
         }
         else {
 
             gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-            gtk_image_set_from_surface((GtkImage *) image10, surface10_1);
+            gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
 
         }
     }
 
-    return TRUE;
+    return 0;
 }
 
 int main(int argc, char *argv[]) {
+
 
     //初始化GTK+程序
     gtk_init(&argc, &argv);
@@ -288,12 +261,16 @@ int main(int argc, char *argv[]) {
     gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置
     // gtk_window_set_resizable (GTK_WINDOW (window), FALSE);//窗口不可改变
-
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);   // 去掉边框
 
+
+
     gtk_widget_set_events(window,  // 设置窗体获取鼠标事件
+
             GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+
                     | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+
                     | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
     g_signal_connect(G_OBJECT(window), "button_press_event",
@@ -304,19 +281,20 @@ int main(int argc, char *argv[]) {
 
     g_signal_connect(G_OBJECT(window), "button_release_event",
             G_CALLBACK(button_release_event), window);
+    pendingLayout = gtk_fixed_new();
     loginLayout = gtk_fixed_new();
     create_surfaces1();
 
-    chartlayout2 = gtk_layout_new(NULL, NULL);
+    frameLayout = gtk_layout_new(NULL, NULL);
 
-    gtk_container_add(GTK_CONTAINER (window), chartlayout2);//chartlayout2 加入到window
-    gtk_container_add(GTK_CONTAINER (chartlayout2), loginLayout);
+    gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window
+    gtk_container_add(GTK_CONTAINER (frameLayout), loginLayout);
 
     username = gtk_entry_new();
     passwd = gtk_entry_new();
 
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');//
+    gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
 
     gtk_fixed_put(GTK_FIXED(loginLayout), username, 85, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), passwd, 85, 260);
