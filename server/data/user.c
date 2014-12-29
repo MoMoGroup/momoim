@@ -35,7 +35,7 @@ void UserGetDir(char *path, uint32_t uid, const char *relPath)
 
 void UserCreateDirectory(uint32_t uid)
 {
-    char userDir[20], path[100];
+    char userDir[20];
     sprintf(userDir, "user/%02d", uid % 100);
     if (mkdir(userDir, 0700) != 0 && errno != EEXIST)
     {
@@ -116,13 +116,14 @@ void UserFreeInfo(UserInfo *friends)
 void UserCreateFriendsFile(uint32_t uid)
 {
     uint32_t mfriends[] = {
-            10000
+            10000,
+            10001
     };
     UserGroup groups[] = {
             {
                     .groupId=0,
                     .groupName="Friends",
-                    .friendCount=1,
+                    .friendCount=2,
                     .friends=mfriends
             },
             {
