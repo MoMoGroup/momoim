@@ -13,56 +13,55 @@ extern int chardestroyflag = 0;
 static GtkWidget *window;
 static GtkWidget *chartlayout, *chartlayout2;
 
-static cairo_surface_t *surface1, *surface21, *surface22, *surface3, *surface41, *surface42, *surface52, *surface51;
-static cairo_surface_t *surface61, *surface62, *surface71, *surface72, *surface73;
-static GtkWidget *image1, *image2, *image3, *image4, *image5;
-static GtkWidget *image6, *image7;
+static cairo_surface_t *sflowerbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
+static cairo_surface_t *surfaceclose1, *surfaceclose2, *surfaceclosebut1, *surfaceclosebut2, *surfaceclosebut3;
+static GtkWidget *imageflowerbackgroud, *imagesend, *imagehead3, *imagevoice, *imagevideo;
+static GtkWidget *imageclose, *imageclosebut;
 
 static void create_surfaces() {
 
+    sflowerbackgroud = cairo_image_surface_create_from_png("花背景.png");
+    surfacesend1 = cairo_image_surface_create_from_png("发送1.png");
+    surfacesend2 = cairo_image_surface_create_from_png("发送2.png");
+    surfacehead3 = cairo_image_surface_create_from_png("头像3.png");
+    surfacevoice1 = cairo_image_surface_create_from_png("语音1.png");
+    surfacevoice2 = cairo_image_surface_create_from_png("语音2.png");
+    surfacevideo2 = cairo_image_surface_create_from_png("视频1.png");
+    surfacevideo1 = cairo_image_surface_create_from_png("视频2.png");
+    surfaceclose1 = cairo_image_surface_create_from_png("关闭1.png");
+    surfaceclose2 = cairo_image_surface_create_from_png("关闭2.png");
+    surfaceclosebut1 = cairo_image_surface_create_from_png("关闭按钮1.png");
+    surfaceclosebut2 = cairo_image_surface_create_from_png("关闭按钮2.png");
+    surfaceclosebut3 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
-    surface1 = cairo_image_surface_create_from_png("花背景.png");
-    surface21 = cairo_image_surface_create_from_png("发送1.png");
-    surface22 = cairo_image_surface_create_from_png("发送2.png");
-    surface3 = cairo_image_surface_create_from_png("头像3.png");
-    surface41 = cairo_image_surface_create_from_png("语音1.png");
-    surface42 = cairo_image_surface_create_from_png("语音2.png");
-    surface51 = cairo_image_surface_create_from_png("视频1.png");
-    surface52 = cairo_image_surface_create_from_png("视频2.png");
-    surface61 = cairo_image_surface_create_from_png("关闭1.png");
-    surface62 = cairo_image_surface_create_from_png("关闭2.png");
-    surface71 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    surface72 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    surface73 = cairo_image_surface_create_from_png("关闭按钮3.png");
-
-    image1 = gtk_image_new_from_surface(surface1);
-    gtk_fixed_put(GTK_FIXED(chartlayout), image1, 0, 0);
+    imageflowerbackgroud = gtk_image_new_from_surface(sflowerbackgroud);
+    gtk_fixed_put(GTK_FIXED(chartlayout), imageflowerbackgroud, 0, 0);
 //发送
-    image2 = gtk_image_new_from_surface(surface21);
-    gtk_fixed_put(GTK_FIXED(chartlayout), image2, 390, 510);
+    imagesend = gtk_image_new_from_surface(surfacesend1);
+    gtk_fixed_put(GTK_FIXED(chartlayout), imagesend, 390, 510);
 
 //头像
-    image3 = gtk_image_new_from_surface(surface3);
-    gtk_fixed_put(GTK_FIXED(chartlayout), image3, 0, 0);
+    imagehead3 = gtk_image_new_from_surface(surfacehead3);
+    gtk_fixed_put(GTK_FIXED(chartlayout), imagehead3, 0, 0);
 
 //语音
-    image4 = gtk_image_new_from_surface(surface41);
-    gtk_fixed_put(GTK_FIXED(chartlayout), image4, 15, 70);
+    imagevoice = gtk_image_new_from_surface(surfacevoice1);
+    gtk_fixed_put(GTK_FIXED(chartlayout), imagevoice, 15, 70);
 
 
 //视频按钮
-    image5 = gtk_image_new_from_surface(surface51);
-    gtk_fixed_put(GTK_FIXED(chartlayout), image5, 60, 70);
+    imagevideo = gtk_image_new_from_surface(surfacevideo2);
+    gtk_fixed_put(GTK_FIXED(chartlayout), imagevideo, 60, 70);
 
 
 //下方关闭按钮
-    image6 = gtk_image_new_from_surface(surface61);
-    gtk_fixed_put(GTK_FIXED(chartlayout), image6, 300, 512);
+    imageclose = gtk_image_new_from_surface(surfaceclose1);
+    gtk_fixed_put(GTK_FIXED(chartlayout), imageclose, 300, 512);
 
 
 //右上角关闭按钮
-    image7 = gtk_image_new_from_surface(surface71);
-    gtk_fixed_put(GTK_FIXED(chartlayout), image7, 470, 0);
+    imageclosebut = gtk_image_new_from_surface(surfaceclosebut1);
+    gtk_fixed_put(GTK_FIXED(chartlayout), imageclosebut, 470, 0);
 
 }
 
@@ -70,51 +69,51 @@ static void
 destroy_surfaces3() {
     g_print("destroying surfaces3");
 
-    cairo_surface_destroy(surface1);
-    cairo_surface_destroy(surface21);
-    cairo_surface_destroy(surface22);
-    cairo_surface_destroy(surface3);
-    cairo_surface_destroy(surface41);
-    cairo_surface_destroy(surface42);
-    cairo_surface_destroy(surface51);
-    cairo_surface_destroy(surface52);
-    cairo_surface_destroy(surface61);
-    cairo_surface_destroy(surface62);
-    cairo_surface_destroy(surface71);
-    cairo_surface_destroy(surface72);
-    cairo_surface_destroy(surface73);
+    cairo_surface_destroy(sflowerbackgroud);
+    cairo_surface_destroy(surfacesend1);
+    cairo_surface_destroy(surfacesend2);
+    cairo_surface_destroy(surfacehead3);
+    cairo_surface_destroy(surfacevoice1);
+    cairo_surface_destroy(surfacevoice2);
+    cairo_surface_destroy(surfacevideo2);
+    cairo_surface_destroy(surfacevideo1);
+    cairo_surface_destroy(surfaceclose1);
+    cairo_surface_destroy(surfaceclose2);
+    cairo_surface_destroy(surfaceclosebut1);
+    cairo_surface_destroy(surfaceclosebut2);
+    cairo_surface_destroy(surfaceclosebut3);
 }
 
 //鼠标点击事件
 static gint button_press_event(GtkWidget *widget,
 
-GdkEventButton *event, gpointer data) {
+        GdkEventButton *event, gpointer data) {
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
 
-if (event->button == 1 && (X > 391 && X < 473) && (Y > 513 && Y < 540) && chardestroyflag == 0) {     //设置发送按钮
+    if (event->button == 1 && (X > 391 && X < 473) && (Y > 513 && Y < 540) && chardestroyflag == 0) {     //设置发送按钮
         g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-gtk_image_set_from_surface((GtkImage *) image2, surface22); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend2); //置换图标
     }
     else if (event->button == 1 && (X > 18 && X < 43) && (Y > 70 && Y < 100) && chardestroyflag == 0) {   //设置语音按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-gtk_image_set_from_surface((GtkImage *) image4, surface42); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imagevoice, surfacevoice2); //置换图标
     }
     else if (event->button == 1 && (X > 60 && X < 93) && (Y > 74 && Y < 103) && chardestroyflag == 0) {   //设置视频按钮
         g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-gtk_image_set_from_surface((GtkImage *) image5, surface52); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imagevideo, surfacevideo1); //置换图标
     }
     else if (event->button == 1 && (X > 301 && X < 382) && (Y > 513 && Y < 540) && chardestroyflag == 0) {          //设置右下关闭按钮
         g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-    gtk_image_set_from_surface((GtkImage *) image6, surface62); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose2); //置换图标
     }
     else if (event->button == 1 && (X > 470 && X < 500) && (Y > 2 && Y < 25) && chardestroyflag == 0) {         //设置右上关闭按钮
         g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-    gtk_image_set_from_surface((GtkImage *) image7, surface72); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imageclosebut, surfaceclosebut2); //置换图标
     }
     else {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
@@ -137,16 +136,17 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1 && chardestroyflag == 0)       // 判断是否是点击关闭图标
 
     {
-        gtk_image_set_from_surface((GtkImage *) image2, surface21);
-        gtk_image_set_from_surface((GtkImage *) image4, surface41);
-        gtk_image_set_from_surface((GtkImage *) image5, surface51);
-        gtk_image_set_from_surface((GtkImage *) image6, surface61);//设置右下关闭
-        gtk_image_set_from_surface((GtkImage *) image7, surface71);  //设置右上关闭按钮
+        gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend1);
+        gtk_image_set_from_surface((GtkImage *) imagevoice, surfacevoice1);
+        gtk_image_set_from_surface((GtkImage *) imagevideo, surfacevideo2);
+        gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose1);//设置右下关闭
+        gtk_image_set_from_surface((GtkImage *) imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
         if (((X > 470 && X < 500) && (Y > 2 && Y < 25)) || ((X > 301 && X < 382) && (Y > 513 && Y < 540))) {
-            destroy_surfaces3();
+
             //DeleteEvent();
             gtk_widget_destroy(window);
-    chardestroyflag == 1;
+            destroy_surfaces3();
+            chardestroyflag == 1;
         }
         return 0;
     }
@@ -159,37 +159,37 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
-        if ((X > 391 && X < 473) && (Y > 513 && Y < 540) && chardestroyflag == 0) {     //设置发送按钮
+    if ((X > 391 && X < 473) && (Y > 513 && Y < 540) && chardestroyflag == 0) {     //设置发送按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) image2, surface22); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend2); //置换图标
     }
     else if ((X > 18 && X < 43) && (Y > 70 && Y < 100) && chardestroyflag == 0) {   //设置语音按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) image4, surface42); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imagevoice, surfacevoice2); //置换图标
     }
     else if ((X > 60 && X < 93) && (Y > 74 && Y < 103) && chardestroyflag == 0) {   //设置视频按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) image5, surface52); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imagevideo, surfacevideo1); //置换图标
     }
     else if ((X > 301 && X < 382) && (Y > 513 && Y < 540) && chardestroyflag == 0) {          //设置右下关闭按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-gtk_image_set_from_surface((GtkImage *) image6, surface62); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose2); //置换图标 //置换图标
     }
     else if ((X > 470 && X < 500) && (Y > 2 && Y < 25) && chardestroyflag == 0) {         //设置右上关闭按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-gtk_image_set_from_surface((GtkImage *) image7, surface73); //置换图标
+        gtk_image_set_from_surface((GtkImage *) imageclosebut, surfaceclosebut3); //置换图标
     }
     else {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-        gtk_image_set_from_surface((GtkImage *) image2, surface21);
-        gtk_image_set_from_surface((GtkImage *) image4, surface41);
-        gtk_image_set_from_surface((GtkImage *) image5, surface51);
-        gtk_image_set_from_surface((GtkImage *) image6, surface61);//设置右下关闭
-        gtk_image_set_from_surface((GtkImage *) image7, surface71);  //设置右上关闭按钮
+        gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend1);
+        gtk_image_set_from_surface((GtkImage *) imagevoice, surfacevoice1);
+        gtk_image_set_from_surface((GtkImage *) imagevideo, surfacevideo2);
+        gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose1);//设置右下关闭
+        gtk_image_set_from_surface((GtkImage *) imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
     }
 
     return 0;
@@ -234,7 +234,7 @@ int mainchart() {
 
     create_surfaces();
     GtkWidget *text1, *text2;
-    //创建发送文本框，和接受文本狂
+    //创建发送文本框，和接受文本框
     text1 = gtk_text_view_new();
     text2 = gtk_text_view_new();
 
@@ -256,9 +256,7 @@ int mainchart() {
     gtk_widget_set_size_request(sw1, 500, 80);
     gtk_widget_set_size_request(sw2, 500, 300);//大小
 
-    GdkRGBA rgba = {
-    1, 1, 1, 0
-    };
+    GdkRGBA rgba = {1, 1, 1, 0};
     gtk_widget_override_background_color(text1, GTK_STATE_NORMAL, &rgba);//设置透明
     gtk_widget_override_background_color(text2, GTK_STATE_NORMAL, &rgba);//设置透明
 

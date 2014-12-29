@@ -10,11 +10,12 @@
 
 CRP_STRUCTURE
 {
-    size_t length;
+    size_t seq;
+    CRP_LENGTH_TYPE length;
     char data[0];
 } CRPPacketFileData;
 
 __attribute_malloc__
 CRPPacketFileData *CRPFileDataCast(CRPBaseHeader *base);
 
-int CRPFileDataSend(int sockfd, uint32_t sessionID, size_t length, char *data);
+int CRPFileDataSend(int sockfd, uint32_t sessionID, CRP_LENGTH_TYPE length, size_t seq, char *data);

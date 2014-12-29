@@ -81,6 +81,8 @@ int mysockfd() {
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT) {
         log_info("登录成功", "登录成功\n");
         //登陆成功之后开始请求资料
+        sprintf(mulu, "%s/momo", getpwuid(getuid())->pw_dir);
+        mkdir(mulu,0700);
         g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid

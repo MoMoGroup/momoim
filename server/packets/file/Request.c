@@ -32,9 +32,10 @@ int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRe
                 goto cleanup;
             }
 
-            operation = UserRegisterOperation(user);
+            operation = UserRegisterOperation(user, CUOT_FILE_SEND);
             CRPFileDataStartSend(user->sockfd, session, operation->id, (uint64_t) fileInfo.st_size);
             ssize_t length;
+            size_t seq = 0;
             while (!operation->cancel)
             {
                 length = read(fd, buf, PAGE_SIZE);
@@ -50,7 +51,7 @@ int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRe
                 }
                 else
                 {
-                    CRPFileDataSend(user->sockfd, session, length, buf);
+                    CRPFileDataSend(user->sockfd, session, length, seq++, buf);
                 }
             }
             CRPFileDataEndSend(user->sockfd, session, FEC_CANCELED);//operation canceled

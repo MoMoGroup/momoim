@@ -35,7 +35,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_MESSAGE_TEXT]       = (void *(*)(CRPBaseHeader *base)) CRPTextMessageCast,
 };
 
-ssize_t CRPSend(uint16_t packetID, uint32_t sessionID, void *data, size_t length, int fd)
+ssize_t CRPSend(uint16_t packetID, uint32_t sessionID, void const *data, size_t length, int fd)
 {
     CRPBaseHeader *header = (CRPBaseHeader *) malloc(sizeof(CRPBaseHeader) + length);
     header->magicCode = 0x464F5573;
