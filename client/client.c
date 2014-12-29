@@ -108,6 +108,26 @@ extern int DeleteEvent() {
     gtk_main_quit();
     return TRUE;
 }
+gboolean mythread(gpointer user_data)//合并
+{
+    gtk_widget_destroy(window);
+    maininterface();
+    return 0;
+}//合并
+
+gboolean destroyLayout(gpointer user_data){
+
+    gtk_widget_destroy(pendingLayout);
+    gtk_widget_show_all(loginLayout);
+}
+
+
+
+
+
+
+
+
 
 void *sendhello(void *M) {
     mysockfd();
