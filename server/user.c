@@ -223,14 +223,11 @@ UserCancelableOperation *UserGetOperation(OnlineUser *user, uint32_t operationId
     return ret;
 }
 
-UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data)
-{
+UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data) {
     pthread_rwlock_rdlock(&user->operations.lock);
     UserCancelableOperation *ret = NULL;
-    for (UserCancelableOperation *op = user->operations.first; op != user->operations.last; op = op->next)
-    {
-        if (op->type == type && func(op, data))
-        {
+    for (UserCancelableOperation *op = user->operations.first; op != user->operations.last; op = op->next) {
+        if (op->type == type && func(op, data)) {
             ret = op;
             break;
         }
@@ -239,17 +236,14 @@ UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOper
     return ret;
 }
 
-int UserCancelOperation(OnlineUser *user, uint32_t operationId)
-{
+int UserCancelOperation(OnlineUser *user, uint32_t operationId) {
     UserCancelableOperation *op = UserGetOperation(user, operationId);
 
     int ret = 1;
-    if (op->oncancel != NULL)
-    {
+    if (op->oncancel != NULL) {
         ret = op->oncancel(user, op);
     }
-    else
-    {
+    else {
         op->cancel = 1;
     }
 

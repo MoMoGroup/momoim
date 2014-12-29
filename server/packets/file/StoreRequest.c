@@ -55,8 +55,7 @@ int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketF
             memcpy(storeOperation->tmpfile, "/tmp/m0MoXXXXXX", sizeof("/tmp/m0MoXXXXXX"));
             mkstemp(storeOperation->tmpfile);
             storeOperation->fd = creat(storeOperation->tmpfile, 0600);
-            if (storeOperation->fd < 0)
-            {
+            if (storeOperation->fd < 0) {
                 free(storeOperation);
                 UserUnregisterOperation(user, operation);
                 CRPFailureSend(user->sockfd, session, "Fail to create file.");

@@ -7,8 +7,7 @@
 * 请求好友列表
 */
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     char *text;
 } CRPPacketFriendSearchByUsername;
 
