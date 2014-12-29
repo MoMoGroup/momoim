@@ -3,6 +3,8 @@
 #include <stddef.h>
 #include "protocol/friend/Request.h"
 #include "protocol/friend/Data.h"
+#include "protocol/friend/SearchByNickname.h"
+#include "protocol/friend/SearchByUsername.h"
 
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
@@ -48,6 +50,8 @@ typedef enum
     CRP_PACKET_FRIEND__START = 0x30,
     CRP_PACKET_FRIEND_REQUEST,      //请求好友列表
     CRP_PACKET_FRIEND_DATA,         //答复好友列表
+    CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME, //通过昵称查找好友
+    CRP_PACKET_FRIEND_SEARCH_BY_USERNAME, //通过用户名查找好友
 
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件

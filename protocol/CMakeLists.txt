@@ -5,6 +5,8 @@ SET(LIBPROTOCOL_SRC
     base.c
     packets/friend/Request.c
     packets/friend/Data.c
+    packets/friend/SearchByNickname.c
+    packets/friend/SearchByUsername.c
 
     packets/info/Request.c
     packets/info/Data.c

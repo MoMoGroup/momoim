@@ -156,7 +156,7 @@ OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid)
 }
 
 
-UserCancelableOperation *UserRegisterOperation(OnlineUser *user)
+UserCancelableOperation *UserRegisterOperation(OnlineUser *user, int type)
 {
 /*  removed because the client refuse to support this feature
     if (user->operations.count >= 100)
@@ -167,6 +167,7 @@ UserCancelableOperation *UserRegisterOperation(OnlineUser *user)
     if (operation == NULL)
         goto cleanup;
     operation->next = NULL;
+    operation->type = type;
     if (user->operations.last == NULL)
     {
         user->operations.first = user->operations.last = operation;
@@ -206,26 +207,51 @@ void UserUnregisterOperation(OnlineUser *user, UserCancelableOperation *operatio
     pthread_rwlock_unlock(&user->operations.lock);
 }
 
-int UserCancelOperation(OnlineUser *user, uint32_t operationId)
+UserCancelableOperation *UserGetOperation(OnlineUser *user, uint32_t operationId)
 {
-    int ret = 1;
     pthread_rwlock_rdlock(&user->operations.lock);
-
+    UserCancelableOperation *ret = NULL;
     for (UserCancelableOperation *op = user->operations.first; op != user->operations.last; op = op->next)
     {
         if (op->id == operationId)
         {
-            if (op->oncancel != NULL)
-            {
-                ret = op->oncancel(user, op);
-            }
-            else
-            {
-                op->cancel = 1;
-            }
+            ret = op;
             break;
         }
     }
     pthread_rwlock_unlock(&user->operations.lock);
+    return ret;
+}
+
+UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data)
+{
+    pthread_rwlock_rdlock(&user->operations.lock);
+    UserCancelableOperation *ret = NULL;
+    for (UserCancelableOperation *op = user->operations.first; op != user->operations.last; op = op->next)
+    {
+        if (op->type == type && func(op, data))
+        {
+            ret = op;
+            break;
+        }
+    }
+    pthread_rwlock_unlock(&user->operations.lock);
+    return ret;
+}
+
+int UserCancelOperation(OnlineUser *user, uint32_t operationId)
+{
+    UserCancelableOperation *op = UserGetOperation(user, operationId);
+
+    int ret = 1;
+    if (op->oncancel != NULL)
+    {
+        ret = op->oncancel(user, op);
+    }
+    else
+    {
+        op->cancel = 1;
+    }
+
     return ret;
 }
