@@ -6,9 +6,6 @@
 #include <logger.h>
 #include <imcommon/friends.h>
 #include <stdlib.h>
-#include <ftotval.h>
-#include <lber.h>
-
 
 int X = 0;
 int Y = 0;
@@ -74,7 +71,10 @@ static void create_surfaces(friendinfo *information)
     PangoFontDescription *font;
     font = pango_font_description_from_string("Sans");//"Sans"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
+    gtk_widget_override_font(nicheng, font);
+
     gtk_fixed_put(GTK_FIXED(information->chartlayout), nicheng, 75, 20);
+
 }
 
 static void
@@ -157,17 +157,13 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1 )       // 判断是否是点击关闭图标
 
     {
-
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
         gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo2);
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
 
-        if ((X > 391 && X < 473) && (Y > 513 && Y < 540))
-        {
-            gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
         if ((X > 391 && X < 473) && (Y > 513 && Y < 540)) {
-            gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend1);
+            gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
             GtkWidget *dialog;
             //创建带确认按钮的对话框，父控件为空
             dialog = gtk_message_dialog_new(NULL,
@@ -186,9 +182,9 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
             gtk_widget_destroy(info->chartwindow);
             info->chartwindow= NULL;
         }
-        return 0;
-    }
 
+    }
+    return 0;
 
 }
 
