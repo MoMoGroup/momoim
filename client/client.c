@@ -271,11 +271,11 @@ int main(int argc, char *argv[]) {
     g_signal_connect(G_OBJECT(window), "delete_event",
             G_CALLBACK(gtk_main_quit), NULL);
 
-    gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
+    //gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置
-    // gtk_window_set_resizable (GTK_WINDOW (window), FALSE);//窗口不可改变
+    gtk_window_set_resizable(GTK_WINDOW (window), FALSE);//窗口不可改变
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);   // 去掉边框
-
+    gtk_widget_set_size_request(GTK_WIDGET(window), 283, 411);
 
 
     gtk_widget_set_events(window,  // 设置窗体获取鼠标事件

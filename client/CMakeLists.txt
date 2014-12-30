@@ -14,6 +14,7 @@ SET(CLIENT_SOURCE_FILE
     ClientSockfd.c
     MainInterface.c
     newuser.c
+    PopupWinds.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)
