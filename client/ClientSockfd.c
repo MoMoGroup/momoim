@@ -46,9 +46,7 @@ typedef struct friendinfo {
 } friendinfo;
 
 friendinfo *head;
-//
-//
-//friendinfo pnode;
+
 
 
 
@@ -56,8 +54,7 @@ void add_node(friendinfo *node)
 {
     friendinfo *p;
     p = head;
-    //=(friendinfo *)malloc(sizeof(struct friendinfo));
-    //p=head;
+
 
     while (p->next)
     {
@@ -66,71 +63,7 @@ void add_node(friendinfo *node)
     p->next = node;
     node->next = NULL;
 }
-//
-//gboolean _add_data(friendinfo *pNode, friendinfo* pDataNode)
-//{
-//    if(NULL == pNode->next){
-//        *pNode = pDataNode;
-//        return TRUE;
-//    }
-//
-//    return _add_data(*pNode, pDataNode);
-//}
-//
-//gboolean add_data(const friendinfo pNode)
-//{
-//    friendinfo* pDataNode;
-//    if(NULL == pNode.next)
-//        return FALSE;
-//
-//   // pDataNode = alloca_node(value);//原文创建链表的函数
-//    assert(NULL != pDataNode);
-//    return _add_data(pNode, pDataNode);
-//}
-//
-//
-//
-//gboolean _delete_data(friendinfo** pNode, int value)
-//{
-//    friendinfo* pLinkNode;
-//    if(NULL == (*pNode)->next)
-//        return FALSE;
-//
-//    pLinkNode = (*pNode)->next;
-//    if(value == pLinkNode->fp){
-//        (*pNode)->next = pLinkNode->next;
-//        free(pLinkNode);
-//        return TRUE;
-//    }else{
-//        return _delete_data(&(*pNode)->next, value);
-//    }
-//}
-//
-//gboolean delete_data(friendinfo** pNode, int value)
-//{
-//    friendinfo* pLinkNode;
-//    if(NULL == pNode || NULL == *pNode)
-//        return FALSE;
-//
-//    if(value == (*pNode)->fp){
-//        pLinkNode = *pNode;
-//        *pNode = pLinkNode->next;
-//        free(pLinkNode);
-//        return TRUE;
-//    }
-//
-//    return _delete_data(pNode, value);
-//}
-//void* find_data(const friendinfo* pLinkNode, int value)
-//{
-//    if(NULL == pLinkNode)
-//        return NULL;
-//
-//    if(value == pLinkNode->fp)
-//        return (friendinfo*)pLinkNode;
-//
-//    return find_data(pLinkNode->next, value);
-//}
+
 
 int mysockfd()
 {
