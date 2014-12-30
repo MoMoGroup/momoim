@@ -163,7 +163,7 @@ UserCancelableOperation *UserRegisterOperation(OnlineUser *user, int type)
         return NULL;
 */
     pthread_rwlock_wrlock(&user->operations.lock);
-    UserCancelableOperation *operation = (UserCancelableOperation *) malloc(sizeof(UserCancelableOperation));
+    UserCancelableOperation *operation = (UserCancelableOperation *) calloc(1,sizeof(UserCancelableOperation));
     if (operation == NULL)
         goto cleanup;
     operation->next = NULL;
