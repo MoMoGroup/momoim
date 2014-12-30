@@ -291,7 +291,7 @@ int mysockfd()
                             if (node->sessionid == header->sessionID)
                             {
                                 fclose(node->fp);
-                                node->flag = 1;//接受完毕，标志位1;
+                                 node->flag = 1;//接受完毕，标志位1;
                                 friendnum++;//接受完毕的个数加1
                                 break;
                             }
