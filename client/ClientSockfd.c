@@ -35,17 +35,16 @@ FILE *fp;
 char mulu[80] = {0};
 char mulu2[80] = {0};
 
-typedef struct friendinfo {
+ typedef struct friendinfo {
     uint32_t sessionid;
-    int flag;
-    //用来判断是否接受成功
+    int flag;//用来判断是否接受成功
     UserInfo user;
     FILE *fp;
 
     struct friendinfo *next;
 } friendinfo;
 
-friendinfo *head;
+ friendinfo *head;
 
 
 
@@ -150,7 +149,7 @@ int mysockfd()
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-                        memcpy(&userdata, infodata, sizeof(CRPPacketInfoData));//放到结构提里，保存昵称，性别等资料
+                        memcpy(&userdata, infodata->nickName, sizeof(CRPPacketInfoData));//放到结构提里，保存昵称，性别等资料
                         log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->icon);//发送用户头像请求
 
@@ -165,17 +164,20 @@ int mysockfd()
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
 
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->icon);//请求用户头像,通过ssionID区别
-
+//添加一个好友的信息
                         friendinfo *node;
                         node = (friendinfo *) calloc(1, sizeof(friendinfo));
-                        //node= (struct friendinfo *)malloc(sizeof(struct friendinfo));
+
+                        //memcpy(node->groupName,group->groupName,sizeof(group->groupName));
+                        //log_info("GROUPNAME1111", "%s\n",friends->groups[1].groupName);
+
                         node->sessionid = header->sessionID;//添加id到结构提
-                        node->user.uid = userdata.uid;
-                        memcpy(node->user.nickName, userdata.nickName, sizeof(userdata.nickName));//添加昵称
+                        node->user.uid = infodata->uid;
+                        memcpy(node->user.nickName, infodata->nickName, sizeof(infodata->nickName));//添加昵称
                         add_node(node);             //添加新节点
                         //free(node);
 
-                        log_info("GROUPDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
+                        log_info("GROUPDATA", "Nick:%s\n", infodata->nickName);//用户昵称是否获取成功
                         log_info("循环1", "循环1%s\n", mulu);
                     }
                     break;
@@ -279,7 +281,6 @@ int mysockfd()
                     }
                     else
                     {
-                        int friendnum = 0;
                         friendinfo *node;
                         node = head;
                         while (node)
@@ -288,7 +289,6 @@ int mysockfd()
                             {
                                 fclose(node->fp);
                                 node->flag = 1;//接受完毕，标志位1;
-                                friendnum++;//接受完毕的个数加1
                                 break;
                             }
                             node = node->next;
@@ -323,14 +323,17 @@ int mysockfd()
                 }
                 case CRP_PACKET_FRIEND_DATA://分组
                 {
-                    UserFriends *friends = UserFriendsDecode((unsigned char *) header->data);
+                   friends = UserFriendsDecode((unsigned char *) header->data);
                     log_info("Friends", "Group Count:%d\n", friends->groupCount);
 
                     for (int i = 0; i < friends->groupCount; ++i)//循环组
                     {
                         UserGroup *group = friends->groups + i;
+
                         log_info(group->groupName, "GroupID:%d\n", group->groupId);
                         log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
+
+                        log_info("GROUPNAME1", "%s\n",group->groupName);
 
                         for (int j = 0; j < group->friendCount; ++j)//循环好友
 
@@ -341,20 +344,12 @@ int mysockfd()
 
                         }
                     }
-                    UserFriendsFree(friends);
+                    //UserFriendsFree(friends);
                     break;
                 }
             }
             free(header);
 
-//            friendinfo *p;
-//            p=head;
-//            int i=0;
-//            while(p){
-//                i++;
-//                p=p->next;
-//            }
-            //log_info("链表长度", "%d\n",i);
 
 
         }
