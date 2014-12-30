@@ -14,8 +14,7 @@ typedef enum
 
     OUS_ONLINE = 0x10
 } OnlineUserStatus;
-typedef enum
-{
+typedef enum {
     CUOT_FILE_SEND,
     CUOT_FILE_STORE
 } UserCancelableOperationType;
