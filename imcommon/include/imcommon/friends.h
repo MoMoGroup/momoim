@@ -19,6 +19,7 @@ typedef struct __attribute__ ((packed))
 
     uint32_t *friends;//(Last)
 } UserGroup;
+
 typedef struct __attribute__ ((packed))
 {
     uint16_t groupCount;
