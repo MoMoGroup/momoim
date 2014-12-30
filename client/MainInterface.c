@@ -85,6 +85,8 @@ GtkTreeModel *createModel() {
             surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
             //创建画笔
             cr = cairo_create(surface);
+            // suofang
+            cairo_scale(cr, 0.5, 0.5);
             //把画笔和图片相结合。
             cairo_set_source_surface(cr, surfaceIcon, 0, 0);
             //把图用画笔画在画布中
@@ -92,8 +94,9 @@ GtkTreeModel *createModel() {
             //设置源的颜色
             cairo_set_source_rgb(cr, 0, 0, 0);
             //从图像的w+10,30区域开始加入字体
-            cairo_move_to(cr, w + 10, 40);
-            cairo_set_font_size(cr, 12);
+
+            cairo_move_to(cr, w + 10, 75);
+            cairo_set_font_size(cr, 36);
             cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
             cairo_show_text(cr,friendname);
@@ -321,12 +324,15 @@ int maininterface() {
     frameLayout = gtk_layout_new(NULL, NULL);
 
     create_surfaces();
+
     GtkWidget *userid;
-    //g_print(userdata.nickName);
     userid = gtk_label_new(userdata.nickName);
-    //g_print(groupdata.nickName);
-//    log_info("组员信息", groupdata.nickName);
-    //g_print(groupdata.nickName);
+    //设置字体大小
+    PangoFontDescription *font;
+    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
+    gtk_widget_override_font(userid, font);
+
     log_info("组员信息", groupdata.nickName);
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 

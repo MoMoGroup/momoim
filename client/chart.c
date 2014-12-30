@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
+#include "ClientSockfd.h"
 #include <cairo.h>
 #include <logger.h>
 #include <imcommon/friends.h>
@@ -64,6 +65,17 @@ static void create_surfaces() {
 //右上角关闭按钮
     imageclosebut = gtk_image_new_from_surface(surfaceclosebut1);
     gtk_fixed_put(GTK_FIXED(chartlayout), imageclosebut, 470, 0);
+//nicheng
+    GtkWidget *charttowho;
+    charttowho = gtk_label_new("ming");
+    //daxiao
+    PangoFontDescription *font;
+    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
+    gtk_widget_override_font(charttowho, font);
+
+    gtk_fixed_put(GTK_FIXED(chartlayout), charttowho, 75, 20);
+
 
 }
 
@@ -141,12 +153,12 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose1);//设置右下关闭
         gtk_image_set_from_surface((GtkImage *) imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
 
-        if((X > 391 && X < 473) && (Y > 513 && Y < 540)){
+        if ((X > 391 && X < 473) && (Y > 513 && Y < 540)) {
             gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend1);
             GtkWidget *dialog;
             //创建带确认按钮的对话框，父控件为空
             dialog = gtk_message_dialog_new(NULL,
-                    GTK_DIALOG_MODAL |GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                     GTK_MESSAGE_INFO,
                     GTK_BUTTONS_OK,
                     "hello world");//到时候可以显示出昵称
@@ -154,7 +166,23 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
             gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
             gtk_widget_destroy(dialog);//销毁对话框
         }
-        if (((X > 470 && X < 500) && (Y > 2 && Y < 25)) || ((X > 301 && X < 382) && (Y > 513 && Y < 540))) {
+
+
+       // friendinfo *node;
+        //node = friendinfohead;
+       // while (node) {
+          //  if (friendinfo.user.uid == nigeide id)
+        //    {
+
+
+               // charto = gtk_label_new("xia");
+        //        break;
+        //    }
+       // }
+
+
+        if (((X > 470 && X < 500) && (Y > 2 && Y < 25)) || ((X > 301 && X < 382) && (Y > 513 && Y < 540)))
+        {
 
             //DeleteEvent();
             gtk_widget_destroy(window);
