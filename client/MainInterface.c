@@ -97,7 +97,7 @@ GtkTreeModel *createModel() {
             cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
             cairo_show_text(cr,friendname);
-            pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
+            pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0,260, 60);
             gtk_tree_store_append(store, &iter2, &iter1);
             gtk_tree_store_set(store, &iter2,
                     PIXBUF_COL, pixbuf,
@@ -225,7 +225,8 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 //                if (flag == 1) {
 //
 //                    q->next = p;
-                    if (gtk_tree_model_iter_has_child(model, &iter) == 0) {
+                    if (gtk_tree_model_iter_has_child(model, &iter) == 0  && ( ((i==0)&&(j>0)) || ((i!=0) &&friends->groups[i].friendCount >0) ))//meiyouzijiedian
+                    {
                         chardestroyflag = 0;
                         mainchart();
                         clickflag == 0;
