@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
+#include "ClientSockfd.h"
 #include <cairo.h>
 #include <logger.h>
 #include <imcommon/friends.h>
@@ -60,25 +61,23 @@ GtkTreeModel *createModel() {
         gdk_pixbuf_unref(pixbuf);
 
         for (j = 0; j < friends->groups[i].friendCount; j++) {
-            char friendname[20] = {0};
-            char mulu[80] = {0};
-            sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, friends->groups[i].friends[j]);
+            char friendname[20]={0};
+            char mulu[80]={0};
+            sprintf(mulu,"%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir,friends->groups[i].friends[j]);
             pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
             gint w = gdk_pixbuf_get_width(pixbuf);
-            friendinfo *rear = friendinfohead;
-            while (rear)
-            {
-
-                if (rear->sessionid == friends->groups[i].friends[j]) {
+            friendinfo *rear=friendinfohead;
+            while (rear) {
+               if(rear->sessionid==friends->groups[i].friends[j])
+              {
                     memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
-
+                    //log_info("111111111","%u  %u\n",rear->user.uid,friends->groups[i].friends[j]);
+                   // log_info("222222222","%u\n",friends->groups[i].friends[j]);
                     break;
                 }
-
-                //log_info("Mainsurface遍历链表", "%u\n",rear->sessionid);
-                rear = rear->next;
+                  rear=rear->next;
             }
-            //log_info("33333333", "%s\n",rear->user.nickName);
+
             // gint h = gdk_pixbuf_get_height(pixbuf);
             //加载一个图片
             surfaceIcon = cairo_image_surface_create_from_png(mulu);
@@ -97,7 +96,7 @@ GtkTreeModel *createModel() {
             cairo_set_font_size(cr, 12);
             cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
-            cairo_show_text(cr, friendname);
+            cairo_show_text(cr,friendname);
             pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
             gtk_tree_store_append(store, &iter2, &iter1);
             gtk_tree_store_set(store, &iter2,
@@ -226,11 +225,11 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 //                if (flag == 1) {
 //
 //                    q->next = p;
-        if (gtk_tree_model_iter_has_child(model, &iter) == 0) {
-            chardestroyflag = 0;
-            mainchart();
-            clickflag == 0;
-        }
+                    if (gtk_tree_model_iter_has_child(model, &iter) == 0) {
+                        chardestroyflag = 0;
+                        mainchart();
+                        clickflag == 0;
+                    }
 //
 //                }
 //                else
