@@ -1,2 +1,2 @@
 #pragma once
-extern GtkWidget *username, *passwd;
+extern GtkWidget *username,*passwd;
