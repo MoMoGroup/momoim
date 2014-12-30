@@ -60,7 +60,9 @@ int ProcessUser(OnlineUser *user, CRPBaseHeader *packet)
     }
     data = packetCast(packet);
     if (data == NULL)
+    {
         return 0;
+    }
 
     int(*packetProcessor)(OnlineUser *, uint32_t, void *, CRPBaseHeader *header) = PacketsProcessMap[packet->packetID];
     if (packetProcessor != NULL)
@@ -116,7 +118,9 @@ void OnlineUserDelete(OnlineUser *user)
     if (user->info)
     {
         if (user->info->userDir)
+        {
             free(user->info->userDir);
+        }
         free(user->info);
     }
     pthread_rwlock_wrlock(&UsersTableLock);
@@ -129,7 +133,9 @@ void OnlineUserDelete(OnlineUser *user)
         OnlineUsers.last = user->prev;
     }
     if (user->prev)
+    {
         user->prev->next = user->next;
+    }
     pthread_rwlock_unlock(&UsersTableLock);
     free(user);
 }
@@ -163,9 +169,11 @@ UserCancelableOperation *UserRegisterOperation(OnlineUser *user, int type)
         return NULL;
 */
     pthread_rwlock_wrlock(&user->operations.lock);
-    UserCancelableOperation *operation = (UserCancelableOperation *) calloc(1,sizeof(UserCancelableOperation));
+    UserCancelableOperation *operation = (UserCancelableOperation *) calloc(1, sizeof(UserCancelableOperation));
     if (operation == NULL)
+    {
         goto cleanup;
+    }
     operation->next = NULL;
     operation->type = type;
     if (user->operations.last == NULL)
@@ -193,12 +201,23 @@ void UserUnregisterOperation(OnlineUser *user, UserCancelableOperation *operatio
     {
         if (op == operation)
         {
-            op->prev->next = operation->next;
-            operation->next->prev = operation->prev;
-            if (user->operations.first == operation)
+            if (op->prev == NULL)
+            {
                 user->operations.first = operation->next;
-            if (user->operations.last == operation)
+            }
+            else
+            {
+                op->prev->next = operation->next;
+            }
+            if (operation->next == NULL)
+            {
                 user->operations.last = operation->prev;
+            }
+            else
+            {
+                operation->next->prev = operation->prev;
+            }
+
             free(op);
             break;
         }
@@ -223,11 +242,14 @@ UserCancelableOperation *UserGetOperation(OnlineUser *user, uint32_t operationId
     return ret;
 }
 
-UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data) {
+UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data)
+{
     pthread_rwlock_rdlock(&user->operations.lock);
     UserCancelableOperation *ret = NULL;
-    for (UserCancelableOperation *op = user->operations.first; op != user->operations.last; op = op->next) {
-        if (op->type == type && func(op, data)) {
+    for (UserCancelableOperation *op = user->operations.first; op != user->operations.last; op = op->next)
+    {
+        if (op->type == type && func(op, data))
+        {
             ret = op;
             break;
         }
@@ -236,14 +258,17 @@ UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOper
     return ret;
 }
 
-int UserCancelOperation(OnlineUser *user, uint32_t operationId) {
+int UserCancelOperation(OnlineUser *user, uint32_t operationId)
+{
     UserCancelableOperation *op = UserGetOperation(user, operationId);
 
     int ret = 1;
-    if (op->oncancel != NULL) {
+    if (op->oncancel != NULL)
+    {
         ret = op->oncancel(user, op);
     }
-    else {
+    else
+    {
         op->cancel = 1;
     }
 
