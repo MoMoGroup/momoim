@@ -8,7 +8,7 @@
 #include <sys/mman.h>
 #include <string.h>
 
-#include "user.h"
+#include "run/user.h"
 #include "data/user.h"
 
 int UserInit()
@@ -192,9 +192,25 @@ UserFriends *UserGetFriends(uint32_t uid)
         goto cleanup;
 
     friends = UserFriendsDecode(addr);
+
     cleanup:
     if (addr && addr != MAP_FAILED)
         munmap(addr, len);
     close(fd);
     return friends;
+}
+
+void UserFreeFriends(UserFriends *friends)
+{
+    UserFriendsFree(friends);
+}
+
+int MessageFileCreateByUid(uint32_t uid)
+{
+
+}
+
+UserMessageFile *MessageFileOpenByUid(uint32_t uid)
+{
+
 }

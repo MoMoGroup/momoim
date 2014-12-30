@@ -1,6 +1,6 @@
 #pragma once
 
-#include <user.h>
+#include "run/user.h"
 #include <protocol/CRPPackets.h>
 #include <stddef.h>
 
@@ -19,7 +19,7 @@ int ProcessPacketStatusFailure(OnlineUser *user, uint32_t session, CRPPacketFail
 
 int ProcessPacketLoginLogout(OnlineUser *user, uint32_t session, CRPPacketLoginLogout *packet);
 
-int ProcessPacketMessageTextMessage(OnlineUser *user, uint32_t session, CRPPacketTextMessage *packet);
+int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessageText *packet);
 
 int ProcessPacketInfoRequest(OnlineUser *user, uint32_t session, CRPPacketInfoRequest *packet);
 
@@ -36,4 +36,4 @@ int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketF
 int ProcessPacketLoginRegister(OnlineUser *user, uint32_t session, CRPPacketLoginRegister *packet);
 
 //数据包处理函数映射
-extern int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t session, void *packet);
+extern int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header);

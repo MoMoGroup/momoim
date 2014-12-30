@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <logger.h>
-#include <jobs.h>
+#include "run/jobs.h"
 
 int server_exit = 0;
 WorkerType worker[WORKER_COUNT];

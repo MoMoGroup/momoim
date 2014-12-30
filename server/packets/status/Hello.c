@@ -1,5 +1,5 @@
 #include <protocol/CRPPackets.h>
-#include <user.h>
+#include "run/user.h"
 #include <logger.h>
 
 int ProcessPacketStatusHello(OnlineUser *user, uint32_t session, CRPPacketHello *packet)

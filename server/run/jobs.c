@@ -1,13 +1,13 @@
 #include <semaphore.h>
 #include <server.h>
-#include <jobs.h>
+#include "run/jobs.h"
 
 OnlineUser *jobQueue[MAX_CLIENTS];
 OnlineUser **pJobQueueHead = jobQueue, **pJobQueueTail = jobQueue;
 sem_t SemJobGold, SemJobAir;
 pthread_mutex_t lock;
 
-OnlineUser *PollJob(void)
+OnlineUser *PullJob(void)
 {
     OnlineUser *user;
     sem_wait(&SemJobGold);  //等待房子里有金子

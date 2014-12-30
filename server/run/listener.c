@@ -6,28 +6,28 @@
 #include <netinet/in.h>
 #include <sys/epoll.h>
 #include <logger.h>
-#include <worker.h>
-#include <user.h>
-#include <jobs.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 
-#define LISTEN_PORT 8014
-int ServerIOPoll;
+#include <run/worker.h>
+#include <run/user.h>
+#include <run/jobs.h>
 
-void UserJoinToPoll(OnlineUser *user)
+#define LISTEN_PORT 8014
+int ServerIOPool;
+
+void UserJoinToPool(OnlineUser *user)
 {
     struct epoll_event event = {
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    epoll_ctl(ServerIOPoll, EPOLL_CTL_ADD, user->sockfd, &event);
+    epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd, &event);
 }
 
-void UserRemoveFromPoll(OnlineUser *user)
+void UserRemoveFromPool(OnlineUser *user)
 {
-    epoll_ctl(ServerIOPoll, EPOLL_CTL_DEL, user->sockfd, NULL);
-
+    epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd, NULL);
 }
 
 void *ListenMain(void *listenSocket)
@@ -65,18 +65,18 @@ void *ListenMain(void *listenSocket)
     }
     log_info("SERVER-MAIN", "Listenning on TCP %d\n", LISTEN_PORT);
 
-    ServerIOPoll = epoll_create1(0);
+    ServerIOPool = epoll_create1(0);
 
     struct epoll_event event = {
             .data.ptr=NULL,
             .events=EPOLLET | EPOLLIN
     };
-    epoll_ctl(ServerIOPoll, EPOLL_CTL_ADD, sockfd, &event); //将监听socket加入epoll(data.ptr==NULL)
+    epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockfd, &event); //将监听socket加入epoll(data.ptr==NULL)
 
     struct epoll_event *events = calloc(64, sizeof event);
     while (!server_exit)
     {
-        int n = epoll_wait(ServerIOPoll, events, 64, -1);
+        int n = epoll_wait(ServerIOPool, events, 64, -1);
         for (int i = 0; i < n; i++)
         {
             if (events[i].data.ptr == NULL)
@@ -90,11 +90,11 @@ void *ListenMain(void *listenSocket)
                     log_error("SERVER-LISTENER", "accept failure:%s\n", strerror(errno));
                     continue;
                 }
-                UserJoinToPoll(OnlineUserNew(fd));
+                UserJoinToPool(OnlineUserNew(fd));
             }
             else
             {
-                UserRemoveFromPoll(events[i].data.ptr);
+                UserRemoveFromPool(events[i].data.ptr);
                 PushJob(events[i].data.ptr);
             }
         }

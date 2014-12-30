@@ -2,8 +2,8 @@
 
 #include <sys/socket.h>
 #include <pthread.h>
-#include <worker.h>
 #include <protocol.h>
+#include "run/worker.h"
 
 //在线用户状态
 typedef enum
@@ -12,9 +12,12 @@ typedef enum
     OUS_PENDING_LOGIN = 1,
 
 
-    OUS_ONLINE = 0x10
+    OUS_ONLINE = 0x10,
+    OUS_PENDING_CLEAN,
+    OUS_CLEANED
 } OnlineUserStatus;
-typedef enum {
+typedef enum
+{
     CUOT_FILE_SEND,
     CUOT_FILE_STORE
 } UserCancelableOperationType;
@@ -70,9 +73,13 @@ typedef struct struOnlineUser
     OnlineUserStatus status;
     OnlineUserInfo *info;
 
+    pthread_mutex_t holdLock;
+    //
+    int holds;
 
     UserCancelableOperationTable operations;
     pthread_mutex_t sockLock;
+    pthread_rwlock_t lock;
     struct struOnlineUser *prev;
     struct struOnlineUser *next;
 } OnlineUser;
@@ -92,21 +99,31 @@ int ProcessUser(OnlineUser *user, CRPBaseHeader *packet);
 OnlineUser *OnlineUserNew(int fd);
 
 //删除一个在线用户对象
-void OnlineUserDelete(OnlineUser *user);
+int OnlineUserDelete(OnlineUser *user);
+
+int OnlineUserHold(OnlineUser *user);
+
+void OnlineUserUnhold(OnlineUser *user);
+
+OnlineUser *OnlineUserGet(uint32_t uid);
 
 OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid);
 
-__attribute_malloc__ UserCancelableOperation *UserRegisterOperation(OnlineUser *user, int type);
+void UserFreeOnlineInfo(OnlineUser *user);
 
-void UserUnregisterOperation(OnlineUser *user, UserCancelableOperation *operation);
+__attribute_malloc__ UserCancelableOperation *UserOperationRegister(OnlineUser *user, int type);
 
-UserCancelableOperation *UserGetOperation(OnlineUser *user, uint32_t operationId);
+void UserOperationUnregister(OnlineUser *user, UserCancelableOperation *operation);
 
-UserCancelableOperation *UserQueryOperation(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data);
+UserCancelableOperation *UserOperationGet(OnlineUser *user, uint32_t operationId);
 
-int UserCancelOperation(OnlineUser *user, uint32_t operationId);
+UserCancelableOperation *UserOperationQuery(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data);
+
+int UserOperationCancel(OnlineUser *user, uint32_t operationId);
+
+void UserOperationRemoveAll(OnlineUser *user);
 
 //在线的小伙伴们！！
-extern UsersTable OnlineUsers;
+extern UsersTable OnlineUserTable;
 //用户表写锁
 extern pthread_rwlock_t UsersTableLock;

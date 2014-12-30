@@ -3,11 +3,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <protocol/message/Text.h>
 #include "test.h"
 
 int TestPacketMessage()
 {
-    if (!CRPTextMessageSend(sendfd, 0, 0x78, 0x21, 8, "JDKAJDKA"))
+    if (!CRPMessageTextSend(sendfd, 0, 0x78, 0x21, 8, "JDKAJDKA"))
     {
         log_error("message", "Send返回失败\n");
         perror("");
@@ -26,10 +27,10 @@ int TestPacketMessage()
         return 0;
     }
 //包数据检测正确与否
-    CRPPacketTextMessage *msgHello = CRPTextMessageCast(packet);
-    if (msgHello->userid != 0x78 ||
-            msgHello->sendtime != 0x21 ||
-            msgHello->message_len != 8 ||
+    CRPPacketMessageText *msgHello = CRPMessageTextCast(packet);
+    if (msgHello->uid != 0x78 ||
+        msgHello->messageType != 0x21 ||
+        msgHello->messageLen != 8 ||
             memcmp(msgHello->message, "JDKAJDKA", 8)
             )
     {
