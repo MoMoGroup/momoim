@@ -4,7 +4,7 @@
 int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessageText *packet)
 {
     OnlineUser *toUser = OnlineUserGet(packet->uid);
-    if (toUser != NULL)
+    if (toUser == NULL)
     {
 
     }

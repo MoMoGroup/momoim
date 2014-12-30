@@ -28,3 +28,7 @@ int UserSaveFriendsFile(uint32_t uid, UserFriends *friends);
 UserFriends *UserGetFriends(uint32_t uid);
 
 void UserFreeFriends(UserFriends *friends);
+
+int MessageFileCreateByUid(uint32_t uid);
+
+UserMessageFile *MessageFileOpenByUid(uint32_t uid);

@@ -204,3 +204,13 @@ void UserFreeFriends(UserFriends *friends)
 {
     UserFriendsFree(friends);
 }
+
+int MessageFileCreateByUid(uint32_t uid)
+{
+
+}
+
+UserMessageFile *MessageFileOpenByUid(uint32_t uid)
+{
+
+}
