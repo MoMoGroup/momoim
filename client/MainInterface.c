@@ -1,9 +1,13 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
+#include "ClientSockfd.h"
 #include <cairo.h>
 #include <logger.h>
 #include <imcommon/friends.h>
+#include <stdlib.h>
+#include <pwd.h>
+#include <string.h>
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -13,7 +17,8 @@ static GtkTreeIter iter1, iter2;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 static int x = 0;
 static int y = 0;
-//static int treeviewflag=0;
+
+
 extern CRPPacketInfoData userdata;
 extern CRPPacketInfoData groupdata;
 extern gchar *uidname;
@@ -22,47 +27,31 @@ static GtkTreeStore *store;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
+
 enum {
     PIXBUF_COL,
 };
-
+typedef struct node {
+    int date1;
+    int date2;
+    struct node *next;
+} N;
+//N *head = NULL;
 
 GtkTreeModel *createModel() {
-    char *files[] = {
-            "分组1",
-            "分组2",
-            "分组3",
-            "分组4",
-    };
-    gchar *stocks[] = {
-            "好友.png",
-            "好友.png",
-            "好友.png",
-            "好友.png",
-            "好友.png",
-    };
-
-    gchar *stockNames[] = {
-            "头像",
-            "头像2",
-            "头像",
-            "头像2",
-            "头像",
-    };
-
 
     gint i, j;
     cairo_surface_t *surface;
     cairo_surface_t *surfaceIcon;
 
     store = gtk_tree_store_new(1, GDK_TYPE_PIXBUF);
-    for (i = 0; i < 4; i++) {
+    for (i = 0; i < friends->groupCount; i++) {
         surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
         cr = cairo_create(surface);
         cairo_move_to(cr, 0, 20);
         cairo_set_font_size(cr, 14);
         cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_show_text(cr, files[i]);
+        cairo_show_text(cr, friends->groups[i].groupName);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
         gtk_tree_store_append(store, &iter1, NULL);
         gtk_tree_store_set(store, &iter1,
@@ -71,12 +60,27 @@ GtkTreeModel *createModel() {
 
         gdk_pixbuf_unref(pixbuf);
 
-        for (j = 0; j < 4; j++) {
-            pixbuf = gdk_pixbuf_new_from_file(stocks[j], NULL);
+        for (j = 0; j < friends->groups[i].friendCount; j++) {
+            char friendname[20]={0};
+            char mulu[80]={0};
+            sprintf(mulu,"%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir,friends->groups[i].friends[j]);
+            pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
             gint w = gdk_pixbuf_get_width(pixbuf);
+            friendinfo *rear=friendinfohead;
+            while (rear) {
+               if(rear->sessionid==friends->groups[i].friends[j])
+              {
+                    memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
+                    //log_info("111111111","%u  %u\n",rear->user.uid,friends->groups[i].friends[j]);
+                   // log_info("222222222","%u\n",friends->groups[i].friends[j]);
+                    break;
+                }
+                  rear=rear->next;
+            }
+
             // gint h = gdk_pixbuf_get_height(pixbuf);
             //加载一个图片
-            surfaceIcon = cairo_image_surface_create_from_png(stocks[j]);
+            surfaceIcon = cairo_image_surface_create_from_png(mulu);
             //创建画布
             surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
             //创建画笔
@@ -88,10 +92,11 @@ GtkTreeModel *createModel() {
             //设置源的颜色
             cairo_set_source_rgb(cr, 0, 0, 0);
             //从图像的w+10,30区域开始加入字体
-            cairo_move_to(cr, w + 10, 30);
+            cairo_move_to(cr, w + 10, 40);
             cairo_set_font_size(cr, 12);
             cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-            cairo_show_text(cr, stockNames[j]);
+
+            cairo_show_text(cr,friendname);
             pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
             gtk_tree_store_append(store, &iter2, &iter1);
             gtk_tree_store_set(store, &iter2,
@@ -104,17 +109,6 @@ GtkTreeModel *createModel() {
     return GTK_TREE_MODEL(store);
 }
 
-void select_item_changed(GtkTreeSelection *select_item, GdkEvent *event, gpointer data) {
-    GtkTreeIter iter;
-    GtkTreeModel *model;
-    gchar *title;
-    if (gtk_tree_selection_get_selected(select_item, &model, &iter)) {
-        gtk_tree_model_get(model, &iter, 1, &title, -1);
-        g_print("select : %s\n", title);
-        title == NULL;
-    }
-    return;
-}
 
 static void create_surfaces() {
 
@@ -172,6 +166,7 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
         if (event->button == 0x3 && (gtk_tree_model_iter_has_child(model, &iter))) {
             gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
             return FALSE;
+
         }
     }
 
@@ -182,6 +177,7 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
 gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     GdkEventButton *event_button;
     GtkTreeIter iter;
+
     GtkWidget *treeview = GTK_TREE_VIEW(widget);
     GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
@@ -200,13 +196,51 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         }
     }
     else if (event->type == GDK_2BUTTON_PRESS && event->button == 0x1) {
-        if (gtk_tree_model_iter_has_child(model, &iter) == 0) {
-            mainchart();
-        }
+        int i, j;
+        int clickflag = 1;
+        GtkTreePath *path;
+        path = gtk_tree_model_get_path(model, &iter);
+        i = gtk_tree_path_get_indices(path)[0];
+        j = gtk_tree_path_get_indices(path)[1];
+        g_print("%d,%d\n", i, j);
+//        while (clickflag == 1) {
+//            int flag = 1;
+//            N *q = head;
+//            N *p = (struct node *) malloc(sizeof(N));
+//            p->next = NULL;
+//            p->date1 = i;
+//            p->date2 = j;
+//            if (head == NULL)
+//                head = p;
+//            else {
+//                while (q->next != NULL) {
+//                    if (q->date1 == i && q->date2 == j) {
+//                        flag = 0;
+//                        break;
+//                    }
+//                    else {
+//                        q = q->next;
+//                    }
+//                }
+//                if (flag == 1) {
+//
+//                    q->next = p;
+                    if (gtk_tree_model_iter_has_child(model, &iter) == 0) {
+                        chardestroyflag = 0;
+                        mainchart();
+                        clickflag == 0;
+                    }
+//
+//                }
+//                else
+//                    printf("输入的数据已存在！\n");
+//            }
+//
+//        }
+
     }
-
-
     return FALSE;
+
 }
 
 //鼠标点击事件
