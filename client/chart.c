@@ -5,10 +5,12 @@
 #include <logger.h>
 #include <imcommon/friends.h>
 #include <stdlib.h>
+#include <ftotval.h>
 
 int X = 0;
 int Y = 0;
-extern int chardestroyflag = 0;
+int chardestroyflag = 0;
+
 
 static GtkWidget *window;
 static GtkWidget *chartlayout, *chartlayout2;
@@ -84,6 +86,7 @@ destroy_surfaces3() {
     cairo_surface_destroy(surfaceclosebut3);
 }
 
+
 //鼠标点击事件
 static gint button_press_event(GtkWidget *widget,
 
@@ -92,7 +95,6 @@ static gint button_press_event(GtkWidget *widget,
     Y = event->y;
 
     if (event->button == 1 && (X > 391 && X < 473) && (Y > 513 && Y < 540) && chardestroyflag == 0) {     //设置发送按钮
-        g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend2); //置换图标
     }
@@ -101,17 +103,14 @@ static gint button_press_event(GtkWidget *widget,
         gtk_image_set_from_surface((GtkImage *) imagevoice, surfacevoice2); //置换图标
     }
     else if (event->button == 1 && (X > 60 && X < 93) && (Y > 74 && Y < 103) && chardestroyflag == 0) {   //设置视频按钮
-        g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) imagevideo, surfacevideo1); //置换图标
     }
     else if (event->button == 1 && (X > 301 && X < 382) && (Y > 513 && Y < 540) && chardestroyflag == 0) {          //设置右下关闭按钮
-        g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose2); //置换图标
     }
     else if (event->button == 1 && (X > 470 && X < 500) && (Y > 2 && Y < 25) && chardestroyflag == 0) {         //设置右上关闭按钮
-        g_print("hello");
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) imageclosebut, surfaceclosebut2); //置换图标
     }
@@ -136,20 +135,36 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1 && chardestroyflag == 0)       // 判断是否是点击关闭图标
 
     {
-        gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend1);
+
         gtk_image_set_from_surface((GtkImage *) imagevoice, surfacevoice1);
         gtk_image_set_from_surface((GtkImage *) imagevideo, surfacevideo2);
         gtk_image_set_from_surface((GtkImage *) imageclose, surfaceclose1);//设置右下关闭
         gtk_image_set_from_surface((GtkImage *) imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
+
+        if((X > 391 && X < 473) && (Y > 513 && Y < 540)){
+            gtk_image_set_from_surface((GtkImage *) imagesend, surfacesend1);
+            GtkWidget *dialog;
+            //创建带确认按钮的对话框，父控件为空
+            dialog = gtk_message_dialog_new(NULL,
+                    GTK_DIALOG_MODAL |GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_INFO,
+                    GTK_BUTTONS_OK,
+                    "hello world");//到时候可以显示出昵称
+
+            gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
+            gtk_widget_destroy(dialog);//销毁对话框
+        }
         if (((X > 470 && X < 500) && (Y > 2 && Y < 25)) || ((X > 301 && X < 382) && (Y > 513 && Y < 540))) {
 
             //DeleteEvent();
             gtk_widget_destroy(window);
             destroy_surfaces3();
-            chardestroyflag == 1;
+            chardestroyflag = 1;
         }
         return 0;
     }
+
+
 }
 
 //鼠标移动事件
@@ -241,7 +256,6 @@ int mainchart() {
     GtkScrolledWindow *sw1 = gtk_scrolled_window_new(NULL, NULL);
     GtkScrolledWindow *sw2 = gtk_scrolled_window_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(sw1), text1);
-
     gtk_container_add(GTK_CONTAINER(sw2), text2);
 
     gtk_text_view_set_wrap_mode(text1, GTK_WRAP_WORD_CHAR);

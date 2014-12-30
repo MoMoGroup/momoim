@@ -179,8 +179,8 @@ int mysockfd()
                         add_node(node);             //添加新节点
                         //free(node);
 
-                        log_info("GROUPDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
-                        log_info("循环1", "循环1%s\n", mulu);
+                       // log_info("GROUPDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
+                       // log_info("循环1", "循环1%s\n", mulu);
                     }
                     break;
 
@@ -211,8 +211,8 @@ int mysockfd()
                         node = friendinfohead;
                         while (node)
                         {
-                            log_info("node->sessionid", "%u\n", node->sessionid);
-                            log_info("header->sessionID", "%u\n", header->sessionID);
+                            //log_info("node->sessionid", "%u\n", node->sessionid);
+                            //log_info("header->sessionID", "%u\n", header->sessionID);
 
                             if (node->sessionid == header->sessionID)
                             {
@@ -240,7 +240,6 @@ int mysockfd()
                     CRPPacketFileData *packet = CRPFileDataCast(header);
                     if (header->sessionID < 10000)
                     {
-                        log_info("写文件", "笑嘻嘻\n");
                         fwrite(packet->data, 1, packet->length, fp);
                     }
                     else
@@ -250,6 +249,7 @@ int mysockfd()
                         node = friendinfohead;
                         while (node)
                         {
+
                             if (node->sessionid == header->sessionID)
                             {
                                 log_info("DEBUG", "PckFound\n");
