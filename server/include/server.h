@@ -16,12 +16,12 @@ extern int server_exit;
 extern pthread_t ThreadListener;
 
 //事务处理线程数
-#define WORKER_COUNT 8
+#define WORKER_COUNT 16
 //事务处理器
 extern WorkerType worker[WORKER_COUNT];
 
 //将一个用户加入到epoll中
-void UserJoinToPoll(OnlineUser *);
+void UserJoinToPool(OnlineUser *);
 
 //将一个用户从epoll中移除
-void UserRemoveFromPoll(OnlineUser *);
+void UserRemoveFromPool(OnlineUser *);

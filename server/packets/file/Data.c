@@ -9,7 +9,7 @@ static int fn(UserCancelableOperation *op, void *data)
 }
 
 int ProcessPacketFileData(OnlineUser *user, uint32_t session, CRPPacketFileData *packet) {
-    UserCancelableOperation *op = UserQueryOperation(user, CUOT_FILE_STORE, fn, &session);
+    UserCancelableOperation *op = UserOperationQuery(user, CUOT_FILE_STORE, fn, &session);
     if (!op) {
         CRPFailureSend(user->sockfd, session, "File Store Operation not found.");
     }

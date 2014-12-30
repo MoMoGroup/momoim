@@ -2,6 +2,7 @@
 #include <protocol/CRPPackets.h>
 #include <string.h>
 #include <stdlib.h>
+#include "imcommon/message.h"
 
 
 CRPPacketMessageText *CRPMessageTextCast(CRPBaseHeader *base)
@@ -9,13 +10,14 @@ CRPPacketMessageText *CRPMessageTextCast(CRPBaseHeader *base)
     return (CRPPacketMessageText *) base->data;
 }
 
-int CRPMessageTextSend(int sockfd, uint32_t sessionID, uint32_t userid, uint16_t message_len, char *message)
+int CRPMessageTextSend(int sockfd, uint32_t sessionID, USER_MESSAGE_TYPE messageType, uint32_t uid, uint16_t messageLen, char *message)
 {
-    CRPPacketMessageText *packet = (CRPPacketMessageText *) malloc(sizeof(CRPPacketMessageText) + message_len);
-    packet->message_len = message_len;
-    packet->touid = userid;
-    memcpy(packet->message, message, message_len);
-    ssize_t ret = CRPSend(CRP_PACKET_MESSAGE_TEXT, sessionID, packet, sizeof(CRPPacketMessageText) + message_len, sockfd);
+    CRPPacketMessageText *packet = (CRPPacketMessageText *) malloc(sizeof(CRPPacketMessageText) + messageLen);
+    packet->messageLen = messageLen;
+    packet->uid = uid;
+    packet->messageType = messageType;
+    memcpy(packet->message, message, messageLen);
+    ssize_t ret = CRPSend(CRP_PACKET_MESSAGE_TEXT, sessionID, packet, sizeof(CRPPacketMessageText) + messageLen, sockfd);
     free(packet);
     return ret != -1;
 }

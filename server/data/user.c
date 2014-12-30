@@ -192,9 +192,15 @@ UserFriends *UserGetFriends(uint32_t uid)
         goto cleanup;
 
     friends = UserFriendsDecode(addr);
+
     cleanup:
     if (addr && addr != MAP_FAILED)
         munmap(addr, len);
     close(fd);
     return friends;
+}
+
+void UserFreeFriends(UserFriends *friends)
+{
+    UserFriendsFree(friends);
 }
