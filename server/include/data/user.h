@@ -1,6 +1,7 @@
 #pragma once
 
 #include "imcommon/friends.h"
+#include "imcommon/message.h"
 
 int UserInit();
 
@@ -19,9 +20,11 @@ UserInfo *UserGetInfo(uint32_t uid);
 
 void UserFreeInfo(UserInfo *friends);
 
-//Groups
+//Friends-Groups
 void UserCreateFriendsFile(uint32_t uid);
 
 int UserSaveFriendsFile(uint32_t uid, UserFriends *friends);
 
 UserFriends *UserGetFriends(uint32_t uid);
+
+void UserFreeFriends(UserFriends *friends);

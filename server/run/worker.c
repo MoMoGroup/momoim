@@ -17,18 +17,19 @@ void *WorkerMain(void *arg)
 
     while (!server_exit)
     {
-        user = PollJob();
-        pthread_mutex_lock(&user->sockLock);
-        header = CRPRecv(user->sockfd);     //由于CRPRecv会分两次recv接收数据,第一次获取协议头,第二次获取整个数据包.
-        //在此期间,重新进入CRPRecv将导致协议失败
-        pthread_mutex_unlock(&user->sockLock);
-        UserJoinToPoll(user);
-
-        if (header == NULL || ProcessUser(user, header) == 0)
+        user = PullJob();
+        if (OnlineUserHold(user))   //保持用户,使用户对象在整个代码执行过程中不会被释放
         {
-            OnlineUserDelete(user);
+            header = CRPRecv(user->sockfd);//在UserJoinToPoll之前,用户被保持单线程处理状态
+            UserJoinToPool(user);
+
+            if (header == NULL || ProcessUser(user, header) == 0)
+            {
+                OnlineUserDelete(user);
+            }
+            OnlineUserUnhold(user);
+            free(header);
         }
-        free(header);
     }
     return 0;
 }

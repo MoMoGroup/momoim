@@ -11,7 +11,7 @@ static int fn(UserCancelableOperation *op, void *data) {
 
 int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDataEnd *packet)
 {
-    UserCancelableOperation *op = UserQueryOperation(user, CUOT_FILE_STORE, fn, &session);
+    UserCancelableOperation *op = UserOperationQuery(user, CUOT_FILE_STORE, fn, &session);
     if (!op) {
         CRPFailureSend(user->sockfd, session, "File Store Operation not found.");
     }
@@ -35,7 +35,7 @@ int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDa
                 CRPOKSend(user->sockfd, session);
             }
         }
-        UserCancelOperation(user, op->id);
+        UserOperationCancel(user, op->id);
     }
     return 1;
 }

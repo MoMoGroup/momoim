@@ -14,7 +14,7 @@ int onCancel(struct struOnlineUser *user, struct struUserCancelableOperation *op
     if (storeOperation->fd >= 0)
         close(storeOperation->fd);
     free(storeOperation);
-    UserUnregisterOperation(user, operation);
+    UserOperationUnregister(user, operation);
     return 1;
 }
 
@@ -33,7 +33,7 @@ int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketF
         }
         else
         {
-            UserCancelableOperation *operation = UserRegisterOperation(user, CUOT_FILE_STORE);
+            UserCancelableOperation *operation = UserOperationRegister(user, CUOT_FILE_STORE);
             if (operation == NULL)
             {
                 CRPFailureSend(user->sockfd, session, "Fail to register operation.");
@@ -42,7 +42,7 @@ int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketF
             UserFileStoreOperation *storeOperation = (UserFileStoreOperation *) malloc(sizeof(UserFileStoreOperation));
             if (storeOperation == NULL)
             {
-                UserUnregisterOperation(user, operation);
+                UserOperationUnregister(user, operation);
                 CRPFailureSend(user->sockfd, session, "Fail to alloc store operation.");
                 return 1;
             }
@@ -57,7 +57,7 @@ int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketF
             storeOperation->fd = creat(storeOperation->tmpfile, 0600);
             if (storeOperation->fd < 0) {
                 free(storeOperation);
-                UserUnregisterOperation(user, operation);
+                UserOperationUnregister(user, operation);
                 CRPFailureSend(user->sockfd, session, "Fail to create file.");
                 return 1;
             }

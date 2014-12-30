@@ -6,7 +6,7 @@
 
 int ProcessPacketLoginRegister(OnlineUser *user, uint32_t session, CRPPacketLoginRegister *packet)
 {
-    if (user->status != OUS_PENDING_HELLO)
+    if (user->status == OUS_PENDING_LOGIN)
     {
         uint32_t uid;
         uid = AuthRegister(packet->username, packet->password);

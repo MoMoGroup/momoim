@@ -1,8 +1,7 @@
 #pragma once
 
-
-#include <imcommon/friends.h>
 #include <gtk/gtk.h>
+#include <imcommon/friends.h>
 
 extern int DeleteEvent();
 extern int mysockfd();
