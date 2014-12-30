@@ -29,7 +29,7 @@ SET(LIBPROTOCOL_SRC
     packets/file/StoreRequest.c
     packets/file/StoreAccept.c
 
-    packets/message/TextMessage.c
+    packets/message/Text.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
 target_link_libraries(protocol imcommon)

@@ -2,8 +2,8 @@
 
 #include <sys/socket.h>
 #include <pthread.h>
-#include <worker.h>
 #include <protocol.h>
+#include "run/worker.h"
 
 //在线用户状态
 typedef enum
@@ -14,7 +14,8 @@ typedef enum
 
     OUS_ONLINE = 0x10
 } OnlineUserStatus;
-typedef enum {
+typedef enum
+{
     CUOT_FILE_SEND,
     CUOT_FILE_STORE
 } UserCancelableOperationType;

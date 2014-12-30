@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <worker.h>
-#include <user.h>
-#include <jobs.h>
+#include "run/worker.h"
+#include "run/user.h"
+#include "run/jobs.h"
 
 
 void *WorkerMain(void *arg)

@@ -27,7 +27,7 @@ int TestPacketMessage()
     }
 //包数据检测正确与否
     CRPPacketTextMessage *msgHello = CRPTextMessageCast(packet);
-    if (msgHello->userid != 0x78 ||
+    if (msgHello->touid != 0x78 ||
             msgHello->sendtime != 0x21 ||
             msgHello->message_len != 8 ||
             memcmp(msgHello->message, "JDKAJDKA", 8)

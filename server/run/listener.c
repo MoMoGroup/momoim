@@ -6,11 +6,12 @@
 #include <netinet/in.h>
 #include <sys/epoll.h>
 #include <logger.h>
-#include <worker.h>
-#include <user.h>
-#include <jobs.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+
+#include <run/worker.h>
+#include <run/user.h>
+#include <run/jobs.h>
 
 #define LISTEN_PORT 8014
 int ServerIOPoll;
