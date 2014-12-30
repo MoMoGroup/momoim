@@ -2,11 +2,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <logger.h>
-#include <user.h>
 #include <packets.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <data/user.h>
+#include "run/user.h"
+#include "data/user.h"
 #include <server.h>
 
 pthread_rwlock_t UsersTableLock = PTHREAD_RWLOCK_INITIALIZER;
@@ -43,7 +43,7 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t sessio
         [CRP_PACKET_FILE_STORE_REQUEST] = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileStoreRequest,
 
         [CRP_PACKET_MESSAGE__START]     = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_MESSAGE_TEXT]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageTextMessage,
+        [CRP_PACKET_MESSAGE_TEXT]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageText,
 };
 
 /**

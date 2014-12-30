@@ -1,5 +1,5 @@
 #include <protocol/CRPPackets.h>
-#include <user.h>
+#include "run/user.h"
 
 int ProcessPacketLoginLogout(OnlineUser *user, uint32_t session, CRPPacketLoginLogout *packet)
 {

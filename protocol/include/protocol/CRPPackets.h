@@ -26,7 +26,8 @@
 #include "protocol/status/OK.h"
 #include "protocol/status/Failure.h"
 #include "protocol/status/Crash.h"
-#include "protocol/message/TextMessage.h"
+
+#include "protocol/message/Text.h"
 
 typedef enum
 {

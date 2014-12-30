@@ -1,6 +1,6 @@
 #include <semaphore.h>
 #include <server.h>
-#include <jobs.h>
+#include "run/jobs.h"
 
 OnlineUser *jobQueue[MAX_CLIENTS];
 OnlineUser **pJobQueueHead = jobQueue, **pJobQueueTail = jobQueue;

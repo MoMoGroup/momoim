@@ -4,11 +4,11 @@ include_directories(../protocol/include)
 include_directories(../imcommon/include)
 
 SET(SERVER_SOURCE_FILE
-    jobs.c
-    listener.c
+    run/jobs.c
+    run/listener.c
     server.c
-    user.c
-    worker.c
+    run/user.c
+    run/worker.c
     sqlite3.c
 
     data/base.c
@@ -34,7 +34,7 @@ SET(SERVER_SOURCE_FILE
     packets/login/Logout.c
     packets/login/Register.c
 
-    packets/message/TextMessage.c
+    packets/message/Text.c
     )
 add_executable(server ${SERVER_SOURCE_FILE})
 target_link_libraries(server protocol)

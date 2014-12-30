@@ -1,5 +1,5 @@
 #include <protocol/CRPPackets.h>
-#include <user.h>
+#include "run/user.h"
 #include <data/auth.h>
 #include <data/user.h>
 #include <string.h>
