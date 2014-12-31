@@ -125,7 +125,7 @@ void show_remote_text(const gchar *rcvd_text,friendinfo *info){
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
-    sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
     gtk_text_buffer_create_tag(info->show_buffer, "blue_foreground", "foreground", "blue", NULL);
     gtk_text_buffer_create_tag(info->show_buffer, "gray_foreground", "foreground", "gray", NULL);

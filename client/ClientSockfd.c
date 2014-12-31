@@ -134,7 +134,7 @@ int mysockfd()
     {
         //密码错误DA
         log_info("登录失败", "登录失败\n");
-        g_idle_add(destroyLayout, NULL);DA;
+        g_idle_add(destroyLayout, NULL);
         return 1;
     }
 
