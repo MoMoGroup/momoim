@@ -2,10 +2,11 @@
 #include <protocol/base.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <logger.h>
 #include "ClientSockfd.h"
 
 
-pthread_rwlock_t lock= PTHREAD_RWLOCK_INITIALIZER;
+pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
 
 typedef struct messageloop {
@@ -66,19 +67,23 @@ int MessageLoopFunc()
     while (1)
     {
         header = CRPRecv(sockfd);
+        log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
         pthread_rwlock_rdlock(&lock);//写锁定
         messageloop *prev = &messagehead, *p;
         int flag = 1;
         while (prev->next)
         {
             p = prev->next;
+            log_info("MSG", "Packet:%d\nSession:%d\n", p->packetID, p->sessionid);
             if (p->packetID == header->packetID && p->sessionid == header->sessionID)
             {
-
+                log_info("MSG", "Processing\n");
                 flag = p->fn(header, p->data);
                 break;
 
             }
+            log_info("MSG", "Next\n");
+
             prev = prev->next;
 
         }
