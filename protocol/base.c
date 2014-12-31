@@ -32,7 +32,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_FILE_STORE_REQUEST] = (void *(*)(CRPBaseHeader *base)) CRPFileStoreRequestCast,
 
         [CRP_PACKET_MESSAGE__START]     = (void *(*)(CRPBaseHeader *base)) NULL,
-        [CRP_PACKET_MESSAGE_TEXT]       = (void *(*)(CRPBaseHeader *base)) CRPMessageTextCast,
+        [CRP_PACKET_MESSAGE_NORMAL]       = (void *(*)(CRPBaseHeader *base)) CRPMessageNormalCast,
 };
 
 ssize_t CRPSend(uint16_t packetID, uint32_t sessionID, void const *data, size_t length, int fd)

@@ -74,7 +74,7 @@ int printfun(CRPBaseHeader *header, void *data)
     return 1;
 }
 
-int messagenormal(CRPBaseHeader *header, void *data)
+int messagdata(CRPBaseHeader *header, void *data)
 {
 
 
@@ -368,7 +368,7 @@ int mysockfd()
 
         }
         AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");
-        AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, <#(int (*)(CRPBaseHeader *, void *))fn#>,"");
+//        AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, <#(int (*)(CRPBaseHeader *, void *))fn#>,"");
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }
