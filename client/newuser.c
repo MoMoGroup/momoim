@@ -247,7 +247,6 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event, gpoint
 
 int newface()
 {
-
     newwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     //g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL);
     //gtk_window_set_default_size(GTK_WINDOW(newwindow), 570, 500);

@@ -77,25 +77,25 @@ static void create_surfaces(friendinfo *information) {
     gtk_fixed_put(GTK_FIXED(information->chartlayout), nicheng, 75, 20);
 
 }
-
-static void
-destroy_surfaces3() {
-    g_print("destroying surfaces3");
-
-    cairo_surface_destroy(sflowerbackgroud);
-    cairo_surface_destroy(surfacesend1);
-    cairo_surface_destroy(surfacesend2);
-    cairo_surface_destroy(surfacehead3);
-    cairo_surface_destroy(surfacevoice1);
-    cairo_surface_destroy(surfacevoice2);
-    cairo_surface_destroy(surfacevideo2);
-    cairo_surface_destroy(surfacevideo1);
-    cairo_surface_destroy(surfaceclose1);
-    cairo_surface_destroy(surfaceclose2);
-    cairo_surface_destroy(surfaceclosebut1);
-    cairo_surface_destroy(surfaceclosebut2);
-    cairo_surface_destroy(surfaceclosebut3);
-}
+//
+//static void
+//destroy_surfaces3() {
+//    g_print("destroying surfaces3");
+//
+//    cairo_surface_destroy(sflowerbackgroud);
+//    cairo_surface_destroy(surfacesend1);
+//    cairo_surface_destroy(surfacesend2);
+//    cairo_surface_destroy(surfacehead3);
+//    cairo_surface_destroy(surfacevoice1);
+//    cairo_surface_destroy(surfacevoice2);
+//    cairo_surface_destroy(surfacevideo2);
+//    cairo_surface_destroy(surfacevideo1);
+//    cairo_surface_destroy(surfaceclose1);
+//    cairo_surface_destroy(surfaceclose2);
+//    cairo_surface_destroy(surfaceclosebut1);
+//    cairo_surface_destroy(surfaceclosebut2);
+//    cairo_surface_destroy(surfaceclosebut3);
+//}
 
 //将输入的文本框输出在显示的文本框中
 void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times) {
@@ -226,7 +226,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                     GTK_MESSAGE_INFO,
                     GTK_BUTTONS_OK,
-                    info->user.nickName);//到时候可以显示出昵称
+                    "%s",info->user.nickName);//到时候可以显示出昵称
 
             gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
 
@@ -334,24 +334,24 @@ int mainchart(friendinfo *friendinfonode) {
     friendinfonode->input_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->input_text));
     friendinfonode->show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->show_text));
 
-    friendinfonode->sw1 = gtk_scrolled_window_new(NULL, NULL);
-    friendinfonode->sw2 = gtk_scrolled_window_new(NULL, NULL);
+    friendinfonode->sw1 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
+    friendinfonode->sw2 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
 
     gtk_container_add(GTK_CONTAINER(friendinfonode->sw1), friendinfonode->input_text);
     gtk_container_add(GTK_CONTAINER(friendinfonode->sw2), friendinfonode->show_text);
 
-    gtk_text_view_set_wrap_mode(friendinfonode->input_text, GTK_WRAP_WORD_CHAR);
-    gtk_text_view_set_wrap_mode(friendinfonode->show_text, GTK_WRAP_WORD_CHAR);//自动换行
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(friendinfonode->input_text), GTK_WRAP_WORD_CHAR);
+    gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(friendinfonode->show_text), GTK_WRAP_WORD_CHAR);//自动换行
 
-    gtk_text_view_set_editable(friendinfonode->show_text,
+    gtk_text_view_set_editable(GTK_TEXT_VIEW(friendinfonode->show_text),
             0);//不可编辑
-    gtk_text_view_set_cursor_visible(friendinfonode->show_text, FALSE);
+    gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(friendinfonode->show_text), FALSE);
 
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), friendinfonode->sw1, 0, 425);//文本框位置
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), friendinfonode->sw2, 0, 115);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 0, 425);//文本框位置
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 0, 115);
 
-    gtk_widget_set_size_request(friendinfonode->sw1, 500, 80);
-    gtk_widget_set_size_request(friendinfonode->sw2, 500, 300);//大小
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 80);
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 300);//大小
 
     GdkRGBA rgba = {1, 1, 1, 0};
     gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_NORMAL, &rgba);//设置透明

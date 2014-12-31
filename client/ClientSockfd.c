@@ -62,34 +62,32 @@ void *keepalive(void *dada)
     log_info("DEBUG", "KeepAlive Begin\n");
     while (1)
     {
-        sleep(1);
+        sleep(60);
         CRPKeepAliveSend(sockfd, 0);
-        log_info("DEBUG", "KeepAlive Sent\n");
     }
 }
 
 int printfun(CRPBaseHeader *header, void *data)
 {
-    log_info("KEEPALIVE", "dada\n");
-    log_info("KEEPALIVE", "dad\n");
     return 1;
 }
 
-void printfmessage(CRPBaseHeader *header, void *data)
+int printfmessage(CRPBaseHeader *header, void *data)
 {
+    log_info("DEBUG", "MSG Routing\n");
     CRPPacketMessageNormal *packet=CRPMessageNormalCast(header);
     char*message=(char*) malloc(packet->messageLen+1);
     memcpy(message, packet->message, packet->messageLen);
     //packet->uid;
     message[packet->messageLen]='\0';
-    recd_server_msg(message, packet->uid);
+    //fun();
     free(message);
     if ((void *) packet != header->data)
     {
         free(packet);
     }
-};
-
+    return 1;
+}
 
 int mysockfd()
 {
