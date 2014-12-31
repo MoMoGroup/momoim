@@ -4,7 +4,7 @@
 #include <string.h>
 #include "run/user.h"
 
-int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessageText *packet)
+int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessageNormal *packet)
 {
     if (user->status == OUS_ONLINE)
     {
@@ -32,7 +32,7 @@ int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessag
         }
         else
         {
-            CRPMessageTextSend(toUser->sockfd, 0, (uint8_t) packet->messageType, user->info->uid, packet->messageLen, packet->message);
+            CRPMessageNormalSend(toUser->sockfd, 0, (uint8_t) packet->messageType, user->info->uid, packet->messageLen, packet->message);
             OnlineUserUnhold(toUser);
             CRPOKSend(user->sockfd, session);
         }

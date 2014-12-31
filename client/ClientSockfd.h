@@ -22,3 +22,4 @@ typedef struct friendinfo {
 extern friendinfo *friendinfohead;
 extern int sockfd;
 extern UserInfo userdata;
+extern pthread_t ThreadKeepAlive;
