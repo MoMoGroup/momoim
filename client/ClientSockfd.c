@@ -10,9 +10,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/info/Data.h>
 #include "MainInterface.h"
 
+
+pthread_t ThreadKeepAlive;
 
 int sockfd;
 
@@ -54,6 +55,30 @@ void add_node(friendinfo *node)
     p->next = node;
     node->next = NULL;
 }
+
+void *keepalive(void *dada)
+{
+    log_info("DEBUG", "KeepAlive Begin\n");
+    while (1)
+    {
+        sleep(1);
+        CRPKeepAliveSend(sockfd, 0);
+        log_info("DEBUG", "KeepAlive Sent\n");
+    }
+}
+
+int printfun(CRPBaseHeader *header, void *data)
+{
+    log_info("KEEPALIVE", "dada\n");
+    log_info("KEEPALIVE", "dad\n");
+    return 1;
+}
+
+int messagenormal(CRPBaseHeader *header, void *data)
+{
+
+
+};
 
 
 int mysockfd()
@@ -116,7 +141,7 @@ int mysockfd()
         friendinfohead->flag = 1;
 
         free(header);
-        if ((void*)ac != header->data)
+        if ((void *) ac != header->data)
         {
             free(ac);
         }
@@ -144,11 +169,11 @@ int mysockfd()
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-                        userdata=infodata->info;//放到结构提里，保存昵称，性别等资料
+                        userdata = infodata->info;//放到结构提里，保存昵称，性别等资料
                         log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
-                        if ((const char*)infodata != header->data)
+                        if ((const char *) infodata != header->data)
                         {
                             free(infodata);
                         }
@@ -218,7 +243,7 @@ int mysockfd()
                         }
 
                     }
-                    if ((void *)packet != header->data)
+                    if ((void *) packet != header->data)
                     {
                         free(packet);
                     }
@@ -255,7 +280,7 @@ int mysockfd()
                         //free(node);
 
                     }
-                    if ((void *)packet != header->data)
+                    if ((void *) packet != header->data)
                     {
                         free(packet);
                     }
@@ -309,7 +334,7 @@ int mysockfd()
 
 
                     }
-                    if ((void *)packet != header->data)
+                    if ((void *) packet != header->data)
                     {
                         free(packet);
                     }
@@ -342,6 +367,9 @@ int mysockfd()
 
 
         }
+        AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");
+        AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, <#(int (*)(CRPBaseHeader *, void *))fn#>,"");
+        pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }
 

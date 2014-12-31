@@ -19,7 +19,7 @@ int ProcessPacketStatusFailure(OnlineUser *user, uint32_t session, CRPPacketFail
 
 int ProcessPacketLoginLogout(OnlineUser *user, uint32_t session, CRPPacketLoginLogout *packet);
 
-int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessageText *packet);
+int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessageNormal *packet);
 
 int ProcessPacketInfoRequest(OnlineUser *user, uint32_t session, CRPPacketInfoRequest *packet);
 

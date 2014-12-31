@@ -239,7 +239,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
                    mainchart(friendinforear);
                 }
                 else {
-                    gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
+                        gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
                 }
             }
 
@@ -308,20 +308,20 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
     return 0;
 }
-int maininterface() {
-        GtkCellRenderer *renderer;
-        GtkTreeViewColumn *column;//列表
-        vbox = gtk_box_new(TRUE, 5);
 
-        //gtk_init(&argc, &argv);
-        window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        gtk_window_set_default_size(GTK_WINDOW(window), 284, 600);
-        gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
-        gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+int maininterface()
+{
 
+    GtkCellRenderer *renderer;
+    GtkTreeViewColumn *column;//列表
+    vbox = gtk_box_new(TRUE, 5);
 
-        MainLayout = gtk_fixed_new();
-        frameLayout = gtk_layout_new(NULL, NULL);
+    //gtk_init(&argc, &argv);
+    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_default_size(GTK_WINDOW(window), 284, 600);
+    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
+    gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
@@ -335,13 +335,15 @@ int maininterface() {
     font = pango_font_description_from_string("Sans");//"Sans"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(userid, font);
+    //g_print(groupdata.nickName);
+//    log_info("组员信息", groupdata.nickName);
+    //g_print(groupdata.nickName);
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
 
-
-    treeView =(GtkTreeView *) gtk_tree_view_new_with_model(createModel());//list
+    treeView = (GtkTreeView *) gtk_tree_view_new_with_model(createModel());//list
     //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
     gtk_tree_view_set_headers_visible(treeView, 0);//去掉头部空白
 
@@ -350,23 +352,22 @@ int maininterface() {
     column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
             "pixbuf", PIXBUF_COL,
             NULL);
-    gtk_tree_view_append_column(treeView, column);
+    gtk_tree_view_append_column(GTK_TREE_VIEW (treeView), column);
     gtk_tree_view_column_set_resizable(column, TRUE);
 
 
     //添加滚动条
 
-    GtkScrolledWindow *sw = (GtkScrolledWindow *)gtk_scrolled_window_new(NULL, NULL);
+    GtkScrolledWindow *sw = (GtkScrolledWindow *) gtk_scrolled_window_new(NULL, NULL);
     //设置滚动条常在状态
     gtk_scrolled_window_set_policy(sw,
             GTK_POLICY_ALWAYS,
             GTK_POLICY_ALWAYS);
     //获取水平滚动条
     GtkWidget *widget = gtk_scrolled_window_get_hscrollbar(sw);
-
-    gtk_container_add(GTK_CONTAINER(sw), treeView);
-    gtk_fixed_put(GTK_FIXED(MainLayout), sw, 0, 225);
-    gtk_widget_set_size_request(sw, 284, 358);
+    gtk_container_add(GTK_CONTAINER(sw), (GtkWidget *) treeView);
+    gtk_fixed_put(GTK_FIXED(MainLayout), (GtkWidget *) sw, 0, 225);
+    gtk_widget_set_size_request((GtkWidget *) sw, 284, 358);
     // 设置窗体获取鼠标事件
     gtk_widget_set_events(window,
 
@@ -376,7 +377,7 @@ int maininterface() {
 
                     | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
-    gtk_widget_set_events(treeView, GDK_BUTTON_PRESS_MASK);
+    gtk_widget_set_events((GtkWidget *) treeView, GDK_BUTTON_PRESS_MASK);
 
     g_signal_connect(G_OBJECT(window), "button_press_event",
             G_CALLBACK(button_press_event), window);       // 加入事件回调

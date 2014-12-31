@@ -65,7 +65,7 @@ typedef enum
     CRP_PACKET_FILE_STORE_ACCEPT,  //接受新文件
 
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
-    CRP_PACKET_MESSAGE_TEXT,        //文本消息
+    CRP_PACKET_MESSAGE_NORMAL,        //文本消息
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID
 } CRPPacketIDs;
