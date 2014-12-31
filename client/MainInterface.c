@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <pwd.h>
 #include <string.h>
-
+#include "chart.h"
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -35,8 +35,7 @@ enum {
 //
 //frienduid *uidhead = NULL;
 
-GtkTreeModel *createModel()
-{
+GtkTreeModel *createModel() {
     gint i, j;
     cairo_surface_t *surface;
     cairo_surface_t *surfaceIcon;
@@ -198,16 +197,16 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         if (event->button == 0x2) {
             return FALSE;
         }
-        if (event->button == 0x3 ){
+        if (event->button == 0x3) {
             int i, j;
             GtkTreePath *path;
             path = gtk_tree_model_get_path(model, &iter);
             i = gtk_tree_path_get_indices(path)[0];
             j = gtk_tree_path_get_indices(path)[1];
 
-            if((gtk_tree_model_iter_has_child(model, &iter) == 0)&&!((i==0)&&(j==0))&&(friends->groups[i].friendCount > 0)) {
-            gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
-            return FALSE;
+            if ((gtk_tree_model_iter_has_child(model, &iter) == 0) && !((i == 0) && (j == 0)) && (friends->groups[i].friendCount > 0)) {
+                gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
+                return FALSE;
             }
         }
     }
@@ -231,15 +230,14 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
                     uidfindflag = 1;
                     break;
                 }
-                else
-                {friendinforear = friendinforear->next;}
+                else {friendinforear = friendinforear->next;}
             }
-            if(uidfindflag==1) {
-                if(friendinforear->chartwindow== NULL) {
-                   mainchart(friendinforear);
+            if (uidfindflag == 1) {
+                if (friendinforear->chartwindow == NULL) {
+                    mainchart(friendinforear);
                 }
                 else {
-                        gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
+                    gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
                 }
             }
 
@@ -248,6 +246,34 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
     return FALSE;
 
 }
+
+void recd_server_msg(const gchar *rcvd_text, u_int32_t recd_uid) {
+    GtkTextIter start, end;
+    int uidfindflag = 0;
+    friendinfo *userinfo = friendinfohead;
+    while (userinfo) {
+        if (userinfo->user.uid == recd_uid) {
+            uidfindflag = 1;
+            break;
+        }
+        else {
+            userinfo = userinfo->next;
+        }
+    }
+    if (uidfindflag == 1) {
+        if (userinfo->chartwindow == NULL) {
+            mainchart(userinfo);
+            show_remote_text(rcvd_text,userinfo);
+        }
+        else {
+            show_remote_text(rcvd_text,userinfo);
+        }
+    }
+}
+//    gtk_text_buffer_get_bounds(<#(GtkTextBuffer*)buffer#>, &start, &end);
+//    gtk_text_buffer_insert(<#(GtkTextBuffer*)buffer#>, &end, <#(const gchar*)text#>, <#(gint)len#>);
+//    gtk_text_buffer_insert(<#(GtkTextBuffer*)buffer#>, &end,rcvd_text, <#(gint)len#>);
+
 
 //鼠标点击事件
 static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -302,15 +328,14 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose53);
     }
     else {
-            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-            gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);
+        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+        gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);
     }
 
     return 0;
 }
 
-int maininterface()
-{
+int maininterface() {
 
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表

@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/message/Normal.h>
 #include "MainInterface.h"
 
 
@@ -74,10 +75,19 @@ int printfun(CRPBaseHeader *header, void *data)
     return 1;
 }
 
-int messagdata(CRPBaseHeader *header, void *data)
+void printfmessage(CRPBaseHeader *header, void *data)
 {
-
-
+    CRPPacketMessageNormal *packet=CRPMessageNormalCast(header);
+    char*message=(char*) malloc(packet->messageLen+1);
+    memcpy(message, packet->message, packet->messageLen);
+    //packet->uid;
+    message[packet->messageLen]='\0';
+    recd_server_msg(message, packet->uid);
+    free(message);
+    if ((void *) packet != header->data)
+    {
+        free(packet);
+    }
 };
 
 
@@ -122,9 +132,9 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
-        //密码错误
+        //密码错误DA
         log_info("登录失败", "登录失败\n");
-        g_idle_add(destroyLayout, NULL);
+        g_idle_add(destroyLayout, NULL);DA;
         return 1;
     }
 
@@ -367,8 +377,8 @@ int mysockfd()
 
 
         }
-        AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");
-//        AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, <#(int (*)(CRPBaseHeader *, void *))fn#>,"");
+        AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");//添加事件
+        AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, printfmessage, "dfg");//添加事件
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }

@@ -9,7 +9,7 @@
 #include <ftadvanc.h>
 #include <gmodule.h>
 #include <time.h>
-
+#include "chart.h"
 int X = 0;
 int Y = 0;
 
@@ -103,25 +103,48 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times) {
 
 
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
-    gtk_text_buffer_create_tag(info->show_buffer,"red_foreground","foreground","red", NULL);
-    gtk_text_buffer_create_tag(info->show_buffer,"gray_foreground","foreground","gray", NULL);
-   // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
+    gtk_text_buffer_create_tag(info->show_buffer, "red_foreground", "foreground", "red", NULL);
+    gtk_text_buffer_create_tag(info->show_buffer, "gray_foreground", "foreground", "gray", NULL);
+    // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
-            nicheng_times, -1, "red_foreground",NULL);
+            nicheng_times, -1, "red_foreground", NULL);
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
-            text, -1, "gray_foreground",NULL);
+            text, -1, "gray_foreground", NULL);
 
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
-            "\n", -1, "gray_foreground",NULL);
+            "\n", -1, "gray_foreground", NULL);
 
 
 }
+
+//将服务器发过来的的消息显示在文本框上
+void show_remote_text(const gchar *rcvd_text,friendinfo *info){
+    GtkTextIter start,end;
+    char nicheng_times[40] = {0};
+    time_t timep;
+    struct tm *p;
+    time(&timep);
+    p = localtime(&timep);
+    sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
+    gtk_text_buffer_create_tag(info->show_buffer, "blue_foreground", "foreground", "blue", NULL);
+    gtk_text_buffer_create_tag(info->show_buffer, "gray_foreground", "foreground", "gray", NULL);
+    // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
+    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+            nicheng_times, -1, "blue_foreground", NULL);
+    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+            rcvd_text, -1, "gray_foreground", NULL);
+
+    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+            "\n", -1, "gray_foreground", NULL);
+}
+
 
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
 void send_text(friendinfo *info) {
     GtkTextIter start, end;
     gchar *char_text;
-    char_text = (gchar *) malloc(5000);
+    char_text = (gchar *) malloc(1024);
     if (char_text == NULL) {
         printf("Malloc error!\n");
         exit(1);
@@ -134,7 +157,8 @@ void send_text(friendinfo *info) {
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
-    sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName,p->tm_hour, p->tm_min, p->tm_sec);
+    sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, strlen(char_text), char_text);
     show_local_text(char_text, info, nicheng_times);
     free(char_text);
 }
@@ -186,7 +210,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     friendinfo *info = (friendinfo *) data;
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
-    if (event->button == 1 )       // 判断是否是点击关闭图标
+    if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);

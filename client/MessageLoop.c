@@ -93,4 +93,5 @@ int MessageLoopFunc()
         }
         free(header);
     }
+    return 0;
 }
