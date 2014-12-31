@@ -55,7 +55,7 @@ void DeleteMessageNode(uint32_t sessid, uint16_t packetid)
             p->next = delete->next;
             free(delete);
         }
-        p=p->next;
+        p = p->next;
     }
     pthread_rwlock_unlock(&lock);//取消锁
 }

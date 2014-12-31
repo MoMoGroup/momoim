@@ -1,8 +1,11 @@
 #pragma once
 
 #include <imcommon/friends.h>
+#include <protocol/info/Data.h>
 #include "client.h"
+
 extern int mysockfd();
+
 typedef struct friendinfo {
     uint32_t sessionid;
     int flag;
@@ -18,3 +21,4 @@ typedef struct friendinfo {
 } friendinfo;
 extern friendinfo *friendinfohead;
 extern int sockfd;
+extern UserInfo userdata;

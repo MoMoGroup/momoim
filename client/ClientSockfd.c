@@ -2,25 +2,15 @@
 #include"ClientSockfd.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <stdio.h>
 #include<stdlib.h>
 #include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
-#include <protocol/base.h>
 #include <string.h>
-#include <protocol/info/Data.h>
-#include <protocol/status/Failure.h>
-#include <pwd.h>
 #include <sys/stat.h>
-#include <imcommon/friends.h>
-#include <errno.h>
-#include <grp.h>
-#include <protocol/login/Accept.h>
-#include <zlib.h>
-#include <assert.h>
-#include <protocol/file/Data.h>
+#include <pwd.h>
+#include <protocol/info/Data.h>
 #include "MainInterface.h"
 
 
@@ -28,7 +18,7 @@ int sockfd;
 
 UserFriends *friends;
 UserGroup *group;
-CRPPacketInfoData userdata, groupdata;
+UserInfo userdata;
 gchar *uidname;
 FILE *fp;
 //
@@ -123,10 +113,10 @@ int mysockfd()
         uint32_t uid = ac->uid;   ///拿到用户uid
 
         friendinfohead = (friendinfo *) calloc(1, sizeof(struct friendinfo));//创建头节点
-        friendinfohead->flag=1;
+        friendinfohead->flag = 1;
 
         free(header);
-        if (ac != header->data)
+        if ((void*)ac != header->data)
         {
             free(ac);
         }
@@ -143,7 +133,7 @@ int mysockfd()
         sprintf(mulu, "%s/.momo/friend", getpwuid(getuid())->pw_dir);
 
         mkdir(mulu, 0700);
-int loop=1;
+        int loop = 1;
         while (loop)
         {
             header = CRPRecv(sockfd);
@@ -154,11 +144,11 @@ int loop=1;
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-                        memcpy(&userdata, infodata, sizeof(CRPPacketInfoData));//放到结构提里，保存昵称，性别等资料
+                        userdata=infodata->info;//放到结构提里，保存昵称，性别等资料
                         log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
-                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->icon);//发送用户头像请求
+                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
-                        if (infodata != header->data)
+                        if ((const char*)infodata != header->data)
                         {
                             free(infodata);
                         }
@@ -168,19 +158,19 @@ int loop=1;
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
 
-                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->icon);//请求用户资料,通过ssionID区别
+                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
 
                         friendinfo *node;
                         node = (friendinfo *) calloc(1, sizeof(friendinfo));
                         //node= (struct friendinfo *)malloc(sizeof(struct friendinfo));
                         node->sessionid = header->sessionID;//添加id到结构提
-                        node->user.uid = infodata->uid;
-                        memcpy(node->user.nickName, infodata->nickName, sizeof(infodata->nickName));//添加昵称
+                        node->user = infodata->info;
+                        memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
                         add_node(node);             //添加新节点
                         //free(node);
 
-                       // log_info("GROUPDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
-                       // log_info("循环1", "循环1%s\n", mulu);
+                        // log_info("GROUPDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
+                        // log_info("循环1", "循环1%s\n", mulu);
                     }
                     break;
 
@@ -188,12 +178,12 @@ int loop=1;
                 }
                 case CRP_PACKET_FILE_DATA_START://服务器准备发送头像
                 {
-                    CRPPacketFileDataStart *packet = CRPFileDataEndCast(header);
+                    CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
 
 
                     if (header->sessionID < 10000)//用户的资料，准备工作，打开文件等
                     {
-                        sprintf(mulu, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir,uid);
+                        sprintf(mulu, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, uid);
                         if ((fp = fopen(mulu, "w")) == NULL)
                         {
                             perror("openfile1\n");
@@ -204,7 +194,7 @@ int loop=1;
 
                     else
                     {
-                        sprintf(mulu2, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir,header->sessionID);
+                        sprintf(mulu2, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, header->sessionID);
 
                         friendinfo *node;
                         //node = (friendinfo *) malloc(sizeof(friendinfo));
@@ -228,7 +218,7 @@ int loop=1;
                         }
 
                     }
-                    if (packet != header->data)
+                    if ((void *)packet != header->data)
                     {
                         free(packet);
                     }
@@ -265,7 +255,7 @@ int loop=1;
                         //free(node);
 
                     }
-                    if (packet != header->data)
+                    if ((void *)packet != header->data)
                     {
                         free(packet);
                     }
@@ -285,13 +275,13 @@ int loop=1;
                     {
                         int friendnum = 0;
                         friendinfo *node;
-                        node =friendinfohead;
+                        node = friendinfohead;
                         while (node)
                         {
                             if (node->sessionid == header->sessionID)
                             {
                                 fclose(node->fp);
-                                 node->flag = 1;//接受完毕，标志位1;
+                                node->flag = 1;//接受完毕，标志位1;
                                 friendnum++;//接受完毕的个数加1
                                 break;
                             }
@@ -314,13 +304,12 @@ int loop=1;
                         if (node == NULL)
                         {
                             g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
-                            loop=0;
+                            loop = 0;
                         }
 
 
-
                     }
-                    if (packet != header->data)
+                    if ((void *)packet != header->data)
                     {
                         free(packet);
                     }
@@ -350,7 +339,6 @@ int loop=1;
                 }
             }
             free(header);
-
 
 
         }

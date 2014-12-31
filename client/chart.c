@@ -1,10 +1,6 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
-#include "ClientSockfd.h"
-#include <cairo.h>
-#include <logger.h>
-#include <imcommon/friends.h>
 #include <stdlib.h>
 
 int X = 0;
@@ -64,7 +60,7 @@ static void create_surfaces(friendinfo *information)
     gtk_fixed_put(GTK_FIXED(information->chartlayout), information->imageclosebut, 470, 0);
 
     //xianshinicheng GtkWidget *charttowho;
-    
+
     GtkWidget *nicheng;
     nicheng = gtk_label_new(information->user.nickName);
     //daxiao
@@ -154,7 +150,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     friendinfo *info = (friendinfo *) data;
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
-    if (event->button == 1 )       // 判断是否是点击关闭图标
+    if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
@@ -162,7 +158,8 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
 
-        if ((X > 391 && X < 473) && (Y > 513 && Y < 540)) {
+        if ((X > 391 && X < 473) && (Y > 513 && Y < 540))
+        {
             gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
             GtkWidget *dialog;
             //创建带确认按钮的对话框，父控件为空
@@ -180,7 +177,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
             //DeleteEvent();
             gtk_widget_destroy(info->chartwindow);
-            info->chartwindow= NULL;
+            info->chartwindow = NULL;
         }
 
     }
@@ -203,12 +200,12 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend2); //置换图标
     }
-    else if ((X > 18 && X < 43) && (Y > 70 && Y < 100) )
+    else if ((X > 18 && X < 43) && (Y > 70 && Y < 100))
     {   //设置语音按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice2); //置换图标
     }
-    else if ((X > 60 && X < 93) && (Y > 74 && Y < 103) )
+    else if ((X > 60 && X < 93) && (Y > 74 && Y < 103))
     {   //设置视频按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标

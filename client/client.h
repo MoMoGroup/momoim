@@ -1,4 +1,5 @@
 #pragma once
 
 #include <gtk/gtk.h>
-extern GtkWidget *username,*passwd;
+
+extern GtkWidget *username, *passwd;

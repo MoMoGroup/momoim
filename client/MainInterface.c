@@ -1,10 +1,7 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
-#include "ClientSockfd.h"
-#include <cairo.h>
 #include <logger.h>
-#include <imcommon/friends.h>
 #include <stdlib.h>
 #include <pwd.h>
 #include <string.h>
@@ -18,10 +15,6 @@ static GtkTreeIter iter1, iter2;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 static int x = 0;
 static int y = 0;
-
-extern CRPPacketInfoData userdata;
-extern CRPPacketInfoData groupdata;
-extern gchar *uidname;
 
 static GtkTreeStore *store;
 static GdkPixbuf *pixbuf;
@@ -272,6 +265,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
     return FALSE;
 
 }
+
 //鼠标点击事件
 static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -370,13 +364,12 @@ int maininterface()
     //g_print(groupdata.nickName);
 //    log_info("组员信息", groupdata.nickName);
     //g_print(groupdata.nickName);
-    log_info("组员信息", groupdata.nickName);
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
 
-   treeView = (GtkTreeView*)gtk_tree_view_new_with_model(createModel());//list
+    treeView = (GtkTreeView *) gtk_tree_view_new_with_model(createModel());//list
     //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
     gtk_tree_view_set_headers_visible(treeView, 0);//去掉头部空白
 
@@ -391,16 +384,16 @@ int maininterface()
 
     //添加滚动条
 
-    GtkScrolledWindow *sw = (GtkScrolledWindow*)gtk_scrolled_window_new(NULL, NULL);
+    GtkScrolledWindow *sw = (GtkScrolledWindow *) gtk_scrolled_window_new(NULL, NULL);
     //设置滚动条常在状态
     gtk_scrolled_window_set_policy(sw,
             GTK_POLICY_ALWAYS,
             GTK_POLICY_ALWAYS);
     //获取水平滚动条
     GtkWidget *widget = gtk_scrolled_window_get_hscrollbar(sw);
-    gtk_container_add(GTK_CONTAINER(sw), (GtkWidget*)treeView);
-    gtk_fixed_put(GTK_FIXED(MainLayout), (GtkWidget*)sw, 0, 225);
-    gtk_widget_set_size_request((GtkWidget*)sw, 284, 358);
+    gtk_container_add(GTK_CONTAINER(sw), (GtkWidget *) treeView);
+    gtk_fixed_put(GTK_FIXED(MainLayout), (GtkWidget *) sw, 0, 225);
+    gtk_widget_set_size_request((GtkWidget *) sw, 284, 358);
     // 设置窗体获取鼠标事件
     gtk_widget_set_events(window,
 
@@ -410,7 +403,7 @@ int maininterface()
 
                     | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
-    gtk_widget_set_events((GtkWidget*)treeView, GDK_BUTTON_PRESS_MASK);
+    gtk_widget_set_events((GtkWidget *) treeView, GDK_BUTTON_PRESS_MASK);
 
     g_signal_connect(G_OBJECT(window), "button_press_event",
             G_CALLBACK(button_press_event), window);       // 加入事件回调
