@@ -15,6 +15,7 @@
 #include "protocol/file/DataEnd.h"
 #include "protocol/file/StoreRequest.h"
 #include "protocol/file/StoreAccept.h"
+#include "protocol/file/Reset.h"
 
 #include "protocol/login/Login.h"
 #include "protocol/login/Accept.h"
@@ -27,7 +28,7 @@
 #include "protocol/status/Failure.h"
 #include "protocol/status/Crash.h"
 
-#include "protocol/message/Text.h"
+#include "protocol/message/Normal.h"
 
 typedef enum
 {
@@ -59,6 +60,7 @@ typedef enum
     CRP_PACKET_FILE_DATA,          //响应数据
     CRP_PACKET_FILE_DATA_START,    //响应数据结束
     CRP_PACKET_FILE_DATA_END,      //响应数据结束
+    CRP_PACKET_FILE_RESET,         //重置文件发送进程
     CRP_PACKET_FILE_STORE_REQUEST, //请求存储新文件
     CRP_PACKET_FILE_STORE_ACCEPT,  //接受新文件
 

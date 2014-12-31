@@ -186,7 +186,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
     friendinfo *info = (friendinfo *) data;
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
-    if (event->button == 1)       // 判断是否是点击关闭图标
+    if (event->button == 1 )       // 判断是否是点击关闭图标
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);

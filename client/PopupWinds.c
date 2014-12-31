@@ -14,12 +14,14 @@ static void create_popupfaces() {
 GtkWidget *box;
 cairo_surface_t *backface;
 
-void destroy(GtkWidget *widget, gpointer *data) {
+void destroy(GtkWidget *widget, gpointer *data)
+{
     cairo_surface_destroy(backface);
     gtk_widget_destroy(box);
 }
 
-int popup(const char *title, const char *tell, GtkWindow *parent) {
+int popup(const char *title, const char *tell, GtkWindow *parent)
+{
 
     GtkWidget *popupwindow;
 

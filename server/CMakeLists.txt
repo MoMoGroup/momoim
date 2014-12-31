@@ -4,12 +4,13 @@ include_directories(../protocol/include)
 include_directories(../imcommon/include)
 
 SET(SERVER_SOURCE_FILE
+    server.c
+    sqlite3.c
+
     run/jobs.c
     run/listener.c
-    server.c
     run/user.c
     run/worker.c
-    sqlite3.c
 
     data/base.c
     data/auth.c
@@ -20,6 +21,7 @@ SET(SERVER_SOURCE_FILE
     packets/file/Data.c
     packets/file/DataEnd.c
     packets/file/StoreRequest.c
+    packets/file/Reset.c
 
     packets/status/Crash.c
     packets/status/Hello.c
@@ -28,13 +30,15 @@ SET(SERVER_SOURCE_FILE
     packets/status/Failure.c
 
     packets/info/Request.c
+    packets/info/Data.c
+
     packets/friend/Request.c
 
     packets/login/Login.c
     packets/login/Logout.c
     packets/login/Register.c
 
-    packets/message/Text.c
+    packets/message/Normal.c
     )
 add_executable(server ${SERVER_SOURCE_FILE})
 target_link_libraries(server protocol)

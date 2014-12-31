@@ -12,20 +12,16 @@
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
-static GtkWidget *treeView;
+static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
 static GtkTreeIter iter1, iter2;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 static int x = 0;
 static int y = 0;
 
-extern CRPPacketInfoData userdata;
-extern CRPPacketInfoData groupdata;
-extern gchar *uidname;
-
 static GtkTreeStore *store;
-static GdkPixbuf *pixbuf, *pixbuf1;
-static cairo_t *cr, *cr1;
+static GdkPixbuf *pixbuf;
+static cairo_t *cr;
 static GtkWidget *vbox;
 
 enum {
@@ -39,12 +35,11 @@ enum {
 //
 //frienduid *uidhead = NULL;
 
-GtkTreeModel *createModel() {
-
+GtkTreeModel *createModel()
+{
     gint i, j;
-    cairo_surface_t *surface, *surface1;
+    cairo_surface_t *surface;
     cairo_surface_t *surfaceIcon;
-    cairo_pattern_t *pattern1;
 
     store = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
     for (i = 0; i < friends->groupCount; i++) {
@@ -61,7 +56,7 @@ GtkTreeModel *createModel() {
                 FRIENDUID_COL, friends->groups[i].groupId,
                 -1);
 
-        gdk_pixbuf_unref(pixbuf);
+        g_object_unref(pixbuf);
 
         for (j = 0; j < friends->groups[i].friendCount; j++) {
             char friendname[20] = {0};
@@ -105,7 +100,7 @@ GtkTreeModel *createModel() {
                     PIXBUF_COL, pixbuf,
                     FRIENDUID_COL, friends->groups[i].friends[j],
                     -1);
-            gdk_pixbuf_unref(pixbuf);
+            g_object_unref(pixbuf);
         }
     }
     cairo_destroy(cr);
@@ -154,8 +149,8 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
     GdkEventButton *event_button;
     GtkWidget *menu = GTK_WIDGET(data);
     GtkTreeIter iter;
-    GtkWidget *treeview = GTK_TREE_VIEW(widget);
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
+    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);
 
@@ -190,8 +185,8 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
     GdkEventButton *event_button;
     GtkTreeIter iter;
 
-    GtkWidget *treeview = GTK_TREE_VIEW(widget);
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
+    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);
     GtkWidget *menu = GTK_WIDGET(data);
@@ -214,7 +209,8 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
             if((gtk_tree_model_iter_has_child(model, &iter) == 0)&&!((i==0)&&(j==0))&&(friends->groups[i].friendCount > 0)) {
             gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
             return FALSE;
-        }}
+            }
+        }
     }
     else if (event->type == GDK_2BUTTON_PRESS && event->button == 0x1) {
         int i, j;
@@ -236,16 +232,15 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
                     uidfindflag = 1;
                     break;
                 }
-                else friendinforear = friendinforear->next;
+                else
+                {friendinforear = friendinforear->next;}
             }
-            if (uidfindflag == 1) {
-                if (friendinforear->chartwindow == NULL) {
-                    mainchart(friendinforear);
-
+            if(uidfindflag==1) {
+                if(friendinforear->chartwindow== NULL) {
+                   mainchart(friendinforear);
                 }
                 else {
                     gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
-
                 }
             }
 
@@ -308,25 +303,26 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose53);
     }
     else {
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-        gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);
+            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+            gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);
     }
 
     return 0;
 }
-
 int maininterface() {
+        GtkCellRenderer *renderer;
+        GtkTreeViewColumn *column;//列表
+        vbox = gtk_box_new(TRUE, 5);
 
-    GtkCellRenderer *renderer;
-    GtkTreeViewColumn *column;//列表
-    vbox = gtk_box_new(TRUE, 5);
+        //gtk_init(&argc, &argv);
+        window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        gtk_window_set_default_size(GTK_WINDOW(window), 284, 600);
+        gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
+        gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 
-    //gtk_init(&argc, &argv);
-    window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), 284, 600);
-    gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
-    gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 
+        MainLayout = gtk_fixed_new();
+        frameLayout = gtk_layout_new(NULL, NULL);
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
@@ -350,7 +346,7 @@ int maininterface() {
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
 
 
-    treeView = gtk_tree_view_new_with_model(createModel());//list
+    treeView =(GtkTreeView *) gtk_tree_view_new_with_model(createModel());//list
     //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
     gtk_tree_view_set_headers_visible(treeView, 0);//去掉头部空白
 
@@ -359,7 +355,7 @@ int maininterface() {
     column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
             "pixbuf", PIXBUF_COL,
             NULL);
-    gtk_tree_view_append_column(GTK_TREE_VIEW (treeView), column);
+    gtk_tree_view_append_column(treeView, column);
     gtk_tree_view_column_set_resizable(column, TRUE);
 
 

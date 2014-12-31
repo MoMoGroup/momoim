@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include<string.h>
 #include <protocol/base.h>
+#include <protocol/info/Data.h>
+#include <imcommon/friends.h>
 
 int main()
 {
@@ -68,7 +70,7 @@ int main()
 
     CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
     uint32_t uid = ac->uid;
-    if (ac != header->data)
+    if ((const char *) ac != header->data)
         free(ac);
     CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
     CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
@@ -80,10 +82,10 @@ int main()
             case CRP_PACKET_INFO_DATA:
             {
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
-                log_info("User", "Nick:%s\n", infoData->nickName);
-                CRPFileRequestSend(sockfd, 10, 0, infoData->icon);
+                log_info("User", "Nick:%s\n", infoData->info.nickName);
+                CRPFileRequestSend(sockfd, 10, 0, infoData->info.icon);
 
-                if (infoData != header->data)
+                if ((const char *) infoData != header->data)
                     free(infoData);
                 break;
             }
@@ -91,12 +93,12 @@ int main()
             {
                 CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
                 log_info("Icon", "%lu bytes will be received\n", packet->dataLength);
-                if (packet != header->data)
+                if ((const char *) packet != header->data)
                     free(packet);
                 break;
             };
             case CRP_PACKET_FILE_DATA:
-                header->sessionID;
+
                 log_info("Icon", "Recv data %lu bytes.\n", header->dataLength);
                 break;
             case CRP_PACKET_FILE_DATA_END:
@@ -110,7 +112,7 @@ int main()
                 {
                     log_info("Icon", "Recv Fail with code %d", (int) packet->code);
                 }
-                if (packet != header->data)
+                if ((const char *) packet != header->data)
                     free(packet);
                 break;
             }

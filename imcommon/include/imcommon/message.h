@@ -23,16 +23,16 @@ typedef struct
     int fd;
     pthread_mutex_t lock;
 
-} UserMessageFile;
+} MessageFile;
 
 int MessageFileCreate(const char *path);
 
-UserMessageFile *MessageFileOpen(const char *path);
+MessageFile *MessageFileOpen(const char *path);
 
-int MessageFileCleanup(UserMessageFile *);
+int MessageFileCleanup(MessageFile *);
 
-int MessageFileClose(UserMessageFile *);
+int MessageFileClose(MessageFile *);
 
-int MessageFileAppend(UserMessageFile *, UserMessage *message);
+int MessageFileAppend(MessageFile *, UserMessage *message);
 
-UserMessage *MessageFileNext(UserMessageFile *);
+UserMessage *MessageFileNext(MessageFile *);

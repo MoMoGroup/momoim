@@ -2,6 +2,7 @@
 
 #include <protocol/base.h>
 #include <stdint.h>
+#include <imcommon/friends.h>
 
 /**
 * 服务端回复用户资料
@@ -9,13 +10,10 @@
 
 CRP_STRUCTURE
 {
-    uint32_t uid;
-    char sex;
-    char nickName[32];
-    unsigned char icon[16];
+    UserInfo info;
 } CRPPacketInfoData;
 
 __attribute_malloc__
 CRPPacketInfoData *CRPInfoDataCast(CRPBaseHeader *base);
 
-int CRPInfoDataSend(int sockfd, uint32_t sessionID, uint32_t uid, char *nick, char sex, unsigned char *icon);
+int CRPInfoDataSend(int sockfd, uint32_t sessionID, UserInfo *info);
