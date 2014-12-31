@@ -2,6 +2,7 @@
 
 #include <protocol/base.h>
 #include <stdint.h>
+#include <imcommon/friends.h>
 
 /**
 * 服务端回复用户资料

@@ -21,6 +21,7 @@ SET(SERVER_SOURCE_FILE
     packets/file/Data.c
     packets/file/DataEnd.c
     packets/file/StoreRequest.c
+    packets/file/Reset.c
 
     packets/status/Crash.c
     packets/status/Hello.c
@@ -30,13 +31,14 @@ SET(SERVER_SOURCE_FILE
 
     packets/info/Request.c
     packets/info/Data.c
+
     packets/friend/Request.c
 
     packets/login/Login.c
     packets/login/Logout.c
     packets/login/Register.c
 
-    packets/message/Text.c
+    packets/message/Normal.c
     )
 add_executable(server ${SERVER_SOURCE_FILE})
 target_link_libraries(server protocol)

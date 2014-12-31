@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <protocol/message/Text.h>
 #include "test.h"
 
 int TestPacketMessage()

@@ -31,6 +31,8 @@ int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRe
 
 int ProcessPacketFileData(OnlineUser *user, uint32_t session, CRPPacketFileData *packet);
 
+int ProcessPacketFileReset(OnlineUser *user, uint32_t session, CRPPacketFileReset *packet);
+
 int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDataEnd *packet);
 
 int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketFileStoreRequest *packet);
