@@ -155,11 +155,10 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
     gtk_tree_selection_get_selected(selection, &model, &iter);
 
     if (event->type == GDK_BUTTON_PRESS) {
-        int i, j;
+        int i;
         GtkTreePath *path;
         path = gtk_tree_model_get_path(model, &iter);
         i = gtk_tree_path_get_indices(path)[0];
-        j = gtk_tree_path_get_indices(path)[1];
 
         event_button = (GdkEventButton *) event;
 
@@ -336,10 +335,6 @@ int maininterface() {
     font = pango_font_description_from_string("Sans");//"Sans"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(userid, font);
-    //g_print(groupdata.nickName);
-//    log_info("组员信息", groupdata.nickName);
-    //g_print(groupdata.nickName);
-    log_info("组员信息", groupdata.nickName);
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
@@ -361,7 +356,7 @@ int maininterface() {
 
     //添加滚动条
 
-    GtkScrolledWindow *sw = gtk_scrolled_window_new(NULL, NULL);
+    GtkScrolledWindow *sw = (GtkScrolledWindow *)gtk_scrolled_window_new(NULL, NULL);
     //设置滚动条常在状态
     gtk_scrolled_window_set_policy(sw,
             GTK_POLICY_ALWAYS,
