@@ -1,7 +1,10 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
+#include "ClientSockfd.h"
+#include <cairo.h>
 #include <logger.h>
+#include <imcommon/friends.h>
 #include <stdlib.h>
 #include <pwd.h>
 #include <string.h>
@@ -39,8 +42,7 @@ GtkTreeModel *createModel()
     cairo_surface_t *surfaceIcon;
 
     store = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
-    for (i = 0; i < friends->groupCount; i++)
-    {
+    for (i = 0; i < friends->groupCount; i++) {
         surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
         cr = cairo_create(surface);
         cairo_move_to(cr, 0, 20);
@@ -56,18 +58,15 @@ GtkTreeModel *createModel()
 
         g_object_unref(pixbuf);
 
-        for (j = 0; j < friends->groups[i].friendCount; j++)
-        {
+        for (j = 0; j < friends->groups[i].friendCount; j++) {
             char friendname[20] = {0};
             char mulu[80] = {0};
             sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, friends->groups[i].friends[j]);
             pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
             gint w = gdk_pixbuf_get_width(pixbuf);
             friendinfo *rear = friendinfohead;
-            while (rear)
-            {
-                if (rear->sessionid == friends->groups[i].friends[j])
-                {
+            while (rear) {
+                if (rear->sessionid == friends->groups[i].friends[j]) {
                     memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
                     break;
                 }
@@ -96,16 +95,6 @@ GtkTreeModel *createModel()
 
             cairo_show_text(cr, friendname);
             pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
-//
-//            surface1 = gdk_cairo_surface_create_from_pixbuf(pixbuf, 0, NULL);
-//            pattern1 = cairo_pattern_create_for_surface(surface1);
-//            cr1 = cairo_create(surface1);
-//            cairo_set_source(cr1, pattern1);
-//            cairo_pattern_set_extend(cairo_get_source(cr1),
-//                    CAIRO_EXTEND_REPEAT);
-//            cairo_rectangle(cr1, 20, 20, 100, 100);
-//            cairo_fill(cr1);
-            // pixbuf1 = gdk_pixbuf_get_from_surface(surface1, 0, 0, 260, 60);
             gtk_tree_store_append(store, &iter2, &iter1);
             gtk_tree_store_set(store, &iter2,
                     PIXBUF_COL, pixbuf,
@@ -119,8 +108,7 @@ GtkTreeModel *createModel()
 }
 
 
-static void create_surfaces()
-{
+static void create_surfaces() {
 
     surfacemainbackgroud = cairo_image_surface_create_from_png("主背景.png");
     surfacehead2 = cairo_image_surface_create_from_png("头像2.png");
@@ -147,8 +135,7 @@ static void create_surfaces()
 }
 
 static void
-destroy_surfaces()
-{
+destroy_surfaces() {
     g_print("destroying surfaces2");
     cairo_surface_destroy(surfacemainbackgroud);
     cairo_surface_destroy(surfacehead2);
@@ -158,8 +145,7 @@ destroy_surfaces()
 }
 
 //单击分组显示右键菜单
-gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
+gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     GdkEventButton *event_button;
     GtkWidget *menu = GTK_WIDGET(data);
     GtkTreeIter iter;
@@ -168,23 +154,25 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);
 
-    if (event->type == GDK_BUTTON_PRESS)
-    {
+    if (event->type == GDK_BUTTON_PRESS) {
+        int i;
+        GtkTreePath *path;
+        path = gtk_tree_model_get_path(model, &iter);
+        i = gtk_tree_path_get_indices(path)[0];
+
         event_button = (GdkEventButton *) event;
 
-        if (event->button == 0x1)
-        {
+        if (event->button == 0x1) {
             return FALSE;
         }
-        if (event->button == 0x2)
-        {
+        if (event->button == 0x2) {
             return FALSE;
         }
-        if (event->button == 0x3 && (gtk_tree_model_iter_has_child(model, &iter)))
-        {
-            gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
-            return FALSE;
-
+        if (event->button == 0x3) {
+            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0)) {
+                gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
+                return FALSE;
+            }
         }
     }
 
@@ -192,8 +180,7 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
 }
 
 //树状视图双击列表事件 &&单击好友显示右键菜单
-gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
+gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     GdkEventButton *event_button;
     GtkTreeIter iter;
 
@@ -202,26 +189,29 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);
     GtkWidget *menu = GTK_WIDGET(data);
-    if (event->type == GDK_BUTTON_PRESS)
-    {
+    if (event->type == GDK_BUTTON_PRESS) {
         event_button = (GdkEventButton *) event;
 
-        if (event->button == 0x1)
-        {
+        if (event->button == 0x1) {
             return FALSE;
         }
-        if (event->button == 0x2)
-        {
+        if (event->button == 0x2) {
             return FALSE;
         }
-        if (event->button == 0x3 && (gtk_tree_model_iter_has_child(model, &iter) == 0))
-        {
+        if (event->button == 0x3 ){
+            int i, j;
+            GtkTreePath *path;
+            path = gtk_tree_model_get_path(model, &iter);
+            i = gtk_tree_path_get_indices(path)[0];
+            j = gtk_tree_path_get_indices(path)[1];
+
+            if((gtk_tree_model_iter_has_child(model, &iter) == 0)&&!((i==0)&&(j==0))&&(friends->groups[i].friendCount > 0)) {
             gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
             return FALSE;
+            }
         }
     }
-    else if (event->type == GDK_2BUTTON_PRESS && event->button == 0x1)
-    {
+    else if (event->type == GDK_2BUTTON_PRESS && event->button == 0x1) {
         int i, j;
         int uidfindflag = 0;
         GtkTreePath *path;
@@ -230,16 +220,13 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         i = gtk_tree_path_get_indices(path)[0];
         j = gtk_tree_path_get_indices(path)[1];
 
-        if (gtk_tree_model_iter_has_child(model, &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0))))
-        {
+        if (gtk_tree_model_iter_has_child(model, &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0)))) {
             uint32_t t;
             gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
             log_info("DEBUG", "UID:%u\n", t);
             friendinforear = friendinfohead;
-            while (friendinforear)
-            {
-                if (friendinforear->user.uid == t)
-                {
+            while (friendinforear) {
+                if (friendinforear->user.uid == t) {
 
                     uidfindflag = 1;
                     break;
@@ -247,16 +234,12 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
                 else
                 {friendinforear = friendinforear->next;}
             }
-            if (uidfindflag == 1)
-            {
-                if (friendinforear->chartwindow == NULL)
-                {
-                    mainchart(friendinforear);
-
+            if(uidfindflag==1) {
+                if(friendinforear->chartwindow== NULL) {
+                   mainchart(friendinforear);
                 }
-                else
-                {
-
+                else {
+                        gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
                 }
             }
 
@@ -267,21 +250,17 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 }
 
 //鼠标点击事件
-static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
+static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     x = event->x;  // 取得鼠标相对于窗口的位置
     y = event->y;
 
-    if (event->button == 1 && (x > 247 && x < 280) && (y > 2 && y < 25))
-    {              //设置关闭按钮
+    if (event->button == 1 && (x > 247 && x < 280) && (y > 2 && y < 25)) {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose52); //置换图标
     }
-    else
-    {
+    else {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-        if (event->button == 1)
-        { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+        if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
             gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                     event->x_root, event->y_root, event->time);
 
@@ -294,8 +273,7 @@ static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointe
 //鼠标抬起事件
 static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)
-{
+        gpointer data) {
 
     x = event->x;  // 取得鼠标相对于窗口的位置
     y = event->y;
@@ -303,8 +281,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);  //设置关闭按钮
-        if ((x > 247 && x < 280) && (y > 2 && y < 25))
-        {
+        if ((x > 247 && x < 280) && (y > 2 && y < 25)) {
             destroy_surfaces();
             DeleteEvent();
         }
@@ -316,20 +293,17 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)
-{
+        gpointer data) {
 
     x = event->x;  // 取得鼠标相对于窗口的位置
     y = event->y;
-    if ((x > 247 && x < 280) && (y > 2 && y < 25))
-    {
+    if ((x > 247 && x < 280) && (y > 2 && y < 25)) {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
         gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose53);
     }
-    else
-    {
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-        gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);
+    else {
+            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+            gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);
     }
 
     return 0;
@@ -426,7 +400,7 @@ int maininterface()
     GtkWidget *deletefriend;
     GtkWidget *remark;
     GtkWidget *sendfile;
-
+    //分组菜单
     menu1 = gtk_menu_new();
     add = gtk_menu_item_new_with_mnemonic("添加分组");
     gtk_container_add(GTK_CONTAINER(menu1), add);
@@ -444,7 +418,7 @@ int maininterface()
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
             G_CALLBACK(button2_press_event2), (gpointer) menu1);
 
-
+    //好友菜单
     menu2 = gtk_menu_new();
     sendmsg = gtk_menu_item_new_with_mnemonic("发送即时消息");
     gtk_container_add(GTK_CONTAINER(menu2), sendmsg);
