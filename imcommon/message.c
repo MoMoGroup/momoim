@@ -3,7 +3,7 @@
 #include <malloc.h>
 #include <fcntl.h>
 
-int MessageFileClose(UserMessageFile *file)
+int MessageFileClose(MessageFile *file)
 {
     int ret = close(file->fd);
     if (ret == 0)
@@ -29,25 +29,25 @@ int MessageFileCreate(const char *path)
     }
 }
 
-UserMessageFile *MessageFileOpen(const char *path)
+MessageFile *MessageFileOpen(const char *path)
 {
     int fd = open(path, O_RDWR | O_APPEND | O_CLOEXEC | O_CREAT, 0600);
     if (fd < 0)
     {
         return NULL;
     }
-    UserMessageFile *file = (UserMessageFile *) malloc(sizeof(UserMessageFile));
+    MessageFile *file = (MessageFile *) malloc(sizeof(MessageFile));
     file->fd = fd;
     pthread_mutex_init(&file->lock, NULL);
     return file;
 }
 
-int MessageFileCleanup(UserMessageFile *file)
+int MessageFileCleanup(MessageFile *file)
 {
     return !ftruncate(file->fd, 0);
 }
 
-int MessageFileAppend(UserMessageFile *file, UserMessage *message)
+int MessageFileAppend(MessageFile *file, UserMessage *message)
 {
     int ret = 0;
     pthread_mutex_lock(&file->lock);
@@ -74,7 +74,7 @@ int MessageFileAppend(UserMessageFile *file, UserMessage *message)
     return ret;
 }
 
-UserMessage *MessageFileNext(UserMessageFile *file)
+UserMessage *MessageFileNext(MessageFile *file)
 {
     UserMessage *ret = NULL;
     pthread_mutex_lock(&file->lock);

@@ -23,6 +23,8 @@ int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessag
 
 int ProcessPacketInfoRequest(OnlineUser *user, uint32_t session, CRPPacketInfoRequest *packet);
 
+int ProcessPacketInfoData(OnlineUser *user, uint32_t session, CRPPacketInfoData *packet);
+
 int ProcessPacketFriendRequest(OnlineUser *user, uint32_t session, CRPPacketFriendRequest *packet);
 
 int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRequest *packet);

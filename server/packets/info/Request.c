@@ -14,7 +14,7 @@ int ProcessPacketInfoRequest(OnlineUser *user, uint32_t session, CRPPacketInfoRe
         }
         else
         {
-            CRPInfoDataSend(user->sockfd, session, info->uid, info->nickName, info->sex, info->icon);
+            CRPInfoDataSend(user->sockfd, session, info);
             free(info);
         }
     }
