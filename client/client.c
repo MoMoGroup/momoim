@@ -4,7 +4,6 @@
 #include "MainInterface.h"
 #include "newuser.h"
 #include <cairo.h>
-#include <bits/sigthread.h>
 #include <sys/socket.h>
 #include <logger.h>
 
@@ -12,7 +11,6 @@
 static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
 static pthread_t thread1;
-static int sockfd;
 static int nX = 0,nY=0;
 static GtkWidget *window;
 

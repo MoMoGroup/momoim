@@ -67,6 +67,7 @@ int newsockfd() {  //注册按钮点击事件
             CRPLoginRegisterSend(sockfd, 0, newname, hash, newnick);
             log_info("注册ing", "momo\n");
             header = CRPRecv(sockfd);
+    asdasd;
             if (header->packetID != CRP_PACKET_OK) {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
                 popup("莫默告诉你：", "登录名已存在", GTK_WINDOW(newwindow));

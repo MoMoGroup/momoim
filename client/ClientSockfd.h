@@ -17,3 +17,4 @@ typedef struct friendinfo {
     struct friendinfo *next;
 } friendinfo;
 extern friendinfo *friendinfohead;
+extern int sockfd;

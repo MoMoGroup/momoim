@@ -31,9 +31,6 @@ UserGroup *group;
 CRPPacketInfoData userdata, groupdata;
 gchar *uidname;
 FILE *fp;
-//头像,好友头像
-char mulu[80] = {0};
-char mulu2[80] = {0};
 //
 //typedef struct friendinfo {
 //    uint32_t sessionid;
@@ -71,8 +68,11 @@ void add_node(friendinfo *node)
 
 int mysockfd()
 {
+//头像,好友头像
+    char mulu[80] = {0};
+    char mulu2[80] = {0};
 
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
@@ -143,8 +143,8 @@ int mysockfd()
         sprintf(mulu, "%s/.momo/friend", getpwuid(getuid())->pw_dir);
 
         mkdir(mulu, 0700);
-
-        while (errno < 10000)
+int loop=1;
+        while (loop)
         {
             header = CRPRecv(sockfd);
             switch (header->packetID)
@@ -314,6 +314,7 @@ int mysockfd()
                         if (node == NULL)
                         {
                             g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
+                            loop=0;
                         }
 
 
@@ -350,19 +351,11 @@ int mysockfd()
             }
             free(header);
 
-//            friendinfo *p;
-//            p=head;
-//            int i=0;
-//            while(p){
-//                i++;
-//                p=p->next;
-//            }
-            //log_info("链表长度", "%d\n",i);
 
 
         }
+        MessageLoopFunc();
     }
-    free(header);
 
 
     return 0;
