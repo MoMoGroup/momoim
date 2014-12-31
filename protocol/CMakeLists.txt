@@ -26,10 +26,11 @@ SET(LIBPROTOCOL_SRC
     packets/file/Request.c
     packets/file/DataStart.c
     packets/file/DataEnd.c
+    packets/file/Reset.c
     packets/file/StoreRequest.c
     packets/file/StoreAccept.c
 
-    packets/message/Text.c
+    packets/message/Normal.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
 target_link_libraries(protocol imcommon)

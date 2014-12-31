@@ -105,6 +105,8 @@ int OnlineUserHold(OnlineUser *user);
 
 void OnlineUserUnhold(OnlineUser *user);
 
+void OnlineUserSetStatus(OnlineUser *user, OnlineUserStatus status);
+
 OnlineUser *OnlineUserGet(uint32_t uid);
 
 OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid);

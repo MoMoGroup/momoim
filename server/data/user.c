@@ -205,12 +205,16 @@ void UserFreeFriends(UserFriends *friends)
     UserFriendsFree(friends);
 }
 
-int MessageFileCreateByUid(uint32_t uid)
+int UserMessageFileCreate(uint32_t uid)
 {
-
+    char path[30];
+    UserGetDir(path, uid, "message");
+    return MessageFileCreate(path);
 }
 
-UserMessageFile *MessageFileOpenByUid(uint32_t uid)
+MessageFile *UserMessageFileOpen(uint32_t uid)
 {
-
+    char path[30];
+    UserGetDir(path, uid, "message");
+    return MessageFileOpen(path);
 }

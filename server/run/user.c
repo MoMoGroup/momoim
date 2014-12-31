@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include "data/user.h"
 #include <server.h>
+#include <sys/user.h>
 
 pthread_rwlock_t UsersTableLock = PTHREAD_RWLOCK_INITIALIZER;
 UsersTable OnlineUserTable = {
@@ -29,7 +30,7 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t sessio
 
         [CRP_PACKET_INFO__START]        = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
         [CRP_PACKET_INFO_REQUEST]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketInfoRequest,
-        [CRP_PACKET_INFO_DATA]          = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_INFO_DATA]          = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketInfoData,
 
         [CRP_PACKET_FRIEND__START]      = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
         [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendRequest,
@@ -40,6 +41,7 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t sessio
         [CRP_PACKET_FILE_DATA]          = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileData,
         [CRP_PACKET_FILE_DATA_END]      = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileDataEnd,
         [CRP_PACKET_FILE_STORE_REQUEST] = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileStoreRequest,
+
 
         [CRP_PACKET_MESSAGE__START]     = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
         [CRP_PACKET_MESSAGE_TEXT]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageText,
@@ -189,6 +191,13 @@ OnlineUser *OnlineUserGet(uint32_t uid)
     }
     pthread_rwlock_unlock(&UsersTableLock);
     return ret;
+}
+
+void OnlineUserSetStatus(OnlineUser *user, OnlineUserStatus status)
+{
+    pthread_rwlock_wrlock(&user->lock);
+    user->status = status;
+    pthread_rwlock_unlock(&user->lock);
 }
 
 OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid)
