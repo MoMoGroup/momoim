@@ -1,15 +1,10 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
-#include "ClientSockfd.h"
-#include <cairo.h>
-#include <logger.h>
-#include <imcommon/friends.h>
 #include <stdlib.h>
 #include <ftadvanc.h>
-#include <gmodule.h>
-#include <time.h>
 #include "chart.h"
+
 int X = 0;
 int Y = 0;
 
@@ -18,8 +13,10 @@ static cairo_surface_t *sflowerbackgroud, *surfacesend1, *surfacesend2, *surface
 static cairo_surface_t *surfaceclose1, *surfaceclose2, *surfaceclosebut1, *surfaceclosebut2, *surfaceclosebut3;
 
 
-static void create_surfaces(friendinfo *information) {
-    if (sflowerbackgroud == NULL) {
+static void create_surfaces(friendinfo *information)
+{
+    if (sflowerbackgroud == NULL)
+    {
         sflowerbackgroud = cairo_image_surface_create_from_png("花背景.png");
         surfacesend1 = cairo_image_surface_create_from_png("发送1.png");
         surfacesend2 = cairo_image_surface_create_from_png("发送2.png");
@@ -98,7 +95,8 @@ static void create_surfaces(friendinfo *information) {
 //}
 
 //将输入的文本框输出在显示的文本框中
-void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times) {
+void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times)
+{
     GtkTextIter start, end;
 
 
@@ -118,34 +116,38 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times) {
 }
 
 //将服务器发过来的的消息显示在文本框上
-void show_remote_text(const gchar *rcvd_text,friendinfo *info){
-    GtkTextIter start,end;
+void show_remote_text(const gchar *rcvd_text, friendinfo *info)
+{
+    GtkTextIter start, end;
     char nicheng_times[40] = {0};
     time_t timep;
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
     sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
-    gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
-    gtk_text_buffer_create_tag(info->show_buffer, "blue_foreground", "foreground", "blue", NULL);
-    gtk_text_buffer_create_tag(info->show_buffer, "gray_foreground", "foreground", "gray", NULL);
+    GtkTextBuffer *show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
+    gtk_text_buffer_get_bounds(show_buffer, &start, &end);
+    gtk_text_buffer_create_tag(show_buffer, "blue_foreground", "foreground", "blue", NULL);
+    gtk_text_buffer_create_tag(show_buffer, "gray_foreground", "foreground", "gray", NULL);
     // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &start,
             nicheng_times, -1, "blue_foreground", NULL);
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &start,
             rcvd_text, -1, "gray_foreground", NULL);
 
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &start,
             "\n", -1, "gray_foreground", NULL);
 }
 
 
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
-void send_text(friendinfo *info) {
+void send_text(friendinfo *info)
+{
     GtkTextIter start, end;
     gchar *char_text;
     char_text = (gchar *) malloc(1024);
-    if (char_text == NULL) {
+    if (char_text == NULL)
+    {
         printf("Malloc error!\n");
         exit(1);
     }
@@ -166,34 +168,42 @@ void send_text(friendinfo *info) {
 //鼠标点击事件
 static gint button_press_event(GtkWidget *widget,
 
-        GdkEventButton *event, gpointer data) {
+        GdkEventButton *event, gpointer data)
+{
     friendinfo *info = (friendinfo *) data;
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
 
-    if (event->button == 1 && (X > 391 && X < 473) && (Y > 513 && Y < 540)) {     //设置发送按钮
+    if (event->button == 1 && (X > 391 && X < 473) && (Y > 513 && Y < 540))
+    {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend2); //置换图标
     }
-    else if (event->button == 1 && (X > 18 && X < 43) && (Y > 70 && Y < 100)) {   //设置语音按钮
+    else if (event->button == 1 && (X > 18 && X < 43) && (Y > 70 && Y < 100))
+    {   //设置语音按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice2); //置换图标
     }
-    else if (event->button == 1 && (X > 60 && X < 93) && (Y > 74 && Y < 103)) {   //设置视频按钮
+    else if (event->button == 1 && (X > 60 && X < 93) && (Y > 74 && Y < 103))
+    {   //设置视频按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1); //置换图标
     }
-    else if (event->button == 1 && (X > 301 && X < 382) && (Y > 513 && Y < 540)) {          //设置右下关闭按钮
+    else if (event->button == 1 && (X > 301 && X < 382) && (Y > 513 && Y < 540))
+    {          //设置右下关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose2); //置换图标
     }
-    else if (event->button == 1 && (X > 470 && X < 500) && (Y > 2 && Y < 25)) {         //设置右上关闭按钮
+    else if (event->button == 1 && (X > 470 && X < 500) && (Y > 2 && Y < 25))
+    {         //设置右上关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut2); //置换图标
     }
-    else {
+    else
+    {
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-        if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+        if (event->button == 1)
+        { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
             gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                     event->x_root, event->y_root, event->time);
         }
@@ -206,7 +216,8 @@ static gint button_press_event(GtkWidget *widget,
 //鼠标抬起事件
 static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data) {
+        gpointer data)
+{
     friendinfo *info = (friendinfo *) data;
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
@@ -218,7 +229,8 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
 
-        if ((X > 391 && X < 473) && (Y > 513 && Y < 540)) {
+        if ((X > 391 && X < 473) && (Y > 513 && Y < 540))
+        {
             gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
             GtkWidget *dialog;
             //创建带确认按钮的对话框，父控件为空
@@ -226,14 +238,15 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
                     GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
                     GTK_MESSAGE_INFO,
                     GTK_BUTTONS_OK,
-                    "%s",info->user.nickName);//到时候可以显示出昵称
+                    "%s", info->user.nickName);//到时候可以显示出昵称
 
             gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
 
             send_text(info);
             gtk_widget_destroy(dialog);//销毁对话框
         }
-        if (((X > 470 && X < 500) && (Y > 2 && Y < 25)) || ((X > 301 && X < 382) && (Y > 513 && Y < 540))) {
+        if (((X > 470 && X < 500) && (Y > 2 && Y < 25)) || ((X > 301 && X < 382) && (Y > 513 && Y < 540)))
+        {
 
             //DeleteEvent();
             gtk_widget_destroy(info->chartwindow);
@@ -248,36 +261,43 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data) {
+        gpointer data)
+{
     friendinfo *info = (friendinfo *) data;
 
     X = event->x;  // 取得鼠标相对于窗口的位置
     Y = event->y;
-    if ((X > 391 && X < 473) && (Y > 513 && Y < 540)) {     //设置发送按钮
+    if ((X > 391 && X < 473) && (Y > 513 && Y < 540))
+    {     //设置发送按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend2); //置换图标
     }
-    else if ((X > 18 && X < 43) && (Y > 70 && Y < 100)) {   //设置语音按钮
+    else if ((X > 18 && X < 43) && (Y > 70 && Y < 100))
+    {   //设置语音按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice2); //置换图标
     }
-    else if ((X > 60 && X < 93) && (Y > 74 && Y < 103)) {   //设置视频按钮
+    else if ((X > 60 && X < 93) && (Y > 74 && Y < 103))
+    {   //设置视频按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1); //置换图标
     }
-    else if ((X > 301 && X < 382) && (Y > 513 && Y < 540)) {          //设置右下关闭按钮
+    else if ((X > 301 && X < 382) && (Y > 513 && Y < 540))
+    {          //设置右下关闭按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose2); //置换图标 //置换图标
     }
-    else if ((X > 470 && X < 500) && (Y > 2 && Y < 25)) {         //设置右上关闭按钮
+    else if ((X > 470 && X < 500) && (Y > 2 && Y < 25))
+    {         //设置右上关闭按钮
 
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut3); //置换图标
     }
-    else {
+    else
+    {
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
@@ -289,7 +309,8 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event,
     return 0;
 }
 
-int mainchart(friendinfo *friendinfonode) {
+int mainchart(friendinfo *friendinfonode)
+{
 
 
     //创建窗口，并为窗口的关闭信号加回调函数以便退出

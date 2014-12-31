@@ -247,8 +247,9 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 
 }
 
-void recd_server_msg(const gchar *rcvd_text, u_int32_t recd_uid) {
+void recd_server_msg(const gchar *rcvd_text, uint32_t recd_uid) {
     GtkTextIter start, end;
+    log_info("DEBUG", "Posting Message.From %u,Text:%s\n",recd_uid,rcvd_text);
     int uidfindflag = 0;
     friendinfo *userinfo = friendinfohead;
     while (userinfo) {
@@ -263,11 +264,8 @@ void recd_server_msg(const gchar *rcvd_text, u_int32_t recd_uid) {
     if (uidfindflag == 1) {
         if (userinfo->chartwindow == NULL) {
             mainchart(userinfo);
-            show_remote_text(rcvd_text,userinfo);
         }
-        else {
-            show_remote_text(rcvd_text,userinfo);
-        }
+        show_remote_text(rcvd_text,userinfo);
     }
 }
 //    gtk_text_buffer_get_bounds(<#(GtkTextBuffer*)buffer#>, &start, &end);

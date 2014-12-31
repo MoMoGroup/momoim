@@ -10,7 +10,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/message/Normal.h>
 #include "MainInterface.h"
 
 
@@ -72,20 +71,32 @@ int printfun(CRPBaseHeader *header, void *data)
     return 1;
 }
 
-int printfmessage(CRPBaseHeader *header, void *data)
+
+gboolean postMessage(gpointer user_data)
 {
-    log_info("DEBUG", "MSG Routing\n");
-    CRPPacketMessageNormal *packet=CRPMessageNormalCast(header);
-    char*message=(char*) malloc(packet->messageLen+1);
+    CRPBaseHeader *header = (CRPBaseHeader *) user_data;
+
+    CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
+    char *message = (char *) malloc(packet->messageLen + 1);
     memcpy(message, packet->message, packet->messageLen);
     //packet->uid;
-    message[packet->messageLen]='\0';
+    message[packet->messageLen] = '\0';
     //fun();
+    recd_server_msg(message, packet->uid);
     free(message);
     if ((void *) packet != header->data)
     {
         free(packet);
     }
+    free(header);
+    return 0;
+}
+
+int printfmessage(CRPBaseHeader *header, void *data)
+{
+    CRPBaseHeader *dup = (CRPBaseHeader *) malloc(sizeof(CRPBaseHeader) + header->dataLength);
+    memcpy(dup, header, sizeof(CRPBaseHeader) + header->dataLength);
+    g_idle_add(postMessage, dup);
     return 1;
 }
 
