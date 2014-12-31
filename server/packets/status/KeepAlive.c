@@ -3,5 +3,6 @@
 
 int ProcessPacketStatusKeepAlive(OnlineUser *user, uint32_t session, CRPPacketKeepAlive *packet)
 {
+    CRPOKSend(user->sockfd, session);
     return 1;
 }
