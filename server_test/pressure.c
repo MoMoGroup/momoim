@@ -86,18 +86,23 @@ void *threadRoutine(void *p)
         free(ac);
     free(header);
     CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
-    CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
+    //CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
     int count = 0;
     while (1)
     {
         header = CRPRecv(sockfd);
+        if (header == NULL)
+        {
+            processFailure(name, "General", header);
+            return 0;
+        }
         switch (header->packetID)
         {
             case CRP_PACKET_INFO_DATA:
             {
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
                 count++;
-                CRPFileRequestSend(sockfd, 10, 0, infoData->info.icon);
+                CRPFileRequestSend(sockfd, 10, FST_SHARED, infoData->info.icon);
                 if ((const char *) infoData != header->data)
                     free(infoData);
                 break;
@@ -111,7 +116,7 @@ void *threadRoutine(void *p)
                 CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
                 if (packet->code != 0)
                 {
-                    log_info(name, "Icon Failure");
+                    log_info(name, "Icon Failure\n");
                     goto cleanup;
                 }
                 if ((const char *) packet != header->data)
@@ -119,7 +124,6 @@ void *threadRoutine(void *p)
                 count--;
                 if (count == 0)
                 {
-                    log_info(name, "Done\n");
                     goto cleanup;
                 }
                 break;
@@ -160,5 +164,7 @@ int main()
     {
         pthread_join(child[i], NULL);
     }
+    log_info("All", "Done\n");
+    //sleep(100);
     return 0;
 }

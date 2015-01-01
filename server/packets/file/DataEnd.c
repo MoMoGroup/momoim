@@ -24,7 +24,7 @@ int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDa
             CRPFailureSend(user->sockfd, session, "File not finished.");
         }
         else {
-            size_t len = DataFilePathLength(fop->key);
+            size_t len = DataFilePathLength;
             char path[len];
             DataFilePath(fop->key, path);
 

@@ -9,7 +9,7 @@
 #include <server.h>
 #include <run/jobs.h>
 
-pthread_rwlock_t UsersTableLock = PTHREAD_RWLOCK_INITIALIZER;
+pthread_rwlock_t UsersTableLock;
 UsersTable OnlineUserTable = {
         .count=0,
         .first=NULL,
@@ -105,19 +105,18 @@ void OnlineUserInit(OnlineUser *user)
     user->status = OUS_PENDING_HELLO;
 
     pthread_rwlock_wrlock(&UsersTableLock);
-    user->prev = OnlineUserTable.last;
 
-    if (OnlineUserTable.last)
+    if (OnlineUserTable.last == NULL)
     {
-        OnlineUserTable.last->next = user;
+        OnlineUserTable.first = OnlineUserTable.last = user;
     }
     else
     {
-        OnlineUserTable.first = user;
+        OnlineUserTable.last->next = user;
+        user->prev = OnlineUserTable.last;
+        OnlineUserTable.last = user;
     }
-
-    OnlineUserTable.last = user;
-    OnlineUserTable.count++;
+    ++OnlineUserTable.count;
     pthread_rwlock_unlock(&UsersTableLock);
 
 }
@@ -126,7 +125,14 @@ int OnlineUserDelete(OnlineUser *user)
 {
     pthread_rwlock_unlock(&user->holdLock);
     pthread_rwlock_wrlock(&user->holdLock);
-    if (user->status == OUS_PENDING_CLEAN)
+    if (user->status == OUS_PENDING_INIT)
+    {
+        pthread_rwlock_unlock(&user->holdLock);
+        pthread_rwlock_destroy(&user->holdLock);
+        free(user);
+        return 0;
+    }
+    else if (user->status == OUS_PENDING_CLEAN)
     {
         return 0;
     }
@@ -142,32 +148,30 @@ int OnlineUserDelete(OnlineUser *user)
     pthread_rwlock_destroy(&user->operations.lock);
 
     pthread_rwlock_wrlock(&UsersTableLock);
-    if (user->prev == NULL)
+    if (user->prev != NULL || user->next != NULL || OnlineUserTable.first == user)
     {
-        if (OnlineUserTable.first == user)
+        if (user->prev == NULL)
         {
             OnlineUserTable.first = user->next;
         }
-    }
-    else
-    {
-        user->prev->next = user->next;
-    }
-    if (user->next == NULL)
-    {
-        if (OnlineUserTable.last == user)
+        else
+        {
+            user->prev->next = user->next;
+        }
+        if (user->next == NULL)
         {
             OnlineUserTable.last = user->prev;
         }
-    }
-    else
-    {
-        user->next->prev = user->prev;
+        else
+        {
+            user->next->prev = user->prev;
+        }
     }
     pthread_rwlock_unlock(&UsersTableLock);
 
     pthread_rwlock_unlock(&user->holdLock);
     pthread_rwlock_destroy(&user->holdLock);
+
     free(user);
     return 1;
 }
@@ -241,14 +245,14 @@ UserCancelableOperation *UserOperationRegister(OnlineUser *user, int type)
     if (user->operations.count >= 100)
         return NULL;
 */
-    pthread_rwlock_wrlock(&user->operations.lock);
     UserCancelableOperation *operation = (UserCancelableOperation *) calloc(1, sizeof(UserCancelableOperation));
     if (operation == NULL)
     {
-        goto cleanup;
+        return NULL;
     }
     operation->next = NULL;
     operation->type = type;
+    pthread_rwlock_wrlock(&user->operations.lock);
     if (user->operations.last == NULL)
     {
         user->operations.first = user->operations.last = operation;
@@ -273,13 +277,17 @@ void UserOperationUnregister(OnlineUser *user, UserCancelableOperation *op)
     {
         UserOperationCancel(user, op);
     }
-    if (op->prev == NULL && op->next == NULL)
+
+    if (pthread_rwlock_wrlock(&user->operations.lock))
+    {
+        abort();
+    }
+    if (op->prev == NULL && op->next == NULL && user->operations.first != op)
     {
         free(op);
     }
     else
     {
-        pthread_rwlock_wrlock(&user->operations.lock);
         if (op->prev == NULL)
         {
             user->operations.first = op->next;
@@ -299,8 +307,8 @@ void UserOperationUnregister(OnlineUser *user, UserCancelableOperation *op)
 
         free(op);
         --user->operations.count;
-        pthread_rwlock_unlock(&user->operations.lock);
     }
+    pthread_rwlock_unlock(&user->operations.lock);
 }
 
 UserCancelableOperation *UserOperationGet(OnlineUser *user, uint32_t operationId)
@@ -348,15 +356,27 @@ int UserOperationCancel(OnlineUser *user, UserCancelableOperation *op)
 
 void UserOperationRemoveAll(OnlineUser *user)
 {
-    pthread_rwlock_wrlock(&user->operations.lock);
+    if (pthread_rwlock_wrlock(&user->operations.lock))
+        abort();
     UserCancelableOperation *next = user->operations.first;
+    user->operations.first = user->operations.last = NULL;
     for (UserCancelableOperation *op = next; op != NULL; op = next)
     {
         next = op->next;
         op->prev = op->next = NULL;
         UserOperationCancel(user, op);
     }
-    user->operations.first = user->operations.last = NULL;
     user->operations.count = 0;
     pthread_rwlock_unlock(&user->operations.lock);
+}
+
+void InitUserManager()
+{
+    pthread_rwlock_init(&UsersTableLock, NULL);
+}
+
+void FinalizeUserManager()
+{
+    pthread_rwlock_destroy(&UsersTableLock);
+    //TODO Destroy Online User Table
 }

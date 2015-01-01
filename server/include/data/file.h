@@ -5,7 +5,9 @@
 #include <fcntl.h>
 #include <stddef.h>
 
-size_t DataFilePathLength(unsigned char *key);
+#define DATA_FILE_ROOT_PATH ("files/")
+#define DATAFILE_DEPTH_LEVEL 2
+extern const uint8_t DataFilePathLength;
 
 int DataFilePath(unsigned char *key, char *buf);
 

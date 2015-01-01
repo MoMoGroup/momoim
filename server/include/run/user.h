@@ -141,6 +141,9 @@ int UserOperationCancel(OnlineUser *user, UserCancelableOperation *op);
 //注意,该函数并不会释放相应内存空间,需要操作注册线程调用注销函数来释放这块内存.
 void UserOperationRemoveAll(OnlineUser *user);
 
+void InitUserManager();
+
+void FinalizeUserManager();
 //在线的小伙伴们！！
 extern UsersTable OnlineUserTable;
 //用户表写锁

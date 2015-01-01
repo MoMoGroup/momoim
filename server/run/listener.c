@@ -85,7 +85,7 @@ void *ListenMain(void *listenSocket)
     }
     log_info("SERVER-MAIN", "Listenning on TCP %d\n", LISTEN_PORT);
 
-    ServerIOPool = epoll_create1(0);
+    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);
 
     struct epoll_event event = {
             .data.ptr=NULL,

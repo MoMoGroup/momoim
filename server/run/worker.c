@@ -38,6 +38,7 @@ void *WorkerMain(void *arg)
                 free(header);
                 continue;
             }
+            free(header);
         }
         OnlineUserDrop(user);
     }
