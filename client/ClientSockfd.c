@@ -10,9 +10,10 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/info/Data.h>
 #include "MainInterface.h"
 
+
+pthread_t ThreadKeepAlive;
 
 int sockfd;
 
@@ -55,6 +56,49 @@ void add_node(friendinfo *node)
     node->next = NULL;
 }
 
+void *keepalive(void *dada)
+{
+    log_info("DEBUG", "KeepAlive Begin\n");
+    while (1)
+    {
+        sleep(60);
+        CRPKeepAliveSend(sockfd, 0);
+    }
+}
+
+int printfun(CRPBaseHeader *header, void *data)
+{
+    return 1;
+}
+
+
+gboolean postMessage(gpointer user_data)
+{
+    CRPBaseHeader *header = (CRPBaseHeader *) user_data;
+
+    CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
+    char *message = (char *) malloc(packet->messageLen + 1);
+    memcpy(message, packet->message, packet->messageLen);
+    //packet->uid;
+    message[packet->messageLen] = '\0';
+    //fun();
+    recd_server_msg(message, packet->uid);
+    free(message);
+    if ((void *) packet != header->data)
+    {
+        free(packet);
+    }
+    free(header);
+    return 0;
+}
+
+int printfmessage(CRPBaseHeader *header, void *data)
+{
+    CRPBaseHeader *dup = (CRPBaseHeader *) malloc(sizeof(CRPBaseHeader) + header->dataLength);
+    memcpy(dup, header, sizeof(CRPBaseHeader) + header->dataLength);
+    g_idle_add(postMessage, dup);
+    return 1;
+}
 
 int mysockfd()
 {
@@ -97,7 +141,7 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
-        //密码错误
+        //密码错误DA
         log_info("登录失败", "登录失败\n");
         g_idle_add(destroyLayout, NULL);
         return 1;
@@ -116,7 +160,7 @@ int mysockfd()
         friendinfohead->flag = 1;
 
         free(header);
-        if ((void*)ac != header->data)
+        if ((void *) ac != header->data)
         {
             free(ac);
         }
@@ -144,11 +188,11 @@ int mysockfd()
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-                        userdata=infodata->info;//放到结构提里，保存昵称，性别等资料
+                        userdata = infodata->info;//放到结构提里，保存昵称，性别等资料
                         log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
-                        if ((const char*)infodata != header->data)
+                        if ((const char *) infodata != header->data)
                         {
                             free(infodata);
                         }
@@ -218,7 +262,7 @@ int mysockfd()
                         }
 
                     }
-                    if ((void *)packet != header->data)
+                    if ((void *) packet != header->data)
                     {
                         free(packet);
                     }
@@ -255,7 +299,7 @@ int mysockfd()
                         //free(node);
 
                     }
-                    if ((void *)packet != header->data)
+                    if ((void *) packet != header->data)
                     {
                         free(packet);
                     }
@@ -309,7 +353,7 @@ int mysockfd()
 
 
                     }
-                    if ((void *)packet != header->data)
+                    if ((void *) packet != header->data)
                     {
                         free(packet);
                     }
@@ -342,6 +386,9 @@ int mysockfd()
 
 
         }
+        AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");//添加事件
+        AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, printfmessage, "dfg");//添加事件
+        pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }
 

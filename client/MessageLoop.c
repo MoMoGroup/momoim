@@ -2,10 +2,11 @@
 #include <protocol/base.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <logger.h>
 #include "ClientSockfd.h"
 
 
-static pthread_rwlock_t lock;
+pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
 
 typedef struct messageloop {
@@ -20,7 +21,7 @@ typedef struct messageloop {
     struct messageloop *next;
 } messageloop;
 
-messageloop *messagehead;
+messageloop messagehead;
 
 void AddMessageNode(uint32_t sessionid, uint16_t packetID, int  (*fn)(CRPBaseHeader *, void *data), void *data)
 {
@@ -33,7 +34,7 @@ void AddMessageNode(uint32_t sessionid, uint16_t packetID, int  (*fn)(CRPBaseHea
     messageloop *p;
 
     pthread_rwlock_wrlock(&lock);//写锁定
-    p = messagehead;
+    p = &messagehead;
     while (p->next)
     {
         p = p->next;
@@ -46,7 +47,7 @@ void DeleteMessageNode(uint32_t sessid, uint16_t packetid)
 {
     messageloop *p, *delete;
     pthread_rwlock_wrlock(&lock);//写锁定
-    p = messagehead;
+    p = &messagehead;
     while (p)
     {
         delete = p->next;
@@ -62,32 +63,27 @@ void DeleteMessageNode(uint32_t sessid, uint16_t packetid)
 
 int MessageLoopFunc()
 {
-    pthread_rwlock_init(&lock, NULL);
-
-    messageloop *messagehead;
-    messagehead = (messageloop *) calloc(1, sizeof(struct messageloop));//创建头节点
-
     CRPBaseHeader *header;
     while (1)
     {
         header = CRPRecv(sockfd);
+        log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
         pthread_rwlock_rdlock(&lock);//写锁定
-        messageloop *prev = messagehead, *p;
-        int flag = 0;
+        messageloop *prev = &messagehead, *p;
+        int flag = 1;
         while (prev->next)
         {
             p = prev->next;
+            log_info("MSG", "Packet:%d\nSession:%d\n", p->packetID, p->sessionid);
             if (p->packetID == header->packetID && p->sessionid == header->sessionID)
             {
-
-                if (p->fn(header, p->data))
-                {
-                    flag = 1;
-
-                }
+                log_info("MSG", "Processing\n");
+                flag = p->fn(header, p->data);
                 break;
 
             }
+            log_info("MSG", "Next\n");
+
             prev = prev->next;
 
         }
@@ -102,4 +98,5 @@ int MessageLoopFunc()
         }
         free(header);
     }
+    return 0;
 }

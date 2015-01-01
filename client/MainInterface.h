@@ -20,6 +20,7 @@ extern UserFriends *friends;
 extern UserGroup *group;
 
 extern int mainchart(friendinfo *friendinfonode);
+extern void recd_server_msg(const gchar *rcvd_text, u_int32_t recd_uid);
 
 extern int MessageLoopFunc();
 

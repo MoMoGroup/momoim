@@ -29,6 +29,7 @@ gboolean destroyLayout(gpointer user_data)
 
     gtk_widget_destroy(pendingLayout);
     gtk_widget_show_all(loginLayout);
+    return FALSE;
 }
 
 //关闭窗口
