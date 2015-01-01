@@ -11,13 +11,13 @@ int ProcessPacketStatusHello(OnlineUser *user, uint32_t session, CRPPacketHello 
             CRPFailureSend(user->sockfd, session, "Incompatible protocol version.");
             return 0;
         }
-        log_info("UserProc", "Hello.\n");
+        OnlineUserSetStatus(user, OUS_PENDING_LOGIN);
         CRPOKSend(user->sockfd, session);
-        user->status = OUS_PENDING_LOGIN;
         return 1;
     }
     else
     {
+        log_info("UserProc", "%dProtocol Error.\n", user->sockfd);
         CRPFailureSend(user->sockfd, session, "Wrong protocol version.");
         return 0;
     }

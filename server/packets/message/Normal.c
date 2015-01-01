@@ -33,7 +33,7 @@ int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessag
         else
         {
             CRPMessageTextSend(toUser->sockfd, 0, (uint8_t) packet->messageType, user->info->uid, packet->messageLen, packet->message);
-            OnlineUserUnhold(toUser);
+            OnlineUserDrop(toUser);
             CRPOKSend(user->sockfd, session);
         }
     }

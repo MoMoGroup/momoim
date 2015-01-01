@@ -9,12 +9,18 @@
 int onCancel(struct struOnlineUser *user, struct struUserCancelableOperation *operation)
 {
     UserFileStoreOperation *storeOperation = operation->data;
+    pthread_mutex_lock(&storeOperation->lock);
+
+    if (storeOperation->fd >= 0)
+    {
+        close(storeOperation->fd);
+        unlink(storeOperation->tmpfile);
+    }
+
     pthread_mutex_unlock(&storeOperation->lock);
     pthread_mutex_destroy(&storeOperation->lock);
-    if (storeOperation->fd >= 0)
-        close(storeOperation->fd);
-    free(storeOperation);
     UserOperationUnregister(user, operation);
+    free(storeOperation);
     return 1;
 }
 
@@ -47,7 +53,7 @@ int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketF
                 return 1;
             }
             operation->data = storeOperation;
-            operation->oncancel = onCancel;
+            operation->onCancel = onCancel;
             memcpy(storeOperation->key, packet->key, sizeof(storeOperation->key));
             storeOperation->totalLength = packet->length;
             storeOperation->remainLength = packet->length;

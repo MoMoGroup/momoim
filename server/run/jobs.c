@@ -2,54 +2,79 @@
 #include <server.h>
 #include "run/jobs.h"
 
-OnlineUser *jobQueue[MAX_CLIENTS];
-OnlineUser **pJobQueueHead = jobQueue, **pJobQueueTail = jobQueue;
-sem_t SemJobGold, SemJobAir;
-pthread_mutex_t lock;
+static OnlineUser *jobQueue[CONFIG_JOB_QUEUE_SIZE];
+static OnlineUser **pJobQueueHead = jobQueue, **pJobQueueTail = jobQueue + 1;
+static pthread_mutex_t jobLock;
+static pthread_cond_t cond;
 
-OnlineUser *PullJob(void)
+void JobManagerKick(OnlineUser *user)
+{
+    pthread_mutex_lock(&jobLock);
+    OnlineUser **p = pJobQueueHead;
+    while (!(p + 1 == pJobQueueTail ||
+             p + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
+    {
+        p = jobQueue + (p - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
+        if (*p == user)
+            *p = NULL;
+    }
+    pthread_mutex_unlock(&jobLock);
+}
+
+OnlineUser *JobManagerPop(void)
 {
     OnlineUser *user;
-    sem_wait(&SemJobGold);  //等待房子里有金子
-    pthread_mutex_lock(&lock);//冲入房子
-    user = *pJobQueueHead;  //从房子里抢走一块金子，
+    pthread_mutex_lock(&jobLock);
+    redo:
+    while ((pJobQueueHead + 1 == pJobQueueTail) ||
+           (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
+    {
+        pthread_cond_wait(&cond, &jobLock);
+    }
 
-    if (pJobQueueHead == jobQueue + MAX_CLIENTS)//计算下一个应该出现金子的位置
+    int queueFull = pJobQueueHead == pJobQueueTail;
+
+    pJobQueueHead = jobQueue + (pJobQueueHead - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
+
+    user = *pJobQueueHead;
+    *pJobQueueHead = NULL;
+
+    if (queueFull)
     {
-        pJobQueueHead = jobQueue;
+        pthread_cond_broadcast(&cond);
     }
-    else
-    {
-        pJobQueueHead++;
-    }
-    pthread_mutex_unlock(&lock);//走出房子
-    sem_post(&SemJobAir);   //在房子里留下块空气
+
+    if (user == NULL || !OnlineUserHold(user))
+        goto redo;
+    pthread_mutex_unlock(&jobLock);
+
     return user;
 }
 
-void PushJob(OnlineUser *v)
+void JobManagerPush(OnlineUser *v)
 {
-    sem_wait(&SemJobAir);//等待房子里出现空气
-    pthread_mutex_lock(&lock);//进入房子
-    *pJobQueueTail = v;//将金子扔到房子里
+    pthread_mutex_lock(&jobLock);
 
-    if (pJobQueueTail == jobQueue + MAX_CLIENTS)//计算下一个应该出现空气的位置
+    while (pJobQueueHead == pJobQueueTail)
     {
-        pJobQueueTail = jobQueue;
+        pthread_cond_wait(&cond, &jobLock);
     }
-    else
-    {
-        pJobQueueTail++;
-    }
+    int isEmpty = (pJobQueueHead + 1 == pJobQueueTail) ||
+                  (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue)));
+    *pJobQueueTail = v;
 
-    pthread_mutex_unlock(&lock);//走出房子
-    sem_post(&SemJobGold);//房子里多了块金子
+    pJobQueueTail = jobQueue + (pJobQueueTail - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
+
+    if (isEmpty)
+    {
+        pthread_cond_broadcast(&cond);
+    }
+    pthread_mutex_unlock(&jobLock);
 }
 
 void InitJobManger(void)
 {
-    sem_init(&SemJobGold, 0, 0);    //初始情况房子里没有金子
-    sem_init(&SemJobAir, 0, sizeof(jobQueue) / sizeof(*jobQueue));//只有N个空气
-    pthread_mutex_init(&lock, NULL);
+    pthread_mutex_init(&jobLock, NULL);
+    pthread_cond_init(&cond, NULL);
 }
 

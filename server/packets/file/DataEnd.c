@@ -35,7 +35,7 @@ int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDa
                 CRPOKSend(user->sockfd, session);
             }
         }
-        UserOperationCancel(user, op->id);
+        UserOperationCancel(user, op);
     }
     return 1;
 }

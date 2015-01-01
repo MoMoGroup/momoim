@@ -7,7 +7,7 @@
 #include <logger.h>
 #include "run/jobs.h"
 
-int server_exit = 0;
+volatile int server_exit = 0;
 WorkerType worker[WORKER_COUNT];
 
 pthread_t ThreadListener;

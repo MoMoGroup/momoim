@@ -8,13 +8,12 @@
 #include <logger.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <fcntl.h>
 
-#include <run/worker.h>
 #include <run/user.h>
 #include <run/jobs.h>
 
-#define LISTEN_PORT 8014
-int ServerIOPool;
+static int ServerIOPool;
 
 void UserJoinToPool(OnlineUser *user)
 {
@@ -22,12 +21,19 @@ void UserJoinToPool(OnlineUser *user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd, &event);
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd, &event))
+    {
+        perror("epoll_add");
+    }
 }
 
 void UserRemoveFromPool(OnlineUser *user)
 {
-    epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd, NULL);
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd, NULL))
+    {
+        if (errno != ENOENT)
+            perror("epoll_remove");
+    }
 }
 
 void *ListenMain(void *listenSocket)
@@ -58,9 +64,23 @@ void *ListenMain(void *listenSocket)
         return NULL;
     }
 
-    if (-1 == listen(sockfd, 50))
+    if (-1 == listen(sockfd, LISTENER_BACKLOG))
     {
         perror("listen");
+        return NULL;
+    }
+    int flags = fcntl(sockfd, F_GETFL, 0);
+    if (flags == -1)
+    {
+        perror("fcntl");
+        return NULL;
+    }
+
+    flags |= O_NONBLOCK;
+    flags = fcntl(sockfd, F_SETFL, flags);
+    if (flags == -1)
+    {
+        perror("fcntl");
         return NULL;
     }
     log_info("SERVER-MAIN", "Listenning on TCP %d\n", LISTEN_PORT);
@@ -73,29 +93,47 @@ void *ListenMain(void *listenSocket)
     };
     epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockfd, &event); //将监听socket加入epoll(data.ptr==NULL)
 
-    struct epoll_event *events = calloc(64, sizeof event);
+    struct epoll_event *events = calloc(EPOLL_BACKLOG, sizeof event);
     while (!server_exit)
     {
-        int n = epoll_wait(ServerIOPool, events, 64, -1);
+        int n = epoll_wait(ServerIOPool, events, EPOLL_BACKLOG, -1);
         for (int i = 0; i < n; i++)
         {
             if (events[i].data.ptr == NULL)
             {
                 int fd;
-                struct sockaddr_in addr;
                 socklen_t addr_len = sizeof addr;
-                fd = accept(sockfd, (struct sockaddr *) &addr, &addr_len);
-                if (-1 == fd)
+                while (1)
                 {
-                    log_error("SERVER-LISTENER", "accept failure:%s\n", strerror(errno));
-                    continue;
+                    fd = accept(sockfd, (struct sockaddr *) &addr, &addr_len);
+                    if (-1 == fd)
+                    {
+                        if (errno == EWOULDBLOCK)
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            log_error("SERVER-LISTENER", "accept failure:%s\n", strerror(errno));
+                            break;
+                        }
+                    }
+                    //flags = fcntl(sockfd, F_GETFL, 0);
+                    //flags |= O_NONBLOCK;
+                    //flags = fcntl(sockfd, F_SETFL, flags);
+                    //if (flags == -1)
+                    //{
+                    //    perror("fcntl");
+                    //    continue;
+                    //}
+                    OnlineUser *user = OnlineUserNew(fd);
+                    UserJoinToPool(user);
                 }
-                UserJoinToPool(OnlineUserNew(fd));
             }
             else
             {
                 UserRemoveFromPool(events[i].data.ptr);
-                PushJob(events[i].data.ptr);
+                JobManagerPush((OnlineUser *) events[i].data.ptr);
             }
         }
 

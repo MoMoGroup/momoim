@@ -5,7 +5,7 @@
 #include "ClientSockfd.h"
 
 
-pthread_rwlock_t lock;
+static pthread_rwlock_t lock;
 
 
 typedef struct messageloop {

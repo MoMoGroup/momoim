@@ -14,22 +14,32 @@ void *WorkerMain(void *arg)
     WorkerType *worker = (WorkerType *) arg;
 
     sprintf(workerName, "WORKER-%d", worker->workerId);
-
     while (!server_exit)
     {
-        user = PullJob();
-        if (OnlineUserHold(user))   //保持用户,使用户对象在整个代码执行过程中不会被释放
-        {
-            header = CRPRecv(user->sockfd);//在UserJoinToPoll之前,用户被保持单线程处理状态
-            UserJoinToPool(user);
+        user = JobManagerPop();
 
-            if (header == NULL || ProcessUser(user, header) == 0)
+        if (user->status == OUS_PENDING_INIT)
+        {
+            OnlineUserInit(user);
+        }
+
+        header = CRPRecv(user->sockfd);//在UserJoinToPoll之前,用户被保持单线程处理状态,这里依然安全
+        if (header == NULL)
+        {
+            OnlineUserDelete(user);
+            continue;
+        }
+        else
+        {
+            UserJoinToPool(user);
+            if (ProcessUser(user, header) == 0)
             {
                 OnlineUserDelete(user);
+                free(header);
+                continue;
             }
-            OnlineUserUnhold(user);
-            free(header);
         }
+        OnlineUserDrop(user);
     }
     return 0;
 }
