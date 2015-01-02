@@ -67,9 +67,9 @@ void UserCreateDirectory(uint32_t uid)
     UserCreateFriendsFile(uid);
 }
 
-int UserQueryByNick(const char *text, uint page, uint count, uid_t *uids)
+int UserQueryByNick(const char *text, uint8_t page, uint8_t count, uint32_t *uids)
 {
-    //TODO BREAK HERE
+    //TODO 通过昵称搜索 - 未完成
     sqlite3_stmt *stmt;
     if (SQLITE_OK != sqlite3_prepare_v2(db, sqlNickQuery, sizeof(sqlNickQuery), &stmt, NULL))
     {

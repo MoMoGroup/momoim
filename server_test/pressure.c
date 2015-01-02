@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define CLIENT_COUNT 10
+#define CLIENT_COUNT 2
 
 pthread_t child[CLIENT_COUNT];
 unsigned char hash[16];
@@ -39,7 +39,7 @@ volatile int tCount = 0;
 void *threadRoutine(void *p)
 {
     char name[10];
-    sprintf(name, "%04lu", (pthread_t *) p - child);
+    sprintf(name, "%lu", (pthread_t *) p - child);
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct timeval timeout = {10, 0};
     setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
@@ -155,7 +155,7 @@ void *threadRoutine(void *p)
 
 int main()
 {
-    MD5((unsigned char *) "pass", 1, hash);
+    MD5((unsigned char *) "s", 1, hash);
     for (int i = 0; i < CLIENT_COUNT; ++i)
     {
         pthread_create(child + i, NULL, threadRoutine, child + i);

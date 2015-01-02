@@ -32,36 +32,41 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                 CRPLoginAcceptSend(user->sockfd, session, uid);
                 user->status = OUS_ONLINE;
             }
-            /*if (uid == 10000)
+            if (uid == 10000 || uid == 10001)
             {
-                uint32_t userFriends1[] = {10000, 10001};
-                uint32_t userFriends2[] = {10004, 10005, 10006, 10007};
-                uint32_t userFriends4[] = {10008};
+                uint32_t userFriends1[2];
+                if (uid == 10000)
+                {
+                    userFriends1[0] = 10000;
+                    userFriends1[1] = 10001;
+                }
+                else
+                {
+                    userFriends1[0] = 10001;
+                    userFriends1[1] = 10000;
+                }
+
                 UserGroup group[3] = {
                         {
                                 .groupId=0,
                                 .groupName="我的好友",
                                 .friendCount=2,
                                 .friends=userFriends1
-                        },{
-                                .groupId=0,
-                                .groupName="分组",
-                                .friendCount=4,
-                                .friends=userFriends2
-                        },{
-                                .groupId=0,
+                        },
+                        {
+                                .groupId=255,
                                 .groupName="黑名单",
-                                .friendCount=1,
-                                .friends=userFriends4
+                                .friendCount=0,
+                                .friends=NULL
                         },
                 };
                 UserFriends friends =
                         {
-                                .groupCount=3,
+                                .groupCount=2,
                                 .groups=group
                         };
                 UserSaveFriendsFile(uid, &friends);
-            }*/
+            }
         }
     }
     else
