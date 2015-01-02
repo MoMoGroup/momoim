@@ -2,7 +2,8 @@ include_directories(../logger/include)
 include_directories(../protocol/include)
 include_directories(../imcommon/include)
 SET(SERVER_TEST_SOURCE_FILE
-    main.c
+    #login.c
+    pressure.c
     )
 add_executable(server_test ${SERVER_TEST_SOURCE_FILE})
 target_link_libraries(server_test protocol)

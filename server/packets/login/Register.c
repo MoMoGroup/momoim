@@ -29,5 +29,5 @@ int ProcessPacketLoginRegister(OnlineUser *user, uint32_t session, CRPPacketLogi
     {
         CRPFailureSend(user->sockfd, session, "Status Error");
     }
-    return 0;
+    return 1;
 }

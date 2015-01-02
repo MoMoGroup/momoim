@@ -13,7 +13,7 @@ int ProcessPacketLoginLogin(OnlineUser *user, uint32_t session, CRPPacketLogin *
         uint32_t uid;
         int ret = AuthUser(packet->username, packet->password, &uid);
 
-        if (ret != 0)
+        if (ret == 0)
         {
             log_info("Login-Login", "User %s Login failure.\n", packet->username);
             CRPFailureSend(user->sockfd, session, "Login Failure.");

@@ -116,14 +116,13 @@ void UserFreeInfo(UserInfo *friends)
 void UserCreateFriendsFile(uint32_t uid)
 {
     uint32_t mfriends[] = {
-            10000,
-            10001
+            uid
     };
     UserGroup groups[] = {
             {
                     .groupId=0,
                     .groupName="Friends",
-                    .friendCount=2,
+                    .friendCount=1,
                     .friends=mfriends
             },
             {

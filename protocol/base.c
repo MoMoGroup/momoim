@@ -2,8 +2,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include "fcntl.h"
+#include "../logger/include/logger.h"
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
+#include <errno.h>
 
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = {
         [CRP_PACKET_KEEP_ALIVE]         = (void *(*)(CRPBaseHeader *base)) CRPKeepAliveCast,
@@ -64,6 +66,7 @@ CRPBaseHeader *CRPRecv(int fd)
     ret = recv(fd, packet, h.totalLength, MSG_WAITALL);
     if (ret != h.totalLength)
     {
+        //log_warning("DATA", "Recv Error 2-%d bytes.%d/%s\n", ret, errno, strerror(errno));
         free(packet);
         return NULL;
     }

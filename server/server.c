@@ -7,7 +7,7 @@
 #include <logger.h>
 #include "run/jobs.h"
 
-int server_exit = 0;
+volatile int server_exit = 0;
 WorkerType worker[WORKER_COUNT];
 
 pthread_t ThreadListener;
@@ -34,10 +34,10 @@ int main(int argc, char **argv)
     {
         initWorker(i, worker + i);
     }
-
+    InitUserManager();
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
     pthread_join(ThreadListener, NULL);
-
+    FinalizeUserManager();
     DataModuleFinalize();
     return EXIT_SUCCESS;
 
