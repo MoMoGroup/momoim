@@ -207,60 +207,95 @@ void OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status)
     user->status = status;
 }
 
-POnlineUserInfo UserCreateOnlineInfo(POnlineUser user, uint32_t uid)
+
+int UserCreateOnlineInfo(POnlineUser user, uint32_t uid)
 {
-    char userDir[30];
+    char path[30];
     uint8_t userDirSize;
-    UserGetDir(userDir, uid, "");
-    userDirSize = (uint8_t) strlen(userDir);
+    UserGetDir(path, uid, "");
+    userDirSize = (uint8_t) strlen(path);
     struct stat buf;
-    if (stat(userDir, &buf) || !S_ISDIR(buf.st_mode))
+    if (stat(path, &buf) || !S_ISDIR(buf.st_mode))
     {
         UserCreateDirectory(uid);
     }
-    POnlineUserInfo info = (POnlineUserInfo) malloc(sizeof(OnlineUser));
-    memset(info, 0, sizeof(OnlineUserInfo));
+    POnlineUserInfo info = (POnlineUserInfo) calloc(1, sizeof(OnlineUser));
+    if (info == NULL)
+    {
+        return 0;
+    }
     info->uid = uid;
     info->userDir = (char *) malloc(userDirSize + 1);
-    memcpy(info->userDir, userDir, userDirSize);
+    if (info->userDir == NULL)
+    {
+        free(info);
+        return 0;
+    }
+    memcpy(info->userDir, path, userDirSize);
     info->userDir[userDirSize] = 0;
-    return info;
+
+    info->friends = UserGetFriends(uid);
+    user->info = info;
+    return 1;
 }
 
 void UserFreeOnlineInfo(POnlineUser user)
 {
     if (user->info)
     {
+        for (int i = 0; i < user->info->friends->groupCount; ++i)
+        {
+            UserGroup *group = user->info->friends->groups + i;
+            for (int j = 0; j < group->friendCount; ++j)
+            {
+                POnlineUser duser = OnlineUserGet(group->friends[j]);
+                if (duser)
+                {
+                    if (duser->status == OUS_ONLINE)
+                    {
+                        CRPFriendNotifySend(duser->sockfd, 0, user->info->uid, FNT_OFFLINE);
+                    }
+                    OnlineUserDrop(duser);
+                }
+            }
+        }
+        if (user->info->friends)
+        {
+            UserFreeFriends(user->info->friends);
+        }
         if (user->info->userDir)
         {
             free(user->info->userDir);
         }
         free(user->info);
+        user->info = NULL;
     }
 }
 
-PUserCancelableOperation UserOperationRegister(POnlineUser user, int type)
+PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data)
 {
 /*  the can not support this feature
     if (user->operations.count >= 100)
         return NULL;
 */
-    PUserCancelableOperation operation = (PUserCancelableOperation) calloc(1, sizeof(UserCancelableOperation));
+    PUserOperation operation = (PUserOperation) calloc(1, sizeof(UserOperation));
     if (operation == NULL)
     {
         return NULL;
     }
     operation->next = NULL;
     operation->type = type;
+    operation->session = sessionID;
+    operation->data = data;
+    pthread_mutex_init(&operation->lock, NULL);
     pthread_rwlock_wrlock(&user->operations.lock);
+
     if (user->operations.last == NULL)
     {
         user->operations.first = user->operations.last = operation;
-        operation->id = 1;
     }
     else
     {
-        operation->id = user->operations.last->id + 1;
         user->operations.last->next = operation;
         operation->prev = user->operations.last;
         user->operations.last = operation;
@@ -268,26 +303,28 @@ PUserCancelableOperation UserOperationRegister(POnlineUser user, int type)
     ++user->operations.count;
 
     pthread_rwlock_unlock(&user->operations.lock);
+    pthread_mutex_lock(&operation->lock);
     return operation;
 }
 
-void UserOperationUnregister(POnlineUser user, PUserCancelableOperation op)
+void UserOperationUnregister(POnlineUser user, PUserOperation op)
 {
     if (!op->cancel)
     {
         UserOperationCancel(user, op);
+        return;
     }
 
-    if (pthread_rwlock_wrlock(&user->operations.lock))
-    {
-        abort();
-    }
     if (op->prev == NULL && op->next == NULL && user->operations.first != op)
     {
+        pthread_mutex_unlock(&op->lock);
+        pthread_mutex_destroy(&op->lock);
         free(op);
     }
     else
     {
+
+        pthread_rwlock_wrlock(&user->operations.lock);
         if (op->prev == NULL)
         {
             user->operations.first = op->next;
@@ -305,33 +342,47 @@ void UserOperationUnregister(POnlineUser user, PUserCancelableOperation op)
             op->next->prev = op->prev;
         }
 
+        pthread_mutex_unlock(&op->lock);
+        pthread_mutex_destroy(&op->lock);
         free(op);
         --user->operations.count;
+        pthread_rwlock_unlock(&user->operations.lock);
     }
-    pthread_rwlock_unlock(&user->operations.lock);
 }
 
-PUserCancelableOperation UserOperationGet(POnlineUser user, uint32_t operationId)
+PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
 {
     pthread_rwlock_rdlock(&user->operations.lock);
-    PUserCancelableOperation ret = NULL;
-    for (PUserCancelableOperation op = user->operations.first; op != NULL; op = op->next)
+    PUserOperation ret = NULL;
+    for (PUserOperation op = user->operations.first; op != NULL; op = op->next)
     {
-        if (op->id == operationId)
+        if (op->session == sessionId)
         {
             ret = op;
             break;
         }
     }
     pthread_rwlock_unlock(&user->operations.lock);
+    if (ret)
+    {
+        if (pthread_mutex_trylock(&ret->lock))
+        {
+            return NULL;
+        }
+    }
     return ret;
 }
 
-PUserCancelableOperation UserOperationQuery(POnlineUser user, UserCancelableOperationType type, int (*func)(PUserCancelableOperation op, void *data), void *data)
+void UserOperationDrop(PUserOperation op)
+{
+    pthread_mutex_unlock(&op->lock);
+}
+
+PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int (*func)(PUserOperation op, void *data), void *data)
 {
     pthread_rwlock_rdlock(&user->operations.lock);
-    PUserCancelableOperation ret = NULL;
-    for (PUserCancelableOperation op = user->operations.first; op != NULL; op = op->next)
+    PUserOperation ret = NULL;
+    for (PUserOperation op = user->operations.first; op != NULL; op = op->next)
     {
         if ((type == -1 || op->type == type) && func(op, data))
         {
@@ -340,16 +391,27 @@ PUserCancelableOperation UserOperationQuery(POnlineUser user, UserCancelableOper
         }
     }
     pthread_rwlock_unlock(&user->operations.lock);
+    if (ret)
+    {
+        if (pthread_mutex_trylock(&ret->lock))
+        {
+            return NULL;
+        }
+    }
     return ret;
 }
 
-int UserOperationCancel(POnlineUser user, PUserCancelableOperation op)
+int UserOperationCancel(POnlineUser user, PUserOperation op)
 {
     int ret = 1;
     op->cancel = 1;
     if (op->onCancel != NULL)
     {
         ret = op->onCancel(user, op);
+    }
+    else
+    {
+        UserOperationUnregister(user, op);
     }
     return ret;
 }
@@ -358,9 +420,9 @@ void UserOperationRemoveAll(POnlineUser user)
 {
     if (pthread_rwlock_wrlock(&user->operations.lock))
         abort();
-    PUserCancelableOperation next = user->operations.first;
+    PUserOperation next = user->operations.first;
     user->operations.first = user->operations.last = NULL;
-    for (PUserCancelableOperation op = next; op != NULL; op = next)
+    for (PUserOperation op = next; op != NULL; op = next)
     {
         next = op->next;
         op->prev = op->next = NULL;
@@ -382,4 +444,23 @@ void FinalizeUserManager()
         OnlineUserDelete(OnlineUserTable.first);
     }
     pthread_rwlock_destroy(&OnlineUserTable.lock);
+}
+
+int PostMessage(UserMessage *message)
+{
+    int ret;
+    POnlineUser toUser = OnlineUserGet(message->to);
+    if (toUser == NULL)
+    {
+        MessageFile *file = UserMessageFileOpen(message->to);
+        ret = MessageFileAppend(file, message);
+        MessageFileClose(file);
+    }
+    else
+    {
+        CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
+        OnlineUserDrop(toUser);
+        ret = 1;
+    }
+    return ret;
 }

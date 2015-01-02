@@ -1,6 +1,5 @@
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
-#include <string.h>
 
 
 CRPPacketInfoData *CRPInfoDataCast(CRPBaseHeader *base)
@@ -8,7 +7,11 @@ CRPPacketInfoData *CRPInfoDataCast(CRPBaseHeader *base)
     return (CRPPacketInfoData *) base->data;
 }
 
-int CRPInfoDataSend(int sockfd, uint32_t sessionID, UserInfo *info)
+int CRPInfoDataSend(int sockfd, uint32_t sessionID, int isOnline, UserInfo *info)
 {
-    return CRPSend(CRP_PACKET_INFO_DATA, sessionID, info, sizeof(UserInfo), sockfd) != -1;
+    CRPPacketInfoData data = {
+            .isOnline=isOnline,
+            .info=*info
+    };
+    return CRPSend(CRP_PACKET_INFO_DATA, sessionID, &data, sizeof(CRPPacketInfoData), sockfd) != -1;
 }

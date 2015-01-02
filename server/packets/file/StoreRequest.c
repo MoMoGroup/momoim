@@ -5,11 +5,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <asm-generic/errno.h>
 
-int onCancel(POnlineUser user, PUserCancelableOperation operation)
+int onCancel(POnlineUser user, PUserOperation operation)
 {
-    PUserFileStoreOperation storeOperation = operation->data;
-    pthread_mutex_lock(&storeOperation->lock);
+    PUserOperationFileStore storeOperation = operation->data;
 
     if (storeOperation->fd >= 0)
     {
@@ -17,8 +17,6 @@ int onCancel(POnlineUser user, PUserCancelableOperation operation)
         unlink(storeOperation->tmpfile);
     }
 
-    pthread_mutex_unlock(&storeOperation->lock);
-    pthread_mutex_destroy(&storeOperation->lock);
     UserOperationUnregister(user, operation);
     free(storeOperation);
     return 1;
@@ -28,9 +26,9 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
 {
     if (user->status == OUS_ONLINE)
     {
-        if (packet->type == FST_PRIVATE)
+        if (packet->type != FST_SHARED)
         {
-            CRPFailureSend(user->sockfd, session, "Private file is not support.");
+            CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的文件类型");
             return 1;
         }
         if (DataFileExist(packet->key))
@@ -39,20 +37,19 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
         }
         else
         {
-            PUserCancelableOperation operation = UserOperationRegister(user, CUOT_FILE_STORE);
-            if (operation == NULL)
-            {
-                CRPFailureSend(user->sockfd, session, "Fail to register operation.");
-                return 1;
-            }
-            PUserFileStoreOperation storeOperation = (PUserFileStoreOperation) malloc(sizeof(UserFileStoreOperation));
+            PUserOperationFileStore storeOperation = (PUserOperationFileStore) malloc(sizeof(UserOperationFileStore));
             if (storeOperation == NULL)
             {
-                UserOperationUnregister(user, operation);
-                CRPFailureSend(user->sockfd, session, "Fail to alloc store operation.");
+                CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建文件存储操作");
                 return 1;
             }
-            operation->data = storeOperation;
+            PUserOperation operation = UserOperationRegister(user, session, CUOT_FILE_STORE, storeOperation);
+            if (operation == NULL)
+            {
+                free(storeOperation);
+                CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建用户操作");
+                return 1;
+            }
             operation->onCancel = onCancel;
             memcpy(storeOperation->key, packet->key, sizeof(storeOperation->key));
             storeOperation->totalLength = packet->length;
@@ -61,20 +58,20 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             memcpy(storeOperation->tmpfile, "/tmp/m0MoXXXXXX", sizeof("/tmp/m0MoXXXXXX"));
             mkstemp(storeOperation->tmpfile);
             storeOperation->fd = creat(storeOperation->tmpfile, 0600);
-            if (storeOperation->fd < 0) {
+            if (storeOperation->fd < 0)
+            {
                 free(storeOperation);
                 UserOperationUnregister(user, operation);
-                CRPFailureSend(user->sockfd, session, "Fail to create file.");
+                CRPFailureSend(user->sockfd, session, EIO, "无法创建文件");
                 return 1;
             }
             storeOperation->session = session;
-            pthread_mutex_init(&storeOperation->lock, NULL);
-            CRPFileStoreAcceptSend(user->sockfd, session, operation->id);
+            CRPOKSend(user->sockfd, session);
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, "Status Error");
+        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;
 }

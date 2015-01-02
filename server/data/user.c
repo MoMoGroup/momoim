@@ -15,7 +15,7 @@
 
 static sqlite3 *db = NULL;
 static const char sqlNickInsert[] = "INSERT OR REPLACE INTO info(uid,nick) VALUES(?,?);";
-static const char sqlNickQuery[] = "SELECT FROM info WHERE nick LIKE ? LIMIT ? OFFSET ?;";
+static const char sqlNickQuery[] = "SELECT uid FROM info WHERE nick LIKE ? LIMIT ? OFFSET ?;";
 
 int UserInit()
 {
@@ -69,22 +69,21 @@ void UserCreateDirectory(uint32_t uid)
 
 int UserQueryByNick(const char *text, uint8_t page, uint8_t count, uint32_t *uids)
 {
-    //TODO 通过昵称搜索 - 未完成
     sqlite3_stmt *stmt;
     if (SQLITE_OK != sqlite3_prepare_v2(db, sqlNickQuery, sizeof(sqlNickQuery), &stmt, NULL))
     {
-        return 0;
+        return -1;
     }
     sqlite3_bind_text(stmt, 1, text, (int) strlen(text), NULL);
     sqlite3_bind_int(stmt, 2, count);
     sqlite3_bind_int(stmt, 3, (page - 1) * count);
-    if (SQLITE_DONE != sqlite3_step(stmt))
+    uint32_t *puid = uids;
+    while ((puid - uids < count) && sqlite3_step(stmt) == SQLITE_ROW)
     {
-        sqlite3_finalize(stmt);
-        return 0;
+        *puid++ = (uint32_t) sqlite3_column_int(stmt, 1);
     }
     sqlite3_finalize(stmt);
-
+    return (uint8_t) (puid - uids);
 }
 
 void UserInfoCreate(uint32_t uid)

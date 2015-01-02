@@ -6,16 +6,23 @@ typedef struct structOnlineUser OnlineUser;
 typedef OnlineUser *POnlineUser;
 typedef struct structOnlineUserInfo OnlineUserInfo;
 typedef OnlineUserInfo *POnlineUserInfo;
-typedef struct structUserCancelableOperationTable UserCancelableOperationTable;
-typedef UserCancelableOperationTable *PUserCancelableOperationTable;
-typedef struct structUserCancelableOperation UserCancelableOperation;
-typedef UserCancelableOperation *PUserCancelableOperation;
+typedef struct structUserOperationTable UserOperationTable;
+typedef UserOperationTable *PUserOperationTable;
+typedef struct structUserOperation UserOperation;
+typedef UserOperation *PUserOperation;
 
-typedef int (*OperationCancelHandler)(POnlineUser, PUserCancelableOperation);
+typedef int (*OperationEventHandler)(POnlineUser, PUserOperation);
 
-typedef struct structUserFileStoreOperation UserFileStoreOperation;
-typedef UserFileStoreOperation *PUserFileStoreOperation;
+typedef struct structUserOperationFileStore UserOperationFileStore;
+typedef UserOperationFileStore *PUserOperationFileStore;
+typedef struct structUserOperationFileRequest UserOperationFileRequest;
+typedef UserOperationFileRequest *PUserOperationFileRequest;
+
 typedef struct structUserMessageProcessor UserMessageProcessor;
 typedef UserMessageProcessor *PUserMessageProcessor;
 
 typedef int(*PacketHandler)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header);
+
+//RESERVE IO池
+typedef struct structIOOperation IOOperation;
+typedef IOOperation *PIOOperation;

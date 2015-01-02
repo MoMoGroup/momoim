@@ -2,12 +2,16 @@
 #include "run/user.h"
 #include <data/auth.h>
 #include <logger.h>
-#include <unistd.h>
 #include <data/user.h>
+#include <asm-generic/errno-base.h>
+#include <asm-generic/errno.h>
+#include <unistd.h>
 
 int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet)
 {
-    sleep(1);//For Debugger Only
+#ifndef NDEBUG
+    sleep(1);//For Debugger
+#endif
     if (user->status == OUS_PENDING_LOGIN)
     {
         uint32_t uid;
@@ -16,15 +20,14 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
         if (ret == 0)
         {
             log_info("Login-Login", "User %s Login failure.\n", packet->username);
-            CRPFailureSend(user->sockfd, session, "Login Failure.");
+            CRPFailureSend(user->sockfd, session, EFAULT, "用户名或密码不正确");
         }
         else
         {
-            user->info = UserCreateOnlineInfo(user, uid);
-            if (user->info == NULL)
+            if (!UserCreateOnlineInfo(user, uid))
             {
                 log_warning("Login-Login", "User %s Login failure. Cannot Create Online Info\n", packet->username);
-                CRPFailureSend(user->sockfd, session, "Server Failure.");
+                CRPFailureSend(user->sockfd, session, ENODATA, "服务器内部错误");
             }
             else
             {
@@ -32,6 +35,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                 CRPLoginAcceptSend(user->sockfd, session, uid);
                 user->status = OUS_ONLINE;
             }
+            //测试数据导入,开始
             if (uid == 10000 || uid == 10001)
             {
                 uint32_t userFriends1[2];
@@ -66,12 +70,31 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                                 .groups=group
                         };
                 UserSaveFriendsFile(uid, &friends);
+                UserFreeFriends(user->info->friends);
+                user->info->friends = UserGetFriends(uid);
+            }
+            //测试数据导入结束
+            for (int i = 0; i < user->info->friends->groupCount; ++i)
+            {
+                UserGroup *group = user->info->friends->groups + i;
+                for (int j = 0; j < group->friendCount; ++j)
+                {
+                    POnlineUser duser = OnlineUserGet(group->friends[j]);
+                    if (duser)
+                    {
+                        if (duser->status == OUS_ONLINE)
+                        {
+                            CRPFriendNotifySend(duser->sockfd, 0, uid, FNT_ONLINE);
+                        }
+                        OnlineUserDrop(duser);
+                    }
+                }
             }
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, "Status Error");
+        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;
 }

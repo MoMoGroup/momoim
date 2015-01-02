@@ -4,39 +4,41 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <data/file.h>
-
-static int fn(PUserCancelableOperation op, void *data)
-{
-    return ((PUserFileStoreOperation) op->data)->session == *(uint32_t *) data;
-}
+#include <asm-generic/errno-base.h>
 
 int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDataEnd *packet)
 {
-    PUserCancelableOperation op = UserOperationQuery(user, CUOT_FILE_STORE, fn, &session);
-    if (!op) {
-        CRPFailureSend(user->sockfd, session, "File Store Operation not found.");
+    PUserOperation op = UserOperationGet(user, session);
+    if (!op)
+    {
+        CRPFailureSend(user->sockfd, session, ENOENT, "操作未找到");
     }
-    else {
-        PUserFileStoreOperation fop = (PUserFileStoreOperation) op->data;
+    else
+    {
+        PUserOperationFileStore fop = (PUserOperationFileStore) op->data;
         close(fop->fd);
         fop->fd = -1;
-        if (fop->remainLength != 0) {
+        if (fop->remainLength != 0)
+        {
             unlink(fop->tmpfile);
-            CRPFailureSend(user->sockfd, session, "File not finished.");
+            CRPFailureSend(user->sockfd, session, EBADF, "文件未结束");
         }
-        else {
+        else
+        {
             size_t len = DataFilePathLength;
             char path[len];
             DataFilePath(fop->key, path);
 
-            if (rename(fop->tmpfile, path)) {
-                CRPFailureSend(user->sockfd, session, "File move error.");
+            if (rename(fop->tmpfile, path))
+            {
+                CRPFailureSend(user->sockfd, session, EFAULT, "文件移动失败");
             }
-            else {
+            else
+            {
                 CRPOKSend(user->sockfd, session);
             }
         }
-        UserOperationCancel(user, op);
+        UserOperationUnregister(user, op);
     }
     return 1;
 }

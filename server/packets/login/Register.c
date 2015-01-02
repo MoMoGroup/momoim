@@ -3,6 +3,7 @@
 #include <data/auth.h>
 #include <data/user.h>
 #include <string.h>
+#include <asm-generic/errno-base.h>
 
 int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLoginRegister *packet)
 {
@@ -22,12 +23,12 @@ int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLogi
         }
         else
         {
-            CRPFailureSend(user->sockfd, session, "Register failure.");
+            CRPFailureSend(user->sockfd, session, EEXIST, "用户名已存在");
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, "Status Error");
+        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;
 }

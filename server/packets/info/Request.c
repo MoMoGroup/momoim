@@ -2,6 +2,7 @@
 #include "run/user.h"
 #include <stdlib.h>
 #include <data/user.h>
+#include <asm-generic/errno.h>
 
 int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRequest *packet)
 {
@@ -10,17 +11,19 @@ int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRe
         UserInfo *info = UserInfoGet(packet->uid);
         if (info == NULL)
         {
-            CRPFailureSend(user->sockfd, session, "Unable to perform user info.");
+            CRPFailureSend(user->sockfd, session, ENODATA, "无法读取用户资料");
         }
         else
         {
-            CRPInfoDataSend(user->sockfd, session, info);
+            POnlineUser duser = OnlineUserGet(packet->uid);
+            CRPInfoDataSend(user->sockfd, session, duser->status == OUS_ONLINE, info);
+            OnlineUserDrop(duser);
             free(info);
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, "Status Error");
+        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;
 }

@@ -4,6 +4,7 @@
 #include "fcntl.h"
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
+#include <errno.h>
 
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = {
         [CRP_PACKET_KEEP_ALIVE]         = (void *(*)(CRPBaseHeader *base)) CRPKeepAliveCast,
@@ -45,7 +46,8 @@ ssize_t CRPSend(packet_id_t packetID, session_id_t sessionID, void const *data, 
     header->sessionID = sessionID;
     if (length)
         memcpy(header->data, data, length);
-    ssize_t len = send(fd, header, header->totalLength, 0);
+    ssize_t len;
+    while (-1 == (len = send(fd, header, header->totalLength, 0)) && errno == EAGAIN);
     free(header);
     return len;
 }

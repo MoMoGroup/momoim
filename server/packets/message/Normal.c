@@ -1,45 +1,32 @@
 #include <protocol/CRPPackets.h>
-#include <data/user.h>
 #include <stdlib.h>
 #include <string.h>
+#include <asm-generic/errno-base.h>
 #include "run/user.h"
 
 int ProcessPacketMessageText(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet)
 {
     if (user->status == OUS_ONLINE)
     {
-        POnlineUser toUser = OnlineUserGet(packet->uid);
-        if (toUser == NULL)
+        UserMessage *msg = (UserMessage *) malloc(sizeof(UserMessage) + packet->messageLen);
+        msg->messageType = packet->messageType;
+        msg->messageLen = packet->messageLen;
+        msg->from = user->info->uid;
+        msg->to = packet->uid;
+        memcpy(msg->content, packet->message, packet->messageLen);
+        if (PostMessage(msg))
         {
-            MessageFile *file = UserMessageFileOpen(packet->uid);
-            UserMessage *msg = (UserMessage *) malloc(sizeof(UserMessage) + packet->messageLen);
-            UserMessage t = {
-                    .messageType=packet->messageType,
-                    .messageLen=packet->messageLen,
-                    .from=user->info->uid,
-                    .to=packet->uid
-            };
-            memcpy(msg, &t, sizeof(UserMessage));
-            memcpy(msg->content, packet->message, packet->messageLen);
-            if (MessageFileAppend(file, msg))
-            {
-                CRPOKSend(user->sockfd, session);
-            }
-            else
-            {
-                CRPFailureSend(user->sockfd, session, "Message Failure");
-            }
+            CRPOKSend(user->sockfd, session);
         }
         else
         {
-            CRPMessageNormalSend(toUser->sockfd, 0, (uint8_t) packet->messageType, user->info->uid, packet->messageLen, packet->message);
-            OnlineUserDrop(toUser);
-            CRPOKSend(user->sockfd, session);
+            CRPFailureSend(user->sockfd, session, EFAULT, "无法送达消息");
         }
+        free(msg);
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, "Status Error");
+        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;
 }

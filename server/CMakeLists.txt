@@ -33,7 +33,6 @@ SET(SERVER_SOURCE_FILE
     packets/info/Data.c
 
     packets/friend/Request.c
-    packets/friend/SearchByUsername.c
     packets/friend/SearchByNickname.c
 
 
@@ -50,3 +49,4 @@ target_link_libraries(server pthread)
 target_link_libraries(server dl)
 target_link_libraries(server ssl)
 target_link_libraries(server imcommon)
+target_link_libraries(server rt)

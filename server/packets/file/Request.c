@@ -1,82 +1,155 @@
-#include <protocol/base.h>
-#include <protocol/CRPPackets.h>
-#include "run/user.h"
-#include "data/file.h"
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/user.h>
+#include <protocol/base.h>
+#include <protocol/CRPPackets.h>
+#include <errno.h>
+#include "run/user.h"
+#include "data/file.h"
+
+static int onRequestCancel(POnlineUser user, PUserOperation op)
+{
+    if (op->type == CUOT_FILE_REQUEST)
+    {
+        PUserOperationFileRequest opData = (PUserOperationFileRequest) op->data;
+        aio_cancel(opData->aio.aio_fildes, NULL);//Cancel all
+        close(opData->aio.aio_fildes);
+        free((void *) opData->aio.aio_buf);
+        free(opData);
+        op->onCancel = NULL;
+        UserOperationUnregister(user, op);
+        CRPFileDataEndSend(user->sockfd, op->session, FEC_CANCELED);
+    }
+    return 1;
+}
+
+static int RequestContinue(POnlineUser user, PUserOperation op)
+{
+    if (op->type == CUOT_FILE_REQUEST)
+    {
+        PUserOperationFileRequest opData = (PUserOperationFileRequest) op->data;
+        const struct aiocb *const p = &opData->aio;
+        struct timespec timeout = {
+                .tv_sec=1
+        };
+        int ret;
+        while ((ret = aio_suspend(&p, 1, &timeout) == -1) && errno == EINTR);
+        if (ret == -1)
+        {
+            CRPFailureSend(user->sockfd, op->session, ETIMEDOUT, "操作超时");
+        }
+        switch (aio_error(p))
+        {
+            case EINPROGRESS:
+                CRPFailureSend(user->sockfd, op->session, ETIMEDOUT, "操作超时");
+                break;
+            case ECANCELED:
+                CRPFailureSend(user->sockfd, op->session, ECANCELED, "操作被取消");
+                break;
+            case 0:
+
+                break;
+            default:
+                CRPFailureSend(user->sockfd, op->session, EIO, "操作失败");
+                break;
+        }
+        ssize_t ioRet = aio_return(&opData->aio);
+        if (ioRet == 0)
+        {
+            CRPFileDataEndSend(user->sockfd, op->session, FEC_OK);
+            close(opData->aio.aio_fildes);
+            free(opData->aio.aio_buf);
+            free(opData);
+            op->onCancel = NULL;
+            UserOperationUnregister(user, op);
+        }
+        else
+        {
+            CRPFileDataSend(user->sockfd, op->session, (CRP_LENGTH_TYPE) ioRet, ++(opData->seq), p->aio_buf);
+            opData->aio.aio_offset += opData->aio.aio_nbytes;
+            aio_read(&opData->aio);
+        }
+    }
+    return 1;
+}
 
 int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRequest *packet)
 {
-    if (packet->type == 0)
+    if (packet->type == FST_SHARED)
     {
         if (DataFileExist(packet->key))
         {
-            PUserCancelableOperation operation = NULL;
-            char *buf = (char *) malloc(PAGE_SIZE);
-            if (buf == NULL)
-            {
-                CRPFailureSend(user->sockfd, session, "Fail to alloc buffer.");
-                return 0;//内存分配失败,注销当前用户
-            }
+            PUserOperation op = NULL;
+            PUserOperationFileRequest opData = NULL;
             int fd = DataFileOpen(packet->key, O_RDONLY);
             if (fd < 0)
             {
-                CRPFailureSend(user->sockfd, session, "Fail to read file.");
-                goto cleanup;
+                CRPFailureSend(user->sockfd, session, ENOENT, "无法读取文件");
+                goto fail;
             }
             struct stat fileInfo;
             if (fstat(fd, &fileInfo) == -1)
             {
-                CRPFailureSend(user->sockfd, session, "Fail to stat file.");
-                goto cleanup;
+                CRPFailureSend(user->sockfd, session, EIO, "无法获得文件状态");
+                goto fail;
             }
-            operation = UserOperationRegister(user, CUOT_FILE_SEND);
-
-            CRPFileDataStartSend(user->sockfd, session, operation->id, (uint64_t) fileInfo.st_size);
-            ssize_t length;
-            size_t seq = 0;
-            while (!operation->cancel)
+            opData = (PUserOperationFileRequest) calloc(1, sizeof(UserOperationFileRequest));
+            if (opData == NULL)
             {
-                length = read(fd, buf, PAGE_SIZE);
-                if (length == 0)
-                {
-                    CRPFileDataEndSend(user->sockfd, session, FEC_OK);//file end
-                    goto cleanup;
-                }
-                else if (length < 0)
-                {
-                    CRPFileDataEndSend(user->sockfd, session, FEC_READ_ERROR);//Read unexpected
-                    goto cleanup;
-                }
-                else
-                {
-                    CRPFileDataSend(user->sockfd, session, length, seq++, buf);
-                }
+                CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建文件请求操作");
+                goto fail;
             }
-            CRPFileDataEndSend(user->sockfd, session, FEC_CANCELED);//operation canceled
-            cleanup:
-            if (operation)
-                UserOperationUnregister(user, operation);
+            opData->seq = 0;
+            opData->aio.aio_buf = (char *) malloc(PAGE_SIZE);
+            if (opData->aio.aio_buf == NULL)
+            {
+                CRPFailureSend(user->sockfd, session, ENOMEM, "无法分配缓冲区");
+                goto fail;
+            }
+            opData->aio.aio_fildes = fd;
+            opData->aio.aio_nbytes = PAGE_SIZE;
+            opData->size = fileInfo.st_size;
+            op = UserOperationRegister(user, session, CUOT_FILE_REQUEST, opData);
+            if (op == NULL)
+            {
+                CRPFailureSend(user->sockfd, session, EMFILE, "无法创建用户操作");
+                goto fail;
+            }
+            op->onCancel = onRequestCancel;
+            op->onResponseOK = RequestContinue;
+            op->onResponseFailure = onRequestCancel;
+            aio_read(&opData->aio);
+            CRPFileDataStartSend(user->sockfd, session, (uint64_t) fileInfo.st_size);
+            UserOperationDrop(op);
+            return 1;
+            fail:
+            if (op)
+            {
+                UserOperationUnregister(user, op);
+            }
             if (fd >= 0)
                 close(fd);
-            free(buf);
+            if (opData)
+            {
+                free(opData->aio.aio_buf);
+                free(opData);
+            }
             return 1;
         }
         else
         {
-            CRPFailureSend(user->sockfd, session, "File not found.");
+            CRPFailureSend(user->sockfd, session, ENOENT, "文件未找到");
         }
     }
     else
     {
-        if (user->status == OUS_ONLINE)
+        if (user->status != OUS_ONLINE)
         {
-            CRPFailureSend(user->sockfd, session, "Private file is not support.");
+            CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
         }
         else
         {
-            CRPFailureSend(user->sockfd, session, "Status Error");
+            CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的文件类型");
         }
     }
     return 1;

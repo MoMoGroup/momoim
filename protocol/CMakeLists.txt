@@ -6,7 +6,8 @@ SET(LIBPROTOCOL_SRC
     packets/friend/Request.c
     packets/friend/Data.c
     packets/friend/SearchByNickname.c
-    packets/friend/SearchByUsername.c
+    packets/friend/UserList.c
+    packets/friend/Notify.c
 
     packets/info/Request.c
     packets/info/Data.c
@@ -28,7 +29,6 @@ SET(LIBPROTOCOL_SRC
     packets/file/DataEnd.c
     packets/file/Reset.c
     packets/file/StoreRequest.c
-    packets/file/StoreAccept.c
 
     packets/message/Normal.c
     )
