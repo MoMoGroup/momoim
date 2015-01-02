@@ -4,21 +4,21 @@
 #include <unistd.h>
 #include <sys/user.h>
 
-static int fn(UserCancelableOperation *op, void *data)
+static int fn(PUserCancelableOperation op, void *data)
 {
-    return ((UserFileStoreOperation *) op->data)->session == *(uint32_t *) data;
+    return ((PUserFileStoreOperation) op->data)->session == *(uint32_t *) data;
 }
 
-int ProcessPacketFileReset(OnlineUser *user, uint32_t session, CRPPacketFileReset *packet)
+int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileReset *packet)
 {
-    UserCancelableOperation *op = UserOperationQuery(user, CUOT_FILE_STORE, fn, &session);
+    PUserCancelableOperation op = UserOperationQuery(user, CUOT_FILE_STORE, fn, &session);
     if (!op)
     {
         CRPFailureSend(user->sockfd, session, "File Store Operation not found.");
     }
     else
     {
-        UserFileStoreOperation *fop = (UserFileStoreOperation *) op->data;
+        PUserFileStoreOperation fop = (PUserFileStoreOperation) op->data;
         off_t ret;
         pthread_mutex_lock(&fop->lock);
         ret = lseek(fop->fd, packet->seq * PAGE_SIZE, SEEK_SET);

@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <string.h>
 
-int onCancel(struct struOnlineUser *user, struct struUserCancelableOperation *operation)
+int onCancel(POnlineUser user, PUserCancelableOperation operation)
 {
-    UserFileStoreOperation *storeOperation = operation->data;
+    PUserFileStoreOperation storeOperation = operation->data;
     pthread_mutex_lock(&storeOperation->lock);
 
     if (storeOperation->fd >= 0)
@@ -24,7 +24,7 @@ int onCancel(struct struOnlineUser *user, struct struUserCancelableOperation *op
     return 1;
 }
 
-int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketFileStoreRequest *packet)
+int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet)
 {
     if (user->status == OUS_ONLINE)
     {
@@ -39,13 +39,13 @@ int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketF
         }
         else
         {
-            UserCancelableOperation *operation = UserOperationRegister(user, CUOT_FILE_STORE);
+            PUserCancelableOperation operation = UserOperationRegister(user, CUOT_FILE_STORE);
             if (operation == NULL)
             {
                 CRPFailureSend(user->sockfd, session, "Fail to register operation.");
                 return 1;
             }
-            UserFileStoreOperation *storeOperation = (UserFileStoreOperation *) malloc(sizeof(UserFileStoreOperation));
+            PUserFileStoreOperation storeOperation = (PUserFileStoreOperation) malloc(sizeof(UserFileStoreOperation));
             if (storeOperation == NULL)
             {
                 UserOperationUnregister(user, operation);

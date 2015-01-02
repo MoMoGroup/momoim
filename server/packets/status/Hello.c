@@ -2,7 +2,7 @@
 #include "run/user.h"
 #include <logger.h>
 
-int ProcessPacketStatusHello(OnlineUser *user, uint32_t session, CRPPacketHello *packet)
+int ProcessPacketStatusHello(POnlineUser user, uint32_t session, CRPPacketHello *packet)
 {
     if (user->status == OUS_PENDING_HELLO)
     {

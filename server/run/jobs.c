@@ -2,15 +2,15 @@
 #include <server.h>
 #include "run/jobs.h"
 
-static OnlineUser *jobQueue[CONFIG_JOB_QUEUE_SIZE];
-static OnlineUser **pJobQueueHead = jobQueue, **pJobQueueTail = jobQueue + 1;
+static POnlineUser jobQueue[CONFIG_JOB_QUEUE_SIZE];
+static POnlineUser *pJobQueueHead = jobQueue, *pJobQueueTail = jobQueue + 1;
 static pthread_mutex_t jobLock;
 static pthread_cond_t cond;
 
-void JobManagerKick(OnlineUser *user)
+void JobManagerKick(POnlineUser user)
 {
     pthread_mutex_lock(&jobLock);
-    OnlineUser **p = pJobQueueHead;
+    POnlineUser *p = pJobQueueHead;
     while (!(p + 1 == pJobQueueTail ||
              p + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
     {
@@ -21,9 +21,9 @@ void JobManagerKick(OnlineUser *user)
     pthread_mutex_unlock(&jobLock);
 }
 
-OnlineUser *JobManagerPop(void)
+POnlineUser JobManagerPop(void)
 {
-    OnlineUser *user;
+    POnlineUser user;
     pthread_mutex_lock(&jobLock);
     redo:
     while ((pJobQueueHead + 1 == pJobQueueTail) ||
@@ -51,7 +51,7 @@ OnlineUser *JobManagerPop(void)
     return user;
 }
 
-void JobManagerPush(OnlineUser *v)
+void JobManagerPush(POnlineUser v)
 {
     pthread_mutex_lock(&jobLock);
 

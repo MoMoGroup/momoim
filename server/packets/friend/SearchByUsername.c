@@ -2,7 +2,7 @@
 #include <run/user.h>
 
 
-int ProcessPacketFriendSearchByUsername(OnlineUser *user, uint32_t session, CRPPacketFriendSearchByUsername *packet)
+int ProcessPacketFriendSearchByUsername(POnlineUser user, uint32_t session, CRPPacketFriendSearchByUsername *packet)
 {
     if (user->status != OUS_ONLINE)
     {

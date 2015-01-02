@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <data/user.h>
 
-int ProcessPacketLoginLogin(OnlineUser *user, uint32_t session, CRPPacketLogin *packet)
+int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet)
 {
     sleep(1);//For Debugger Only
     if (user->status == OUS_PENDING_LOGIN)

@@ -6,13 +6,13 @@
 #include <stdlib.h>
 #include <sys/user.h>
 
-int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRequest *packet)
+int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRequest *packet)
 {
     if (packet->type == 0)
     {
         if (DataFileExist(packet->key))
         {
-            UserCancelableOperation *operation = NULL;
+            PUserCancelableOperation operation = NULL;
             char *buf = (char *) malloc(PAGE_SIZE);
             if (buf == NULL)
             {

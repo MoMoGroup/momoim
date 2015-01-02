@@ -2,10 +2,8 @@
 #include <string.h>
 #include <sys/socket.h>
 #include "fcntl.h"
-#include "../logger/include/logger.h"
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
-#include <errno.h>
 
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = {
         [CRP_PACKET_KEEP_ALIVE]         = (void *(*)(CRPBaseHeader *base)) CRPKeepAliveCast,
@@ -37,12 +35,12 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_MESSAGE_NORMAL]       = (void *(*)(CRPBaseHeader *base)) CRPMessageNormalCast,
 };
 
-ssize_t CRPSend(uint16_t packetID, uint32_t sessionID, void const *data, size_t length, int fd)
+ssize_t CRPSend(packet_id_t packetID, session_id_t sessionID, void const *data, CRP_LENGTH_TYPE length, int fd)
 {
     CRPBaseHeader *header = (CRPBaseHeader *) malloc(sizeof(CRPBaseHeader) + length);
     header->magicCode = 0x464F5573;
     header->totalLength = (CRP_LENGTH_TYPE) (sizeof(CRPBaseHeader) + length);
-    header->dataLength = (CRP_LENGTH_TYPE) length;
+    header->dataLength = length;
     header->packetID = packetID;
     header->sessionID = sessionID;
     if (length)

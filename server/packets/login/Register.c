@@ -4,7 +4,7 @@
 #include <data/user.h>
 #include <string.h>
 
-int ProcessPacketLoginRegister(OnlineUser *user, uint32_t session, CRPPacketLoginRegister *packet)
+int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLoginRegister *packet)
 {
     if (user->status == OUS_PENDING_LOGIN)
     {
@@ -13,11 +13,11 @@ int ProcessPacketLoginRegister(OnlineUser *user, uint32_t session, CRPPacketLogi
         if (uid > 0)
         {
             UserCreateDirectory(uid);
-            UserInfo *info = UserGetInfo(uid);
+            UserInfo *info = UserInfoGet(uid);
             bzero(info->nickName, sizeof(info->nickName));
             memcpy(info->nickName, packet->nickname,
                    packet->nicknameLength > sizeof(info->nickName) ? sizeof(info->nickName) : packet->nicknameLength);
-            UserSaveInfoFile(uid, info);
+            UserInfoSave(uid, info);
             CRPOKSend(user->sockfd, session);
         }
         else

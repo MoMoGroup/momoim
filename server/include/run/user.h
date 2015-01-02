@@ -3,8 +3,9 @@
 #include <sys/socket.h>
 #include <pthread.h>
 #include <protocol.h>
+#include "Structures.h"
 #include "run/worker.h"
-
+#include "packets.h"
 //在线用户状态
 typedef enum
 {
@@ -22,20 +23,21 @@ typedef enum
     CUOT_FILE_SEND,
     CUOT_FILE_STORE
 } UserCancelableOperationType;
-struct struOnlineUserInfo;
-struct struUserFileStoreOperation;
-struct struUserCancelableOperation;
-struct struUserCancelableOperationTable;
-struct struOnlineUser;
 
-//在线用户基本信息
-typedef struct struOnlineUserInfo
+//消息句柄
+struct structUserMessageProcessor
 {
-    uint32_t uid;
-    char *userDir;
-} OnlineUserInfo;
+    packet_id_t packetID;
 
-typedef struct struUserFileStoreOperation
+    PacketHandler handler;
+
+    PUserMessageProcessor prev;
+    PUserMessageProcessor next;
+    void *data;
+};
+
+//文件存储操作
+struct structUserFileStoreOperation
 {
     uint32_t session;
     size_t totalLength, remainLength, seq;
@@ -43,108 +45,120 @@ typedef struct struUserFileStoreOperation
     char tmpfile[30];
     int fd;
     pthread_mutex_t lock;
-} UserFileStoreOperation;
-//可取消操作
-typedef struct struUserCancelableOperation
+};
+
+//用户操作
+struct structUserCancelableOperation
 {
     uint32_t id;
     int type;
     int cancel;
     void *data;
 
-    int (*onCancel)(struct struOnlineUser *, struct struUserCancelableOperation *);
+    OperationCancelHandler onCancel;
 
-    struct struUserCancelableOperation *prev;
-    struct struUserCancelableOperation *next;
-} UserCancelableOperation;
+    PUserCancelableOperation prev;
+    PUserCancelableOperation next;
+};
 
 //用户操作表
-typedef struct struUserCancelableOperationTable
+struct structUserCancelableOperationTable
 {
-    UserCancelableOperation *first;
-    UserCancelableOperation *last;
+    PUserCancelableOperation first;
+    PUserCancelableOperation last;
     pthread_rwlock_t lock;
     int count;
-} UserCancelableOperationTable;
+};
+
+//用户在线信息
+struct structOnlineUserInfo
+{
+    uint32_t uid;
+    char *userDir;
+};
 
 //在线用户数据
-typedef struct struOnlineUser
+struct structOnlineUser
 {
     int sockfd;
     volatile OnlineUserStatus status;
-    OnlineUserInfo *info;
+    POnlineUserInfo info;
 
     pthread_rwlock_t holdLock;
 
     UserCancelableOperationTable operations;
-    struct struOnlineUser *prev;
-    struct struOnlineUser *next;
-} OnlineUser;
+
+
+    POnlineUser prev;
+    POnlineUser next;
+};
 
 //在线用户链表
-typedef struct
+struct structOnlineUsersTableType
 {
-    OnlineUser *first;
-    OnlineUser *last;
+    POnlineUser first;
+    POnlineUser last;
     int count;
-} UsersTable;
+    pthread_rwlock_t lock;
+};
 
 //处理用户消息
-int ProcessUser(OnlineUser *user, CRPBaseHeader *packet);
+int ProcessUser(POnlineUser user, CRPBaseHeader *packet);
 
 //创建一个在线用户对象
-OnlineUser *OnlineUserNew(int fd);
+POnlineUser OnlineUserNew(int fd);
 
-void OnlineUserInit(OnlineUser *);
+void OnlineUserInit(POnlineUser);
 
 //删除一个在线用户对象,如果用户被保持,它将阻塞当前线程,直到用户被释放.
-int OnlineUserDelete(OnlineUser *user);
+int OnlineUserDelete(POnlineUser user);
 
 //保持用户.
-int OnlineUserHold(OnlineUser *user);
+int OnlineUserHold(POnlineUser user);
 
 //释放用户.
-void OnlineUserDrop(OnlineUser *user);
+void OnlineUserDrop(POnlineUser user);
 
 //设置用户状态
-void OnlineUserSetStatus(OnlineUser *user, OnlineUserStatus status);
+void OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status);
 
 //通过uid查找用户
-OnlineUser *OnlineUserGet(uint32_t uid);
+POnlineUser OnlineUserGet(uint32_t uid);
 
 //通过创建一个用户在线信息字段.
 //该字段用于加速对在线用户数据的操作.
-OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid) __attribute_malloc__;
+OnlineUserInfo *UserCreateOnlineInfo(POnlineUser user, uint32_t uid) __attribute_malloc__;
 
 //释放一个在线用户字段
-void UserFreeOnlineInfo(OnlineUser *user);
+void UserFreeOnlineInfo(POnlineUser user);
 
 //注册一个可取消用户操作
-UserCancelableOperation *UserOperationRegister(OnlineUser *user, int type) __attribute_malloc__;
+PUserCancelableOperation UserOperationRegister(POnlineUser user, int type) __attribute_malloc__;
 
 //注销一个可取消用户操作.如果operation是孤立的(无前后节点),它将被简单的释放.
-void UserOperationUnregister(OnlineUser *user, UserCancelableOperation *op);
+void UserOperationUnregister(POnlineUser user, PUserCancelableOperation op);
 
 //通过操作ID获得用户操作
-UserCancelableOperation *UserOperationGet(OnlineUser *user, uint32_t operationId);
+PUserCancelableOperation UserOperationGet(POnlineUser user, uint32_t operationId);
 
 //通过自定义函数和操作获得用户操作
 //type为-1时会枚举所有操作.
 //注意,不要试图在枚举时注册或注销一个操作
-UserCancelableOperation *UserOperationQuery(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data);
+PUserCancelableOperation UserOperationQuery(POnlineUser user, UserCancelableOperationType type, int (*func)(PUserCancelableOperation op, void *data), void *data);
 
 //取消一个操作.
 //如果操作oncancel字段不为空,会调用oncancel指定的函数.
-int UserOperationCancel(OnlineUser *user, UserCancelableOperation *op);
+int UserOperationCancel(POnlineUser user, PUserCancelableOperation op);
 
 //取消并清空一个用户的所有操作.所有已存在操作将被取消并解除与用户操作链表的关联.
 //注意,该函数并不会释放相应内存空间,需要操作注册线程调用注销函数来释放这块内存.
-void UserOperationRemoveAll(OnlineUser *user);
+void UserOperationRemoveAll(POnlineUser user);
 
 void InitUserManager();
 
 void FinalizeUserManager();
+
 //在线的小伙伴们！！
-extern UsersTable OnlineUserTable;
+extern OnlineUsersTableType OnlineUserTable;
 //用户表写锁
 extern pthread_rwlock_t UsersTableLock;

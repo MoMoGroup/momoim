@@ -11,14 +11,16 @@ void UserGetDir(char *path, uint32_t uid, const char *relPath);
 
 void UserCreateDirectory(uint32_t uid);
 
+int UserQueryByNick(const char *text, uint page, uint count, uid_t *uids);
+
 //Info
-void UserCreateInfoFile(uint32_t uid);
+void UserInfoCreate(uint32_t uid);
 
-int UserSaveInfoFile(uint32_t uid, UserInfo *info);
+int UserInfoSave(uint32_t uid, UserInfo *info);
 
-UserInfo *UserGetInfo(uint32_t uid);
+UserInfo *UserInfoGet(uint32_t uid);
 
-void UserFreeInfo(UserInfo *friends);
+void UserInfoFree(UserInfo *friends);
 
 //Friends-Groups
 void UserCreateFriendsFile(uint32_t uid);

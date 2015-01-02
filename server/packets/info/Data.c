@@ -5,7 +5,7 @@
 #include <protocol/info/Data.h>
 #include "run/user.h"
 
-int ProcessPacketInfoData(OnlineUser *user, uint32_t session, CRPPacketInfoData *packet)
+int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData *packet)
 {
     if (user->status == OUS_ONLINE)
     {
@@ -15,7 +15,7 @@ int ProcessPacketInfoData(OnlineUser *user, uint32_t session, CRPPacketInfoData 
         }
         else
         {
-            if (UserSaveInfoFile(user->info->uid, &packet->info))
+            if (!UserInfoSave(user->info->uid, &packet->info))
                 CRPFailureSend(user->sockfd, session, "Write failure");
             else
                 CRPOKSend(user->sockfd, session);

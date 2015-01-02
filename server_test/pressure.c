@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define CLIENT_COUNT 100
+#define CLIENT_COUNT 10
 
 pthread_t child[CLIENT_COUNT];
 unsigned char hash[16];

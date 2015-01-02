@@ -10,7 +10,7 @@
 void *ListenMain(void *listenSocket);
 
 //服务端是否正在退出
-extern volatile int server_exit;
+extern int IsServerRunning;
 //监听线程
 extern pthread_t ThreadListener;
 
@@ -18,7 +18,7 @@ extern pthread_t ThreadListener;
 extern WorkerType worker[WORKER_COUNT];
 
 //将一个用户加入到epoll中
-void UserJoinToPool(OnlineUser *);
+void UserJoinToPool(POnlineUser);
 
 //将一个用户从epoll中移除
-void UserRemoveFromPool(OnlineUser *);
+void UserRemoveFromPool(POnlineUser);

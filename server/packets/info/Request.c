@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <data/user.h>
 
-int ProcessPacketInfoRequest(OnlineUser *user, uint32_t session, CRPPacketInfoRequest *packet)
+int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRequest *packet)
 {
     if (user->status == OUS_ONLINE)
     {
-        UserInfo *info = UserGetInfo(packet->uid);
+        UserInfo *info = UserInfoGet(packet->uid);
         if (info == NULL)
         {
             CRPFailureSend(user->sockfd, session, "Unable to perform user info.");

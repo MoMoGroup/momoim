@@ -6,7 +6,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-int ProcessPacketFriendRequest(OnlineUser *user, uint32_t session, CRPPacketFriendRequest *packet)
+int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFriendRequest *packet)
 {
     if (user->status == OUS_ONLINE)
     {

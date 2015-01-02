@@ -4,11 +4,11 @@
 #include <string.h>
 #include "run/user.h"
 
-int ProcessPacketMessageText(OnlineUser *user, uint32_t session, CRPPacketMessageNormal *packet)
+int ProcessPacketMessageText(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet)
 {
     if (user->status == OUS_ONLINE)
     {
-        OnlineUser *toUser = OnlineUserGet(packet->uid);
+        POnlineUser toUser = OnlineUserGet(packet->uid);
         if (toUser == NULL)
         {
             MessageFile *file = UserMessageFileOpen(packet->uid);

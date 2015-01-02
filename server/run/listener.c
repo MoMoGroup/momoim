@@ -15,7 +15,7 @@
 
 static int ServerIOPool;
 
-void UserJoinToPool(OnlineUser *user)
+void UserJoinToPool(POnlineUser user)
 {
     struct epoll_event event = {
             .data.ptr=user,
@@ -27,7 +27,7 @@ void UserJoinToPool(OnlineUser *user)
     }
 }
 
-void UserRemoveFromPool(OnlineUser *user)
+void UserRemoveFromPool(POnlineUser user)
 {
     if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd, NULL))
     {
@@ -94,7 +94,7 @@ void *ListenMain(void *listenSocket)
     epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockfd, &event); //将监听socket加入epoll(data.ptr==NULL)
 
     struct epoll_event *events = calloc(EPOLL_BACKLOG, sizeof event);
-    while (!server_exit)
+    while (IsServerRunning)
     {
         int n = epoll_wait(ServerIOPool, events, EPOLL_BACKLOG, -1);
         for (int i = 0; i < n; i++)
@@ -118,27 +118,27 @@ void *ListenMain(void *listenSocket)
                             break;
                         }
                     }
-                    //flags = fcntl(sockfd, F_GETFL, 0);
-                    //flags |= O_NONBLOCK;
-                    //flags = fcntl(sockfd, F_SETFL, flags);
-                    //if (flags == -1)
-                    //{
-                    //    perror("fcntl");
-                    //    continue;
-                    //}
-                    OnlineUser *user = OnlineUserNew(fd);
+                    flags = fcntl(fd, F_GETFL, 0);
+                    flags |= O_NONBLOCK;
+                    flags = fcntl(fd, F_SETFL, flags);
+                    if (flags == -1)
+                    {
+                        perror("fcntl");
+                        continue;
+                    }
+                    POnlineUser user = OnlineUserNew(fd);
                     UserJoinToPool(user);
                 }
             }
             else
             {
                 UserRemoveFromPool(events[i].data.ptr);
-                JobManagerPush((OnlineUser *) events[i].data.ptr);
+                JobManagerPush((POnlineUser) events[i].data.ptr);
             }
         }
 
     }
     free(events);
-
+    close(ServerIOPool);
     return (void *) -1;
 }

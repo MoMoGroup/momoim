@@ -5,18 +5,19 @@
 #include <stdio.h>
 #include <data/file.h>
 
-static int fn(UserCancelableOperation *op, void *data) {
-    return ((UserFileStoreOperation *) op->data)->session == *(uint32_t *) data;
+static int fn(PUserCancelableOperation op, void *data)
+{
+    return ((PUserFileStoreOperation) op->data)->session == *(uint32_t *) data;
 }
 
-int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDataEnd *packet)
+int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDataEnd *packet)
 {
-    UserCancelableOperation *op = UserOperationQuery(user, CUOT_FILE_STORE, fn, &session);
+    PUserCancelableOperation op = UserOperationQuery(user, CUOT_FILE_STORE, fn, &session);
     if (!op) {
         CRPFailureSend(user->sockfd, session, "File Store Operation not found.");
     }
     else {
-        UserFileStoreOperation *fop = (UserFileStoreOperation *) op->data;
+        PUserFileStoreOperation fop = (PUserFileStoreOperation) op->data;
         close(fop->fd);
         fop->fd = -1;
         if (fop->remainLength != 0) {

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <logger.h>
 
 #include "run/worker.h"
 #include "run/user.h"
@@ -10,11 +11,11 @@ void *WorkerMain(void *arg)
 {
     char workerName[10];
     CRPBaseHeader *header;
-    OnlineUser *user;
+    POnlineUser user;
     WorkerType *worker = (WorkerType *) arg;
 
     sprintf(workerName, "WORKER-%d", worker->workerId);
-    while (!server_exit)
+    while (IsServerRunning)
     {
         user = JobManagerPop();
 
@@ -42,5 +43,6 @@ void *WorkerMain(void *arg)
         }
         OnlineUserDrop(user);
     }
+    log_info(workerName, "Exit.\n");
     return 0;
 }
