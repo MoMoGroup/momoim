@@ -183,7 +183,8 @@ int OnlineUserHold(POnlineUser user)
 
 void OnlineUserDrop(POnlineUser user)
 {
-    pthread_rwlock_unlock(&user->holdLock);
+    if (user)
+        pthread_rwlock_unlock(&user->holdLock);
 }
 
 POnlineUser OnlineUserGet(uint32_t uid)
@@ -243,6 +244,7 @@ void UserFreeOnlineInfo(POnlineUser user)
 {
     if (user->info)
     {
+        log_info("UserManager", "User %d offline.\n", user->info->uid);
         for (int i = 0; i < user->info->friends->groupCount; ++i)
         {
             UserGroup *group = user->info->friends->groups + i;

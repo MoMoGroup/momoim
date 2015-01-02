@@ -1,7 +1,5 @@
 #include <protocol/base.h>
-#include <protocol/status/OK.h>
 #include <protocol/CRPPackets.h>
-#include <stddef.h>
 
 /**
 * 将基本包转换为CRPPacketOK包

@@ -24,6 +24,12 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
         }
         else
         {
+            OnlineUser *duser = OnlineUserGet(uid);
+            if (duser)
+            {
+                CRPKickSend(duser->sockfd, 0, "另一用户已经登陆");
+                OnlineUserDelete(duser);
+            }
             if (!UserCreateOnlineInfo(user, uid))
             {
                 log_warning("Login-Login", "User %s Login failure. Cannot Create Online Info\n", packet->username);
@@ -79,7 +85,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                 UserGroup *group = user->info->friends->groups + i;
                 for (int j = 0; j < group->friendCount; ++j)
                 {
-                    POnlineUser duser = OnlineUserGet(group->friends[j]);
+                    duser = OnlineUserGet(group->friends[j]);
                     if (duser)
                     {
                         if (duser->status == OUS_ONLINE)

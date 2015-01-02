@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/base.h>
 #include "MainInterface.h"
 
 
@@ -262,6 +263,7 @@ int mysockfd()
                         }
 
                     }
+                    CRPOKSend(sockfd, header->sessionID);
                     if ((void *) packet != header->data)
                     {
                         free(packet);
@@ -299,6 +301,7 @@ int mysockfd()
                         //free(node);
 
                     }
+                    CRPOKSend(sockfd, header->sessionID);
                     if ((void *) packet != header->data)
                     {
                         free(packet);

@@ -111,7 +111,7 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times)
 }
 
 //将服务器发过来的的消息显示在文本框上
-void Show_remote_text(const gchar *rcvd_text, friendinfo *info)
+void show_remote_text(const gchar *rcvd_text, friendinfo *info)
 {
     GtkTextIter start, end;
     char nicheng_times[40] = {0};

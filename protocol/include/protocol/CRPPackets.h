@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stddef.h>
+#include "protocol/base.h"
 #include "protocol/friend/Request.h"
 #include "protocol/friend/Data.h"
 #include "protocol/friend/SearchByNickname.h"
@@ -26,6 +27,7 @@
 #include "protocol/status/KeepAlive.h"
 #include "protocol/status/OK.h"
 #include "protocol/status/Failure.h"
+#include "protocol/status/Kick.h"
 #include "protocol/status/Crash.h"
 
 #include "protocol/message/Normal.h"
@@ -36,6 +38,7 @@ typedef enum
     CRP_PACKET_HELLO,               //Hello包
     CRP_PACKET_FAILURE,             //通用失败包
     CRP_PACKET_OK,                  //通用接受包
+    CRP_PACKET_KICK,                //通用失败包
     CRP_PACKET_CRASH = UINT16_MAX,  //崩溃包
 
 
