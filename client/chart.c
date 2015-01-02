@@ -111,7 +111,7 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times)
 }
 
 //将服务器发过来的的消息显示在文本框上
-void show_remote_text(const gchar *rcvd_text, friendinfo *info)
+void Show_remote_text(const gchar *rcvd_text, friendinfo *info)
 {
     GtkTextIter start, end;
     char nicheng_times[40] = {0};
@@ -124,12 +124,12 @@ void show_remote_text(const gchar *rcvd_text, friendinfo *info)
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
 
     // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
-    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
             nicheng_times, -1, "blue_foreground", NULL);
-    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
             rcvd_text, -1, "gray_foreground", NULL);
 
-    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
 }
 
