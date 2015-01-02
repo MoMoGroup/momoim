@@ -98,18 +98,13 @@ static void create_surfaces(friendinfo *information)
 void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times)
 {
     GtkTextIter start, end;
-
-
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
-    gtk_text_buffer_create_tag(info->show_buffer, "red_foreground", "foreground", "red", NULL);
-    gtk_text_buffer_create_tag(info->show_buffer, "gray_foreground", "foreground", "gray", NULL);
-    // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             nicheng_times, -1, "red_foreground", NULL);
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             text, -1, "gray_foreground", NULL);
 
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &start,
+    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
 
 
@@ -127,8 +122,7 @@ void show_remote_text(const gchar *rcvd_text, friendinfo *info)
     sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     GtkTextBuffer *show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
-    gtk_text_buffer_create_tag(show_buffer, "blue_foreground", "foreground", "blue", NULL);
-    gtk_text_buffer_create_tag(show_buffer, "gray_foreground", "foreground", "gray", NULL);
+
     // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &start,
             nicheng_times, -1, "blue_foreground", NULL);
@@ -232,18 +226,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event,
         if ((X > 391 && X < 473) && (Y > 513 && Y < 540))
         {
             gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
-            GtkWidget *dialog;
-            //创建带确认按钮的对话框，父控件为空
-            dialog = gtk_message_dialog_new(NULL,
-                    GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-                    GTK_MESSAGE_INFO,
-                    GTK_BUTTONS_OK,
-                    "%s", info->user.nickName);//到时候可以显示出昵称
-
-            gtk_dialog_run(GTK_DIALOG(dialog));//显示并运行对话框
-
             send_text(info);
-            gtk_widget_destroy(dialog);//销毁对话框
         }
         if (((X > 470 && X < 500) && (Y > 2 && Y < 25)) || ((X > 301 && X < 382) && (Y > 513 && Y < 540)))
         {
@@ -354,6 +337,10 @@ int mainchart(friendinfo *friendinfonode)
 
     friendinfonode->input_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->input_text));
     friendinfonode->show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->show_text));
+
+   gtk_text_buffer_create_tag(friendinfonode->show_buffer, "red_foreground", "foreground", "red", NULL);
+    gtk_text_buffer_create_tag(friendinfonode->show_buffer, "gray_foreground", "foreground", "gray", NULL);
+    gtk_text_buffer_create_tag(friendinfonode->show_buffer, "blue_foreground", "foreground", "blue", NULL);
 
     friendinfonode->sw1 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
     friendinfonode->sw2 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
