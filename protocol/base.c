@@ -13,6 +13,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_FAILURE]            = (void *(*)(CRPBaseHeader *base)) CRPFailureCast,
         [CRP_PACKET_CRASH]              = (void *(*)(CRPBaseHeader *base)) CRPCrashCast,
         [CRP_PACKET_KICK]               = (void *(*)(CRPBaseHeader *base)) CRPKickCast,
+        [CRP_PACKET_CANCEL]             = (void *(*)(CRPBaseHeader *base)) CRPCancelCast,
 
         [CRP_PACKET_LOGIN__START]       = (void *(*)(CRPBaseHeader *base)) NULL,
         [CRP_PACKET_LOGIN_ACCEPT]       = (void *(*)(CRPBaseHeader *base)) CRPLoginAcceptCast,

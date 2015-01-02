@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <asm-generic/errno-base.h>
+#include <sys/user.h>
 #include "run/user.h"
 
 int ProcessPacketMessageText(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet)

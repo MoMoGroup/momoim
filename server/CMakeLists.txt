@@ -28,6 +28,7 @@ SET(SERVER_SOURCE_FILE
     packets/status/KeepAlive.c
     packets/status/OK.c
     packets/status/Failure.c
+    packets/status/Cancel.c
 
     packets/info/Request.c
     packets/info/Data.c

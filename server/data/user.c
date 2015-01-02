@@ -171,8 +171,13 @@ void UserCreateFriendsFile(uint32_t uid)
                     .friends=mfriends
             },
             {
-                    .groupId=UINT8_MAX,
+                    .groupId=1,
                     .groupName="Blacklist",
+                    .friendCount=0
+            },
+            {
+                    .groupId=UINT8_MAX,
+                    .groupName="Pending",
                     .friendCount=0
             }
     };

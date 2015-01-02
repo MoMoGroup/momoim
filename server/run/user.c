@@ -15,12 +15,14 @@ OnlineUsersTableType OnlineUserTable = {
         .last=NULL
 };
 
+//消息处理器映射表
 int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header) = {
         [CRP_PACKET_KEEP_ALIVE]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusKeepAlive,
         [CRP_PACKET_HELLO]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusHello,
         [CRP_PACKET_OK]                 = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusOK,
         [CRP_PACKET_FAILURE]            = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusFailure,
         [CRP_PACKET_CRASH]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCrash,
+        [CRP_PACKET_CANCEL]             = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCancel,
 
         [CRP_PACKET_LOGIN__START]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
         [CRP_PACKET_LOGIN_LOGIN]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogin,
@@ -48,48 +50,49 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t sessio
         [CRP_PACKET_MESSAGE_NORMAL]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageText,
 };
 
-/**
-* Server Process User Message
-*/
 int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
 {
     int ret = 1;
     void *data;
+    //查找解码器
     void *(*packetCast)(CRPBaseHeader *) = PacketsDataCastMap[packet->packetID];
-    if (packetCast == NULL)
+    if (packetCast == NULL)//如果诶有找到,注销当前用户
     {
         return 0;
     }
-    data = packetCast(packet);
-    if (data == NULL)
+    data = packetCast(packet);//尝试解码,
+    if (data == NULL)//如果解码失败,注销用户
     {
         return 0;
     }
 
+    //查找处理机
     int(*packetProcessor)(POnlineUser, uint32_t, void *, CRPBaseHeader *header) = PacketsProcessMap[packet->packetID];
-    if (packetProcessor != NULL)
+    if (packetProcessor != NULL)//如果找到,处理数据包
     {
         ret = packetProcessor(user, packet->sessionID, data, packet);
-        if (data != packet->data)
-        {
-            free(data);
-        }
     }
     else
     {
         log_warning("UserProc", "Packet %d has no handler.\n", packet->packetID);
+    }
+
+    if (data != packet->data)//如果解包分配的内存区域是新分配的,则释放这块内存
+    {
+        free(data);
     }
     return ret;
 }
 
 POnlineUser OnlineUserNew(int fd)
 {
-    POnlineUser user = (POnlineUser) calloc(1, sizeof(OnlineUser));
+    POnlineUser user = (POnlineUser) calloc(1, sizeof(OnlineUser));//用户基本数据需要占用内存空间
     if (user == NULL)
     {
         log_error("UserManager", "Fail to calloc new user.\n");
         return NULL;
     }
+    //简要设置一下socket,状态.初始化用户保持锁
     user->sockfd = fd;
     user->status = OUS_PENDING_INIT;
     pthread_rwlock_init(&user->holdLock, NULL);
@@ -99,10 +102,12 @@ POnlineUser OnlineUserNew(int fd)
 
 void OnlineUserInit(POnlineUser user)
 {
+    //初始化用户信息
     if (!user->status == OUS_PENDING_INIT)
         return;
+    //初始化用户操作锁
     pthread_rwlock_init(&user->operations.lock, NULL);
-
+    //用户当前可以接收HELLO数据包了
     user->status = OUS_PENDING_HELLO;
 
     pthread_rwlock_wrlock(&OnlineUserTable.lock);
@@ -265,6 +270,7 @@ void UserFreeOnlineInfo(POnlineUser user)
         }
         if (user->info->friends)
         {
+            UserSaveFriendsFile(user->info->uid, user->info->friends);
             UserFreeFriends(user->info->friends);
         }
         if (user->info->userDir)

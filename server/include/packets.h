@@ -16,6 +16,8 @@ int ProcessPacketStatusFailure(POnlineUser user, uint32_t session, CRPPacketFail
 
 int ProcessPacketStatusCrash(POnlineUser user, uint32_t session, CRPPacketCrash *packet);
 
+int ProcessPacketStatusCancel(POnlineUser user, uint32_t session, CRPPacketCancel *packet);
+
 int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet);
 
 int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLoginRegister *packet);

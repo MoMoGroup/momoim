@@ -24,6 +24,7 @@ SET(LIBPROTOCOL_SRC
     packets/status/OK.c
     packets/status/Crash.c
     packets/status/Kick.c
+    packets/status/Cancel.c
 
     packets/file/Data.c
     packets/file/Request.c

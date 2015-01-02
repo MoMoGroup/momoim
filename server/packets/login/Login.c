@@ -79,6 +79,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                 UserFreeFriends(user->info->friends);
                 user->info->friends = UserGetFriends(uid);
             }
+            pthread_rwlock_rdlock(&user->info->friendsLock);
             //测试数据导入结束
             for (int i = 0; i < user->info->friends->groupCount; ++i)
             {
@@ -96,6 +97,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                     }
                 }
             }
+            pthread_rwlock_unlock(&user->info->friendsLock);
         }
     }
     else

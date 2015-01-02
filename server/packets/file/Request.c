@@ -58,14 +58,14 @@ static int RequestContinue(POnlineUser user, PUserOperation op)
         {
             CRPFileDataEndSend(user->sockfd, op->session, FEC_OK);
             close(opData->aio.aio_fildes);
-            free(opData->aio.aio_buf);
+            free((void *) opData->aio.aio_buf);
             free(opData);
             op->onCancel = NULL;
             UserOperationUnregister(user, op);
         }
         else
         {
-            CRPFileDataSend(user->sockfd, op->session, (CRP_LENGTH_TYPE) ioRet, opData->seq++, p->aio_buf);
+            CRPFileDataSend(user->sockfd, op->session, (CRP_LENGTH_TYPE) ioRet, opData->seq++, (void *) p->aio_buf);
             opData->aio.aio_offset += opData->aio.aio_nbytes;
             aio_read(&opData->aio);
         }
@@ -131,7 +131,7 @@ int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRe
                 close(fd);
             if (opData)
             {
-                free(opData->aio.aio_buf);
+                free((void *) opData->aio.aio_buf);
                 free(opData);
             }
             return 1;

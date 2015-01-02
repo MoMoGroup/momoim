@@ -7,9 +7,11 @@ int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFrie
 {
     if (user->status == OUS_ONLINE)
     {
+        pthread_rwlock_rdlock(&user->info->friendsLock);
         size_t length = UserFriendsSize(user->info->friends);
         void *data = malloc(length);
         UserFriendsEncode(user->info->friends, data);
+        pthread_rwlock_unlock(&user->info->friendsLock);
         CRPSend(CRP_PACKET_FRIEND_DATA, 0, data, (CRP_LENGTH_TYPE) length, user->sockfd);
         free(data);
     }
