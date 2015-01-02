@@ -33,11 +33,13 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t sessio
 
         [CRP_PACKET_FRIEND__START]      = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
         [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendRequest,
-        [CRP_PACKET_FRIEND_DATA]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_FRIEND_ADD]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendAdd,
+        [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]=(int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendSearchByNickname,
 
         [CRP_PACKET_FILE__START]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
         [CRP_PACKET_FILE_REQUEST]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileRequest,
         [CRP_PACKET_FILE_DATA]          = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileData,
+        [CRP_PACKET_FILE_RESET]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileReset,
         [CRP_PACKET_FILE_DATA_END]      = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileDataEnd,
         [CRP_PACKET_FILE_STORE_REQUEST] = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileStoreRequest,
 

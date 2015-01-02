@@ -65,7 +65,7 @@ static int RequestContinue(POnlineUser user, PUserOperation op)
         }
         else
         {
-            CRPFileDataSend(user->sockfd, op->session, (CRP_LENGTH_TYPE) ioRet, ++(opData->seq), p->aio_buf);
+            CRPFileDataSend(user->sockfd, op->session, (CRP_LENGTH_TYPE) ioRet, opData->seq++, p->aio_buf);
             opData->aio.aio_offset += opData->aio.aio_nbytes;
             aio_read(&opData->aio);
         }

@@ -18,5 +18,5 @@ int CRPFailureSend(int sockfd, uint32_t sessionID, int code, char *reason)
     };
     size_t lenReason = strlen(reason);
     memcpy(packet.reason, reason, lenReason);
-    return CRPSend(CRP_PACKET_FAILURE, sessionID, reason, (CRP_LENGTH_TYPE) lenReason, sockfd) != -1;
+    return CRPSend(CRP_PACKET_FAILURE, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFileDataStart) + lenReason), sockfd) != -1;
 }
