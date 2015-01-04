@@ -229,12 +229,12 @@ static UserFriendsEntry *UserFriendsEntryGetUnlock(uint32_t uid)
     UserFriendsTable *currentTable = &friendsTable;
     while (current)
     {
-        if (currentTable->next[current % 10] == NULL)
+        if (currentTable->next[current & 0xf] == NULL)
         {
             return NULL;
         }
-        currentTable = currentTable->next[current % 10];
-        current /= 10;
+        currentTable = currentTable->next[current & 0xf];
+        current >>= 4;
     }
     return currentTable->entry;
 }
@@ -253,12 +253,12 @@ static UserFriendsEntry *UserFriendsEntrySetUnlock(uint32_t uid, UserFriends *fr
     UserFriendsTable *currentTable = &friendsTable;
     while (current)
     {
-        if (currentTable->next[current % 10] == NULL)
+        if (currentTable->next[current & 0xf] == NULL)
         {
-            currentTable->next[current % 10] = calloc(1, sizeof(UserFriendsTable));
+            currentTable->next[current & 0xf] = calloc(1, sizeof(UserFriendsTable));
         }
-        currentTable = currentTable->next[current % 10];
-        current /= 10;
+        currentTable = currentTable->next[current & 0xf];
+        current >>= 4;
     }
     UserFriendsEntry *entry = malloc(sizeof(UserFriendsEntry));
     entry->friends = friends;

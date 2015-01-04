@@ -18,7 +18,10 @@ extern pthread_t ThreadListener;
 extern WorkerType worker[WORKER_COUNT];
 
 //将一个用户加入到epoll中
-void UserJoinToPool(POnlineUser);
+void EpollAdd(POnlineUser);
 
 //将一个用户从epoll中移除
-void UserRemoveFromPool(POnlineUser);
+void EpollRemove(POnlineUser);
+
+//重新设置fd事件
+void EpollModify(POnlineUser);

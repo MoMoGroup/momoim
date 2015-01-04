@@ -4,6 +4,12 @@ typedef struct structOnlineUsersTableType OnlineUsersTableType;
 typedef OnlineUsersTableType *POnlineUsersTableType;
 typedef struct structOnlineUser OnlineUser;
 typedef OnlineUser *POnlineUser;
+
+typedef struct structPendingUsersTableType PendingUsersTableType;
+typedef PendingUsersTableType *PPendingUsersTableType;
+typedef struct structPendingUser PendingUser;
+typedef PendingUser *PPendingUser;
+
 typedef struct structOnlineUserInfo OnlineUserInfo;
 typedef OnlineUserInfo *POnlineUserInfo;
 typedef struct structUserOperationTable UserOperationTable;

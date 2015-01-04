@@ -15,7 +15,7 @@
 
 static int ServerIOPool;
 
-void UserJoinToPool(POnlineUser user)
+void EpollAdd(POnlineUser user)
 {
     struct epoll_event event = {
             .data.ptr=user,
@@ -27,7 +27,19 @@ void UserJoinToPool(POnlineUser user)
     }
 }
 
-void UserRemoveFromPool(POnlineUser user)
+void EpollModify(POnlineUser user)
+{
+    struct epoll_event event = {
+            .data.ptr=user,
+            .events=EPOLLERR | EPOLLIN
+    };
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->sockfd, &event)) //用户无法被添加到epoll中
+    {
+        perror("epoll modify");
+    }
+}
+
+void EpollRemove(POnlineUser user)
 {
     if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd, NULL))
     {
@@ -126,13 +138,13 @@ void *ListenMain(void *listenSocket)
                         perror("fcntl");
                         continue;
                     }
-                    POnlineUser user = OnlineUserNew(fd);//分配一个用户对象空间(只做简单初始化)
-                    UserJoinToPool(user);//将其加入事务池
+                    PPendingUser user = PendingUserNew(fd);//分配一个用户对象空间(只做简单初始化)
+                    EpollAdd((POnlineUser) user);//将其加入事务池
                 }
             }
             else
             {
-                UserRemoveFromPool(events[i].data.ptr); //用户数据到达
+                EpollRemove(events[i].data.ptr); //用户数据到达
                 JobManagerPush((POnlineUser) events[i].data.ptr);//将用户加入到事务管理器(可能会阻塞)
             }
         }

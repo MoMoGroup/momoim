@@ -8,12 +8,17 @@
 #include "data/user.h"
 #include <server.h>
 #include <run/jobs.h>
+#include<errno.h>
 
 OnlineUsersTableType OnlineUserTable = {
-        .count=0,
+        .user=NULL,
+        .prev=NULL
+};
+PendingUsersTableType PendingUserTable = {
         .first=NULL,
         .last=NULL
 };
+pthread_rwlock_t OnlineUserTableLock, PendingUserTableLock;
 
 //消息处理器映射表
 int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header) = {
@@ -47,8 +52,24 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t sessio
 
 
         [CRP_PACKET_MESSAGE__START]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_MESSAGE_NORMAL]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageNormal,
+        [CRP_PACKET_MESSAGE_NORMAL]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageNormal,
 };
+
+void InitUserManager()
+{
+    pthread_rwlock_init(&OnlineUserTableLock, NULL);
+    pthread_rwlock_init(&PendingUserTableLock, NULL);
+}
+
+void FinalizeUserManager()
+{
+    while (PendingUserTable.first)
+    {
+        PendingUserDelete(PendingUserTable.first);
+    }
+    pthread_rwlock_destroy(&OnlineUserTableLock);
+    pthread_rwlock_destroy(&PendingUserTableLock);
+}
 
 int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
 {
@@ -84,81 +105,14 @@ int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
     return ret;
 }
 
-POnlineUser OnlineUserNew(int fd)
+static void PendingUserRemove(PPendingUser user)
 {
-    POnlineUser user = (POnlineUser) calloc(1, sizeof(OnlineUser));//用户基本数据需要占用内存空间
-    if (user == NULL)
-    {
-        log_error("UserManager", "Fail to calloc new user.\n");
-        return NULL;
-    }
-    //简要设置一下socket,状态.初始化用户保持锁
-    user->sockfd = fd;
-    user->status = OUS_PENDING_INIT;
-    pthread_rwlock_init(&user->holdLock, NULL);
-
-    return user;
-}
-
-void OnlineUserInit(POnlineUser user)
-{
-    //初始化用户信息
-    if (!user->status == OUS_PENDING_INIT)
-        return;
-    //初始化用户操作锁
-    pthread_rwlock_init(&user->operations.lock, NULL);
-    //用户当前可以接收HELLO数据包了
-    user->status = OUS_PENDING_HELLO;
-
-    pthread_rwlock_wrlock(&OnlineUserTable.lock);
-
-    if (OnlineUserTable.last == NULL)
-    {
-        OnlineUserTable.first = OnlineUserTable.last = user;
-    }
-    else
-    {
-        OnlineUserTable.last->next = user;
-        user->prev = OnlineUserTable.last;
-        OnlineUserTable.last = user;
-    }
-    ++OnlineUserTable.count;
-    pthread_rwlock_unlock(&OnlineUserTable.lock);
-
-}
-
-int OnlineUserDelete(POnlineUser user)
-{
-    pthread_rwlock_unlock(&user->holdLock);
-    pthread_rwlock_wrlock(&user->holdLock);
-    if (user->status == OUS_PENDING_INIT)
-    {
-        pthread_rwlock_unlock(&user->holdLock);
-        pthread_rwlock_destroy(&user->holdLock);
-        free(user);
-        return 0;
-    }
-    else if (user->status == OUS_PENDING_CLEAN)
-    {
-        return 0;
-    }
-    user->status = OUS_PENDING_CLEAN;
-    JobManagerKick(user);
-    UserRemoveFromPool(user);
-    UserOperationRemoveAll(user);
-
-    shutdown(user->sockfd, SHUT_RDWR);
-    close(user->sockfd);
-    UserFreeOnlineInfo(user);
-
-    pthread_rwlock_destroy(&user->operations.lock);
-
-    pthread_rwlock_wrlock(&OnlineUserTable.lock);
-    if (user->prev != NULL || user->next != NULL || OnlineUserTable.first == user)
+    pthread_rwlock_wrlock(&PendingUserTableLock);
+    if (user->prev != NULL || user->next != NULL || PendingUserTable.first == user)
     {
         if (user->prev == NULL)
         {
-            OnlineUserTable.first = user->next;
+            PendingUserTable.first = user->next;
         }
         else
         {
@@ -166,57 +120,191 @@ int OnlineUserDelete(POnlineUser user)
         }
         if (user->next == NULL)
         {
-            OnlineUserTable.last = user->prev;
+            PendingUserTable.last = user->prev;
         }
         else
         {
             user->next->prev = user->prev;
         }
-        --OnlineUserTable.count;
+        user->prev = user->next = NULL;
     }
-    pthread_rwlock_unlock(&OnlineUserTable.lock);
+    pthread_rwlock_unlock(&PendingUserTableLock);
+}
 
-    pthread_rwlock_unlock(&user->holdLock);
-    pthread_rwlock_destroy(&user->holdLock);
-
+int PendingUserDelete(PPendingUser user)
+{
+    if (user->status == OUS_ONLINE)
+        return OnlineUserDelete((POnlineUser) user);
+    else if (user->status == OUS_PENDING_CLEAN)
+        return 0;
+    OnlineUserSetStatus((POnlineUser) user, OUS_PENDING_CLEAN, NULL);
+    pthread_rwlock_unlock(user->holdLock);
+    pthread_rwlock_wrlock(user->holdLock);
+    PendingUserRemove(user);
     free(user);
     return 1;
 }
 
-int OnlineUserHold(POnlineUser user)
+static POnlineUser OnlineUserGetUnlock(uint32_t uid)
 {
-    return user->status != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(&user->holdLock) == 0;
+    uint32_t current = uid;
+    OnlineUsersTableType *currentTable = &OnlineUserTable;
+    while (current)
+    {
+        if (currentTable->next[current & 0xf] == NULL)
+        {
+            return NULL;
+        }
+        currentTable = currentTable->next[current & 0xf];
+        current >>= 4;
+    }
+    if (UserHold(currentTable->user))
+        return currentTable->user;
+    else
+        return NULL;
 }
 
-void OnlineUserDrop(POnlineUser user)
+static POnlineUser OnlineUserSetUnlock(uint32_t uid, OnlineUser *user)
 {
-    if (user)
-        pthread_rwlock_unlock(&user->holdLock);
+    uint32_t current = uid;
+    POnlineUsersTableType currentTable = &OnlineUserTable;
+    while (current)
+    {
+        if (currentTable->next[current & 0xf] == NULL)
+        {
+            currentTable->next[current & 0xf] = calloc(1, sizeof(OnlineUsersTableType));
+        }
+        currentTable = currentTable->next[current & 0xf];
+        current >>= 4;
+    }
+    currentTable->user = user;
+    return user;
 }
 
 POnlineUser OnlineUserGet(uint32_t uid)
 {
     POnlineUser ret = NULL;
-    pthread_rwlock_rdlock(&OnlineUserTable.lock);
-    for (POnlineUser user = OnlineUserTable.first; user != NULL; user = user->next)
-    {
-        if (user->status == OUS_ONLINE && user->info->uid == uid && OnlineUserHold(user))
-        {
-            ret = user;
-            break;
-        }
-    }
-    pthread_rwlock_unlock(&OnlineUserTable.lock);
+    pthread_rwlock_rdlock(&OnlineUserTableLock);
+    ret = OnlineUserGetUnlock(uid);
+    pthread_rwlock_unlock(&OnlineUserTableLock);
     return ret;
 }
 
-void OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status)
+POnlineUser OnlineUserSet(uint32_t uid, OnlineUser *user)
 {
-    user->status = status;
+    POnlineUser ret = NULL;
+    pthread_rwlock_wrlock(&OnlineUserTableLock);
+    ret = OnlineUserSetUnlock(uid, user);
+    pthread_rwlock_unlock(&OnlineUserTableLock);
+    return ret;
+}
+
+PPendingUser PendingUserNew(int fd)
+{
+    PPendingUser user = (PPendingUser) calloc(1, sizeof(PendingUser));
+    if (user == NULL)
+    {
+        log_error("UserManager", "Fail to calloc new user.\n");
+        return NULL;
+    }
+    //简要设置一下socket,状态.初始化用户保持锁
+    user->sockfd = fd;
+    user->status = OUS_PENDING_HELLO;
+    user->holdLock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));
+    pthread_rwlock_init(user->holdLock, NULL);
+
+    return user;
+}
+
+int OnlineUserDelete(POnlineUser user)
+{
+    if (user->status == OUS_PENDING_HELLO || user->status == OUS_PENDING_CLEAN)
+        return PendingUserDelete((PPendingUser) user);
+    if (user->status == OUS_PENDING_CLEAN)
+        return 1;
+    if (user->status != OUS_ONLINE)
+    {
+        log_error("UserManager", "Illegal user status.\n");
+        return 0;
+    }
+    if (OnlineUserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
+        return 0;
+    uint32_t uid = user->info->uid;
+    pthread_rwlock_unlock(user->holdLock);
+    OnlineUserSet(uid, NULL);
+
+    pthread_rwlock_wrlock(user->holdLock);
+    JobManagerKick(user);
+    EpollRemove(user);
+    UserOperationRemoveAll(user);
+    pthread_mutex_destroy(&user->operations.lock);
+
+    shutdown(user->sockfd, SHUT_RDWR);
+    close(user->sockfd);
+    UserFreeOnlineInfo(user);
+
+
+    pthread_rwlock_unlock(user->holdLock);
+    pthread_rwlock_destroy(user->holdLock);
+    free(user->holdLock);
+
+    free(user);
+    return 1;
+}
+
+int UserHold(POnlineUser user)
+{
+    return user->status != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
+}
+
+void UserDrop(POnlineUser user)
+{
+    if (user)
+        pthread_rwlock_unlock(user->holdLock);
+}
+
+POnlineUser OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info)
+{
+    if (user->status == OUS_PENDING_CLEAN)
+        return NULL;
+    if (user->status == OUS_PENDING_HELLO && status == OUS_PENDING_LOGIN)
+    {//等待Hello到等待登陆只需要设置标识位
+        user->status = OUS_PENDING_LOGIN;
+    }
+    else if (user->status == OUS_PENDING_LOGIN && status == OUS_ONLINE)
+    {   //待登陆状态切换到在线状态
+        PPendingUser pendingUser = (PPendingUser) user;
+        PendingUserRemove(pendingUser);
+        void *ret = realloc(user, sizeof(OnlineUser));
+        if (!ret)//无法重新分配内存,状态切换失败
+        {   //为保护服务器,直接删除状态错误的用户
+            PendingUserDelete(pendingUser);
+            return NULL;
+        }
+        JobManagerKick(user);
+        user = ret;
+        EpollModify(user);
+        user->info = info;
+        bzero(&user->operations, sizeof(UserOperationTable));
+        //初始化用户操作锁
+        pthread_mutex_init(&user->operations.lock, NULL);
+        user->status = OUS_ONLINE;
+        return OnlineUserSet(info->uid, user);
+    }
+    else if (status == OUS_PENDING_CLEAN)
+    {
+        user->status = OUS_PENDING_CLEAN;
+    }
+    else
+    {
+        log_warning("UserManager", "Illegal status set. Orginal %d,New %d.\n", user->status, status);
+        abort();
+    }
+    return user;
 }
 
 
-int UserCreateOnlineInfo(POnlineUser user, uint32_t uid)
+POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid)
 {
     char path[30];
     uint8_t userDirSize;
@@ -243,8 +331,7 @@ int UserCreateOnlineInfo(POnlineUser user, uint32_t uid)
     info->userDir[userDirSize] = 0;
 
     info->friends = UserFriendsGet(uid, &info->friendsLock);
-    user->info = info;
-    return 1;
+    return OnlineUserSetStatus((POnlineUser) user, OUS_ONLINE, info);
 }
 
 void UserFreeOnlineInfo(POnlineUser user)
@@ -266,7 +353,7 @@ void UserFreeOnlineInfo(POnlineUser user)
                     {
                         CRPFriendNotifySend(duser->sockfd, 0, user->info->uid, FNT_OFFLINE);
                     }
-                    OnlineUserDrop(duser);
+                    UserDrop(duser);
                 }
             }
         }
@@ -297,7 +384,7 @@ PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, i
     operation->session = sessionID;
     operation->data = data;
     pthread_mutex_init(&operation->lock, NULL);
-    pthread_rwlock_wrlock(&user->operations.lock);
+    pthread_mutex_lock(&user->operations.lock);
 
     if (user->operations.last == NULL)
     {
@@ -311,7 +398,7 @@ PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, i
     }
     ++user->operations.count;
 
-    pthread_rwlock_unlock(&user->operations.lock);
+    pthread_mutex_unlock(&user->operations.lock);
     pthread_mutex_lock(&operation->lock);
     return operation;
 }
@@ -332,8 +419,7 @@ void UserOperationUnregister(POnlineUser user, PUserOperation op)
     }
     else
     {
-
-        pthread_rwlock_wrlock(&user->operations.lock);
+        pthread_mutex_lock(&user->operations.lock);
         if (op->prev == NULL)
         {
             user->operations.first = op->next;
@@ -350,19 +436,21 @@ void UserOperationUnregister(POnlineUser user, PUserOperation op)
         {
             op->next->prev = op->prev;
         }
-
         pthread_mutex_unlock(&op->lock);
+        pthread_cond_broadcast(&user->operations.unlockCond);
         pthread_mutex_destroy(&op->lock);
         free(op);
         --user->operations.count;
-        pthread_rwlock_unlock(&user->operations.lock);
+        pthread_mutex_unlock(&user->operations.lock);
     }
 }
 
 PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
 {
-    pthread_rwlock_rdlock(&user->operations.lock);
-    PUserOperation ret = NULL;
+    pthread_mutex_lock(&user->operations.lock);
+    PUserOperation ret;
+    refind:
+    ret = NULL;
     for (PUserOperation op = user->operations.first; op != NULL; op = op->next)
     {
         if (op->session == sessionId)
@@ -371,20 +459,29 @@ PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
             break;
         }
     }
-    pthread_rwlock_unlock(&user->operations.lock);
     if (ret)
     {
         if (pthread_mutex_trylock(&ret->lock))
         {
-            return NULL;
+            if (errno == EBUSY)
+            {
+                pthread_cond_wait(&user->operations.unlockCond, &user->operations.lock);
+                goto refind;
+            }
+            else
+            {
+                ret = NULL;
+            }
         }
     }
+    pthread_mutex_unlock(&user->operations.lock);
     return ret;
 }
 
-void UserOperationDrop(PUserOperation op)
+void UserOperationDrop(POnlineUser user, PUserOperation op)
 {
     pthread_mutex_unlock(&op->lock);
+    pthread_cond_broadcast(&user->operations.unlockCond);
 }
 
 PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int (*func)(PUserOperation op, void *data), void *data)
@@ -441,19 +538,6 @@ void UserOperationRemoveAll(POnlineUser user)
     pthread_rwlock_unlock(&user->operations.lock);
 }
 
-void InitUserManager()
-{
-    pthread_rwlock_init(&OnlineUserTable.lock, NULL);
-}
-
-void FinalizeUserManager()
-{
-    while (OnlineUserTable.count)
-    {
-        OnlineUserDelete(OnlineUserTable.first);
-    }
-    pthread_rwlock_destroy(&OnlineUserTable.lock);
-}
 
 int PostMessage(UserMessage *message)
 {
@@ -468,7 +552,7 @@ int PostMessage(UserMessage *message)
     else
     {
         CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
-        OnlineUserDrop(toUser);
+        UserDrop(toUser);
         return 1;
     }
 }

@@ -12,14 +12,12 @@
 //在线用户状态
 typedef enum
 {
-    OUS_PENDING_INIT = 0, //PendingInit - Must be zero
-    OUS_PENDING_HELLO,
+    OUS_PENDING_HELLO = 0,
     OUS_PENDING_LOGIN,
 
 
     OUS_ONLINE = 0x10,
-    OUS_PENDING_CLEAN,
-    OUS_CLEANED
+    OUS_PENDING_CLEAN
 } OnlineUserStatus;
 typedef enum
 {
@@ -75,7 +73,8 @@ struct structUserOperationTable
 {
     PUserOperation first;
     PUserOperation last;
-    pthread_rwlock_t lock;
+    pthread_mutex_t lock;
+    pthread_cond_t unlockCond;
     int count;
 };
 
@@ -91,26 +90,38 @@ struct structOnlineUserInfo
 //在线用户数据
 struct structOnlineUser
 {
+    //与待登陆用户数据保持一致
     int sockfd;
     volatile OnlineUserStatus status;
+    pthread_rwlock_t *holdLock;
+
+    //该状态私有数据
     POnlineUserInfo info;
-
-    pthread_rwlock_t holdLock;
-
     UserOperationTable operations;
+};
+//等待登陆用户数据
+struct structPendingUser
+{
+    int sockfd;
+    volatile OnlineUserStatus status;
+    pthread_rwlock_t *holdLock;
 
-    POnlineUser prev;
-    POnlineUser next;
+    //待登陆私有数据Online
+    struct structPendingUser *prev, *next;
 };
 
-//在线用户链表
+//在线用户表
 struct structOnlineUsersTableType
 {
-    POnlineUser first;
-    POnlineUser last;
-    int count;
-    pthread_rwlock_t lock;
+    OnlineUser *user;
+    struct structOnlineUsersTableType *prev, *next[0x10];
 };
+//待登陆用户表
+struct structPendingUsersTableType
+{
+    PendingUser *first, *last;
+};
+
 
 //处理用户消息
 int ProcessUser(POnlineUser user, CRPBaseHeader *packet);
@@ -118,29 +129,29 @@ int ProcessUser(POnlineUser user, CRPBaseHeader *packet);
 //投递消息
 int PostMessage(UserMessage *message);
 
-//创建一个在线用户对象
-POnlineUser OnlineUserNew(int fd);
+//保持用户.
+int UserHold(POnlineUser user);
 
-void OnlineUserInit(POnlineUser);
+//释放用户.
+void UserDrop(POnlineUser user);
+
+//创建一个等待用户对象
+PPendingUser PendingUserNew(int fd);
+
+int PendingUserDelete(PPendingUser);
 
 //删除一个在线用户对象,如果用户被保持,它将阻塞当前线程,直到用户被释放.
 int OnlineUserDelete(POnlineUser user);
 
-//保持用户.
-int OnlineUserHold(POnlineUser user);
-
-//释放用户.
-void OnlineUserDrop(POnlineUser user);
-
 //设置用户状态
-void OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status);
+POnlineUser OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info);
 
 //通过uid查找用户
 POnlineUser OnlineUserGet(uint32_t uid);
 
 //通过创建一个用户在线信息字段.
 //该字段用于加速对在线用户数据的操作.
-int UserCreateOnlineInfo(POnlineUser user, uint32_t uid);
+POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid);
 
 //释放一个在线用户字段
 void UserFreeOnlineInfo(POnlineUser user);
@@ -154,7 +165,7 @@ void UserOperationUnregister(POnlineUser user, PUserOperation op);
 //通过操作ID获得用户操作
 PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId);
 
-void UserOperationDrop(PUserOperation);
+void UserOperationDrop(POnlineUser user, PUserOperation);
 
 //通过自定义函数和操作获得用户操作
 //type为-1时会枚举所有操作.
