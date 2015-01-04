@@ -17,6 +17,7 @@ SET(CLIENT_SOURCE_FILE
     newuser.c
     PopupWinds.c
     MessageLoop.c
+    common.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)

@@ -152,6 +152,7 @@ void send_text(friendinfo *info) {
     time(&timep);
     p = localtime(&timep);
     sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    gtk_text_buffer_set_text(info->input_buffer, NULL, 0);
     CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, strlen(char_text), char_text);
     show_local_text(char_text, info, nicheng_times);
     free(char_text);
@@ -1030,8 +1031,8 @@ int mainchart(friendinfo *friendinfonode) {
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 300);//大小
 
     GdkRGBA rgba = {1, 1, 1, 0};
-    gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_NORMAL, &rgba);//设置透明
-    gtk_widget_override_background_color(friendinfonode->show_text, GTK_STATE_NORMAL, &rgba);//设置透明
+    gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
+    gtk_widget_override_background_color(friendinfonode->show_text,GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
 
 
     gtk_widget_show_all(friendinfonode->chartwindow);

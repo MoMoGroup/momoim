@@ -29,12 +29,6 @@ enum {
     PIXBUF_COL = 0,
     FRIENDUID_COL = 1,
 };
-//typedef struct node {
-//    uint32_t uid;
-//    struct node *next;
-//} frienduid;
-//
-//frienduid *uidhead = NULL;
 
 GtkTreeModel *createModel() {
     gint i, j;
@@ -77,14 +71,14 @@ GtkTreeModel *createModel() {
             int w = cairo_image_surface_get_width( surfaceIcon);
             int h = cairo_image_surface_get_height( surfaceIcon);
             //创建画布
-            surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 200);
+            surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
             //创建画笔
             cr = cairo_create(surface);
             cairo_save(cr);
-            cairo_arc(cr, 31, 31, 31, 0, M_PI * 2);
+            cairo_arc(cr, 30, 30, 30, 0, M_PI * 2);
             cairo_clip(cr);
             //缩放
-            cairo_scale(cr,62.0/w, 62.0/h);
+            cairo_scale(cr,60.0/w, 60.0/h);
             //把画笔和图片相结合。
             cairo_set_source_surface(cr, surfaceIcon, 0, 0);
             //把图用画笔画在画布中
@@ -116,7 +110,7 @@ GtkTreeModel *createModel() {
 static void create_surfaces() {
 
     surfacemainbackgroud = cairo_image_surface_create_from_png("主背景.png");
-    surfacehead2 = cairo_image_surface_create_from_png("头像2.png");
+
     surfaceresearch = cairo_image_surface_create_from_png("搜索.png");
     surfacefriendimage = cairo_image_surface_create_from_png("好友.png");
     surfaceclose51 = cairo_image_surface_create_from_png("关闭按钮1.png");
@@ -126,9 +120,6 @@ static void create_surfaces() {
     background = gtk_image_new_from_surface(surfacemainbackgroud);
     gtk_container_add (GTK_CONTAINER(background_event_box),background);
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
-
-    headx = gtk_image_new_from_surface(surfacehead2);
-    gtk_fixed_put(GTK_FIXED(MainLayout), headx, 2, 10);
 
     search = gtk_image_new_from_surface(surfaceresearch);
     gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
@@ -140,6 +131,52 @@ static void create_surfaces() {
     gtk_container_add (GTK_CONTAINER(closebut_event_box),closebut);
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
 
+
+    GtkWidget *userid;
+    userid = gtk_label_new(userdata.nickName);
+    //设置字体大小
+    PangoFontDescription *font;
+    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
+    gtk_widget_override_font(userid, font);
+
+    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
+
+    int finduidflag = 0;
+    friendinfo *rear = friendinfohead;
+    while (rear) {
+        if (rear->user.uid== userdata.uid) {
+            finduidflag = 1;
+            break;
+        }
+        rear = rear->next;
+    }
+    if( finduidflag == 1)
+    {
+        char userhead[80] = {0};
+        static cairo_t *cr;
+        cairo_surface_t *surface;
+
+        sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, userdata.uid);
+        surfacehead2 = cairo_image_surface_create_from_png(userhead);
+        //加载一个图片
+        surface = cairo_image_surface_create_from_png(userhead);
+        int w = cairo_image_surface_get_width(surface);
+        int h = cairo_image_surface_get_height(surface);
+        //创建画布
+        surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 300, 150);
+        //创建画笔
+        cr = cairo_create(surfacehead2);
+        //缩放
+        cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
+        cairo_clip(cr);
+        cairo_scale(cr, 125.0/w, 126.0/h );
+        //把画笔和图片相结合。
+        cairo_set_source_surface(cr, surface, 0, 0);
+        cairo_paint(cr);
+        headx = gtk_image_new_from_surface(surfacehead2);
+        gtk_fixed_put(GTK_FIXED(MainLayout), headx, 8, 10);
+    }
 }
 
 static void
@@ -231,7 +268,6 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         if (gtk_tree_model_iter_has_child(model, &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0)))) {
             uint32_t t;
             gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
-            log_info("DEBUG", "UID:%u\n", t);
             friendinforear = friendinfohead;
             while (friendinforear) {
                 if (friendinforear->user.uid == t) {
