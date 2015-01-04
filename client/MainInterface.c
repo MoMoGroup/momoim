@@ -478,3 +478,9 @@ int maininterface() {
 
     return 0;
 }
+
+gboolean DestoryMainInterFace(gpointer user_data)
+{
+    gtk_widget_destroy(window);
+    return FALSE;
+}

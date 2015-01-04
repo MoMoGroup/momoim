@@ -28,14 +28,15 @@ SET(SERVER_SOURCE_FILE
     packets/status/KeepAlive.c
     packets/status/OK.c
     packets/status/Failure.c
+    packets/status/Cancel.c
 
     packets/info/Request.c
     packets/info/Data.c
 
     packets/friend/Request.c
-    packets/friend/SearchByUsername.c
     packets/friend/SearchByNickname.c
-
+    packets/friend/Add.c
+    packets/friend/Accept.c
 
     packets/login/Login.c
     packets/login/Logout.c
@@ -50,3 +51,4 @@ target_link_libraries(server pthread)
 target_link_libraries(server dl)
 target_link_libraries(server ssl)
 target_link_libraries(server imcommon)
+target_link_libraries(server rt)

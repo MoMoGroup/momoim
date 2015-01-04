@@ -1,3 +1,3 @@
 #pragma once
 
-extern int popup(const char *title, const char *tell, GtkWindow *parent);
+extern int popup(const char *title, const char *tell);

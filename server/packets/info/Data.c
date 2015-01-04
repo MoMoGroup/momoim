@@ -1,8 +1,6 @@
 #include <protocol/CRPPackets.h>
 #include <data/user.h>
-#include <string.h>
-#include <imcommon/friends.h>
-#include <protocol/info/Data.h>
+#include <asm-generic/errno-base.h>
 #include "run/user.h"
 
 int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData *packet)
@@ -11,19 +9,19 @@ int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData 
     {
         if (packet->info.uid != user->info->uid)
         {
-            CRPFailureSend(user->sockfd, session, "UID Error");
+            CRPFailureSend(user->sockfd, session, EINVAL, "无效UID");
         }
         else
         {
             if (!UserInfoSave(user->info->uid, &packet->info))
-                CRPFailureSend(user->sockfd, session, "Write failure");
+                CRPFailureSend(user->sockfd, session, EFAULT, "无法保存用户资料");
             else
                 CRPOKSend(user->sockfd, session);
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, "Status Error");
+        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;
 }

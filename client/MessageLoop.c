@@ -74,7 +74,6 @@ int MessageLoopFunc()
         while (prev->next)
         {
             p = prev->next;
-            log_info("MSG", "Packet:%d\nSession:%d\n", p->packetID, p->sessionid);
             if (p->packetID == header->packetID && p->sessionid == header->sessionID)
             {
                 log_info("MSG", "Processing\n");
@@ -82,7 +81,6 @@ int MessageLoopFunc()
                 break;
 
             }
-            log_info("MSG", "Next\n");
 
             prev = prev->next;
 

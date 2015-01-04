@@ -19,11 +19,6 @@ void *WorkerMain(void *arg)
     {
         user = JobManagerPop();
 
-        if (user->status == OUS_PENDING_INIT)
-        {
-            OnlineUserInit(user);
-        }
-
         header = CRPRecv(user->sockfd);//在UserJoinToPoll之前,用户被保持单线程处理状态,这里依然安全
         if (header == NULL)
         {
@@ -32,7 +27,7 @@ void *WorkerMain(void *arg)
         }
         else
         {
-            UserJoinToPool(user);
+            EpollAdd(user);
             if (ProcessUser(user, header) == 0)
             {
                 OnlineUserDelete(user);
@@ -41,7 +36,7 @@ void *WorkerMain(void *arg)
             }
             free(header);
         }
-        OnlineUserDrop(user);
+        UserDrop(user);
     }
     log_info(workerName, "Exit.\n");
     return 0;

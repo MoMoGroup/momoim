@@ -11,9 +11,10 @@
 CRP_STRUCTURE
 {
     UserInfo info;
+    int isOnline;
 } CRPPacketInfoData;
 
 __attribute_malloc__
 CRPPacketInfoData *CRPInfoDataCast(CRPBaseHeader *base);
 
-int CRPInfoDataSend(int sockfd, uint32_t sessionID, UserInfo *info);
+int CRPInfoDataSend(int sockfd, uint32_t sessionID, int isOnline, UserInfo *info);

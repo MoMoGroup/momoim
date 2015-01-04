@@ -4,6 +4,7 @@
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
+#include "PopupWinds.h"
 
 
 static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
@@ -28,6 +29,7 @@ gboolean destroyLayout(gpointer user_data)
 {
     gtk_widget_hide(pendingLayout);
     gtk_widget_show_all(loginLayout);
+    popup("莫默告诉你：", user_data);
     return FALSE;
 }
 
@@ -378,6 +380,40 @@ int main(int argc, char *argv[])
     //初始化GTK+程序
     gtk_init(&argc, &argv);
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
+
+    loadloginLayout("ad");//加载登陆界面
+
+    gtk_main();
+    destroy_surfaces();
+    return 0;
+}
+
+gboolean destoryall(gpointer user_data)
+{
+    g_idle_add(DestoryMainInterFace, NULL);//销毁主窗口,--maininterface
+
+    friendinfo *head = friendinfohead;
+    friendinfo *p;
+    while (head->next)
+    {
+        p=head->next;
+        head->next=p->next;
+        if(p->chartwindow)
+        {
+            gtk_widget_destroy(p->chartwindow);
+        }
+        free(p);
+    }
+    g_idle_add(loadloginLayout, NULL);
+    return FALSE;
+}
+
+
+gboolean loadloginLayout(gpointer user_data)
+{
+
+    //加载loginlayout
+
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     g_signal_connect(G_OBJECT(window), "delete_event",
@@ -503,8 +539,5 @@ int main(int argc, char *argv[])
 
     gtk_widget_show (landbutevent_box);
     gtk_widget_show_all(window);
-
-    gtk_main();
-    destroy_surfaces();
-    return 0;
+    return FALSE;
 }

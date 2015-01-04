@@ -29,23 +29,22 @@ POnlineUser JobManagerPop(void)
     while ((pJobQueueHead + 1 == pJobQueueTail) ||
            (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
     {
-        pthread_cond_wait(&cond, &jobLock);
+        pthread_cond_wait(&cond, &jobLock);     //等待队列非空
     }
 
     int queueFull = pJobQueueHead == pJobQueueTail;
 
-    pJobQueueHead = jobQueue + (pJobQueueHead - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
-
+    pJobQueueHead = jobQueue + (pJobQueueHead - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;//插入节点
     user = *pJobQueueHead;
     *pJobQueueHead = NULL;
 
     if (queueFull)
     {
-        pthread_cond_broadcast(&cond);
+        pthread_cond_broadcast(&cond);          //如果Pop之前队列是满的,现在已经不满了,通知Push操作.
     }
 
-    if (user == NULL || !OnlineUserHold(user))
-        goto redo;
+    if (user == NULL || !UserHold(user))  //如果得到的对象为空或者无法保持用户(用户正在被删除)
+        goto redo;                              //重新选择下一个事务
     pthread_mutex_unlock(&jobLock);
 
     return user;
@@ -57,17 +56,17 @@ void JobManagerPush(POnlineUser v)
 
     while (pJobQueueHead == pJobQueueTail)
     {
-        pthread_cond_wait(&cond, &jobLock);
+        pthread_cond_wait(&cond, &jobLock);     //等待队列非满
     }
     int isEmpty = (pJobQueueHead + 1 == pJobQueueTail) ||
                   (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue)));
-    *pJobQueueTail = v;
 
-    pJobQueueTail = jobQueue + (pJobQueueTail - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
+    *pJobQueueTail = v;
+    pJobQueueTail = jobQueue + (pJobQueueTail - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;//移除节点
 
     if (isEmpty)
     {
-        pthread_cond_broadcast(&cond);
+        pthread_cond_broadcast(&cond);          //如果Push之前队列是空的,现在已经非空了,通知Pop操作
     }
     pthread_mutex_unlock(&jobLock);
 }

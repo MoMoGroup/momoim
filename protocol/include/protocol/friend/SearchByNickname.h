@@ -7,11 +7,14 @@
 * 请求好友列表
 */
 
-CRP_STRUCTURE {
-    char *text;
+CRP_STRUCTURE
+{
+    uint8_t page;
+    uint8_t size;
+    char text[0];
 } CRPPacketFriendSearchByNickname;
 
 __attribute_malloc__
 CRPPacketFriendSearchByNickname *CRPFriendSearchByNicknameCast(CRPBaseHeader *base);
 
-int CRPFriendSearchByNicknameSend(int sockfd, uint32_t sessionID, const char *text);
+int CRPFriendSearchByNicknameSend(int sockfd, uint32_t sessionID, uint8_t page, uint8_t size, const char *text);
