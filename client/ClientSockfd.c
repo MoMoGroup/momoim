@@ -136,8 +136,8 @@ int mysockfd()
     log_info("Login", "Sending Login Request\n");
     const gchar *name, *pwd;
     name = gtk_entry_get_text(GTK_ENTRY(username));
+    log_info("登录名:", name);
     pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
-
     unsigned char hash[16];
     MD5((unsigned char *) pwd, 1, hash);
     CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码

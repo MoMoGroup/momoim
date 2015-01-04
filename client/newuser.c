@@ -3,49 +3,42 @@
 #include <netinet/in.h>
 #include <openssl/md5.h>
 #include <logger.h>
-#include <protocol/login/Register.h>
 #include <protocol/CRPPackets.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "newuser.h"
-#include "client.h"
 #include "PopupWinds.h"
 
-GtkWidget *newwindow;
-GtkWidget *zhuceLayout;
-GtkWidget *mnickname, *username, *passwd1, *passwd2;
-GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mminfo, *endwind;
-cairo_surface_t *surface1, *surface2, *surface3, *surface32, *surface33, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
-int mx = 0;
-int my = 0;
+static GtkWidget *newwindow;
+static GtkWidget *zhuceLayout;
+static GtkWidget *mnickname, *newusername, *passwd1, *passwd2;
+static GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mminfo, *endwind;
+static cairo_surface_t *surface1, *surface2, *surface3, *surface32, *surface33, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
+static int mx = 0;
+static int my = 0;
 
 int newsockfd()
 {  //注册按钮点击事件
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
-    struct sockaddr_in server_addr = {
-            .sin_family=AF_INET,
-            .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
-            .sin_port=htons(8014)
-    };
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
-    {
-        perror("Connect");
-        return 0;
-    }
     const gchar *newname, *newpwd, *newpwd2, *newnick;
-    newname = gtk_entry_get_text(GTK_ENTRY(username));
+    newname = gtk_entry_get_text(GTK_ENTRY(newusername));
     newpwd = gtk_entry_get_text(GTK_ENTRY(passwd1));
     newpwd2 = gtk_entry_get_text(GTK_ENTRY(passwd2));
     newnick = gtk_entry_get_text(GTK_ENTRY(mnickname));
+    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+
     if ((strlen(newname) != 0) && (strlen(newpwd) != 0) && (strlen(newpwd2) != 0) && (strlen(newnick) != 0))
     {
-        int charnum;
+        int charnum, number = 0;
         for (charnum = 0; newname[charnum];)
         {
+
             if ((isalnum(newname[charnum]) != 0) || (newname[charnum] == '@')
                     || (newname[charnum] == '.') || (newname[charnum] == '-') || (newname[charnum] == '_'))
             {
+                if (isdigit(newname[charnum]) != 0) {
+                    number++;
+                }
                 charnum++;
             }
             else
@@ -55,11 +48,25 @@ int newsockfd()
         }
         if (charnum == strlen(newname))
         {
+            if (number == charnum) {
+                log_info("登录名全为数字", "登录名全为数字\n");
+                popup("莫默告诉你：", "登录名全为数字");
+                return 1;
+            }
             if (g_strcmp0(newpwd, newpwd2) != 0)
             {
                 log_info("密码不一致", "密码不一致\n");
                 popup("莫默告诉你：", "两次密码不一致");
                 return 1;
+            }
+            struct sockaddr_in server_addr = {
+                    .sin_family=AF_INET,
+                    .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+                    .sin_port=htons(8014)
+            };
+            if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
+                perror("Connect");
+                return 0;
             }
             log_info("Hello", "Sending Hello\n");
             CRPHelloSend(sockfd, 0, 1, 1, 1);
@@ -96,10 +103,9 @@ int newsockfd()
     else
     {
         log_info("注册信息不完整", "momo\n");
-        popup("莫默告诉你：", "请完善请完请完请完善请完请");
+        popup("莫默告诉你：", "请完善注册信息");
         return 1;
     }
-    return 1;
 }
 
 static void create_zhucefaces()
@@ -263,7 +269,7 @@ int newface()
     gtk_container_add(GTK_CONTAINER(newwindow), zhuceLayout);
 
     mnickname = gtk_entry_new();//昵称
-    username = gtk_entry_new();//id
+    newusername = gtk_entry_new();//id
     passwd1 = gtk_entry_new();//密码1
     passwd2 = gtk_entry_new();//密码2
 
@@ -272,7 +278,7 @@ int newface()
     gtk_entry_set_visibility(GTK_ENTRY(passwd2), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd2), '*');
 
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), username, 100, 120);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), newusername, 100, 120);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), mnickname, 100, 180);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd1, 100, 255);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd2, 100, 326);
