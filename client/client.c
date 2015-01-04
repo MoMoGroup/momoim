@@ -102,13 +102,11 @@ void on_button_clicked()
     gtk_widget_hide(loginLayout);//隐藏loginlayout
     //gtk_widget_destroy(layout);销毁layout对话框
 
-
     gtk_container_add(GTK_CONTAINER (frameLayout), pendingLayout);
 
     gtk_widget_show_all(pendingLayout);//显示layout2
 
     pthread_create(&thread1, NULL, sendhello, NULL);
-
 
 }
 
