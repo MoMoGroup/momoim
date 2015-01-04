@@ -6,9 +6,9 @@
 
 CRPPacketFriendSearchByNickname *CRPFriendSearchByNicknameCast(CRPBaseHeader *base)
 {
-    char *mem = (char *) malloc(base->dataLength + 1);
-    memcpy(mem, base->data, base->dataLength);
-    mem[base->dataLength] = 0;
+    char *mem = (char *) malloc(base->totalLength - sizeof(CRPBaseHeader) + 1);
+    memcpy(mem, base->data, base->totalLength - sizeof(CRPBaseHeader));
+    mem[base->totalLength - sizeof(CRPBaseHeader)] = 0;
     return (CRPPacketFriendSearchByNickname *) mem;
 }
 

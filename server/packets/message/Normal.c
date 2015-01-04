@@ -5,7 +5,7 @@
 #include <sys/user.h>
 #include "run/user.h"
 
-int ProcessPacketMessageText(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet)
+int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet)
 {
     if (user->status == OUS_ONLINE)
     {

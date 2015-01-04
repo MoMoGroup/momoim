@@ -8,6 +8,7 @@
 #include "protocol/friend/UserList.h"
 #include "protocol/friend/Notify.h"
 #include "protocol/friend/Add.h"
+#include "protocol/friend/Accept.h"
 
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
@@ -62,6 +63,7 @@ typedef enum
     CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME, //通过昵称查找好友
     CRP_PACKET_FRIEND_USER_LIST,    //用户列表
     CRP_PACKET_FRIEND_ADD,          //添加用户请求
+    CRP_PACKET_FRIEND_ACCEPT,       //同意用户请求
 
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件

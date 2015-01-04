@@ -47,7 +47,7 @@ int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t sessio
 
 
         [CRP_PACKET_MESSAGE__START]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_MESSAGE_NORMAL]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageText,
+        [CRP_PACKET_MESSAGE_NORMAL]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageNormal,
 };
 
 int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
@@ -242,7 +242,7 @@ int UserCreateOnlineInfo(POnlineUser user, uint32_t uid)
     memcpy(info->userDir, path, userDirSize);
     info->userDir[userDirSize] = 0;
 
-    info->friends = UserGetFriends(uid);
+    info->friends = UserFriendsGet(uid, &info->friendsLock);
     user->info = info;
     return 1;
 }
@@ -255,6 +255,8 @@ void UserFreeOnlineInfo(POnlineUser user)
         for (int i = 0; i < user->info->friends->groupCount; ++i)
         {
             UserGroup *group = user->info->friends->groups + i;
+            if (group->groupId == UGI_BLACKLIST || group->groupId == UGI_PENDING)
+                continue;
             for (int j = 0; j < group->friendCount; ++j)
             {
                 POnlineUser duser = OnlineUserGet(group->friends[j]);
@@ -268,11 +270,8 @@ void UserFreeOnlineInfo(POnlineUser user)
                 }
             }
         }
-        if (user->info->friends)
-        {
-            UserSaveFriendsFile(user->info->uid, user->info->friends);
-            UserFreeFriends(user->info->friends);
-        }
+        UserFriendsDrop(user->info->uid);
+
         if (user->info->userDir)
         {
             free(user->info->userDir);
@@ -458,19 +457,18 @@ void FinalizeUserManager()
 
 int PostMessage(UserMessage *message)
 {
-    int ret;
     POnlineUser toUser = OnlineUserGet(message->to);
     if (toUser == NULL)
     {
         MessageFile *file = UserMessageFileOpen(message->to);
-        ret = MessageFileAppend(file, message);
+        int ret = MessageFileAppend(file, message);
         MessageFileClose(file);
+        return ret;
     }
     else
     {
         CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
         OnlineUserDrop(toUser);
-        ret = 1;
+        return 1;
     }
-    return ret;
 }

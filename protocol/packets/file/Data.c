@@ -5,8 +5,8 @@
 
 CRPPacketFileData *CRPFileDataCast(CRPBaseHeader *base)
 {
-    CRPPacketFileData *packet = (CRPPacketFileData *) malloc(base->dataLength + sizeof(NILOBJ(CRPPacketFileData)->length));
-    packet->length = base->dataLength - sizeof(NILOBJ(CRPPacketFileData)->seq);
+    CRPPacketFileData *packet = (CRPPacketFileData *) malloc(base->totalLength - sizeof(CRPBaseHeader) + sizeof(NILOBJ(CRPPacketFileData)->length));
+    packet->length = base->totalLength - sizeof(CRPBaseHeader) - sizeof(NILOBJ(CRPPacketFileData)->seq);
     memcpy(&packet->seq, base->data, sizeof(packet->seq));
     memcpy(packet->data, base->data + sizeof(packet->seq), packet->length);
     return packet;

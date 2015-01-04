@@ -9,6 +9,7 @@ SET(LIBPROTOCOL_SRC
     packets/friend/UserList.c
     packets/friend/Notify.c
     packets/friend/Add.c
+    packets/friend/Accept.c
 
     packets/info/Request.c
     packets/info/Data.c

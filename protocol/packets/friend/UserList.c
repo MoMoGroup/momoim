@@ -5,9 +5,9 @@
 
 CRPPacketFriendUserList *CRPFriendUserListCast(CRPBaseHeader *base)
 {
-    CRPPacketFriendUserList *packet = (CRPPacketFriendUserList *) malloc(sizeof(uint16_t) + base->dataLength);
-    packet->count = (uint16_t) (base->dataLength / sizeof(uint32_t));
-    memcpy(packet->users, base->data, base->dataLength);
+    CRPPacketFriendUserList *packet = (CRPPacketFriendUserList *) malloc(sizeof(uint16_t) + base->totalLength - sizeof(CRPBaseHeader));
+    packet->count = (uint16_t) ((base->totalLength - sizeof(CRPBaseHeader)) / sizeof(uint32_t));
+    memcpy(packet->users, base->data, base->totalLength - sizeof(CRPBaseHeader));
     return packet;
 }
 

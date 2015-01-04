@@ -5,9 +5,9 @@
 
 CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base)
 {
-    CRPPacketFailure *data = (CRPPacketFailure *) malloc(base->dataLength + 1);
-    memcpy(data, base->data, base->dataLength);
-    data->reason[base->dataLength] = 0;
+    CRPPacketFailure *data = (CRPPacketFailure *) malloc(base->totalLength - sizeof(CRPBaseHeader) + 1);
+    memcpy(data, base->data, base->totalLength - sizeof(CRPBaseHeader));
+    data->reason[base->totalLength - sizeof(CRPBaseHeader)] = 0;
     return data;
 }
 

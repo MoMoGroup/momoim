@@ -4,6 +4,20 @@
 #include "imcommon/friends.h"
 #include "imcommon/message.h"
 
+typedef struct
+{
+    UserFriends *friends;
+    pthread_rwlock_t lock;
+    pthread_mutex_t refLock;
+    int refCount;
+
+} UserFriendsEntry;
+typedef struct structUserFriendsTable
+{
+    UserFriendsEntry *entry;
+    struct structUserFriendsTable *next[10];
+} UserFriendsTable;
+
 int UserInit();
 
 void UserFinalize();
@@ -21,16 +35,20 @@ int UserInfoSave(uint32_t uid, UserInfo *info);
 
 UserInfo *UserInfoGet(uint32_t uid);
 
-void UserInfoFree(UserInfo *friends);
+void UserInfoFree(UserInfo *info);
 
 //Friends-Groups
-void UserCreateFriendsFile(uint32_t uid);
+void UserFriendsCreate(uint32_t uid);
 
-int UserSaveFriendsFile(uint32_t uid, UserFriends *friends);
+int UserFriendsSave(uint32_t uid, UserFriends *friends);
 
-UserFriends *UserGetFriends(uint32_t uid);
+UserFriendsEntry *UserFriendsEntryGet(uint32_t uid);
 
-void UserFreeFriends(UserFriends *friends);
+UserFriendsEntry *UserFriendsEntrySet(uint32_t uid, UserFriends *friends);
+
+UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock);
+
+void UserFriendsDrop(uint32_t uid);
 
 int UserMessageFileCreate(uint32_t uid);
 
