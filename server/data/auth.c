@@ -68,7 +68,6 @@ uint32_t AuthRegister(const char *user, const unsigned char *hashKey)
         hashText[i * 2 + 1] = (char) ((hashKey[i] & 0xf) > 9 ? 'a' + ((hashKey[i] & 0xf) - 10) : '0' + (hashKey[i] & 0xf));
     }
     hashText[32] = 0;
-    //pthread_mutex_lock(&lock);
     sqlite3_stmt *regStmt;
     if (SQLITE_OK != sqlite3_prepare_v2(db, sqlReg, sizeof(sqlReg), &regStmt, NULL))
     {
@@ -83,6 +82,5 @@ uint32_t AuthRegister(const char *user, const unsigned char *hashKey)
         ret = (uint32_t) sqlite3_last_insert_rowid(db);
     }
     sqlite3_finalize(regStmt);
-    //pthread_mutex_unlock(&lock);
     return ret;
 }

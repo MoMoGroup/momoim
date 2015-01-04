@@ -65,7 +65,6 @@ void UserCreateDirectory(uint32_t uid)
         return;
     }
 
-    UserInfoCreate(uid);
     UserFriendsCreate(uid);
 }
 
@@ -296,7 +295,6 @@ UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock)
             log_error("User", "Cannot read user friends file %s.\n", path);
             goto cleanup;
         }
-        //Map File To Memory
         struct stat statBuf;
         if (fstat(fd, &statBuf))
             goto cleanup;
