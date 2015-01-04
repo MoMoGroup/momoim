@@ -11,12 +11,11 @@ CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base)
     return data;
 }
 
-int CRPFailureSend(int sockfd, uint32_t sessionID, int code, char *reason)
+int CRPFailureSend(int sockfd, uint32_t sessionID, uint8_t code, char *reason)
 {
-    CRPPacketFailure packet = {
-            .code=code
-    };
     size_t lenReason = strlen(reason);
-    memcpy(packet.reason, reason, lenReason);
-    return CRPSend(CRP_PACKET_FAILURE, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFileDataStart) + lenReason), sockfd) != -1;
+    CRPPacketFailure *packet = (CRPPacketFailure *) malloc(sizeof(CRPPacketFailure) + lenReason);
+    memcpy(&packet->code, &code, sizeof(uint8_t));
+    memcpy(packet->reason, reason, lenReason);
+    return CRPSend(CRP_PACKET_FAILURE, sessionID, packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFailure) + lenReason), sockfd) != -1;
 }
