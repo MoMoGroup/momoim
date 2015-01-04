@@ -4,7 +4,6 @@
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
 #include <errno.h>
-#include <logger.h>
 #include "run/user.h"
 #include "data/file.h"
 
@@ -70,8 +69,6 @@ static int RequestContinue(POnlineUser user, PUserOperation op)
             opData->aio.aio_offset += opData->aio.aio_nbytes;
             aio_read(&opData->aio);
         }
-    }else{
-        log_info("File", "Request Failure\n");
     }
     return 1;
 }
@@ -123,7 +120,7 @@ int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRe
             op->onResponseFailure = onRequestCancel;
             aio_read(&opData->aio);
             CRPFileDataStartSend(user->sockfd, session, (uint64_t) fileInfo.st_size);
-            UserOperationDrop(op);
+            UserOperationDrop(user, op);
             return 1;
             fail:
             if (op)

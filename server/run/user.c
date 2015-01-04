@@ -158,7 +158,7 @@ static POnlineUser OnlineUserGetUnlock(uint32_t uid)
         currentTable = currentTable->next[current & 0xf];
         current >>= 4;
     }
-    if (UserHold(currentTable->user))
+    if (currentTable->user && UserHold(currentTable->user))
         return currentTable->user;
     else
         return NULL;
@@ -486,7 +486,7 @@ void UserOperationDrop(POnlineUser user, PUserOperation op)
 
 PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int (*func)(PUserOperation op, void *data), void *data)
 {
-    pthread_rwlock_rdlock(&user->operations.lock);
+    pthread_mutex_lock(&user->operations.lock);
     PUserOperation ret = NULL;
     for (PUserOperation op = user->operations.first; op != NULL; op = op->next)
     {
@@ -496,7 +496,7 @@ PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int 
             break;
         }
     }
-    pthread_rwlock_unlock(&user->operations.lock);
+    pthread_mutex_unlock(&user->operations.lock);
     if (ret)
     {
         if (pthread_mutex_trylock(&ret->lock))

@@ -50,7 +50,7 @@ int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileRese
             default:
                 CRPFailureSend(user->sockfd, session, ENOSYS, "该操作类型不支持重置");
         }
-        UserOperationDrop(op);
+        UserOperationDrop(user, op);
     }
     return 1;
 }
