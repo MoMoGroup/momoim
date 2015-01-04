@@ -12,7 +12,7 @@ int py = 0;
 
 static void create_popupfaces() {
     backface = cairo_image_surface_create_from_png("提示框.png");
-    endface = cairo_image_surface_create_from_png("提示框关闭.png");
+    //endface = cairo_image_surface_create_from_png("提示框关闭.png");
     anniuface = cairo_image_surface_create_from_png("提示框按钮1.png");
 
     popback = gtk_image_new_from_surface(backface);
@@ -68,7 +68,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event, gpoin
     else if (event->button == 1)       // 判断是否是点击关闭图标
     {
         if ((px > 220 && px < 250) && (py > 2 && py < 28)) {
-            gtk_dialog_response((GtkDialog *) popupwindow, 1);
+            //gtk_dialog_response((GtkDialog *) popupwindow, 1);
         }
     }
     return 0;

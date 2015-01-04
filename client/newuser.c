@@ -3,27 +3,25 @@
 #include <netinet/in.h>
 #include <openssl/md5.h>
 #include <logger.h>
-#include <protocol/login/Register.h>
 #include <protocol/CRPPackets.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include "newuser.h"
-#include "client.h"
 #include "PopupWinds.h"
 
-GtkWidget *newwindow;
-GtkWidget *zhuceLayout;
-GtkWidget *mnickname, *username, *passwd1, *passwd2;
-GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mminfo, *endwind;
-cairo_surface_t *surface1, *surface2, *surface3, *surface32, *surface33, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
-int mx = 0;
-int my = 0;
+static GtkWidget *newwindow;
+static GtkWidget *zhuceLayout;
+static GtkWidget *mnickname, *newusername, *passwd1, *passwd2;
+static GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mminfo, *endwind;
+static cairo_surface_t *surface1, *surface2, *surface3, *surface32, *surface33, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
+static int mx = 0;
+static int my = 0;
 
 int newsockfd()
 {  //注册按钮点击事件
     const gchar *newname, *newpwd, *newpwd2, *newnick;
-    newname = gtk_entry_get_text(GTK_ENTRY(username));
+    newname = gtk_entry_get_text(GTK_ENTRY(newusername));
     newpwd = gtk_entry_get_text(GTK_ENTRY(passwd1));
     newpwd2 = gtk_entry_get_text(GTK_ENTRY(passwd2));
     newnick = gtk_entry_get_text(GTK_ENTRY(mnickname));
@@ -271,7 +269,7 @@ int newface()
     gtk_container_add(GTK_CONTAINER(newwindow), zhuceLayout);
 
     mnickname = gtk_entry_new();//昵称
-    username = gtk_entry_new();//id
+    newusername = gtk_entry_new();//id
     passwd1 = gtk_entry_new();//密码1
     passwd2 = gtk_entry_new();//密码2
 
@@ -280,7 +278,7 @@ int newface()
     gtk_entry_set_visibility(GTK_ENTRY(passwd2), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd2), '*');
 
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), username, 100, 120);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), newusername, 100, 120);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), mnickname, 100, 180);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd1, 100, 255);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd2, 100, 326);

@@ -4,6 +4,7 @@
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
 #include <errno.h>
+#include <logger.h>
 #include "run/user.h"
 #include "data/file.h"
 
@@ -69,6 +70,8 @@ static int RequestContinue(POnlineUser user, PUserOperation op)
             opData->aio.aio_offset += opData->aio.aio_nbytes;
             aio_read(&opData->aio);
         }
+    }else{
+        log_info("File", "Request Failure\n");
     }
     return 1;
 }

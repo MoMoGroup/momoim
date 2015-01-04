@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <pwd.h>
 #include <string.h>
+//#include <cursesw.h>
 #include "chart.h"
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
@@ -464,4 +465,10 @@ int maininterface() {
     //gtk_main();
 
     return 0;
+}
+
+gboolean DestoryMainInterFace(gpointer user_data)
+{
+    gtk_widget_destroy(window);
+    return FALSE;
 }
