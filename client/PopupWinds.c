@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <cairo.h>
+#include <string.h>
 #include "PopupWinds.h"
 
 GtkWidget *popupwindow; //dialog
@@ -40,7 +41,7 @@ static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointe
     py = event->y;
 
     if (event->button == 1 && (px > 220 && px < 255) && (py > 2 && py < 28)) {              //设置关闭按钮
-        gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+        //gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     }
     else if (event->button == 1 && (px > 60 && px < 192) && (py > 178 && py < 208)) {        //设置注册按钮
         gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -80,7 +81,7 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event, gpoint
     px = event->x;  // 取得鼠标相对于窗口的位置
     py = event->y;
     if ((px > 220 && px < 255) && (py > 2 && py < 28)) {
-        gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
+        //gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
     }
     else if (event->button == 1 && (px > 60 && px < 192) && (py > 178 && py < 208)) {
         gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
@@ -91,32 +92,16 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event, gpoint
     return 0;
 }
 
-/*static gboolean
-on_expose_event(GtkWidget *widget,
-        GdkEventExpose *event,
-        gpointer data)
-{
-    cairo_t *cr;
-    cr = gdk_cairo_create ((GdkWindow *) widget->priv);
-    cairo_paint(cr);
-    cairo_destroy(cr);
-    return FALSE;
-}*/
-
 int popup(const char *title, const char *tell) {
     popupwindow = gtk_dialog_new();
-
     gtk_window_set_position(GTK_WINDOW(popupwindow), GTK_WIN_POS_CENTER);//窗口位置
-    gtk_window_set_resizable(GTK_WINDOW (popupwindow), FALSE);//固定窗口大小
+    //gtk_window_set_resizable(GTK_WINDOW (popupwindow), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(popupwindow), FALSE);//去掉边框
     //gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
 
     box = gtk_dialog_get_content_area((GtkDialog *) popupwindow);//得到dialog的box
     action = gtk_dialog_get_action_area((GtkDialog *) popupwindow);//得到dialog的action_area
-
-    //box = gtk_image_new_from_stock(GTK_STOCK_DIALOG_INFO,GTK_ICON_SIZE_DIALOG);
-    //box=gtk_image_new_from_file("提示框.png");
-
+    int maWidth, maHeight;
     popupLayout = gtk_fixed_new();
     create_popupfaces();
 
@@ -128,24 +113,27 @@ int popup(const char *title, const char *tell) {
     gtk_container_add(GTK_CONTAINER(box), popupLayout);
     telltitle = gtk_label_new(title);//标题
     tellyou = gtk_label_new(tell);//内容
-    PangoFontDescription *font = pango_font_description_new();
-    gtk_widget_override_font(tellyou, pango_font_description_from_string("Monospace 15"));
-    cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 100, 100);
 
-    cr = cairo_create(surface);
-    cairo_text_extents_t extents;
-    cairo_select_font_face(cr, "Monospace",
-            CAIRO_FONT_SLANT_NORMAL,
-            CAIRO_FONT_WEIGHT_NORMAL);
-    cairo_set_font_size(cr, 15);
-    cairo_text_extents(cr, tell, &extents);
+    PangoContext *context = gtk_widget_get_pango_context(tellyou);
 
-    gtk_widget_set_size_request(GTK_WIDGET(popupwindow), extents.width + 100, extents.height + 100);
-    int x = (extents.width / 2 + extents.x_bearing);
-    int y = (extents.height / 2 + extents.y_bearing);
+    PangoLayout *layout = pango_layout_new(context);
+    //pango_layout_set_font_description(layout, pango_font_description_from_string("Monospace 15"));
+    pango_layout_set_text(layout, tell, strlen(tell));
+    pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
+    pango_layout_get_pixel_size(layout, &maWidth, &maHeight);
+    if (maWidth > 400) maWidth = 400;
+    //gtk_label_set_justify(GTK_LABEL(tellyou),GTK_JUSTIFY_CENTER);/*设置标号对齐方式为居中对齐*/
+    //gtk_label_set_line_wrap(GTK_LABEL(tellyou),TRUE);/*打开自动换行*/
 
     gtk_fixed_put(GTK_FIXED(popupLayout), telltitle, 14, 10);
-    gtk_fixed_put(GTK_FIXED(popupLayout), tellyou, x, 110);
+    if (80 + maWidth < 250) {
+        gtk_fixed_put(GTK_FIXED(popupLayout), tellyou, (250 - maWidth) / 2, 110);
+        gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
+    } else {
+        gtk_fixed_put(GTK_FIXED(popupLayout), tellyou, 40, 110);
+        gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 80 + maWidth, 235);
+    }
+
 
     // 设置窗体获取鼠标事件
     gtk_widget_set_events(popupwindow,
@@ -166,7 +154,7 @@ int popup(const char *title, const char *tell) {
             G_CALLBACK(button_release_event), popupwindow);
 
     gtk_widget_show_all(popupwindow);
-    gtk_widget_hide(action);//隐藏留白的action
+    //gtk_widget_hide(action);//隐藏留白的action
 
     gtk_dialog_run(GTK_DIALOG(popupwindow));
 

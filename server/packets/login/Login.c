@@ -81,26 +81,6 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
             //测试数据导入结束
             CRPLoginAcceptSend(user->sockfd, session, uid);
 
-            pthread_rwlock_rdlock(user->info->friendsLock);
-            for (int i = 0; i < user->info->friends->groupCount; ++i)
-            {
-                UserGroup *group = user->info->friends->groups + i;
-                if (group->groupId == UGI_BLACKLIST || group->groupId == UGI_PENDING)
-                    continue;
-                for (int j = 0; j < group->friendCount; ++j)
-                {
-                    duser = OnlineUserGet(group->friends[j]);
-                    if (duser)
-                    {
-                        if (duser->status == OUS_ONLINE)
-                        {
-                            CRPFriendNotifySend(duser->sockfd, 0, uid, FNT_ONLINE);
-                        }
-                        UserDrop(duser);
-                    }
-                }
-            }
-            pthread_rwlock_unlock(user->info->friendsLock);
         }
     }
     else

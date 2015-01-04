@@ -263,6 +263,34 @@ void UserDrop(POnlineUser user)
         pthread_rwlock_unlock(user->holdLock);
 }
 
+static void broadcastNotify(POnlineUser user, FriendNotifyType type)
+{
+    POnlineUserInfo info = user->info;
+    pthread_rwlock_rdlock(info->friendsLock);
+    OnlineUser *duser;
+    for (int i = 0; i < info->friends->groupCount; ++i)
+    {
+        UserGroup *group = info->friends->groups + i;
+        if (group->groupId == UGI_BLACKLIST || group->groupId == UGI_PENDING)
+            continue;
+        for (int j = 0; j < group->friendCount; ++j)
+        {
+            if (group->friends[j] == info->uid)
+                continue;
+            duser = OnlineUserGet(group->friends[j]);
+            if (duser)
+            {
+                if (duser->status == OUS_ONLINE)
+                {
+                    CRPFriendNotifySend(duser->sockfd, 0, info->uid, type);
+                }
+                UserDrop(duser);
+            }
+        }
+    }
+    pthread_rwlock_unlock(info->friendsLock);
+}
+
 POnlineUser OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info)
 {
     if (user->status == OUS_PENDING_CLEAN)
@@ -289,7 +317,12 @@ POnlineUser OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status, POnli
         //初始化用户操作锁
         pthread_mutex_init(&user->operations.lock, NULL);
         user->status = OUS_ONLINE;
+        broadcastNotify(user, FNT_ONLINE);
         return OnlineUserSet(info->uid, user);
+    }
+    else if (user->status == OUS_ONLINE && status == OUS_PENDING_CLEAN)
+    {
+        broadcastNotify(user, FNT_OFFLINE);
     }
     else if (status == OUS_PENDING_CLEAN)
     {
