@@ -101,6 +101,10 @@ int printfmessage(CRPBaseHeader *header, void *data)
     return 1;
 }
 
+int backtologin(CRPBaseHeader *header, void *data){
+    g_idle_add(backttologinLayout, NULL);
+}
+
 int mysockfd()
 {
 //头像,好友头像
@@ -391,6 +395,7 @@ int mysockfd()
         }
         AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");//添加事件
         AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, printfmessage, "dfg");//添加事件
+        AddMessageNode(0, CRP_PACKET_KICK, backtologin, "挤掉返回");//挤掉返回登陆界面
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }
