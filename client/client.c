@@ -13,7 +13,7 @@
 static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
 static pthread_t thread1;
-static int sockfd;
+int sockfd;
 static int nX = 0,nY=0;
 static GtkWidget *window;
 
