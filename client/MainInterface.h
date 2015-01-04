@@ -12,12 +12,14 @@ extern int mysockfd();
 
 extern int maininterface();
 
-extern gboolean backttologinLayout(gpointer user_data);
+//extern gboolean backttologinLayout(gpointer user_data);
 
 extern gboolean mythread(gpointer user_data);
+extern gboolean destoryall(gpointer user_data);
+extern gboolean loadloginLayout(gpointer user_data);
+extern gboolean DestoryMainInterFace(gpointer user_data);
 
-extern gboolean destroyLayout(gpointer user_data);
-
+gboolean destroyLayout(gpointer user_data);
 extern UserFriends *friends;
 extern UserGroup *group;
 
