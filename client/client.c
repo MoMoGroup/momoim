@@ -5,6 +5,7 @@
 #include "MainInterface.h"
 #include "newuser.h"
 #include "PopupWinds.h"
+#include "common.h"
 
 
 static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
@@ -16,7 +17,7 @@ static GtkWidget *window;
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd;
 static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *slandimage, *scancel10_1, *scancel10_2, *scancel10_3;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
-GtkWidget *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box,*waitevent_box;
+static GtkEventBox *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
 
 gboolean mythread(gpointer user_data)//合并
 {
@@ -37,8 +38,6 @@ gboolean destroyLayout(gpointer user_data)
 static void
 create_surfaces1()
 {
-    GtkWidget *imagebackground, *imagehead, *imagewhite, *imageaccount, *imagepasswd;
-    GtkWidget *iwait, *imainland;
 
     sbackground = cairo_image_surface_create_from_png("背景.png");
     sheadimage = cairo_image_surface_create_from_png("头像.png");
@@ -58,44 +57,6 @@ create_surfaces1()
     scancel10_2 = cairo_image_surface_create_from_png("取消2.png");
     scancel10_3 = cairo_image_surface_create_from_png("取消3.png");
 
-    imagebackground = gtk_image_new_from_surface(sbackground);
-    gtk_container_add (GTK_CONTAINER(backgroundevent_box), imagebackground);
-    gtk_fixed_put(GTK_FIXED(loginLayout), backgroundevent_box, 0, 0);//起始坐标
-
-    imagehead = gtk_image_new_from_surface(sheadimage);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
-
-    imagewhite = gtk_image_new_from_surface(swhite);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
-
-    imagelandbut = gtk_image_new_from_surface(slandbut1);
-    gtk_container_add (GTK_CONTAINER(landbutevent_box),imagelandbut);
-    gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 70, 300);
-
-    imageaccount = gtk_image_new_from_surface(saccount);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 35, 220);
-
-    imagepasswd = gtk_image_new_from_surface(spasswd);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
-
-    imageregistered = gtk_image_new_from_surface(sregistered1);
-    gtk_container_add (GTK_CONTAINER(registeredevent_box),imageregistered);
-    gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
-
-    imageclosebut = gtk_image_new_from_surface(sclosebut1);
-    gtk_container_add (GTK_CONTAINER(closebutevent_box), imageclosebut);
-    gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
-
-    iwait = gtk_image_new_from_file("等待.gif");
-    gtk_container_add (GTK_CONTAINER(waitevent_box),  iwait);
-    gtk_fixed_put(GTK_FIXED(pendingLayout),waitevent_box, 0, 0);
-
-    imainland = gtk_image_new_from_surface(slandimage);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 80, 20);
-
-    imagecancel = gtk_image_new_from_surface(scancel10_1);
-    gtk_container_add (GTK_CONTAINER(cancelevent_box), imagecancel);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 70, 310);
 }
 
 
@@ -150,17 +111,18 @@ void on_button_clicked()
 
 
 }
+
 static gint background_button_press_event(GtkWidget *widget,
 
         GdkEventButton *event, gpointer data)
 {
-        //设置在非按钮区域内移动窗口
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-        if (event->button == 1)
-        {
-            gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                    event->x_root, event->y_root, event->time);
-        }
+    //设置在非按钮区域内移动窗口
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    if (event->button == 1)
+    {
+        gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
+                event->x_root, event->y_root, event->time);
+    }
     return 0;
 
 }
@@ -267,8 +229,8 @@ static gint registered_leave_notify_event(GtkWidget *widget, GdkEventButton *eve
         gpointer data)         // 离开事件
 
 {
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-        return 0;
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    return 0;
 }
 
 static gint closebut_button_press_event(GtkWidget *widget,
@@ -286,12 +248,11 @@ static gint closebut_button_press_event(GtkWidget *widget,
 }
 
 // 鼠标抬起事件
-static gint  closebut_button_release_event(GtkWidget *widget, GdkEventButton *event,
+static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data)
 {
-   if (event->button == 1)       // 判断是否是点击关闭图标
-
+    if (event->button == 1)       // 判断是否是点击关闭图标
     {
         gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);  //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
@@ -327,10 +288,10 @@ static gint cancel_button_press_event(GtkWidget *widget,
         GdkEventButton *event, gpointer data)
 {
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
-        {   //设置第二界面取消按钮
-            gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-            gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_3);//设置鼠标光标
-        }
+    {   //设置第二界面取消按钮
+        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
+        gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_3);//设置鼠标光标
+    }
 
     return 0;
 }
@@ -340,14 +301,14 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
 
         gpointer data)
 {
-     if (event->button == 1)
-   {                                         //设置取消按钮
-            gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
-                close(sockfd);
-                pthread_cancel(thread1);
-                gtk_widget_hide(pendingLayout);
-                gtk_widget_show_all(loginLayout);
-   }
+    if (event->button == 1)
+    {                                         //设置取消按钮
+        gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
+        close(sockfd);
+        pthread_cancel(thread1);
+        gtk_widget_hide(pendingLayout);
+        gtk_widget_show_all(loginLayout);
+    }
 
     return 0;
 }
@@ -362,9 +323,7 @@ static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
     return 0;
 }
 
-static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
-
-        gpointer data)         // 鼠标离开事件
+static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)         // 鼠标离开事件
 
 {
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
@@ -396,9 +355,9 @@ gboolean destoryall(gpointer user_data)
     friendinfo *p;
     while (head->next)
     {
-        p=head->next;
-        head->next=p->next;
-        if(p->chartwindow)
+        p = head->next;
+        head->next = p->next;
+        if (p->chartwindow)
         {
             gtk_widget_destroy(p->chartwindow);
         }
@@ -414,6 +373,9 @@ gboolean loadloginLayout(gpointer user_data)
 
     //加载loginlayout
 
+    create_surfaces1();
+    GtkWidget *imagebackground, *imagehead, *imagewhite, *imageaccount, *imagepasswd;
+    GtkWidget *iwait, *imainland;
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     g_signal_connect(G_OBJECT(window), "delete_event",
@@ -424,106 +386,77 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_window_set_resizable(GTK_WINDOW (window), FALSE);//窗口不可改变
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);   // 去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(window), 283, 411);
-    pendingLayout = gtk_fixed_new();
-    loginLayout = gtk_fixed_new();
 
-    landbutevent_box = gtk_event_box_new ();
-    registeredevent_box = gtk_event_box_new ();
-    closebutevent_box = gtk_event_box_new ();
-    cancelevent_box = gtk_event_box_new ();
-    backgroundevent_box = gtk_event_box_new ();
-    waitevent_box = gtk_event_box_new ();
-    create_surfaces1();
-
-    gtk_widget_set_events( backgroundevent_box,  // 设置窗体获取鼠标事件
-
-            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT( backgroundevent_box), "button_press_event",
-            G_CALLBACK(background_button_press_event), NULL);
-
-    gtk_widget_set_events( waitevent_box,  // 设置窗体获取鼠标事件
-
-            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT( waitevent_box), "button_press_event",
-            G_CALLBACK(wait_button_press_event), NULL);
+    imagebackground = gtk_image_new_from_surface(sbackground);
+    imagehead = gtk_image_new_from_surface(sheadimage);
+    imagewhite = gtk_image_new_from_surface(swhite);
+    imagelandbut = gtk_image_new_from_surface(slandbut1);
+    imageaccount = gtk_image_new_from_surface(saccount);
+    imagepasswd = gtk_image_new_from_surface(spasswd);
+    imageregistered = gtk_image_new_from_surface(sregistered1);
+    imageclosebut = gtk_image_new_from_surface(sclosebut1);
+    iwait = gtk_image_new_from_file("等待.gif");
+    imainland = gtk_image_new_from_surface(slandimage);
+    imagecancel = gtk_image_new_from_surface(scancel10_1);
 
 //    gtk_container_add (GTK_CONTAINER(loginLayout),landbutevent_box);
 //    gtk_container_add (GTK_CONTAINER(loginLayout), registeredevent_box);
 //    gtk_container_add (GTK_CONTAINER(loginLayout), closebutevent_box);
 //    gtk_container_add (GTK_CONTAINER(loginLayout),cancelevent_box);
 
-    gtk_widget_set_events(landbutevent_box,  // 设置窗体获取鼠标事件
+    backgroundevent_box = BuildEventBox(
+            imagebackground,
+            G_CALLBACK(background_button_press_event),
+            NULL, NULL, NULL, NULL);
+    waitevent_box = BuildEventBox(iwait,
+            G_CALLBACK(wait_button_press_event),
+            NULL, NULL, NULL, NULL);
+    landbutevent_box = BuildEventBox(
+            imagelandbut,
+            G_CALLBACK(landbut_button_press_event),
+            G_CALLBACK(landbut_enter_notify_event),
+            G_CALLBACK(landbut_leave_notify_event),
+            G_CALLBACK(landbut_button_release_event),
+            NULL
+    );
 
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT(landbutevent_box), "button_press_event",
-            G_CALLBACK(landbut_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(landbutevent_box), "enter_notify_event",
-            G_CALLBACK(landbut_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(landbutevent_box), "button_release_event",
-            G_CALLBACK(landbut_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(landbutevent_box), "leave_notify_event",
-            G_CALLBACK(landbut_leave_notify_event), NULL);
-
-    gtk_widget_set_events( registeredevent_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(registeredevent_box), "button_press_event",
-            G_CALLBACK(registered_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(registeredevent_box), "enter_notify_event",
-            G_CALLBACK(registered_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(registeredevent_box), "button_release_event",
-            G_CALLBACK(registered_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(registeredevent_box), "leave_notify_event",
-            G_CALLBACK(registered_leave_notify_event), NULL);
-
-    gtk_widget_set_events(closebutevent_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(closebutevent_box), "button_press_event",
-            G_CALLBACK(closebut_button_press_event),NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(closebutevent_box), "enter_notify_event",
-            G_CALLBACK(closebut_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(closebutevent_box), "button_release_event",
-            G_CALLBACK(closebut_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(closebutevent_box), "leave_notify_event",
-            G_CALLBACK(closebut_leave_notify_event), NULL);
-
-    gtk_widget_set_events(cancelevent_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(cancelevent_box), "button_press_event",
-            G_CALLBACK(cancel_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(cancelevent_box), "enter_notify_event",
-            G_CALLBACK(cancel_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(cancelevent_box), "button_release_event",
-            G_CALLBACK(cancel_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(cancelevent_box), "leave_notify_event",
-            G_CALLBACK(cancel_leave_notify_event), NULL);
+    registeredevent_box = BuildEventBox(
+            imageregistered,
+            G_CALLBACK(registered_button_press_event),
+            G_CALLBACK(registered_enter_notify_event),
+            G_CALLBACK(registered_leave_notify_event),
+            G_CALLBACK(registered_button_release_event),
+            NULL);
+    closebutevent_box = BuildEventBox(
+            imageclosebut,
+            G_CALLBACK(closebut_button_press_event),
+            G_CALLBACK(closebut_enter_notify_event),
+            G_CALLBACK(closebut_leave_notify_event),
+            G_CALLBACK(closebut_button_release_event),
+            NULL);
+    cancelevent_box = BuildEventBox(
+            imagecancel,
+            G_CALLBACK(cancel_button_press_event),
+            G_CALLBACK(cancel_enter_notify_event),
+            G_CALLBACK(cancel_leave_notify_event),
+            G_CALLBACK(cancel_button_release_event),
+            NULL);
 
     frameLayout = gtk_layout_new(NULL, NULL);
+    pendingLayout = gtk_fixed_new();
+    loginLayout = gtk_fixed_new();
+
+    gtk_fixed_put(GTK_FIXED(loginLayout), backgroundevent_box, 0, 0);//起始坐标
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
+    gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 70, 300);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 35, 220);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
+    gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
+    gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 0, 0);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 80, 20);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 70, 310);
 
     gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER (frameLayout), loginLayout);
@@ -537,7 +470,7 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), username, 85, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), passwd, 85, 260);
 
-    gtk_widget_show (landbutevent_box);
+    gtk_widget_show(landbutevent_box);
     gtk_widget_show_all(window);
     return FALSE;
 }

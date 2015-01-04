@@ -403,7 +403,7 @@ int mysockfd()
         }
         AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");//添加事件
         AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, printfmessage, "dfg");//添加事件
-        AddMessageNode(0, CRP_PACKET_KICK, backtologin, "挤掉返回");//挤掉返回登陆界面
+        AddMessageNode(0, CRP_PACKET_KICK, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }
