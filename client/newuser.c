@@ -88,6 +88,7 @@ int newsockfd() {
         else {
             log_info("不合格字符", "momo\n");
             popup("莫默告诉你：", "包含不合格字符");
+            return 1;
         }
     }
     else {
