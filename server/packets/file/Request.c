@@ -120,7 +120,7 @@ int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRe
             op->onResponseFailure = onRequestCancel;
             aio_read(&opData->aio);
             CRPFileDataStartSend(user->sockfd, session, (uint64_t) fileInfo.st_size);
-            UserOperationDrop(op);
+            UserOperationDrop(user, op);
             return 1;
             fail:
             if (op)

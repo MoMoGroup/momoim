@@ -15,7 +15,7 @@ typedef struct
 typedef struct structUserFriendsTable
 {
     UserFriendsEntry *entry;
-    struct structUserFriendsTable *next[10];
+    struct structUserFriendsTable *next[0x10];
 } UserFriendsTable;
 
 int UserInit();

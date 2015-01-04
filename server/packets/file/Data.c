@@ -32,6 +32,6 @@ int ProcessPacketFileData(POnlineUser user, uint32_t session, CRPPacketFileData 
             CRPOKSend(user->sockfd, session);
         }
     }
-    UserOperationDrop(op);
+    UserOperationDrop(user, op);
     return 1;
 }

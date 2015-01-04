@@ -4,7 +4,6 @@
 #include <logger.h>
 #include <data/user.h>
 #include <asm-generic/errno-base.h>
-#include <asm-generic/errno.h>
 #include <unistd.h>
 
 int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet)
@@ -15,6 +14,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
     if (user->status == OUS_PENDING_LOGIN)
     {
         uint32_t uid;
+        POnlineUser onlineUser = NULL;
         int ret = AuthUser(packet->username, packet->password, &uid);
 
         if (ret == 0)
@@ -30,78 +30,57 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                 CRPKickSend(duser->sockfd, 0, "另一用户已经登陆");
                 OnlineUserDelete(duser);
             }
-            if (!UserCreateOnlineInfo(user, uid))
+            onlineUser = UserSwitchToOnline((PPendingUser) user, uid);
+            if (!onlineUser)
             {
                 log_warning("Login-Login", "User %s Login failure. Cannot Create Online Info\n", packet->username);
-                CRPFailureSend(user->sockfd, session, ENODATA, "服务器内部错误");
+                CRPFailureSend(user->sockfd, session, EFAULT, "服务器内部错误");
+                return 0;
             }
-            else
+            user = onlineUser;
+            log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
+
+            //测试数据导入,开始
+            if (uid == 10000 || uid == 10001)
             {
-                log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
-
-                //测试数据导入,开始
-                if (uid == 10000 || uid == 10001)
+                uint32_t userFriends1[2];
+                if (uid == 10000)
                 {
-                    uint32_t userFriends1[2];
-                    if (uid == 10000)
-                    {
-                        userFriends1[0] = 10000;
-                        userFriends1[1] = 10001;
-                    }
-                    else
-                    {
-                        userFriends1[0] = 10001;
-                        userFriends1[1] = 10000;
-                    }
-
-                    UserGroup group[3] = {
-                            {
-                                    .groupId=0,
-                                    .groupName="我的好友",
-                                    .friendCount=2,
-                                    .friends=userFriends1
-                            },
-                            {
-                                    .groupId=255,
-                                    .groupName="黑名单",
-                                    .friendCount=0,
-                                    .friends=NULL
-                            },
-                    };
-                    UserFriends friends =
-                            {
-                                    .groupCount=2,
-                                    .groups=group
-                            };
-                    UserFriendsDrop(uid);
-                    UserFriendsSave(uid, &friends);
-                    user->info->friends = UserFriendsGet(uid, &user->info->friendsLock);
+                    userFriends1[0] = 10000;
+                    userFriends1[1] = 10001;
                 }
-                //测试数据导入结束
-                CRPLoginAcceptSend(user->sockfd, session, uid);
-                user->status = OUS_ONLINE;
-            }
-
-            pthread_rwlock_rdlock(user->info->friendsLock);
-            for (int i = 0; i < user->info->friends->groupCount; ++i)
-            {
-                UserGroup *group = user->info->friends->groups + i;
-                if (group->groupId == UGI_BLACKLIST || group->groupId == UGI_PENDING)
-                    continue;
-                for (int j = 0; j < group->friendCount; ++j)
+                else
                 {
-                    duser = OnlineUserGet(group->friends[j]);
-                    if (duser)
-                    {
-                        if (duser->status == OUS_ONLINE)
+                    userFriends1[0] = 10001;
+                    userFriends1[1] = 10000;
+                }
+
+                UserGroup group[3] = {
                         {
-                            CRPFriendNotifySend(duser->sockfd, 0, uid, FNT_ONLINE);
-                        }
-                        OnlineUserDrop(duser);
-                    }
-                }
+                                .groupId=0,
+                                .groupName="我的好友",
+                                .friendCount=2,
+                                .friends=userFriends1
+                        },
+                        {
+                                .groupId=255,
+                                .groupName="黑名单",
+                                .friendCount=0,
+                                .friends=NULL
+                        },
+                };
+                UserFriends friends =
+                        {
+                                .groupCount=2,
+                                .groups=group
+                        };
+                UserFriendsDrop(uid);
+                UserFriendsSave(uid, &friends);
+                user->info->friends = UserFriendsGet(uid, &user->info->friendsLock);
             }
-            pthread_rwlock_unlock(user->info->friendsLock);
+            //测试数据导入结束
+            CRPLoginAcceptSend(user->sockfd, session, uid);
+
         }
     }
     else

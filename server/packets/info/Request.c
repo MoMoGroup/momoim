@@ -17,7 +17,7 @@ int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRe
         {
             POnlineUser duser = OnlineUserGet(packet->uid);
             CRPInfoDataSend(user->sockfd, session, duser && duser->status == OUS_ONLINE, info);
-            OnlineUserDrop(duser);
+            UserDrop(duser);
             UserInfoFree(info);
         }
     }

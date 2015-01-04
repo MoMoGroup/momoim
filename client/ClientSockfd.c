@@ -10,7 +10,6 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/base.h>
 #include "MainInterface.h"
 
 
@@ -101,6 +100,19 @@ int printfmessage(CRPBaseHeader *header, void *data)
     return 1;
 }
 
+int backtologin(CRPBaseHeader *header, void *data)
+{
+    log_info("销毁", "\n");
+    g_idle_add(destoryall, NULL);
+    close(sockfd);
+//    log_info("加载", "\n");
+//    g_idle_add(loadloginLayout, NULL);
+
+    pthread_t pth = pthread_self();
+    pthread_cancel(pth);
+    return 0;
+}
+
 int mysockfd()
 {
 //头像,好友头像
@@ -121,7 +133,6 @@ int mysockfd()
     log_info("Hello", "Sending Hello\n");
     CRPHelloSend(sockfd, 0, 1, 1, 1);
     CRPBaseHeader *header;
-    log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
     if (header->packetID != CRP_PACKET_OK)
     {
@@ -135,9 +146,9 @@ int mysockfd()
     log_info("登录名:", name);
     pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
     unsigned char hash[16];
-    MD5((unsigned char *) pwd, 1, hash);
+    MD5((unsigned char *) pwd, strlen(pwd), hash);
     CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
-
+    log_info("Hello", "Waiting OK\n");
 
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
@@ -152,7 +163,6 @@ int mysockfd()
     {
         log_info("登录成功", "登录成功\n");
         //登陆成功之后开始请求资料
-
 
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
@@ -184,13 +194,21 @@ int mysockfd()
             header = CRPRecv(sockfd);
             switch (header->packetID)
             {
+                case CRP_PACKET_FAILURE:
+                {
+                    CRPPacketFailure *failure = CRPFailureCast(header);
+                    log_error("FAULT", failure->reason);
+                    break;
+                };
                 case CRP_PACKET_INFO_DATA: //用户资料回复
                 {
+                    log_info("CRP_PACKET_INFO_DATA", "111\n");
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
                         userdata = infodata->info;//放到结构提里，保存昵称，性别等资料
                         log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
+
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
                         if ((const char *) infodata != header->data)
@@ -223,6 +241,7 @@ int mysockfd()
                 }
                 case CRP_PACKET_FILE_DATA_START://服务器准备发送头像
                 {
+                    log_info("CRP_PACKET_FILE_DATA_START", "%u\n", header->sessionID);
                     CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
 
 
@@ -246,9 +265,6 @@ int mysockfd()
                         node = friendinfohead;
                         while (node)
                         {
-                            //log_info("node->sessionid", "%u\n", node->sessionid);
-                            //log_info("header->sessionID", "%u\n", header->sessionID);
-
                             if (node->sessionid == header->sessionID)
                             {
                                 //node->flag=0;
@@ -273,6 +289,8 @@ int mysockfd()
 
                 case CRP_PACKET_FILE_DATA://接受头像
                 {
+                    log_info("CRP_PACKET_FILE_DATA", "%u\n", header->sessionID);
+
                     CRPPacketFileData *packet = CRPFileDataCast(header);
                     if (header->sessionID < 10000)
                     {
@@ -288,15 +306,10 @@ int mysockfd()
 
                             if (node->sessionid == header->sessionID)
                             {
-                                log_info("DEBUG", "PckFound\n");
                                 fwrite(packet->data, 1, packet->length, node->fp);
                                 break;
                             }
                             node = node->next;
-                        }
-                        if (!node)
-                        {
-                            log_info("DEBUG", "NotFound\n");
                         }
                         //free(node);
 
@@ -312,6 +325,8 @@ int mysockfd()
 
                 case CRP_PACKET_FILE_DATA_END://头像接受完
                 {
+                    log_info("CRP_PACKET_FILE_DATA_END", "%u\n", header->sessionID);
+
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
 
                     if (header->sessionID < 10000)
@@ -341,8 +356,6 @@ int mysockfd()
                         {
                             if (node->flag == 0)
                             {
-
-                                log_info("接受数据是否完成判断", "没有接受完\n");
                                 break;//没有接收完
                             }
                             node = node->next;
@@ -350,6 +363,7 @@ int mysockfd()
 
                         if (node == NULL)
                         {
+                            log_info("开始加载主界面", "dadada\n");
                             g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
                             loop = 0;
                         }
@@ -364,20 +378,18 @@ int mysockfd()
                 }
                 case CRP_PACKET_FRIEND_DATA://分组
                 {
+                    log_info("CRP_PACKET_FRIEND_DATA", "555\n");
+
                     friends = UserFriendsDecode((unsigned char *) header->data);
-                    log_info("Friends", "Group Count:%d\n", friends->groupCount);
 
                     for (int i = 0; i < friends->groupCount; ++i)//循环组
                     {
                         UserGroup *group = friends->groups + i;
-                        log_info(group->groupName, "GroupID:%d\n", group->groupId);
-                        log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
 
                         for (int j = 0; j < group->friendCount; ++j)//循环好友
 
                         {
                             CRPInfoRequestSend(sockfd, group->friends[j], group->friends[j]); //请求用户资料,
-                            log_info(group->groupName, "Friend:%u\n", group->friends[j]);
 
 
                         }
@@ -391,10 +403,12 @@ int mysockfd()
         }
         AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");//添加事件
         AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, printfmessage, "dfg");//添加事件
+        AddMessageNode(0, CRP_PACKET_KICK, backtologin, "挤掉返回");//挤掉返回登陆界面
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }
-
+    log_error("DEBUG", "Unexception packet id:%hu\n", header->packetID);
+    log_error("DEBUG", "ClientSockfd Done.\n");
 
     return 0;
 }

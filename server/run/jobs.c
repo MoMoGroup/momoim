@@ -43,7 +43,7 @@ POnlineUser JobManagerPop(void)
         pthread_cond_broadcast(&cond);          //如果Pop之前队列是满的,现在已经不满了,通知Push操作.
     }
 
-    if (user == NULL || !OnlineUserHold(user))  //如果得到的对象为空或者无法保持用户(用户正在被删除)
+    if (user == NULL || !UserHold(user))  //如果得到的对象为空或者无法保持用户(用户正在被删除)
         goto redo;                              //重新选择下一个事务
     pthread_mutex_unlock(&jobLock);
 
