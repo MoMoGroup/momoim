@@ -3,6 +3,7 @@
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
+#include "PopupWinds.h"
 #include <cairo.h>
 #include <bits/sigthread.h>
 #include <sys/socket.h>
@@ -33,6 +34,7 @@ gboolean destroyLayout(gpointer user_data){
 
     gtk_widget_destroy(pendingLayout);
     gtk_widget_show_all(loginLayout);
+    popup("莫默告诉你：", user_data);
 }
 //关闭窗口
 static void

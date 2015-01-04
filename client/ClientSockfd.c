@@ -107,9 +107,25 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
+        CRPPacketFailure *p = CRPFailureCast(header);
+
         //密码错误
-        log_info("登录失败", "登录失败\n");
-        g_idle_add(destroyLayout, NULL);
+        log_info("登录失败", p->reason);
+        char *reason;
+        reason = (char *) malloc(sizeof(p->reason));
+        if (NULL == reason) {
+            exit(1);
+        }
+        //memcpy(reason,p->reason, sizeof(p->reason));
+        reason = p->reason;
+
+        //reason=p->reason;
+        g_idle_add(destroyLayout, reason);
+        log_info("登录失败2", reason);
+        //popup("莫默告诉你：",p->reason);
+        if (p != header->data)
+            free(p);
+        //free(reason);
         return 1;
     }
 

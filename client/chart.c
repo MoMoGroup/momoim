@@ -6,7 +6,7 @@
 #include <imcommon/friends.h>
 #include <stdlib.h>
 #include <ftotval.h>
-#include <lber.h>
+//#include <lber.h>
 
 
 int X = 0;
