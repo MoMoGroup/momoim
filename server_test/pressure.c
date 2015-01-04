@@ -8,8 +8,9 @@
 #include <openssl/md5.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <protocol/base.h>
 
-#define CLIENT_COUNT 2
+#define CLIENT_COUNT 100
 
 pthread_t child[CLIENT_COUNT];
 unsigned char hash[16];
@@ -42,7 +43,7 @@ void *threadRoutine(void *p)
     sprintf(name, "%lu", (pthread_t *) p - child);
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct timeval timeout = {10, 0};
-    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
+//    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout));
 
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
@@ -108,8 +109,10 @@ void *threadRoutine(void *p)
                 break;
             }
             case CRP_PACKET_FILE_DATA_START:
+                CRPOKSend(sockfd, header->sessionID);
                 break;
             case CRP_PACKET_FILE_DATA:
+                CRPOKSend(sockfd, header->sessionID);
                 break;
             case CRP_PACKET_FILE_DATA_END:
             {
