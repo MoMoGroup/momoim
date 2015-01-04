@@ -152,7 +152,7 @@ void send_text(friendinfo *info) {
     time(&timep);
     p = localtime(&timep);
     sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
-    gtk_text_buffer_set_text(info->input_buffer, NULL, 0);
+    gtk_text_buffer_set_text(info->input_buffer, "", 0);
     CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, strlen(char_text), char_text);
     show_local_text(char_text, info, nicheng_times);
     free(char_text);

@@ -1,6 +1,8 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <logger.h>
+#include <string.h>
+#include <ctype.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
@@ -10,6 +12,7 @@
 
 static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
+const gchar *name, *pwd;
 static pthread_t thread1;
 static int nX = 0, nY = 0;
 static GtkWidget *window;
@@ -31,6 +34,7 @@ gboolean destroyLayout(gpointer user_data)
     gtk_widget_hide(pendingLayout);
     gtk_widget_show_all(loginLayout);
     popup("莫默告诉你：", user_data);
+    free(user_data);
     return FALSE;
 }
 
@@ -98,7 +102,33 @@ void *sendhello(void *M)
 void on_button_clicked()
 {
 
-
+    name = gtk_entry_get_text(GTK_ENTRY(username));
+    pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
+    if ((strlen(name) != 0) && (strlen(pwd) != 0)) {
+        int charnum, number = 0;
+        for (charnum = 0; name[charnum];) {
+            if ((isalnum(name[charnum]) != 0) || (name[charnum] == '@')
+                    || (name[charnum] == '.') || (name[charnum] == '-') || (name[charnum] == '_')) {
+                if (isdigit(name[charnum]) != 0) {
+                    number++;
+                }
+                charnum++;
+            }
+            else {
+                break;
+            }
+        }
+        if (charnum == strlen(name)) {
+        }
+        else {
+            popup("莫默告诉你：", "包含不合格字符");
+            return;
+        }
+    }
+    else {
+        popup("莫默告诉你：", "请填写登录信息");
+        return;
+    }
     gtk_widget_hide(loginLayout);//隐藏loginlayout
     //gtk_widget_destroy(layout);销毁layout对话框
 
