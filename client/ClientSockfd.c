@@ -95,8 +95,8 @@ gboolean postMessage(gpointer user_data)
 
 int printfmessage(CRPBaseHeader *header, void *data)
 {
-    CRPBaseHeader *dup = (CRPBaseHeader *) malloc(sizeof(CRPBaseHeader) + header->dataLength);
-    memcpy(dup, header, sizeof(CRPBaseHeader) + header->dataLength);
+    CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
+    memcpy(dup, header, header->totalLength);
     g_idle_add(postMessage, dup);
     return 1;
 }

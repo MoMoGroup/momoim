@@ -53,9 +53,9 @@ int main()
         case CRP_PACKET_FAILURE:
         {
             CRPPacketFailure *failure = CRPFailureCast(header);
-            char *s = (char *) malloc(header->dataLength + 1);
-            memcpy(s, failure->reason, header->dataLength);
-            s[header->dataLength] = 0;
+            char *s = (char *) malloc(header->totalLength - sizeof(CRPBaseHeader) + 1);
+            memcpy(s, failure->reason, header->totalLength - sizeof(CRPBaseHeader));
+            s[header->totalLength - sizeof(CRPBaseHeader)] = 0;
             log_error("Login", s);
             return 1;
         };
@@ -97,7 +97,7 @@ int main()
             };
             case CRP_PACKET_FILE_DATA:
                 CRPOKSend(sockfd, header->sessionID);
-                log_info("Icon", "Recv data %lu bytes.\n", header->dataLength);
+                log_info("Icon", "Recv data %lu bytes.\n", header->totalLength - sizeof(CRPBaseHeader));
                 break;
             case CRP_PACKET_FILE_DATA_END:
             {

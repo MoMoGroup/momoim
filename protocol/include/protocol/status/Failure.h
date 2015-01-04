@@ -5,11 +5,11 @@
 */
 CRP_STRUCTURE
 {
-    int code;
+    uint8_t code;
     char reason[0];
 } CRPPacketFailure;
 
 __attribute_malloc__
 CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base);
 
-int CRPFailureSend(int sockfd, uint32_t sessionID, int code, char *reason);
+int CRPFailureSend(int sockfd, uint32_t sessionID, uint8_t code, char *reason);

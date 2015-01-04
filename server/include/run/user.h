@@ -85,7 +85,7 @@ struct structOnlineUserInfo
     uint32_t uid;
     char *userDir;
     UserFriends *friends;
-    pthread_rwlock_t friendsLock;
+    pthread_rwlock_t *friendsLock;
 };
 
 //在线用户数据

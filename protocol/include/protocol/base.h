@@ -14,10 +14,10 @@ typedef uint32_t user_id_t;
 
 CRP_STRUCTURE
 {
-    unsigned int magicCode;
+    uint32_t magicCode;
     /* 0x464F5573 */
     CRP_LENGTH_TYPE totalLength; //协议包总长度，也用于支持不同协议版本
-    CRP_LENGTH_TYPE dataLength;  //数据块总长度，用于接下来接收数据块
+    //CRP_LENGTH_TYPE dataLength;  //数据块总长度，用于接下来接收数据块
     packet_id_t packetID;           //包ID，用于区分不同数据包
     session_id_t sessionID;          //消息会话ID
     char data[0];                //包数据部分

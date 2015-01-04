@@ -4,9 +4,9 @@
 
 CRPPacketKick *CRPKickCast(CRPBaseHeader *base)
 {
-    CRPPacketKick *data = (CRPPacketKick *) malloc(base->dataLength + 1);
-    memcpy(data, base->data, base->dataLength);
-    data->reason[base->dataLength] = 0;
+    CRPPacketKick *data = (CRPPacketKick *) malloc(base->totalLength - sizeof(CRPBaseHeader) + 1);
+    memcpy(data, base->data, base->totalLength - sizeof(CRPBaseHeader));
+    data->reason[base->totalLength - sizeof(CRPBaseHeader)] = 0;
     return data;
 }
 

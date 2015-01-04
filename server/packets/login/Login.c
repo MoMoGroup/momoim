@@ -38,52 +38,56 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
             else
             {
                 log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
+
+                //测试数据导入,开始
+                if (uid == 10000 || uid == 10001)
+                {
+                    uint32_t userFriends1[2];
+                    if (uid == 10000)
+                    {
+                        userFriends1[0] = 10000;
+                        userFriends1[1] = 10001;
+                    }
+                    else
+                    {
+                        userFriends1[0] = 10001;
+                        userFriends1[1] = 10000;
+                    }
+
+                    UserGroup group[3] = {
+                            {
+                                    .groupId=0,
+                                    .groupName="我的好友",
+                                    .friendCount=2,
+                                    .friends=userFriends1
+                            },
+                            {
+                                    .groupId=255,
+                                    .groupName="黑名单",
+                                    .friendCount=0,
+                                    .friends=NULL
+                            },
+                    };
+                    UserFriends friends =
+                            {
+                                    .groupCount=2,
+                                    .groups=group
+                            };
+                    UserFriendsDrop(uid);
+                    UserFriendsSave(uid, &friends);
+                    user->info->friends = UserFriendsGet(uid, &user->info->friendsLock);
+                }
+                //测试数据导入结束
                 CRPLoginAcceptSend(user->sockfd, session, uid);
                 user->status = OUS_ONLINE;
             }
-            //测试数据导入,开始
-            if (uid == 10000 || uid == 10001)
-            {
-                uint32_t userFriends1[2];
-                if (uid == 10000)
-                {
-                    userFriends1[0] = 10000;
-                    userFriends1[1] = 10001;
-                }
-                else
-                {
-                    userFriends1[0] = 10001;
-                    userFriends1[1] = 10000;
-                }
 
-                UserGroup group[3] = {
-                        {
-                                .groupId=0,
-                                .groupName="我的好友",
-                                .friendCount=2,
-                                .friends=userFriends1
-                        },
-                        {
-                                .groupId=255,
-                                .groupName="黑名单",
-                                .friendCount=0,
-                                .friends=NULL
-                        },
-                };
-                UserFriends friends =
-                        {
-                                .groupCount=2,
-                                .groups=group
-                        };
-                UserSaveFriendsFile(uid, &friends);
-                UserFreeFriends(user->info->friends);
-                user->info->friends = UserGetFriends(uid);
-            }
-            pthread_rwlock_rdlock(&user->info->friendsLock);
-            //测试数据导入结束
+            pthread_rwlock_rdlock(user->info->friendsLock);
             for (int i = 0; i < user->info->friends->groupCount; ++i)
             {
                 UserGroup *group = user->info->friends->groups + i;
+                if (group->groupId == UGI_BLACKLIST || group->groupId == UGI_PENDING)
+                    continue;
                 for (int j = 0; j < group->friendCount; ++j)
                 {
                     duser = OnlineUserGet(group->friends[j]);
@@ -97,7 +101,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                     }
                 }
             }
-            pthread_rwlock_unlock(&user->info->friendsLock);
+            pthread_rwlock_unlock(user->info->friendsLock);
         }
     }
     else

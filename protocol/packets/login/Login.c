@@ -6,9 +6,9 @@
 
 CRPPacketLogin *CRPLoginLoginCast(CRPBaseHeader *base)
 {
-    CRPPacketLogin *packet = malloc(base->dataLength + 1);
-    memcpy(packet, base->data, base->dataLength);
-    ((char *) packet)[base->dataLength] = 0;
+    CRPPacketLogin *packet = malloc(base->totalLength - sizeof(CRPBaseHeader) + 1);
+    memcpy(packet, base->data, base->totalLength - sizeof(CRPBaseHeader));
+    ((char *) packet)[base->totalLength - sizeof(CRPBaseHeader)] = 0;
     return packet;
 }
 
