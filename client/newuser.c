@@ -58,7 +58,7 @@ int newsockfd()
             if (g_strcmp0(newpwd, newpwd2) != 0)
             {
                 log_info("密码不一致", "密码不一致\n");
-                popup("莫默告诉你：", "密码不一致", GTK_WINDOW(newwindow));
+                popup("莫默告诉你：", "两次密码不一致");
                 return 1;
             }
             log_info("Hello", "Sending Hello\n");
@@ -80,23 +80,23 @@ int newsockfd()
             if (header->packetID != CRP_PACKET_OK)
             {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
-                popup("莫默告诉你：", "登录名已存在", GTK_WINDOW(newwindow));
+                popup("莫默告诉你：", "登录名已经存在");
                 return 1;
             }
             log_info("注册OK", "momo\n");
-            popup("莫默告诉你：", "注册成功", GTK_WINDOW(newwindow));
+            popup("莫默告诉你：", "欢迎你加入莫默");
             free(header);
         }
         else
         {
             log_info("不合格字符", "momo\n");
-            popup("莫默告诉你：", "包含不合格字符", GTK_WINDOW(newwindow));
+            popup("莫默告诉你：", "包含不合格字符");
         }
     }
     else
     {
         log_info("注册信息不完整", "momo\n");
-        popup("莫默告诉你：", "请完善注册信息", GTK_WINDOW(newwindow));
+        popup("莫默告诉你：", "请完善请完请完请完善请完请");
         return 1;
     }
     return 1;
@@ -105,7 +105,7 @@ int newsockfd()
 static void create_zhucefaces()
 {
 
-    surface1 = cairo_image_surface_create_from_png("注册背景.png");
+    surface1 = cairo_image_surface_create_from_png("注册背景1.png");
     surface2 = cairo_image_surface_create_from_png("注册标题.png");
 
     surface3 = cairo_image_surface_create_from_png("注册按钮.png");
@@ -123,6 +123,7 @@ static void create_zhucefaces()
 
     background = gtk_image_new_from_surface(surface1);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), background, 0, 0);//起始坐标
+    gtk_widget_set_size_request(GTK_WIDGET(background), 500, 500);
 
     headline = gtk_image_new_from_surface(surface2);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), headline, 7, 10);
@@ -249,12 +250,12 @@ int newface()
 {
     newwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     //g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL);
-    //gtk_window_set_default_size(GTK_WINDOW(newwindow), 570, 500);
+    //gtk_window_set_default_size(GTK_WINDOW(newwindow), 500, 500);
     //gtk_window_set_position(GTK_WINDOW(newwindow), GTK_WIN_POS_MOUSE);
     gtk_window_set_position(GTK_WINDOW(newwindow), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (newwindow), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(newwindow), FALSE);//去掉边框
-    gtk_widget_set_size_request(GTK_WIDGET(newwindow), 570, 500);
+    gtk_widget_set_size_request(GTK_WIDGET(newwindow), 500, 500);
 
     zhuceLayout = gtk_fixed_new();
     create_zhucefaces();
