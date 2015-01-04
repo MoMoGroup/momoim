@@ -79,9 +79,13 @@ int main()
             case CRP_PACKET_INFO_DATA:
             {
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
-                log_info("User", "Nick:%s\n", infoData->info.nickName);
+                if (infoData->info.uid == uid)
+                {
+                    infoData->info.icon[15] = 2;
+                    CRPInfoDataSend(sockfd, 0, 0, &infoData->info);
+                    log_info("User", "Nick:%s\n", infoData->info.nickName);
+                }
                 CRPFileRequestSend(sockfd, infoData->info.uid, 0, infoData->info.icon);
-
                 if ((const char *) infoData != header->data)
                     free(infoData);
                 break;

@@ -438,21 +438,23 @@ PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, i
 
 void UserOperationUnregister(POnlineUser user, PUserOperation op)
 {
+    int session = op->session;
     if (!op->cancel)
     {
         UserOperationCancel(user, op);
         return;
     }
 
+    pthread_mutex_lock(&user->operations.lock);
     if (op->prev == NULL && op->next == NULL && user->operations.first != op)
     {
+        log_info("Operation", "Remove Session %d without updating table.\n", session);
         pthread_mutex_unlock(&op->lock);
         pthread_mutex_destroy(&op->lock);
         free(op);
     }
     else
     {
-        pthread_mutex_lock(&user->operations.lock);
         if (op->prev == NULL)
         {
             user->operations.first = op->next;
@@ -469,19 +471,20 @@ void UserOperationUnregister(POnlineUser user, PUserOperation op)
         {
             op->next->prev = op->prev;
         }
+        --user->operations.count;
         pthread_mutex_unlock(&op->lock);
         pthread_cond_broadcast(&user->operations.unlockCond);
         pthread_mutex_destroy(&op->lock);
         free(op);
-        --user->operations.count;
-        pthread_mutex_unlock(&user->operations.lock);
     }
+    pthread_mutex_unlock(&user->operations.lock);
 }
 
 PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
 {
     pthread_mutex_lock(&user->operations.lock);
     PUserOperation ret;
+    int errcode;
     refind:
     ret = NULL;
     for (PUserOperation op = user->operations.first; op != NULL; op = op->next)
@@ -494,15 +497,18 @@ PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
     }
     if (ret)
     {
-        if (pthread_mutex_trylock(&ret->lock))
+        errcode = pthread_mutex_trylock(&ret->lock);
+        if (0 != errcode)
         {
-            if (errno == EBUSY)
+            if (errcode == EBUSY)
+                //本机测试pthread_mutex_trylock返回非0值的时候,errno返回竟然是0.Unbelievable!
             {
                 pthread_cond_wait(&user->operations.unlockCond, &user->operations.lock);
                 goto refind;
             }
             else
             {
+                log_warning("Operation", "Session %u Lock Failure.%d|%s\n", ret->session, errcode, strerror(errcode));
                 ret = NULL;
             }
         }
@@ -557,7 +563,7 @@ int UserOperationCancel(POnlineUser user, PUserOperation op)
 
 void UserOperationRemoveAll(POnlineUser user)
 {
-    if (pthread_rwlock_wrlock(&user->operations.lock))
+    if (pthread_mutex_lock(&user->operations.lock))
         abort();
     PUserOperation next = user->operations.first;
     user->operations.first = user->operations.last = NULL;
@@ -568,7 +574,7 @@ void UserOperationRemoveAll(POnlineUser user)
         UserOperationCancel(user, op);
     }
     user->operations.count = 0;
-    pthread_rwlock_unlock(&user->operations.lock);
+    pthread_mutex_unlock(&user->operations.lock);
 }
 
 

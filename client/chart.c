@@ -1030,9 +1030,9 @@ int mainchart(friendinfo *friendinfonode) {
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 80);
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 300);//大小
 
-    GdkRGBA rgba = {1, 1, 1, 0};
-    gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
-    gtk_widget_override_background_color(friendinfonode->show_text,GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
+    GdkRGBA rgba = {1, 1, 1, 0.2};
+    gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_NORMAL, &rgba);//设置透明
+    gtk_widget_override_background_color(friendinfonode->show_text, GTK_STATE_NORMAL, &rgba);//设置透明
 
 
     gtk_widget_show_all(friendinfonode->chartwindow);

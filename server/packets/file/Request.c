@@ -19,6 +19,7 @@ static int onRequestCancel(POnlineUser user, PUserOperation op)
         op->onCancel = NULL;
         UserOperationUnregister(user, op);
         CRPFileDataEndSend(user->sockfd, op->session, FEC_CANCELED);
+        return 0;
     }
     return 1;
 }
@@ -61,7 +62,9 @@ static int RequestContinue(POnlineUser user, PUserOperation op)
             free((void *) opData->aio.aio_buf);
             free(opData);
             op->onCancel = NULL;
+            op->cancel = 1;
             UserOperationUnregister(user, op);
+            return 0;
         }
         else
         {
@@ -119,8 +122,8 @@ int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRe
             op->onResponseOK = RequestContinue;
             op->onResponseFailure = onRequestCancel;
             aio_read(&opData->aio);
-            CRPFileDataStartSend(user->sockfd, session, (uint64_t) fileInfo.st_size);
             UserOperationDrop(user, op);
+            CRPFileDataStartSend(user->sockfd, session, (uint64_t) fileInfo.st_size);
             return 1;
             fail:
             if (op)

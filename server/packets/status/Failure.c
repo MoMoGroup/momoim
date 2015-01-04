@@ -6,8 +6,8 @@ int ProcessPacketStatusFailure(POnlineUser user, uint32_t session, CRPPacketFail
     PUserOperation op = UserOperationGet(user, session);
     if (op)
     {
-        op->onResponseFailure(user, op);
-        UserOperationDrop(user, op);
+        if (op->onResponseFailure(user, op))
+            UserOperationDrop(user, op);
     }
     return 1;
 }
