@@ -7,9 +7,15 @@
 #include <stdio.h>
 #include <sys/mman.h>
 #include <string.h>
+#include <sqlite3.h>
+#include <imcommon/friends.h>
 
 #include "run/user.h"
 #include "data/user.h"
+
+static sqlite3 *db = NULL;
+static const char sqlNickInsert[] = "INSERT OR REPLACE INTO info(uid,nick) VALUES(?,?);";
+static const char sqlNickQuery[] = "SELECT uid FROM info WHERE nick LIKE ? LIMIT ? OFFSET ?;";
 
 int UserInit()
 {
@@ -18,12 +24,19 @@ int UserInit()
         log_error("User", "Cannot create user directory\n");
         return 0;
     }
+
+    int ret;
+    ret = sqlite3_open("info.db", &db);
+    if (ret != SQLITE_OK)
+    {
+        return 0;
+    }
     return 1;
 }
 
 void UserFinalize()
 {
-
+    sqlite3_close(db);
 }
 
 //Get User Directory Path
@@ -50,11 +63,30 @@ void UserCreateDirectory(uint32_t uid)
         return;
     }
 
-    UserCreateInfoFile(uid);
+    UserInfoCreate(uid);
     UserCreateFriendsFile(uid);
 }
 
-void UserCreateInfoFile(uint32_t uid)
+int UserQueryByNick(const char *text, uint8_t page, uint8_t count, uint32_t *uids)
+{
+    sqlite3_stmt *stmt;
+    if (SQLITE_OK != sqlite3_prepare_v2(db, sqlNickQuery, sizeof(sqlNickQuery), &stmt, NULL))
+    {
+        return -1;
+    }
+    sqlite3_bind_text(stmt, 1, text, (int) strlen(text), NULL);
+    sqlite3_bind_int(stmt, 2, count);
+    sqlite3_bind_int(stmt, 3, (page - 1) * count);
+    uint32_t *puid = uids;
+    while ((puid - uids < count) && sqlite3_step(stmt) == SQLITE_ROW)
+    {
+        *puid++ = (uint32_t) sqlite3_column_int(stmt, 1);
+    }
+    sqlite3_finalize(stmt);
+    return (uint8_t) (puid - uids);
+}
+
+void UserInfoCreate(uint32_t uid)
 {
     UserInfo info = {
             .uid=uid,
@@ -64,10 +96,10 @@ void UserCreateInfoFile(uint32_t uid)
                     [15]=1
             }
     };
-    UserSaveInfoFile(uid, &info);
+    UserInfoSave(uid, &info);
 }
 
-int UserSaveInfoFile(uint32_t uid, UserInfo *info)
+int UserInfoSave(uint32_t uid, UserInfo *info)
 {
     char path[100];
     UserGetDir(path, uid, "info");
@@ -76,20 +108,33 @@ int UserSaveInfoFile(uint32_t uid, UserInfo *info)
     if (fd == -1)
     {
         log_error("User", "Cannot create user info file %s.\n", path);
-        return 1;
+        return 0;
     }
     write(fd, info, sizeof(UserInfo));
     close(fd);
-    return 0;
+    sqlite3_stmt *stmt;
+    if (SQLITE_OK != sqlite3_prepare_v2(db, sqlNickInsert, sizeof(sqlNickInsert), &stmt, NULL))
+    {
+        return 0;
+    }
+    sqlite3_bind_int(stmt, 1, uid);
+    sqlite3_bind_text(stmt, 2, info->nickName, (int) strlen(info->nickName), NULL);
+    if (SQLITE_DONE != sqlite3_step(stmt))
+    {
+        sqlite3_finalize(stmt);
+        return 0;
+    }
+    sqlite3_finalize(stmt);
+    return 1;
 }
 
-UserInfo *UserGetInfo(uint32_t uid)
+UserInfo *UserInfoGet(uint32_t uid)
 {
     char infoFile[30];
     UserGetDir(infoFile, uid, "info");
     if (access(infoFile, R_OK))
     {
-        UserCreateInfoFile(uid);
+        UserInfoCreate(uid);
         if (access(infoFile, R_OK))
         {
             return NULL;
@@ -107,7 +152,7 @@ UserInfo *UserGetInfo(uint32_t uid)
     return info;
 }
 
-void UserFreeInfo(UserInfo *friends)
+void UserInfoFree(UserInfo *friends)
 {
     if (friends)
         free(friends);
@@ -116,19 +161,23 @@ void UserFreeInfo(UserInfo *friends)
 void UserCreateFriendsFile(uint32_t uid)
 {
     uint32_t mfriends[] = {
-            10000,
-            10001
+            uid
     };
     UserGroup groups[] = {
             {
                     .groupId=0,
                     .groupName="Friends",
-                    .friendCount=2,
+                    .friendCount=1,
                     .friends=mfriends
             },
             {
-                    .groupId=UINT8_MAX,
+                    .groupId=1,
                     .groupName="Blacklist",
+                    .friendCount=0
+            },
+            {
+                    .groupId=UINT8_MAX,
+                    .groupName="Pending",
                     .friendCount=0
             }
     };
@@ -205,12 +254,16 @@ void UserFreeFriends(UserFriends *friends)
     UserFriendsFree(friends);
 }
 
-int MessageFileCreateByUid(uint32_t uid)
+int UserMessageFileCreate(uint32_t uid)
 {
-
+    char path[30];
+    UserGetDir(path, uid, "message");
+    return MessageFileCreate(path);
 }
 
-UserMessageFile *MessageFileOpenByUid(uint32_t uid)
+MessageFile *UserMessageFileOpen(uint32_t uid)
 {
-
+    char path[30];
+    UserGetDir(path, uid, "message");
+    return MessageFileOpen(path);
 }

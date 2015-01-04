@@ -6,7 +6,9 @@ SET(LIBPROTOCOL_SRC
     packets/friend/Request.c
     packets/friend/Data.c
     packets/friend/SearchByNickname.c
-    packets/friend/SearchByUsername.c
+    packets/friend/UserList.c
+    packets/friend/Notify.c
+    packets/friend/Add.c
 
     packets/info/Request.c
     packets/info/Data.c
@@ -21,15 +23,17 @@ SET(LIBPROTOCOL_SRC
     packets/status/KeepAlive.c
     packets/status/OK.c
     packets/status/Crash.c
+    packets/status/Kick.c
+    packets/status/Cancel.c
 
     packets/file/Data.c
     packets/file/Request.c
     packets/file/DataStart.c
     packets/file/DataEnd.c
+    packets/file/Reset.c
     packets/file/StoreRequest.c
-    packets/file/StoreAccept.c
 
-    packets/message/Text.c
+    packets/message/Normal.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
 target_link_libraries(protocol imcommon)

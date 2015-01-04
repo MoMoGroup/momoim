@@ -15,5 +15,6 @@ int DataModuleInit()
 
 void DataModuleFinalize()
 {
+    UserFinalize();
     AuthFinalize();
 }

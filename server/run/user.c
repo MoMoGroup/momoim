@@ -7,179 +7,198 @@
 #include <sys/stat.h>
 #include "data/user.h"
 #include <server.h>
+#include <run/jobs.h>
 
-pthread_rwlock_t UsersTableLock = PTHREAD_RWLOCK_INITIALIZER;
-UsersTable OnlineUserTable = {
+OnlineUsersTableType OnlineUserTable = {
         .count=0,
         .first=NULL,
         .last=NULL
 };
 
-int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header) = {
-        [CRP_PACKET_KEEP_ALIVE]         = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusKeepAlive,
-        [CRP_PACKET_HELLO]              = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusHello,
-        [CRP_PACKET_OK]                 = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusOK,
-        [CRP_PACKET_FAILURE]            = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusFailure,
-        [CRP_PACKET_CRASH]              = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCrash,
+//消息处理器映射表
+int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header) = {
+        [CRP_PACKET_KEEP_ALIVE]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusKeepAlive,
+        [CRP_PACKET_HELLO]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusHello,
+        [CRP_PACKET_OK]                 = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusOK,
+        [CRP_PACKET_FAILURE]            = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusFailure,
+        [CRP_PACKET_CRASH]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCrash,
+        [CRP_PACKET_CANCEL]             = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCancel,
 
-        [CRP_PACKET_LOGIN__START]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_LOGIN_LOGIN]        = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogin,
-        [CRP_PACKET_LOGIN_LOGOUT]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogout,
-        [CRP_PACKET_LOGIN_REGISTER]     = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginRegister,
+        [CRP_PACKET_LOGIN__START]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_LOGIN_LOGIN]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogin,
+        [CRP_PACKET_LOGIN_LOGOUT]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogout,
+        [CRP_PACKET_LOGIN_REGISTER]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginRegister,
 
-        [CRP_PACKET_INFO__START]        = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_INFO_REQUEST]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketInfoRequest,
-        [CRP_PACKET_INFO_DATA]          = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_INFO__START]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_INFO_REQUEST]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketInfoRequest,
+        [CRP_PACKET_INFO_DATA]          = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketInfoData,
 
-        [CRP_PACKET_FRIEND__START]      = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendRequest,
-        [CRP_PACKET_FRIEND_DATA]        = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_FRIEND__START]      = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendRequest,
+        [CRP_PACKET_FRIEND_ADD]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendAdd,
+        [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]=(int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendSearchByNickname,
 
-        [CRP_PACKET_FILE__START]        = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_FILE_REQUEST]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileRequest,
-        [CRP_PACKET_FILE_DATA]          = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileData,
-        [CRP_PACKET_FILE_DATA_END]      = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileDataEnd,
-        [CRP_PACKET_FILE_STORE_REQUEST] = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileStoreRequest,
+        [CRP_PACKET_FILE__START]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_FILE_REQUEST]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileRequest,
+        [CRP_PACKET_FILE_DATA]          = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileData,
+        [CRP_PACKET_FILE_RESET]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileReset,
+        [CRP_PACKET_FILE_DATA_END]      = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileDataEnd,
+        [CRP_PACKET_FILE_STORE_REQUEST] = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileStoreRequest,
 
-        [CRP_PACKET_MESSAGE__START]     = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_MESSAGE_TEXT]       = (int (*)(OnlineUser *user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageText,
+
+        [CRP_PACKET_MESSAGE__START]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
+        [CRP_PACKET_MESSAGE_NORMAL]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageText,
 };
 
-/**
-* Server Process User Message
-*/
-int ProcessUser(OnlineUser *user, CRPBaseHeader *packet)
+int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
 {
     int ret = 1;
     void *data;
+    //查找解码器
     void *(*packetCast)(CRPBaseHeader *) = PacketsDataCastMap[packet->packetID];
-    if (packetCast == NULL)
+    if (packetCast == NULL)//如果诶有找到,注销当前用户
     {
         return 0;
     }
-    data = packetCast(packet);
-    if (data == NULL)
+    data = packetCast(packet);//尝试解码,
+    if (data == NULL)//如果解码失败,注销用户
     {
         return 0;
     }
 
-    int(*packetProcessor)(OnlineUser *, uint32_t, void *, CRPBaseHeader *header) = PacketsProcessMap[packet->packetID];
-    if (packetProcessor != NULL)
+    //查找处理机
+    int(*packetProcessor)(POnlineUser, uint32_t, void *, CRPBaseHeader *header) = PacketsProcessMap[packet->packetID];
+    if (packetProcessor != NULL)//如果找到,处理数据包
     {
         ret = packetProcessor(user, packet->sessionID, data, packet);
-        if (data != packet->data)
-        {
-            free(data);
-        }
     }
     else
     {
         log_warning("UserProc", "Packet %d has no handler.\n", packet->packetID);
     }
+
+    if (data != packet->data)//如果解包分配的内存区域是新分配的,则释放这块内存
+    {
+        free(data);
+    }
     return ret;
 }
 
-OnlineUser *OnlineUserNew(int fd)
+POnlineUser OnlineUserNew(int fd)
 {
-    OnlineUser *user = (OnlineUser *) calloc(1, sizeof(OnlineUser));
-
+    POnlineUser user = (POnlineUser) calloc(1, sizeof(OnlineUser));//用户基本数据需要占用内存空间
+    if (user == NULL)
+    {
+        log_error("UserManager", "Fail to calloc new user.\n");
+        return NULL;
+    }
+    //简要设置一下socket,状态.初始化用户保持锁
     user->sockfd = fd;
-    pthread_rwlock_init(&user->operations.lock, NULL);
-    pthread_rwlock_init(&user->lock, NULL);
-    pthread_mutex_init(&user->holdLock, NULL);
-
-    user->status = OUS_PENDING_HELLO;
-
-    pthread_rwlock_wrlock(&UsersTableLock);
-    user->prev = OnlineUserTable.last;
-
-    if (OnlineUserTable.last)
-    {
-        OnlineUserTable.last->next = user;
-    }
-    else
-    {
-        OnlineUserTable.first = user;
-    }
-
-    OnlineUserTable.last = user;
-    OnlineUserTable.count++;
-    pthread_rwlock_unlock(&UsersTableLock);
+    user->status = OUS_PENDING_INIT;
+    pthread_rwlock_init(&user->holdLock, NULL);
 
     return user;
 }
 
-int OnlineUserDelete(OnlineUser *user)
+void OnlineUserInit(POnlineUser user)
 {
-    pthread_rwlock_wrlock(&user->lock);
-    if (user->status == OUS_PENDING_CLEAN)
+    //初始化用户信息
+    if (!user->status == OUS_PENDING_INIT)
+        return;
+    //初始化用户操作锁
+    pthread_rwlock_init(&user->operations.lock, NULL);
+    //用户当前可以接收HELLO数据包了
+    user->status = OUS_PENDING_HELLO;
+
+    pthread_rwlock_wrlock(&OnlineUserTable.lock);
+
+    if (OnlineUserTable.last == NULL)
     {
-        pthread_rwlock_unlock(&user->lock);
+        OnlineUserTable.first = OnlineUserTable.last = user;
+    }
+    else
+    {
+        OnlineUserTable.last->next = user;
+        user->prev = OnlineUserTable.last;
+        OnlineUserTable.last = user;
+    }
+    ++OnlineUserTable.count;
+    pthread_rwlock_unlock(&OnlineUserTable.lock);
+
+}
+
+int OnlineUserDelete(POnlineUser user)
+{
+    pthread_rwlock_unlock(&user->holdLock);
+    pthread_rwlock_wrlock(&user->holdLock);
+    if (user->status == OUS_PENDING_INIT)
+    {
+        pthread_rwlock_unlock(&user->holdLock);
+        pthread_rwlock_destroy(&user->holdLock);
+        free(user);
+        return 0;
+    }
+    else if (user->status == OUS_PENDING_CLEAN)
+    {
         return 0;
     }
     user->status = OUS_PENDING_CLEAN;
-    pthread_rwlock_unlock(&user->lock);
-
-    while (user->holds != 0)
-    {    //等待所有对用户的引用被释放
-        pthread_mutex_lock(&user->holdLock);
-    }
-
-    pthread_mutex_destroy(&user->holdLock);
-
+    JobManagerKick(user);
     UserRemoveFromPool(user);
+    UserOperationRemoveAll(user);
+
     shutdown(user->sockfd, SHUT_RDWR);
     close(user->sockfd);
     UserFreeOnlineInfo(user);
-    UserOperationRemoveAll(user);
 
     pthread_rwlock_destroy(&user->operations.lock);
-    pthread_rwlock_destroy(&user->lock);
 
-    pthread_rwlock_wrlock(&UsersTableLock);
-    if (OnlineUserTable.first == user)
+    pthread_rwlock_wrlock(&OnlineUserTable.lock);
+    if (user->prev != NULL || user->next != NULL || OnlineUserTable.first == user)
     {
-        OnlineUserTable.first = user->next;
+        if (user->prev == NULL)
+        {
+            OnlineUserTable.first = user->next;
+        }
+        else
+        {
+            user->prev->next = user->next;
+        }
+        if (user->next == NULL)
+        {
+            OnlineUserTable.last = user->prev;
+        }
+        else
+        {
+            user->next->prev = user->prev;
+        }
+        --OnlineUserTable.count;
     }
-    if (OnlineUserTable.last == user)
-    {
-        OnlineUserTable.last = user->prev;
-    }
-    if (user->prev)
-    {
-        user->prev->next = user->next;
-    }
-    pthread_rwlock_unlock(&UsersTableLock);
+    pthread_rwlock_unlock(&OnlineUserTable.lock);
+
+    pthread_rwlock_unlock(&user->holdLock);
+    pthread_rwlock_destroy(&user->holdLock);
+
     free(user);
     return 1;
 }
 
-int OnlineUserHold(OnlineUser *user)
+int OnlineUserHold(POnlineUser user)
 {
-    pthread_rwlock_wrlock(&user->lock);
-    if (user->status == OUS_PENDING_CLEAN)//如果用户正要被清理
-    {
-        pthread_rwlock_unlock(&user->lock);
-        return 0;//无法保持用户信息,返回错误.
-    }
-    ++user->holds;
-    pthread_rwlock_unlock(&user->lock);
-    return 1;
+    return user->status != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(&user->holdLock) == 0;
 }
 
-void OnlineUserUnhold(OnlineUser *user)
+void OnlineUserDrop(POnlineUser user)
 {
-    pthread_rwlock_wrlock(&user->lock);
-    --user->holds;
-    pthread_rwlock_unlock(&user->lock);
-    pthread_mutex_unlock(&user->holdLock);//保持被释放.通知
+    if (user)
+        pthread_rwlock_unlock(&user->holdLock);
 }
 
-OnlineUser *OnlineUserGet(uint32_t uid)
+POnlineUser OnlineUserGet(uint32_t uid)
 {
-    OnlineUser *ret = NULL;
-    pthread_rwlock_rdlock(&UsersTableLock);
-    for (OnlineUser *user = OnlineUserTable.first; user != NULL; user = user->next)
+    POnlineUser ret = NULL;
+    pthread_rwlock_rdlock(&OnlineUserTable.lock);
+    for (POnlineUser user = OnlineUserTable.first; user != NULL; user = user->next)
     {
         if (user->status == OUS_ONLINE && user->info->uid == uid && OnlineUserHold(user))
         {
@@ -187,173 +206,271 @@ OnlineUser *OnlineUserGet(uint32_t uid)
             break;
         }
     }
-    pthread_rwlock_unlock(&UsersTableLock);
+    pthread_rwlock_unlock(&OnlineUserTable.lock);
     return ret;
 }
 
-OnlineUserInfo *UserCreateOnlineInfo(OnlineUser *user, uint32_t uid)
+void OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status)
 {
-    char userDir[30];
+    user->status = status;
+}
+
+
+int UserCreateOnlineInfo(POnlineUser user, uint32_t uid)
+{
+    char path[30];
     uint8_t userDirSize;
-    UserGetDir(userDir, uid, "");
-    userDirSize = (uint8_t) strlen(userDir);
+    UserGetDir(path, uid, "");
+    userDirSize = (uint8_t) strlen(path);
     struct stat buf;
-    if (stat(userDir, &buf) || !S_ISDIR(buf.st_mode))
+    if (stat(path, &buf) || !S_ISDIR(buf.st_mode))
     {
         UserCreateDirectory(uid);
     }
-    OnlineUserInfo *info = (OnlineUserInfo *) malloc(sizeof(OnlineUser));
-    memset(info, 0, sizeof(OnlineUserInfo));
+    POnlineUserInfo info = (POnlineUserInfo) calloc(1, sizeof(OnlineUser));
+    if (info == NULL)
+    {
+        return 0;
+    }
     info->uid = uid;
     info->userDir = (char *) malloc(userDirSize + 1);
-    memcpy(info->userDir, userDir, userDirSize);
+    if (info->userDir == NULL)
+    {
+        free(info);
+        return 0;
+    }
+    memcpy(info->userDir, path, userDirSize);
     info->userDir[userDirSize] = 0;
-    return info;
+
+    info->friends = UserGetFriends(uid);
+    user->info = info;
+    return 1;
 }
 
-void UserFreeOnlineInfo(OnlineUser *user)
+void UserFreeOnlineInfo(POnlineUser user)
 {
     if (user->info)
     {
+        log_info("UserManager", "User %d offline.\n", user->info->uid);
+        for (int i = 0; i < user->info->friends->groupCount; ++i)
+        {
+            UserGroup *group = user->info->friends->groups + i;
+            for (int j = 0; j < group->friendCount; ++j)
+            {
+                POnlineUser duser = OnlineUserGet(group->friends[j]);
+                if (duser)
+                {
+                    if (duser->status == OUS_ONLINE)
+                    {
+                        CRPFriendNotifySend(duser->sockfd, 0, user->info->uid, FNT_OFFLINE);
+                    }
+                    OnlineUserDrop(duser);
+                }
+            }
+        }
+        if (user->info->friends)
+        {
+            UserSaveFriendsFile(user->info->uid, user->info->friends);
+            UserFreeFriends(user->info->friends);
+        }
         if (user->info->userDir)
         {
             free(user->info->userDir);
         }
         free(user->info);
+        user->info = NULL;
     }
 }
 
-UserCancelableOperation *UserOperationRegister(OnlineUser *user, int type)
+PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data)
 {
-/*  removed because the client refuse to support this feature
+/*  the can not support this feature
     if (user->operations.count >= 100)
         return NULL;
 */
-    pthread_rwlock_wrlock(&user->operations.lock);
-    UserCancelableOperation *operation = (UserCancelableOperation *) calloc(1, sizeof(UserCancelableOperation));
+    PUserOperation operation = (PUserOperation) calloc(1, sizeof(UserOperation));
     if (operation == NULL)
     {
-        goto cleanup;
+        return NULL;
     }
     operation->next = NULL;
     operation->type = type;
+    operation->session = sessionID;
+    operation->data = data;
+    pthread_mutex_init(&operation->lock, NULL);
+    pthread_rwlock_wrlock(&user->operations.lock);
+
     if (user->operations.last == NULL)
     {
         user->operations.first = user->operations.last = operation;
-        operation->id = 1;
     }
     else
     {
-        operation->id = user->operations.last->id + 1;
         user->operations.last->next = operation;
         operation->prev = user->operations.last;
         user->operations.last = operation;
     }
     ++user->operations.count;
-    cleanup:
+
     pthread_rwlock_unlock(&user->operations.lock);
+    pthread_mutex_lock(&operation->lock);
     return operation;
 }
 
-void UserOperationUnregister(OnlineUser *user, UserCancelableOperation *operation)
+void UserOperationUnregister(POnlineUser user, PUserOperation op)
 {
-    if (operation->prev == NULL && operation->next == NULL)
+    if (!op->cancel)
     {
-        free(operation);
+        UserOperationCancel(user, op);
+        return;
+    }
+
+    if (op->prev == NULL && op->next == NULL && user->operations.first != op)
+    {
+        pthread_mutex_unlock(&op->lock);
+        pthread_mutex_destroy(&op->lock);
+        free(op);
     }
     else
     {
-        pthread_rwlock_wrlock(&user->operations.lock);
-        for (UserCancelableOperation *op = user->operations.first; op != NULL; op = op->next)
-        {
-            if (op == operation)
-            {
-                if (op->prev == NULL)
-                {
-                    user->operations.first = operation->next;
-                }
-                else
-                {
-                    op->prev->next = operation->next;
-                }
-                if (operation->next == NULL)
-                {
-                    user->operations.last = operation->prev;
-                }
-                else
-                {
-                    operation->next->prev = operation->prev;
-                }
 
-                free(op);
-                break;
-            }
+        pthread_rwlock_wrlock(&user->operations.lock);
+        if (op->prev == NULL)
+        {
+            user->operations.first = op->next;
         }
+        else
+        {
+            op->prev->next = op->next;
+        }
+        if (op->next == NULL)
+        {
+            user->operations.last = op->prev;
+        }
+        else
+        {
+            op->next->prev = op->prev;
+        }
+
+        pthread_mutex_unlock(&op->lock);
+        pthread_mutex_destroy(&op->lock);
+        free(op);
         --user->operations.count;
         pthread_rwlock_unlock(&user->operations.lock);
     }
 }
 
-UserCancelableOperation *UserOperationGet(OnlineUser *user, uint32_t operationId)
+PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
 {
     pthread_rwlock_rdlock(&user->operations.lock);
-    UserCancelableOperation *ret = NULL;
-    for (UserCancelableOperation *op = user->operations.first; op != NULL; op = op->next)
+    PUserOperation ret = NULL;
+    for (PUserOperation op = user->operations.first; op != NULL; op = op->next)
     {
-        if (op->id == operationId)
+        if (op->session == sessionId)
         {
             ret = op;
             break;
         }
     }
     pthread_rwlock_unlock(&user->operations.lock);
+    if (ret)
+    {
+        if (pthread_mutex_trylock(&ret->lock))
+        {
+            return NULL;
+        }
+    }
     return ret;
 }
 
-UserCancelableOperation *UserOperationQuery(OnlineUser *user, UserCancelableOperationType type, int (*func)(UserCancelableOperation *op, void *data), void *data)
+void UserOperationDrop(PUserOperation op)
+{
+    pthread_mutex_unlock(&op->lock);
+}
+
+PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int (*func)(PUserOperation op, void *data), void *data)
 {
     pthread_rwlock_rdlock(&user->operations.lock);
-    UserCancelableOperation *ret = NULL;
-    for (UserCancelableOperation *op = user->operations.first; op != NULL; op = op->next)
+    PUserOperation ret = NULL;
+    for (PUserOperation op = user->operations.first; op != NULL; op = op->next)
     {
-        if (op->type == type && func(op, data))
+        if ((type == -1 || op->type == type) && func(op, data))
         {
             ret = op;
             break;
         }
     }
     pthread_rwlock_unlock(&user->operations.lock);
+    if (ret)
+    {
+        if (pthread_mutex_trylock(&ret->lock))
+        {
+            return NULL;
+        }
+    }
     return ret;
 }
 
-int UserOperationCancel(OnlineUser *user, uint32_t operationId)
+int UserOperationCancel(POnlineUser user, PUserOperation op)
 {
-    UserCancelableOperation *op = UserOperationGet(user, operationId);
-
     int ret = 1;
-    if (op->oncancel != NULL)
+    op->cancel = 1;
+    if (op->onCancel != NULL)
     {
-        ret = op->oncancel(user, op);
+        ret = op->onCancel(user, op);
     }
     else
     {
-        op->cancel = 1;
+        UserOperationUnregister(user, op);
     }
-
     return ret;
 }
 
-void UserOperationRemoveAll(OnlineUser *user)
+void UserOperationRemoveAll(POnlineUser user)
 {
-    pthread_rwlock_wrlock(&user->operations.lock);
-    for (UserCancelableOperation *op = user->operations.first; op != NULL; op = op->next)
+    if (pthread_rwlock_wrlock(&user->operations.lock))
+        abort();
+    PUserOperation next = user->operations.first;
+    user->operations.first = user->operations.last = NULL;
+    for (PUserOperation op = next; op != NULL; op = next)
     {
-        if (op->oncancel != NULL)
-        {
-            op->oncancel(user, op);
-        }
-        op->cancel = 1;
+        next = op->next;
         op->prev = op->next = NULL;
+        UserOperationCancel(user, op);
     }
+    user->operations.count = 0;
     pthread_rwlock_unlock(&user->operations.lock);
+}
+
+void InitUserManager()
+{
+    pthread_rwlock_init(&OnlineUserTable.lock, NULL);
+}
+
+void FinalizeUserManager()
+{
+    while (OnlineUserTable.count)
+    {
+        OnlineUserDelete(OnlineUserTable.first);
+    }
+    pthread_rwlock_destroy(&OnlineUserTable.lock);
+}
+
+int PostMessage(UserMessage *message)
+{
+    int ret;
+    POnlineUser toUser = OnlineUserGet(message->to);
+    if (toUser == NULL)
+    {
+        MessageFile *file = UserMessageFileOpen(message->to);
+        ret = MessageFileAppend(file, message);
+        MessageFileClose(file);
+    }
+    else
+    {
+        CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
+        OnlineUserDrop(toUser);
+        ret = 1;
+    }
+    return ret;
 }

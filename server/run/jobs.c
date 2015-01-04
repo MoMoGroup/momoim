@@ -2,54 +2,78 @@
 #include <server.h>
 #include "run/jobs.h"
 
-OnlineUser *jobQueue[MAX_CLIENTS];
-OnlineUser **pJobQueueHead = jobQueue, **pJobQueueTail = jobQueue;
-sem_t SemJobGold, SemJobAir;
-pthread_mutex_t lock;
+static POnlineUser jobQueue[CONFIG_JOB_QUEUE_SIZE];
+static POnlineUser *pJobQueueHead = jobQueue, *pJobQueueTail = jobQueue + 1;
+static pthread_mutex_t jobLock;
+static pthread_cond_t cond;
 
-OnlineUser *PullJob(void)
+void JobManagerKick(POnlineUser user)
 {
-    OnlineUser *user;
-    sem_wait(&SemJobGold);  //等待房子里有金子
-    pthread_mutex_lock(&lock);//冲入房子
-    user = *pJobQueueHead;  //从房子里抢走一块金子，
+    pthread_mutex_lock(&jobLock);
+    POnlineUser *p = pJobQueueHead;
+    while (!(p + 1 == pJobQueueTail ||
+             p + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
+    {
+        p = jobQueue + (p - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
+        if (*p == user)
+            *p = NULL;
+    }
+    pthread_mutex_unlock(&jobLock);
+}
 
-    if (pJobQueueHead == jobQueue + MAX_CLIENTS)//计算下一个应该出现金子的位置
+POnlineUser JobManagerPop(void)
+{
+    POnlineUser user;
+    pthread_mutex_lock(&jobLock);
+    redo:
+    while ((pJobQueueHead + 1 == pJobQueueTail) ||
+           (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
     {
-        pJobQueueHead = jobQueue;
+        pthread_cond_wait(&cond, &jobLock);     //等待队列非空
     }
-    else
+
+    int queueFull = pJobQueueHead == pJobQueueTail;
+
+    pJobQueueHead = jobQueue + (pJobQueueHead - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;//插入节点
+    user = *pJobQueueHead;
+    *pJobQueueHead = NULL;
+
+    if (queueFull)
     {
-        pJobQueueHead++;
+        pthread_cond_broadcast(&cond);          //如果Pop之前队列是满的,现在已经不满了,通知Push操作.
     }
-    pthread_mutex_unlock(&lock);//走出房子
-    sem_post(&SemJobAir);   //在房子里留下块空气
+
+    if (user == NULL || !OnlineUserHold(user))  //如果得到的对象为空或者无法保持用户(用户正在被删除)
+        goto redo;                              //重新选择下一个事务
+    pthread_mutex_unlock(&jobLock);
+
     return user;
 }
 
-void PushJob(OnlineUser *v)
+void JobManagerPush(POnlineUser v)
 {
-    sem_wait(&SemJobAir);//等待房子里出现空气
-    pthread_mutex_lock(&lock);//进入房子
-    *pJobQueueTail = v;//将金子扔到房子里
+    pthread_mutex_lock(&jobLock);
 
-    if (pJobQueueTail == jobQueue + MAX_CLIENTS)//计算下一个应该出现空气的位置
+    while (pJobQueueHead == pJobQueueTail)
     {
-        pJobQueueTail = jobQueue;
+        pthread_cond_wait(&cond, &jobLock);     //等待队列非满
     }
-    else
-    {
-        pJobQueueTail++;
-    }
+    int isEmpty = (pJobQueueHead + 1 == pJobQueueTail) ||
+                  (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue)));
 
-    pthread_mutex_unlock(&lock);//走出房子
-    sem_post(&SemJobGold);//房子里多了块金子
+    *pJobQueueTail = v;
+    pJobQueueTail = jobQueue + (pJobQueueTail - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;//移除节点
+
+    if (isEmpty)
+    {
+        pthread_cond_broadcast(&cond);          //如果Push之前队列是空的,现在已经非空了,通知Pop操作
+    }
+    pthread_mutex_unlock(&jobLock);
 }
 
 void InitJobManger(void)
 {
-    sem_init(&SemJobGold, 0, 0);    //初始情况房子里没有金子
-    sem_init(&SemJobAir, 0, sizeof(jobQueue) / sizeof(*jobQueue));//只有N个空气
-    pthread_mutex_init(&lock, NULL);
+    pthread_mutex_init(&jobLock, NULL);
+    pthread_cond_init(&cond, NULL);
 }
 

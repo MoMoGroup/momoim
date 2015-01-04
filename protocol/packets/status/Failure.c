@@ -1,5 +1,4 @@
 #include <protocol/base.h>
-#include "protocol/status/Failure.h"
 #include <protocol/CRPPackets.h>
 #include <string.h>
 #include <stdlib.h>
@@ -12,8 +11,12 @@ CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base)
     return data;
 }
 
-int CRPFailureSend(int sockfd, uint32_t sessionID, char *reason)
+int CRPFailureSend(int sockfd, uint32_t sessionID, int code, char *reason)
 {
-
-    return CRPSend(CRP_PACKET_FAILURE, sessionID, reason, strlen(reason), sockfd) != -1;
+    CRPPacketFailure packet = {
+            .code=code
+    };
+    size_t lenReason = strlen(reason);
+    memcpy(packet.reason, reason, lenReason);
+    return CRPSend(CRP_PACKET_FAILURE, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFileDataStart) + lenReason), sockfd) != -1;
 }

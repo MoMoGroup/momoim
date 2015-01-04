@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <logger.h>
 
 #include "run/worker.h"
 #include "run/user.h"
@@ -10,26 +11,38 @@ void *WorkerMain(void *arg)
 {
     char workerName[10];
     CRPBaseHeader *header;
-    OnlineUser *user;
+    POnlineUser user;
     WorkerType *worker = (WorkerType *) arg;
 
     sprintf(workerName, "WORKER-%d", worker->workerId);
-
-    while (!server_exit)
+    while (IsServerRunning)
     {
-        user = PullJob();
-        if (OnlineUserHold(user))   //保持用户,使用户对象在整个代码执行过程中不会被释放
-        {
-            header = CRPRecv(user->sockfd);//在UserJoinToPoll之前,用户被保持单线程处理状态
-            UserJoinToPool(user);
+        user = JobManagerPop();
 
-            if (header == NULL || ProcessUser(user, header) == 0)
+        if (user->status == OUS_PENDING_INIT)
+        {
+            OnlineUserInit(user);
+        }
+
+        header = CRPRecv(user->sockfd);//在UserJoinToPoll之前,用户被保持单线程处理状态,这里依然安全
+        if (header == NULL)
+        {
+            OnlineUserDelete(user);
+            continue;
+        }
+        else
+        {
+            UserJoinToPool(user);
+            if (ProcessUser(user, header) == 0)
             {
                 OnlineUserDelete(user);
+                free(header);
+                continue;
             }
-            OnlineUserUnhold(user);
             free(header);
         }
+        OnlineUserDrop(user);
     }
+    log_info(workerName, "Exit.\n");
     return 0;
 }

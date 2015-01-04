@@ -11,9 +11,9 @@ CRP_STRUCTURE
     //USER_MESSAGE_TYPE
     uint16_t messageLen;
     char message[0];
-} CRPPacketMessageText;
+} CRPPacketMessageNormal;
 
 __attribute_malloc__
-CRPPacketMessageText *CRPMessageTextCast(CRPBaseHeader *base);
+CRPPacketMessageNormal *CRPMessageNormalCast(CRPBaseHeader *base);
 
-int CRPMessageTextSend(int sockfd, uint32_t sessionID, USER_MESSAGE_TYPE messageType, uint32_t uid, uint16_t messageLen, char *message);
+int CRPMessageNormalSend(int sockfd, uint32_t sessionID, USER_MESSAGE_TYPE messageType, uint32_t uid, uint16_t messageLen, char *message);

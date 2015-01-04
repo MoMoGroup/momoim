@@ -7,7 +7,6 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 #include<string.h>
-#include <protocol/base.h>
 
 int main()
 {
@@ -42,7 +41,7 @@ int main()
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 1;
     }*/
-    CRPLoginLoginSend(sockfd, 0, "a", hash);
+    CRPLoginLoginSend(sockfd, 0, "0", hash);
 
     log_info("Login", "Waiting OK\n");
     header = CRPRecv(sockfd);
@@ -68,7 +67,7 @@ int main()
 
     CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
     uint32_t uid = ac->uid;
-    if (ac != header->data)
+    if ((const char *) ac != header->data)
         free(ac);
     CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
     CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
@@ -80,10 +79,10 @@ int main()
             case CRP_PACKET_INFO_DATA:
             {
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
-                log_info("User", "Nick:%s\n", infoData->nickName);
-                CRPFileRequestSend(sockfd, 10, 0, infoData->icon);
+                log_info("User", "Nick:%s\n", infoData->info.nickName);
+                CRPFileRequestSend(sockfd, infoData->info.uid, 0, infoData->info.icon);
 
-                if (infoData != header->data)
+                if ((const char *) infoData != header->data)
                     free(infoData);
                 break;
             }
@@ -91,12 +90,13 @@ int main()
             {
                 CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
                 log_info("Icon", "%lu bytes will be received\n", packet->dataLength);
-                if (packet != header->data)
+                CRPOKSend(sockfd, header->sessionID);
+                if ((const char *) packet != header->data)
                     free(packet);
                 break;
             };
             case CRP_PACKET_FILE_DATA:
-                header->sessionID;
+                CRPOKSend(sockfd, header->sessionID);
                 log_info("Icon", "Recv data %lu bytes.\n", header->dataLength);
                 break;
             case CRP_PACKET_FILE_DATA_END:
@@ -110,7 +110,7 @@ int main()
                 {
                     log_info("Icon", "Recv Fail with code %d", (int) packet->code);
                 }
-                if (packet != header->data)
+                if ((const char *) packet != header->data)
                     free(packet);
                 break;
             }
@@ -125,13 +125,19 @@ int main()
                     log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
                     for (int j = 0; j < group->friendCount; ++j)
                     {
-                        CRPInfoRequestSend(sockfd, 1, group->friends[j]); //请求用户资料
+                        if (group->friends[j] != uid)
+                            CRPInfoRequestSend(sockfd, 1, group->friends[j]); //请求用户资料
                         log_info(group->groupName, "Friend:%u\n", group->friends[j]);
                     }
                 }
                 UserFriendsFree(friends);
                 break;
             }
+            case CRP_PACKET_FAILURE:
+            {
+                CRPPacketFailure *failure = CRPFailureCast(header);
+                log_error("g", "Error %d - %s. %s.\n", failure->code, strerror(failure->code), failure->reason);
+            };
         }
         free(header);
     }
