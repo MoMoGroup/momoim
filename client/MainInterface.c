@@ -23,7 +23,7 @@ static GtkTreeStore *store;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
-GtkWidget  *closebut_event_box, *background_event_box;
+static GtkWidget  *closebut_event_box, *background_event_box;
 
 enum {
     PIXBUF_COL = 0,
