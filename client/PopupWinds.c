@@ -157,7 +157,7 @@ int popup(const char *title, const char *tell) {
                     | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
     g_signal_connect(G_OBJECT(popupwindow), "button_press_event",
-            G_CALLBACK(button_press_event), popupwindow);       // 加入事件回调
+            G_CALLBACK(button_press_event), popupwindow);    //加入事件回调
 
     g_signal_connect(G_OBJECT(popupwindow), "motion_notify_event",
             G_CALLBACK(motion_notify_event), popupwindow);
