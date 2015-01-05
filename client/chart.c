@@ -48,17 +48,12 @@ static void create_surfaces(friendinfo *information) {
 
     }
 
-    static GdkPixbuf *pixbuf;
     static cairo_t *cr;
     char mulu[80] = {0};
     cairo_surface_t *surface;
 
 
     sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, information->user.uid);
-
-    //pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
-    //gdouble w = gdk_pixbuf_get_width(pixbuf);
-    //gdouble h = gdk_pixbuf_get_height(pixbuf);
 
     //加载一个图片
     surface = cairo_image_surface_create_from_png(mulu);
@@ -76,25 +71,6 @@ static void create_surfaces(friendinfo *information) {
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_paint(cr);
 }
-//
-//static void
-//destroy_surfaces3() {
-//    g_print("destroying surfaces3");
-//
-//    cairo_surface_destroy(sflowerbackgroud);
-//    cairo_surface_destroy(surfacesend1);
-//    cairo_surface_destroy(surfacesend2);
-//    cairo_surface_destroy(surfacehead3);
-//    cairo_surface_destroy(surfacevoice1);
-//    cairo_surface_destroy(surfacevoice2);
-//    cairo_surface_destroy(surfacevideo2);
-//    cairo_surface_destroy(surfacevideo1);
-//    cairo_surface_destroy(surfaceclose1);
-//    cairo_surface_destroy(surfaceclose2);
-//    cairo_surface_destroy(surfaceclosebut1);
-//    cairo_surface_destroy(surfaceclosebut2);
-//    cairo_surface_destroy(surfaceclosebut3);
-//}
 
 //将输入的文本框输出在显示的文本框中
 void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times) {
@@ -107,7 +83,6 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times) {
 
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
-
 
 }
 
@@ -131,18 +106,24 @@ void Show_remote_text(const gchar *rcvd_text, friendinfo *info) {
 
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
+
+
 }
 
 
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
 void send_text(friendinfo *info) {
     GtkTextIter start, end;
+    GdkPixbuf * pixbuf;
     gchar *char_text;
     char_text = (gchar *) malloc(1024);
     if (char_text == NULL) {
         printf("Malloc error!\n");
         exit(1);
     }
+//
+//    pixbuf = gdk_pixbuf_new_from_file("ss.png", NULL);
+//    gtk_text_buffer_insert_pixbuf(info->input_buffer, &start, pixbuf);
     gtk_text_buffer_get_bounds(info->input_buffer, &start, &end);
     char_text = gtk_text_buffer_get_text(info->input_buffer, &start, &end, FALSE);
     g_print("%s\n", char_text);
@@ -156,6 +137,8 @@ void send_text(friendinfo *info) {
     CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, strlen(char_text), char_text);
     show_local_text(char_text, info, nicheng_times);
     free(char_text);
+
+
 }
 
 //背景的eventbox
@@ -202,6 +185,7 @@ static gint send_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
         send_text(info);
+
     }
     return 0;
 
@@ -430,7 +414,6 @@ static gint close_but_enter_notify_event(GtkWidget *widget, GdkEventButton *even
 
         gpointer data) {
     friendinfo *info = (friendinfo *) data;
-
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut3); //置换图标
     return 0;

@@ -438,7 +438,6 @@ PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, i
 
 void UserOperationUnregister(POnlineUser user, PUserOperation op)
 {
-    int session = op->session;
     if (!op->cancel)
     {
         UserOperationCancel(user, op);
@@ -448,7 +447,6 @@ void UserOperationUnregister(POnlineUser user, PUserOperation op)
     pthread_mutex_lock(&user->operations.lock);
     if (op->prev == NULL && op->next == NULL && user->operations.first != op)
     {
-        log_info("Operation", "Remove Session %d without updating table.\n", session);
         pthread_mutex_unlock(&op->lock);
         pthread_mutex_destroy(&op->lock);
         free(op);
@@ -508,7 +506,6 @@ PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
             }
             else
             {
-                log_warning("Operation", "Session %u Lock Failure.%d|%s\n", ret->session, errcode, strerror(errcode));
                 ret = NULL;
             }
         }
@@ -563,7 +560,7 @@ int UserOperationCancel(POnlineUser user, PUserOperation op)
 
 void UserOperationRemoveAll(POnlineUser user)
 {
-    if (pthread_mutex_lock(&user->operations.lock))
+    if (pthread_rwlock_wrlock(&user->operations.lock))
         abort();
     PUserOperation next = user->operations.first;
     user->operations.first = user->operations.last = NULL;
@@ -574,7 +571,7 @@ void UserOperationRemoveAll(POnlineUser user)
         UserOperationCancel(user, op);
     }
     user->operations.count = 0;
-    pthread_mutex_unlock(&user->operations.lock);
+    pthread_rwlock_unlock(&user->operations.lock);
 }
 
 

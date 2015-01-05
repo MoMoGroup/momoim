@@ -300,8 +300,10 @@ UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock)
             goto cleanup;
         len = (size_t) statBuf.st_size;
         addr = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
-        if (addr == MAP_FAILED)
+        if (addr == MAP_FAILED){
+            perror("mmap");
             goto cleanup;
+        }
 
         friends = UserFriendsDecode(addr);
         entry = UserFriendsEntrySetUnlock(uid, friends);

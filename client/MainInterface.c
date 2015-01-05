@@ -175,7 +175,7 @@ static void create_surfaces() {
         cairo_set_source_surface(cr, surface, 0, 0);
         cairo_paint(cr);
         headx = gtk_image_new_from_surface(surfacehead2);
-        gtk_fixed_put(GTK_FIXED(MainLayout), headx, 8, 10);
+        gtk_fixed_put(GTK_FIXED(MainLayout), headx, 10, 15);
     }
 }
 
