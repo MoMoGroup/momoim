@@ -82,7 +82,7 @@ int newsockfd()
                 return 1;
             }
             unsigned char hash[16];
-            MD5((unsigned char *) newpwd, 1, hash);
+            MD5((unsigned char *) newpwd, strlen(newpwd), hash);
             CRPLoginRegisterSend(sockfd, 0, newname, hash, newnick);
             log_info("注册ing", "momo\n");
             header = CRPRecv(sockfd);
@@ -96,6 +96,8 @@ int newsockfd()
             log_info("注册OK", "momo\n");
             popup("莫默告诉你：", "欢迎你加入莫默");
             free(header);
+            //destroy_surfaces();
+            gtk_widget_destroy(newwindow);
         }
         else
         {
