@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <ftadvanc.h>
 #include "chart.h"
+#include "common.h"
 #include <pwd.h>
 #include <math.h>
 
@@ -745,9 +746,9 @@ static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 int mainchart(friendinfo *friendinfonode)
 {
 
-    GtkWidget *chartbackground_event_box, *send_event_box, *voice_event_box, *video_event_box;
-    GtkWidget *close_event_box, *close_but_event_box, *look_event_box, *jietu_event_box, *file_event_box;
-    GtkWidget *photo_event_box, *wordart_event_box;
+    GtkEventBox *chartbackground_event_box, *send_event_box, *voice_event_box, *video_event_box;
+    GtkEventBox *close_event_box, *close_but_event_box, *look_event_box, *jietu_event_box, *file_event_box;
+    GtkEventBox *photo_event_box, *wordart_event_box;
 
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
     friendinfonode->chartwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -766,25 +767,124 @@ int mainchart(friendinfo *friendinfonode)
 
     gtk_window_set_decorated(GTK_WINDOW(friendinfonode->chartwindow), FALSE);   // 去掉边框
     create_surfaces(friendinfonode);
-    chartbackground_event_box = gtk_event_box_new();
-    send_event_box = gtk_event_box_new();
-    voice_event_box = gtk_event_box_new();
-    video_event_box = gtk_event_box_new();
-    close_event_box = gtk_event_box_new();
-    close_but_event_box = gtk_event_box_new();
-    look_event_box = gtk_event_box_new();
-    jietu_event_box = gtk_event_box_new();
-    file_event_box = gtk_event_box_new();
-    photo_event_box = gtk_event_box_new();
-    wordart_event_box = gtk_event_box_new();
 
+    friendinfonode->imageflowerbackgroud = gtk_image_new_from_surface(schartbackgroud);
+    friendinfonode->imagesend = gtk_image_new_from_surface(surfacesend1);
+    friendinfonode->imagevoice = gtk_image_new_from_surface(surfacevoice1);
+    friendinfonode->imagevideo = gtk_image_new_from_surface(surfacevideo1);
+    friendinfonode->imageclose = gtk_image_new_from_surface(surfaceclose1);
+    friendinfonode->imageclosebut = gtk_image_new_from_surface(surfaceclosebut1);
+    friendinfonode->imagelook = gtk_image_new_from_surface(surfacelook1);
+    friendinfonode->imagejietu = gtk_image_new_from_surface(surfacejietu1);
+    friendinfonode->imagefile = gtk_image_new_from_surface(surfacefile1);
+    friendinfonode->imagephoto = gtk_image_new_from_surface(surfaceimage1);
+    friendinfonode->imagewordart = gtk_image_new_from_surface(surfacewordart1);
+
+
+// 设置窗体获取鼠标事件 背景
+
+    chartbackground_event_box = BuildEventBox(
+            friendinfonode->imageflowerbackgroud,
+            G_CALLBACK(chartbackground_button_press_event),
+            NULL, NULL, NULL, friendinfonode);
+
+    //发送
+
+    send_event_box = BuildEventBox(
+            friendinfonode->imagesend,
+            G_CALLBACK(send_button_press_event),
+            G_CALLBACK(send_enter_notify_event),
+            G_CALLBACK(send_leave_notify_event),
+            G_CALLBACK(send_button_release_event),
+            friendinfonode);
+    //语音
+
+
+    voice_event_box = BuildEventBox(
+            friendinfonode->imagevoice,
+            G_CALLBACK(voice_button_press_event),
+            G_CALLBACK(voice_enter_notify_event),
+            G_CALLBACK(voice_leave_notify_event),
+            G_CALLBACK(voice_button_release_event),
+            friendinfonode);
+    //视频
+
+    video_event_box = BuildEventBox(
+            friendinfonode->imagevideo,
+            G_CALLBACK(video_button_press_event),
+            G_CALLBACK(video_enter_notify_event),
+            G_CALLBACK(video_leave_notify_event),
+            G_CALLBACK(video_button_release_event),
+            friendinfonode);
+//下方关闭按钮
+
+    close_event_box = BuildEventBox(
+            friendinfonode->imageclose,
+            G_CALLBACK(close_button_press_event),
+            G_CALLBACK(close_enter_notify_event),
+            G_CALLBACK(close_leave_notify_event),
+            G_CALLBACK(close_button_release_event),
+            friendinfonode);
+
+//右上方关闭按钮
+    close_but_event_box = BuildEventBox(
+            friendinfonode->imageclosebut,
+            G_CALLBACK(close_but_button_press_event),
+            G_CALLBACK(close_but_enter_notify_event),
+            G_CALLBACK(close_but_leave_notify_event),
+            G_CALLBACK(close_but_button_release_event),
+            friendinfonode);
+//表情
+
+    look_event_box = BuildEventBox(
+            friendinfonode->imagelook,
+            G_CALLBACK(look_button_press_event),
+            G_CALLBACK(look_enter_notify_event),
+            G_CALLBACK(look_leave_notify_event),
+            G_CALLBACK(look_button_release_event),
+            friendinfonode);
+
+    //截图
+
+    jietu_event_box = BuildEventBox(
+            friendinfonode->imagejietu,
+            G_CALLBACK(jietu_button_press_event),
+            G_CALLBACK(jietu_enter_notify_event),
+            G_CALLBACK(jietu_leave_notify_event),
+            G_CALLBACK(jietu_button_release_event),
+            friendinfonode);
+//文件
+
+    file_event_box = BuildEventBox(
+            friendinfonode->imagefile,
+            G_CALLBACK(file_button_press_event),
+            G_CALLBACK(file_enter_notify_event),
+            G_CALLBACK(file_leave_notify_event),
+            G_CALLBACK(file_button_release_event),
+            friendinfonode);
+
+    //图片
+
+    photo_event_box = BuildEventBox(
+            friendinfonode->imagephoto,
+            G_CALLBACK(photo_button_press_event),
+            G_CALLBACK(photo_enter_notify_event),
+            G_CALLBACK(photo_leave_notify_event),
+            G_CALLBACK(photo_button_release_event),
+            friendinfonode);
+    //字体
+
+    wordart_event_box = BuildEventBox(
+            friendinfonode->imagewordart,
+            G_CALLBACK(wordart_button_press_event),
+            G_CALLBACK(wordart_enter_notify_event),
+            G_CALLBACK(wordart_leave_notify_event),
+            G_CALLBACK(wordart_button_release_event),
+            friendinfonode);
 
 //背景
-    friendinfonode->imageflowerbackgroud = gtk_image_new_from_surface(schartbackgroud);
-    gtk_container_add(GTK_CONTAINER(chartbackground_event_box), friendinfonode->imageflowerbackgroud);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), chartbackground_event_box, 0, 0);
-
-    //昵称
+    //逆臣
     GtkWidget *nicheng;
     nicheng = gtk_label_new(friendinfonode->user.nickName);
     //daxiao
@@ -792,250 +892,28 @@ int mainchart(friendinfo *friendinfonode)
     font = pango_font_description_from_string("Sans");//"Sans"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(nicheng, font);
-
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), nicheng, 100, 20);
 
 //发送
-    friendinfonode->imagesend = gtk_image_new_from_surface(surfacesend1);
-    gtk_container_add(GTK_CONTAINER(send_event_box), friendinfonode->imagesend);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), send_event_box, 390, 510);
-
 //语音
-    friendinfonode->imagevoice = gtk_image_new_from_surface(surfacevoice1);
-    gtk_container_add(GTK_CONTAINER(voice_event_box), friendinfonode->imagevoice);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), voice_event_box, 80, 50);
-
-
 //视频按钮
-    friendinfonode->imagevideo = gtk_image_new_from_surface(surfacevideo1);
-    gtk_container_add(GTK_CONTAINER(video_event_box), friendinfonode->imagevideo);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), video_event_box, 120, 50);
-
-
 //下方关闭按钮
-    friendinfonode->imageclose = gtk_image_new_from_surface(surfaceclose1);
-    gtk_container_add(GTK_CONTAINER(close_event_box), friendinfonode->imageclose);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_event_box, 300, 512);
-
-
 //右上角关闭按钮
-    friendinfonode->imageclosebut = gtk_image_new_from_surface(surfaceclosebut1);
-    gtk_container_add(GTK_CONTAINER(close_but_event_box), friendinfonode->imageclosebut);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_but_event_box, 470, 0);
-
-
 //表情
-    friendinfonode->imagelook = gtk_image_new_from_surface(surfacelook1);
-    gtk_container_add(GTK_CONTAINER(look_event_box), friendinfonode->imagelook);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), look_event_box, 40, 405);
-
-
 //截图
-    friendinfonode->imagejietu = gtk_image_new_from_surface(surfacejietu1);
-    gtk_container_add(GTK_CONTAINER(jietu_event_box), friendinfonode->imagejietu);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), jietu_event_box, 165, 405);
-
 //文件
-    friendinfonode->imagefile = gtk_image_new_from_surface(surfacefile1);
-    gtk_container_add(GTK_CONTAINER(file_event_box), friendinfonode->imagefile);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), file_event_box, 125, 405);
-
-
 //图片
-    friendinfonode->imagephoto = gtk_image_new_from_surface(surfaceimage1);
-    gtk_container_add(GTK_CONTAINER(photo_event_box), friendinfonode->imagephoto);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), photo_event_box, 80, 405);
-
-
 //字体
-    friendinfonode->imagewordart = gtk_image_new_from_surface(surfacewordart1);
-    gtk_container_add(GTK_CONTAINER(wordart_event_box), friendinfonode->imagewordart);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), wordart_event_box, 5, 405);
-
-// 设置窗体获取鼠标事件 背景
-
-    gtk_widget_set_events(chartbackground_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT(chartbackground_event_box), "button_press_event",
-            G_CALLBACK(chartbackground_button_press_event), friendinfonode);
-
-    //发送
-    gtk_widget_set_events(send_event_box,
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT(send_event_box), "button_press_event",
-            G_CALLBACK(send_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(send_event_box), "enter_notify_event",
-            G_CALLBACK(send_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(send_event_box), "button_release_event",
-            G_CALLBACK(send_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(send_event_box), "leave_notify_event",
-            G_CALLBACK(send_leave_notify_event), friendinfonode);
-
-    //语音
-    gtk_widget_set_events(voice_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(voice_event_box), "button_press_event",
-            G_CALLBACK(voice_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(voice_event_box), "enter_notify_event",
-            G_CALLBACK(voice_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(voice_event_box), "button_release_event",
-            G_CALLBACK(voice_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(voice_event_box), "leave_notify_event",
-            G_CALLBACK(voice_leave_notify_event), friendinfonode);
-
-    //视频
-    gtk_widget_set_events(video_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(video_event_box), "button_press_event",
-            G_CALLBACK(video_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(video_event_box), "enter_notify_event",
-            G_CALLBACK(video_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(video_event_box), "button_release_event",
-            G_CALLBACK(video_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(video_event_box), "leave_notify_event",
-            G_CALLBACK(video_leave_notify_event), friendinfonode);
-//下方关闭按钮
-    gtk_widget_set_events(close_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(close_event_box), "button_press_event",
-            G_CALLBACK(close_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(close_event_box), "enter_notify_event",
-            G_CALLBACK(close_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(close_event_box), "button_release_event",
-            G_CALLBACK(close_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(close_event_box), "leave_notify_event",
-            G_CALLBACK(close_leave_notify_event), friendinfonode);
-//右上方关闭按钮
-    gtk_widget_set_events(send_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT(close_but_event_box), "button_press_event",
-            G_CALLBACK(close_but_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(close_but_event_box), "enter_notify_event",
-            G_CALLBACK(close_but_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(close_but_event_box), "button_release_event",
-            G_CALLBACK(close_but_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(close_but_event_box), "leave_notify_event",
-            G_CALLBACK(close_but_leave_notify_event), friendinfonode);
-//表情
-    gtk_widget_set_events(look_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(look_event_box), "button_press_event",
-            G_CALLBACK(look_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(look_event_box), "enter_notify_event",
-            G_CALLBACK(look_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(look_event_box), "button_release_event",
-            G_CALLBACK(look_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(look_event_box), "leave_notify_event",
-            G_CALLBACK(look_leave_notify_event), friendinfonode);
-
-    //截图
-    gtk_widget_set_events(jietu_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(jietu_event_box), "button_press_event",
-            G_CALLBACK(jietu_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(jietu_event_box), "enter_notify_event",
-            G_CALLBACK(jietu_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(jietu_event_box), "button_release_event",
-            G_CALLBACK(jietu_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(jietu_event_box), "leave_notify_event",
-            G_CALLBACK(jietu_leave_notify_event), friendinfonode);
-//文件
-    gtk_widget_set_events(file_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(file_event_box), "button_press_event",
-            G_CALLBACK(file_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(file_event_box), "enter_notify_event",
-            G_CALLBACK(file_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(file_event_box), "button_release_event",
-            G_CALLBACK(file_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(file_event_box), "leave_notify_event",
-            G_CALLBACK(file_leave_notify_event), friendinfonode);
-
-    //图片
-    gtk_widget_set_events(photo_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(photo_event_box), "button_press_event",
-            G_CALLBACK(photo_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(photo_event_box), "enter_notify_event",
-            G_CALLBACK(photo_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(photo_event_box), "button_release_event",
-            G_CALLBACK(photo_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(photo_event_box), "leave_notify_event",
-            G_CALLBACK(photo_leave_notify_event), friendinfonode);
-
-    //字体
-    gtk_widget_set_events(wordart_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(wordart_event_box), "button_press_event",
-            G_CALLBACK(wordart_button_press_event), friendinfonode);       // 加入事件回调
-    g_signal_connect(G_OBJECT(wordart_event_box), "enter_notify_event",
-            G_CALLBACK(wordart_enter_notify_event), friendinfonode);
-    g_signal_connect(G_OBJECT(wordart_event_box), "button_release_event",
-            G_CALLBACK(wordart_button_release_event), friendinfonode);
-    g_signal_connect(G_OBJECT(wordart_event_box), "leave_notify_event",
-            G_CALLBACK(wordart_leave_notify_event), friendinfonode);
-
 //头像
     friendinfonode->imagehead3 = gtk_image_new_from_surface(surfacehead3);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), friendinfonode->imagehead3, 15, 8);

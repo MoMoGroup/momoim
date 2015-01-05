@@ -7,6 +7,7 @@
 #include <string.h>
 #include <math.h>
 #include "chart.h"
+#include "common.h"
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -20,7 +21,7 @@ static GtkTreeStore *store;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
-static GtkWidget *closebut_event_box, *background_event_box;
+static GtkEventBox *closebut_event_box, *background_event_box;
 
 enum
 {
@@ -123,20 +124,17 @@ static void create_surfaces()
     surfaceclose53 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
     background = gtk_image_new_from_surface(surfacemainbackgroud);
-    gtk_container_add(GTK_CONTAINER(background_event_box), background);
-    gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
-
     search = gtk_image_new_from_surface(surfaceresearch);
-    gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
-
     friend = gtk_image_new_from_surface(surfacefriendimage);
+    closebut = gtk_image_new_from_surface(surfaceclose51);
+
+    gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
 
-    closebut = gtk_image_new_from_surface(surfaceclose51);
-    gtk_container_add(GTK_CONTAINER(closebut_event_box), closebut);
-    gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
+}
 
-
+static void loadinfo()
+{
     GtkWidget *userid;
     userid = gtk_label_new(userdata.nickName);
     //设置字体大小
@@ -147,6 +145,7 @@ static void create_surfaces()
 
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
 
+    //加载用户头像
     int finduidflag = 0;
     friendinfo *rear = friendinfohead;
     while (rear)
@@ -184,7 +183,7 @@ static void create_surfaces()
         headx = gtk_image_new_from_surface(surfacehead2);
         gtk_fixed_put(GTK_FIXED(MainLayout), headx, 10, 15);
         cairo_destroy(cr);
-        cairo_surface_destroy(surface);
+        // cairo_surface_destroy(surface);
     }
 }
 
@@ -409,6 +408,7 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+//右键菜单发送即时消息
 static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
@@ -459,6 +459,37 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
 
 }
 
+
+//右键菜单实现添加分组
+//右键菜单发送即时消息
+//static gint add_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+//{
+//
+//    gint i, j;
+//    cairo_surface_t *surface;
+//    cairo_surface_t *surfaceIcon;
+//
+//    store = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
+//
+//        surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
+//        cr = cairo_create(surface);
+//        cairo_move_to(cr, 0, 20);
+//        cairo_set_font_size(cr, 14);
+//        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+//        cairo_show_text(cr, friends->groups[i].groupName);
+//        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
+//        gtk_tree_store_append(store, &iter1, NULL);
+//        gtk_tree_store_set(store, &iter1,
+//                PIXBUF_COL, pixbuf,
+//                FRIENDUID_COL, friends->groups[i].groupId,
+//                -1);
+//    }
+//    cairo_destroy(cr);
+//    cairo_surface_destroy(surfaceIcon);
+//    return GTK_TREE_MODEL(store);
+//
+//}
+
 int maininterface()
 {
     GtkCellRenderer *renderer;
@@ -474,45 +505,24 @@ int maininterface()
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
 
-    closebut_event_box = gtk_event_box_new();
-    background_event_box = gtk_event_box_new();
-
     create_surfaces();
-    gtk_widget_set_events(background_event_box,  // 设置窗体获取鼠标事件
 
-            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+    background_event_box = BuildEventBox(
+            background,
+            G_CALLBACK(background_button_press_event),
+            NULL, NULL, NULL, NULL);
 
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT(background_event_box), "button_press_event",
-            G_CALLBACK(background_button_press_event), NULL);
+    closebut_event_box = BuildEventBox(
+            closebut,
+            G_CALLBACK(closebut_button_press_event),
+            G_CALLBACK(closebut_enter_notify_event),
+            G_CALLBACK(closebut_leave_notify_event),
+            G_CALLBACK(closebut_button_release_event),
+            NULL);
 
-
-    gtk_widget_set_events(closebut_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(closebut_event_box), "button_press_event",
-            G_CALLBACK(closebut_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(closebut_event_box), "enter_notify_event",
-            G_CALLBACK(closebut_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(closebut_event_box), "button_release_event",
-            G_CALLBACK(closebut_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(closebut_event_box), "leave_notify_event",
-            G_CALLBACK(closebut_leave_notify_event), NULL);
-
-    GtkWidget *userid;
-    userid = gtk_label_new(userdata.nickName);
-    //设置字体大小
-    PangoFontDescription *font;
-    font = pango_font_description_from_string("Sans");//"Sans"字体名
-    pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
-    gtk_widget_override_font(userid, font);
-
-    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
+    gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
+    gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
+    loadinfo();
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);

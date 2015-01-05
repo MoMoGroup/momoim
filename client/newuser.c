@@ -83,7 +83,7 @@ int newsockfd()
                 return 1;
             }
             unsigned char hash[16];
-            MD5((unsigned char *) newpwd, 1, hash);
+            MD5((unsigned char *) newpwd, strlen(newpwd), hash);
             CRPLoginRegisterSend(sockfd, 0, newname, hash, newnick);
             log_info("注册ing", "momo\n");
             header = CRPRecv(sockfd);
@@ -97,6 +97,8 @@ int newsockfd()
             log_info("注册OK", "momo\n");
             popup("莫默告诉你：", "欢迎你加入莫默");
             free(header);
+            //destroy_surfaces();
+            gtk_widget_destroy(newwindow);
             CRPClose(sockfd);
         }
         else
@@ -190,7 +192,7 @@ static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                                   event->x_root, event->y_root, event->time);
+                event->x_root, event->y_root, event->time);
     }
     return 0;
 }
