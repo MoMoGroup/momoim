@@ -26,6 +26,7 @@ SET(LIBPROTOCOL_SRC
     packets/status/Crash.c
     packets/status/Kick.c
     packets/status/Cancel.c
+    packets/status/SwitchProtocol.c
 
     packets/file/Data.c
     packets/file/Request.c
@@ -37,4 +38,5 @@ SET(LIBPROTOCOL_SRC
     packets/message/Normal.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
+target_link_libraries(protocol mcrypt)
 target_link_libraries(protocol imcommon)

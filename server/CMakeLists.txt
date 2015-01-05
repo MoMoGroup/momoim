@@ -29,6 +29,7 @@ SET(SERVER_SOURCE_FILE
     packets/status/OK.c
     packets/status/Failure.c
     packets/status/Cancel.c
+    packets/status/SwitchProtocol.c
 
     packets/info/Request.c
     packets/info/Data.c
@@ -52,3 +53,4 @@ target_link_libraries(server dl)
 target_link_libraries(server ssl)
 target_link_libraries(server imcommon)
 target_link_libraries(server rt)
+target_link_libraries(server crypto)

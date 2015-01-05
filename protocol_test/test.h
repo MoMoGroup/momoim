@@ -1,5 +1,9 @@
 #pragma once
-extern int sendfd, recvfd;
+
+#include <protocol.h>
+
+extern CRPContext cs, cr;
+
 
 int status_test();
 

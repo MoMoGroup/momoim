@@ -6,18 +6,18 @@
 CRPPacketFileData *CRPFileDataCast(CRPBaseHeader *base)
 {
     CRPPacketFileData *packet = (CRPPacketFileData *) malloc(base->totalLength - sizeof(CRPBaseHeader) + sizeof(NILOBJ(CRPPacketFileData)->length));
-    packet->length = base->totalLength - sizeof(CRPBaseHeader) - sizeof(NILOBJ(CRPPacketFileData)->seq);
+    packet->length = (CRP_LENGTH_TYPE) (base->totalLength - sizeof(CRPBaseHeader) - sizeof(NILOBJ(CRPPacketFileData)->seq));
     memcpy(&packet->seq, base->data, sizeof(packet->seq));
     memcpy(packet->data, base->data + sizeof(packet->seq), packet->length);
     return packet;
 }
 
-int CRPFileDataSend(int sockfd, uint32_t sessionID, CRP_LENGTH_TYPE length, size_t seq, char *data)
+int CRPFileDataSend(CRPContext context, uint32_t sessionID, CRP_LENGTH_TYPE length, size_t seq, char *data)
 {
     char *mem = (char *) malloc(length + sizeof(seq));
     memcpy(mem, &seq, sizeof(seq));
     memcpy(mem + sizeof(seq), data, length);
-    int ret = CRPSend(CRP_PACKET_FILE_DATA, sessionID, mem, length + sizeof(seq), sockfd) != -1;
+    int ret = CRPSend(context, CRP_PACKET_FILE_DATA, sessionID, mem, length + sizeof(seq)) != -1;
     free(mem);
     return ret;
 }

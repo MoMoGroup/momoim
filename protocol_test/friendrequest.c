@@ -7,13 +7,13 @@
 
 int TestPacketFriRequest()
 {
-    if (!CRPFriendRequestSend(sendfd, 0))
+    if (!CRPFriendRequestSend(cs, 0))
     {
         log_error("frirequest", "Send返回失败\n");
         perror("");
         return 0;
     }
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("frirequest", "Recv返回失败\n");

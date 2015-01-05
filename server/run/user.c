@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <logger.h>
 #include <packets.h>
-#include <unistd.h>
 #include <sys/stat.h>
 #include "data/user.h"
 #include <server.h>
@@ -21,13 +20,14 @@ PendingUsersTableType PendingUserTable = {
 pthread_rwlock_t OnlineUserTableLock, PendingUserTableLock;
 
 //消息处理器映射表
-int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header) = {
+static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header) = {
         [CRP_PACKET_KEEP_ALIVE]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusKeepAlive,
         [CRP_PACKET_HELLO]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusHello,
         [CRP_PACKET_OK]                 = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusOK,
         [CRP_PACKET_FAILURE]            = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusFailure,
         [CRP_PACKET_CRASH]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCrash,
         [CRP_PACKET_CANCEL]             = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCancel,
+        [CRP_PACKET_SWITCH_PROTOCOL]    = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusSwitchProtocol,
 
         [CRP_PACKET_LOGIN__START]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
         [CRP_PACKET_LOGIN_LOGIN]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogin,
@@ -88,7 +88,7 @@ int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
     }
 
     //查找处理机
-    int(*packetProcessor)(POnlineUser, uint32_t, void *, CRPBaseHeader *header) = PacketsProcessMap[packet->packetID];
+    int(*packetProcessor)(POnlineUser, uint32_t, void *, CRPBaseHeader *) = PacketsProcessMap[packet->packetID];
     if (packetProcessor != NULL)//如果找到,处理数据包
     {
         ret = packetProcessor(user, packet->sessionID, data, packet);
@@ -137,7 +137,7 @@ int PendingUserDelete(PPendingUser user)
         return OnlineUserDelete((POnlineUser) user);
     else if (user->status == OUS_PENDING_CLEAN)
         return 0;
-    OnlineUserSetStatus((POnlineUser) user, OUS_PENDING_CLEAN, NULL);
+    UserSetStatus((POnlineUser) user, OUS_PENDING_CLEAN, NULL);
     pthread_rwlock_unlock(user->holdLock);
     pthread_rwlock_wrlock(user->holdLock);
     PendingUserRemove(user);
@@ -208,7 +208,7 @@ PPendingUser PendingUserNew(int fd)
         return NULL;
     }
     //简要设置一下socket,状态.初始化用户保持锁
-    user->sockfd = fd;
+    user->sockfd = CRPOpen(fd);
     user->status = OUS_PENDING_HELLO;
     user->holdLock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));
     pthread_rwlock_init(user->holdLock, NULL);
@@ -227,7 +227,7 @@ int OnlineUserDelete(POnlineUser user)
         log_error("UserManager", "Illegal user status.\n");
         return 0;
     }
-    if (OnlineUserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
+    if (UserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
         return 0;
     uint32_t uid = user->info->uid;
     pthread_rwlock_unlock(user->holdLock);
@@ -238,9 +238,7 @@ int OnlineUserDelete(POnlineUser user)
     EpollRemove(user);
     UserOperationRemoveAll(user);
     pthread_mutex_destroy(&user->operations.lock);
-
-    shutdown(user->sockfd, SHUT_RDWR);
-    close(user->sockfd);
+    CRPClose(user->sockfd);
     UserFreeOnlineInfo(user);
 
 
@@ -291,9 +289,10 @@ static void broadcastNotify(POnlineUser user, FriendNotifyType type)
     pthread_rwlock_unlock(info->friendsLock);
 }
 
-POnlineUser OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info)
+POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info)
 {
     if (user->status == OUS_PENDING_CLEAN)
+        //正在清理的用户内存区域可能正在释放.此时不应改变状态.
         return NULL;
     if (user->status == OUS_PENDING_HELLO && status == OUS_PENDING_LOGIN)
     {//等待Hello到等待登陆只需要设置标识位
@@ -364,7 +363,7 @@ POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid)
     info->userDir[userDirSize] = 0;
 
     info->friends = UserFriendsGet(uid, &info->friendsLock);
-    return OnlineUserSetStatus((POnlineUser) user, OUS_ONLINE, info);
+    return UserSetStatus((POnlineUser) user, OUS_ONLINE, info);
 }
 
 void UserFreeOnlineInfo(POnlineUser user)
@@ -560,7 +559,7 @@ int UserOperationCancel(POnlineUser user, PUserOperation op)
 
 void UserOperationRemoveAll(POnlineUser user)
 {
-    if (pthread_rwlock_wrlock(&user->operations.lock))
+    if (pthread_mutex_lock(&user->operations.lock))
         abort();
     PUserOperation next = user->operations.first;
     user->operations.first = user->operations.last = NULL;
@@ -571,7 +570,7 @@ void UserOperationRemoveAll(POnlineUser user)
         UserOperationCancel(user, op);
     }
     user->operations.count = 0;
-    pthread_rwlock_unlock(&user->operations.lock);
+    pthread_mutex_unlock(&user->operations.lock);
 }
 
 

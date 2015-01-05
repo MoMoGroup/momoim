@@ -12,16 +12,17 @@ CRPPacketFriendSearchByNickname *CRPFriendSearchByNicknameCast(CRPBaseHeader *ba
     return (CRPPacketFriendSearchByNickname *) mem;
 }
 
-int CRPFriendSearchByNicknameSend(int sockfd, uint32_t sessionID, uint8_t page, uint8_t size, const char *text)
+int CRPFriendSearchByNicknameSend(CRPContext context, uint32_t sessionID, uint8_t page, uint8_t size, const char *text)
 {
     CRPPacketFriendSearchByNickname *packet =
             (CRPPacketFriendSearchByNickname *) malloc(sizeof(CRPPacketFriendSearchByNickname) + strlen(text));
     int ret = CRPSend(
+            context,
             CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME,
             sessionID,
             packet,
-            (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendSearchByNickname) + strlen(text)),
-            sockfd) != -1;
+            (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendSearchByNickname) + strlen(text))
+    ) != -1;
     free(packet);
     return ret;
 }

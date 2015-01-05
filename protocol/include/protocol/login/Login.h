@@ -20,4 +20,4 @@ CRPPacketLogin *CRPLoginLoginCast(CRPBaseHeader *base);
 /**
 * 发送登陆包
 */
-int CRPLoginLoginSend(int sockfd, uint32_t sessionID, const char *username, const unsigned char *password);
+int CRPLoginLoginSend(CRPContext context, uint32_t sessionID, const char *username, const unsigned char *password);

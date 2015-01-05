@@ -11,7 +11,7 @@ CRPPacketFriendUserList *CRPFriendUserListCast(CRPBaseHeader *base)
     return packet;
 }
 
-int CRPFriendUserListSend(int sockfd, uint32_t sessionID, uint32_t *uids, uint16_t count)
+int CRPFriendUserListSend(CRPContext context, uint32_t sessionID, uint32_t *uids, uint16_t count)
 {
-    return CRPSend(CRP_PACKET_FRIEND_USER_LIST, sessionID, uids, (CRP_LENGTH_TYPE) (count * sizeof(uint32_t)), sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_FRIEND_USER_LIST, sessionID, uids, (CRP_LENGTH_TYPE) (count * sizeof(uint32_t))) != -1;
 }

@@ -10,7 +10,7 @@ CRPPacketKick *CRPKickCast(CRPBaseHeader *base)
     return data;
 }
 
-int CRPKickSend(int sockfd, uint32_t sessionID, const char *reason)
+int CRPKickSend(CRPContext context, uint32_t sessionID, const char *reason)
 {
-    return CRPSend(CRP_PACKET_KICK, sessionID, reason, (CRP_LENGTH_TYPE) strlen(reason), sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_KICK, sessionID, reason, (CRP_LENGTH_TYPE) strlen(reason)) != -1;
 }

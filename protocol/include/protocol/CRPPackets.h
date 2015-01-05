@@ -32,6 +32,7 @@
 #include "protocol/status/Kick.h"
 #include "protocol/status/Crash.h"
 #include "protocol/status/Cancel.h"
+#include "protocol/status/SwitchProtocol.h"
 
 #include "protocol/message/Normal.h"
 
@@ -43,6 +44,7 @@ typedef enum
     CRP_PACKET_OK,                  //通用接受包
     CRP_PACKET_KICK,                //通用失败包
     CRP_PACKET_CANCEL,              //取消操作
+    CRP_PACKET_SWITCH_PROTOCOL,     //切换协议
     CRP_PACKET_CRASH = UINT16_MAX,  //崩溃包
 
 

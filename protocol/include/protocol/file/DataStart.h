@@ -15,4 +15,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFileDataStart *CRPFileDataStartCast(CRPBaseHeader *base);
 
-int CRPFileDataStartSend(int sockfd, uint32_t sessionID, uint64_t dataLength);
+int CRPFileDataStartSend(CRPContext context, uint32_t sessionID, uint64_t dataLength);

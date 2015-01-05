@@ -1,15 +1,11 @@
 #include <gtk/gtk.h>
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
-#include "ClientSockfd.h"
-#include <cairo.h>
 #include <logger.h>
-#include <imcommon/friends.h>
 #include <stdlib.h>
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
-#include <ftlist.h>
 #include "chart.h"
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;

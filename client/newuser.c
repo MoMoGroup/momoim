@@ -25,7 +25,6 @@ int newsockfd()
     newpwd = gtk_entry_get_text(GTK_ENTRY(passwd1));
     newpwd2 = gtk_entry_get_text(GTK_ENTRY(passwd2));
     newnick = gtk_entry_get_text(GTK_ENTRY(mnickname));
-    int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
     if ((strlen(newname) != 0) && (strlen(newpwd) != 0) && (strlen(newpwd2) != 0) && (strlen(newnick) != 0))
     {
@@ -34,7 +33,7 @@ int newsockfd()
         {
 
             if ((isalnum(newname[charnum]) != 0) || (newname[charnum] == '@')
-                    || (newname[charnum] == '.') || (newname[charnum] == '-') || (newname[charnum] == '_'))
+                                                    || (newname[charnum] == '.') || (newname[charnum] == '-') || (newname[charnum] == '_'))
             {
                 if (isdigit(newname[charnum]) != 0)
                 {
@@ -49,6 +48,7 @@ int newsockfd()
         }
         if (charnum == strlen(newname))
         {
+            int fd = socket(AF_INET, SOCK_STREAM, 0);
             if (number == charnum)
             {
                 log_info("登录名全为数字", "登录名全为数字\n");
@@ -66,13 +66,14 @@ int newsockfd()
                     .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
                     .sin_port=htons(8014)
             };
-            if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+            if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
             {
                 perror("Connect");
                 return 0;
             }
+            CRPContext sockfd = CRPOpen(fd);
             log_info("Hello", "Sending Hello\n");
-            CRPHelloSend(sockfd, 0, 1, 1, 1);
+            CRPHelloSend(sockfd, 0, 1, 1, 1, 0);
             CRPBaseHeader *header;
             log_info("Hello", "Waiting OK\n");
             header = CRPRecv(sockfd);
@@ -96,6 +97,7 @@ int newsockfd()
             log_info("注册OK", "momo\n");
             popup("莫默告诉你：", "欢迎你加入莫默");
             free(header);
+            CRPClose(sockfd);
         }
         else
         {
@@ -188,7 +190,7 @@ static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   event->x_root, event->y_root, event->time);
     }
     return 0;
 }
@@ -323,45 +325,45 @@ int newface()
 
     gtk_widget_set_events(newbackground_event_box,  // 设置窗体获取鼠标事件
 
-            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
 
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
     g_signal_connect(G_OBJECT(newbackground_event_box), "button_press_event",
-            G_CALLBACK(newbackground_button_press_event), NULL);
+                     G_CALLBACK(newbackground_button_press_event), NULL);
 
     gtk_widget_set_events(zhuce_event_box,  // 设置窗体获取鼠标事件
 
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
 
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
 
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
     g_signal_connect(G_OBJECT(zhuce_event_box), "button_press_event",
-            G_CALLBACK(zhuce_button_press_event), NULL);       // 加入事件回调
+                     G_CALLBACK(zhuce_button_press_event), NULL);       // 加入事件回调
     g_signal_connect(G_OBJECT(zhuce_event_box), "enter_notify_event",
-            G_CALLBACK(zhuce_enter_notify_event), NULL);
+                     G_CALLBACK(zhuce_enter_notify_event), NULL);
     g_signal_connect(G_OBJECT(zhuce_event_box), "button_release_event",
-            G_CALLBACK(zhuce_button_release_event), NULL);
+                     G_CALLBACK(zhuce_button_release_event), NULL);
     g_signal_connect(G_OBJECT(zhuce_event_box), "leave_notify_event",
-            G_CALLBACK(zhuce_leave_notify_event), NULL);
+                     G_CALLBACK(zhuce_leave_notify_event), NULL);
 
     gtk_widget_set_events(closebut_event_box,  // 设置窗体获取鼠标事件
 
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
 
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
 
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
     g_signal_connect(G_OBJECT(closebut_event_box), "button_press_event",
-            G_CALLBACK(closebut_button_press_event), NULL);       // 加入事件回调
+                     G_CALLBACK(closebut_button_press_event), NULL);       // 加入事件回调
     g_signal_connect(G_OBJECT(closebut_event_box), "enter_notify_event",
-            G_CALLBACK(closebut_enter_notify_event), NULL);
+                     G_CALLBACK(closebut_enter_notify_event), NULL);
     g_signal_connect(G_OBJECT(closebut_event_box), "button_release_event",
-            G_CALLBACK(closebut_button_release_event), NULL);
+                     G_CALLBACK(closebut_button_release_event), NULL);
     g_signal_connect(G_OBJECT(closebut_event_box), "leave_notify_event",
-            G_CALLBACK(closebut_leave_notify_event), NULL);
+                     G_CALLBACK(closebut_leave_notify_event), NULL);
 
     gtk_widget_show_all(newwindow);
 }

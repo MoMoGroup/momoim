@@ -5,9 +5,7 @@
 #include <ftadvanc.h>
 #include "chart.h"
 #include <pwd.h>
-#include <imcommon/friends.h>
 #include <math.h>
-#include <ftstroke.h>
 
 int X = 0;
 int Y = 0;

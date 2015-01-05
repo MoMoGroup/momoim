@@ -15,9 +15,12 @@ int ProcessPacketStatusOK(POnlineUser user, uint32_t session, CRPPacketOK *packe
 
 int ProcessPacketStatusFailure(POnlineUser user, uint32_t session, CRPPacketFailure *packet);
 
+int ProcessPacketStatusCancel(POnlineUser user, uint32_t session, CRPPacketCancel *packet);
+
+int ProcessPacketStatusSwitchProtocol(POnlineUser user, uint32_t session, CRPPacketSwitchProtocol *packet);
+
 int ProcessPacketStatusCrash(POnlineUser user, uint32_t session, CRPPacketCrash *packet);
 
-int ProcessPacketStatusCancel(POnlineUser user, uint32_t session, CRPPacketCancel *packet);
 
 //登陆登出消息
 int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet);
@@ -54,6 +57,3 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
 
 int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet);
 
-
-//数据包处理函数映射
-extern int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header);

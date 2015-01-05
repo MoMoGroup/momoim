@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <logger.h>
 #include <signal.h>
+#include <stdio.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
@@ -31,6 +32,9 @@ static void sigInterupt(int sig)
 
 int main(int argc, char **argv)
 {
+    setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
     if (!DataModuleInit())
     {
         log_error("MAIN", "Fail to initliaze data module.\n");

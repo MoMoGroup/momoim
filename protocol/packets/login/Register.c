@@ -2,7 +2,6 @@
 #include <protocol/CRPPackets.h>
 #include <string.h>
 #include <stdlib.h>
-#include <protocol/login/Register.h>
 
 
 CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
@@ -36,7 +35,7 @@ CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
 * 发送登陆包
 */
 int CRPLoginRegisterSend(
-        int sockfd,
+        CRPContext context,
         uint32_t sessionID,
         const char *username,
         const unsigned char *password,
@@ -61,7 +60,7 @@ int CRPLoginRegisterSend(
     p += userLen;
     memcpy(p, nickname, nickLen);
     p += nickLen;
-    ssize_t ret = CRPSend(CRP_PACKET_LOGIN_REGISTER, sessionID, mem, p - mem, sockfd);
+    ssize_t ret = CRPSend(context, CRP_PACKET_LOGIN_REGISTER, sessionID, mem, p - mem);
     free(mem);
     return ret != -1;
 }

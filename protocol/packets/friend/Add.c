@@ -11,7 +11,7 @@ CRPPacketFriendAdd *CRPFriendAddCast(CRPBaseHeader *base)
     return data;
 }
 
-int CRPFriendAddSend(int sockfd, uint32_t sessionID, uint32_t uid, const char *note)
+int CRPFriendAddSend(CRPContext context, uint32_t sessionID, uint32_t uid, const char *note)
 {
 
     CRPPacketFriendAdd packet = {
@@ -19,5 +19,5 @@ int CRPFriendAddSend(int sockfd, uint32_t sessionID, uint32_t uid, const char *n
     };
     size_t lenNote = strlen(note);
     memcpy(packet.note, note, lenNote);
-    return CRPSend(CRP_PACKET_FAILURE, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendData) + lenNote), sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_FAILURE, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendData) + lenNote)) != -1;
 }

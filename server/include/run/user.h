@@ -91,7 +91,7 @@ struct structOnlineUserInfo
 struct structOnlineUser
 {
     //与待登陆用户数据保持一致
-    int sockfd;
+    CRPContext sockfd;
     volatile OnlineUserStatus status;
     pthread_rwlock_t *holdLock;
 
@@ -102,7 +102,7 @@ struct structOnlineUser
 //等待登陆用户数据
 struct structPendingUser
 {
-    int sockfd;
+    CRPContext sockfd;
     volatile OnlineUserStatus status;
     pthread_rwlock_t *holdLock;
 
@@ -144,7 +144,7 @@ int PendingUserDelete(PPendingUser);
 int OnlineUserDelete(POnlineUser user);
 
 //设置用户状态
-POnlineUser OnlineUserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info);
+POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info);
 
 //通过uid查找用户
 POnlineUser OnlineUserGet(uint32_t uid);

@@ -1,18 +1,26 @@
 #include <logger.h>
 #include <sys/socket.h>
 #include "test.h"
-#include <unistd.h>
+#include <openssl/md5.h>
 
-int sendfd, recvfd;
+CRPContext cs, cr;
 
 int main()
 {
     int fd[2];
     socketpair(AF_UNIX, SOCK_STREAM, 0, fd);
-    recvfd = fd[0];
-    sendfd = fd[1];
 
     log_info("PROTOCOL_TEST", "Test Begin\n");
+
+    cs = CRPOpen(fd[1]);
+    cr = CRPOpen(fd[0]);
+    char sdkey[32], rvkey[32];
+    char iv[32];
+    MD5("sdkey", 3, sdkey);
+    MD5("rvkey", 3, rvkey);
+    MD5("iv", 2, iv);
+    CRPEncryptEnable(cs, sdkey, rvkey, iv);
+    CRPEncryptEnable(cr, rvkey, sdkey, iv);
 
     info_test();
     status_test();
@@ -23,7 +31,7 @@ int main()
     infodata_test();
     inforequest_test();
 
-    close(sendfd);
-    close(recvfd);
+    CRPClose(cs);
+    CRPClose(cr);
     return 0;
 }

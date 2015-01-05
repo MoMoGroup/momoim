@@ -1,4 +1,6 @@
 #pragma once
+
+#include "protocol/base.h"
 /**
 * 用于确认客户端在线
 */
@@ -9,4 +11,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketKeepAlive *CRPKeepAliveCast(CRPBaseHeader *base);
 
-int CRPKeepAliveSend(int sockfd, uint32_t sessionID);
+int CRPKeepAliveSend(CRPContext context, uint32_t sessionID);

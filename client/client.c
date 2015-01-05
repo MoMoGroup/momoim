@@ -1,6 +1,5 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
-#include <logger.h>
 #include <string.h>
 #include <ctype.h>
 #include "ClientSockfd.h"
@@ -340,7 +339,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
     if (event->button == 1)
     {                                         //设置取消按钮
         gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
-        close(sockfd);
+        CRPClose(sockfd);
         pthread_cancel(thread1);
         gtk_widget_hide(pendingLayout);
         gtk_widget_show_all(loginLayout);

@@ -17,4 +17,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFriendSearchByNickname *CRPFriendSearchByNicknameCast(CRPBaseHeader *base);
 
-int CRPFriendSearchByNicknameSend(int sockfd, uint32_t sessionID, uint8_t page, uint8_t size, const char *text);
+int CRPFriendSearchByNicknameSend(CRPContext context, uint32_t sessionID, uint8_t page, uint8_t size, const char *text);

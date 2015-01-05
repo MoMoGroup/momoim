@@ -7,9 +7,12 @@
 #include<openssl/md5.h>
 #include <stdlib.h>
 #include<string.h>
+#include <errno.h>
+
 
 int main()
 {
+    setbuf(stdout, NULL);
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
@@ -22,15 +25,29 @@ int main()
         return 1;
     }
     log_info("Hello", "Sending Hello\n");
-    CRPHelloSend(sockfd, 0, 1, 1, 1);
+    CRPContext NetContext = CRPOpen(sockfd);
+
+    CRPHelloSend(NetContext, 0, 1, 1, 1, 1);
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
-    header = CRPRecv(sockfd);
+    header = CRPRecv(NetContext);
     if (header->packetID != CRP_PACKET_OK)
     {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 1;
     }
+
+    char sendKey[32], iv[32];
+    CRPSwitchProtocolSend(NetContext, 1, sendKey, iv);
+    header = CRPRecv(NetContext);
+    if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL)
+    {
+        log_error("SwitchProtocol", "Recv Packet:%d\n", header->packetID);
+        return 1;
+    }
+    CRPPacketSwitchProtocol *packet = CRPSwitchProtocolCast(header);
+    CRPEncryptEnable(NetContext, sendKey, packet->key, packet->iv);
+
     log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];
     MD5((unsigned char *) "s", 1, hash);
@@ -41,10 +58,10 @@ int main()
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 1;
     }*/
-    CRPLoginLoginSend(sockfd, 0, "0", hash);
+    CRPLoginLoginSend(NetContext, 0, "0", hash);
 
     log_info("Login", "Waiting OK\n");
-    header = CRPRecv(sockfd);
+    header = CRPRecv(NetContext);
     switch (header->packetID)
     {
         case CRP_PACKET_LOGIN_ACCEPT:
@@ -69,11 +86,11 @@ int main()
     uint32_t uid = ac->uid;
     if ((const char *) ac != header->data)
         free(ac);
-    CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
-    CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
-    while (1)
+    CRPInfoRequestSend(NetContext, 0, uid); //请求用户资料
+    CRPFriendRequestSend(NetContext, 0);    //请求用户好友列表
+    while (!errno)
     {
-        header = CRPRecv(sockfd);
+        header = CRPRecv(NetContext);
         switch (header->packetID)
         {
             case CRP_PACKET_INFO_DATA:
@@ -82,10 +99,10 @@ int main()
                 if (infoData->info.uid == uid)
                 {
                     infoData->info.icon[15] = 2;
-                    CRPInfoDataSend(sockfd, 0, 0, &infoData->info);
+                    CRPInfoDataSend(NetContext, 0, 0, &infoData->info);
                     log_info("User", "Nick:%s\n", infoData->info.nickName);
                 }
-                CRPFileRequestSend(sockfd, infoData->info.uid, 0, infoData->info.icon);
+                CRPFileRequestSend(NetContext, infoData->info.uid, 0, infoData->info.icon);
                 if ((const char *) infoData != header->data)
                     free(infoData);
                 break;
@@ -94,13 +111,13 @@ int main()
             {
                 CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
                 log_info("Icon", "%lu bytes will be received\n", packet->dataLength);
-                CRPOKSend(sockfd, header->sessionID);
+                CRPOKSend(NetContext, header->sessionID);
                 if ((const char *) packet != header->data)
                     free(packet);
                 break;
             };
             case CRP_PACKET_FILE_DATA:
-                CRPOKSend(sockfd, header->sessionID);
+                CRPOKSend(NetContext, header->sessionID);
                 log_info("Icon", "Recv data %lu bytes.\n", header->totalLength - sizeof(CRPBaseHeader));
                 break;
             case CRP_PACKET_FILE_DATA_END:
@@ -130,7 +147,9 @@ int main()
                     for (int j = 0; j < group->friendCount; ++j)
                     {
                         if (group->friends[j] != uid)
-                            CRPInfoRequestSend(sockfd, 1, group->friends[j]); //请求用户资料
+                        {
+                            CRPInfoRequestSend(NetContext, 1, group->friends[j]); //请求用户资料
+                        }
                         log_info(group->groupName, "Friend:%u\n", group->friends[j]);
                     }
                 }
@@ -141,7 +160,11 @@ int main()
             {
                 CRPPacketFailure *failure = CRPFailureCast(header);
                 log_error("g", "Error %d - %s. %s.\n", failure->code, strerror(failure->code), failure->reason);
-            };
+                break;
+            }
+            default:
+                log_error("DEBUG", "Unexcepted Packet ID %d\n", header->packetID);
+                break;
         }
         free(header);
     }

@@ -39,11 +39,11 @@ int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileRese
                 ret = lseek(fop->fd, packet->seq * PAGE_SIZE, SEEK_SET);
                 if (ret)
                 {
-                    CRPFailureSend(fop->fd, session, EINVAL, "无法重定位文件");
+                    CRPFailureSend(user->sockfd, session, EINVAL, "无法重定位文件");
                 }
                 else
                 {
-                    CRPOKSend(fop->fd, session);
+                    CRPOKSend(user->sockfd, session);
                 }
                 break;
             }

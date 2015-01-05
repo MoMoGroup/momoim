@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <data/auth.h>
-#include <pthread.h>
 
 static sqlite3 *db = 0;
 static const char sqlAuth[] = "SELECT id FROM users WHERE name = ? AND key = ?;";

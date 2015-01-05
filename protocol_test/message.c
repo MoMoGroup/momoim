@@ -7,14 +7,14 @@
 
 int TestPacketMessage()
 {
-    if (!CRPMessageNormalSend(sendfd, 0, UMT_TEXT, 0x21, 8, "JDKAJDKA"))
+    if (!CRPMessageNormalSend(cs, 0, UMT_TEXT, 0x21, 8, "JDKAJDKA"))
     {
         log_error("message", "Send返回失败\n");
         perror("");
         return 0;
     }
 
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("message", "Recv返回失败\n");

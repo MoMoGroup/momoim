@@ -10,13 +10,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/status/Failure.h>
 #include "MainInterface.h"
-#include "client.h"
 
 pthread_t ThreadKeepAlive;
 
-int sockfd;
+CRPContext sockfd;
 UserFriends *friends;
 UserGroup *group;
 UserInfo userdata;
@@ -104,7 +102,7 @@ int backtologin(CRPBaseHeader *header, void *data)
 {
     log_info("销毁", "\n");
     g_idle_add(destoryall, NULL);
-    close(sockfd);
+    CRPClose(sockfd);
 //    log_info("加载", "\n");
 //    g_idle_add(loadloginLayout, NULL);
 
@@ -118,25 +116,40 @@ int mysockfd()
 //头像,好友头像
     char mulu[80] = {0};
     char mulu2[80] = {0};
-    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+    if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
         perror("Connect");
         return 0;
     }
+    sockfd = CRPOpen(fd);
     log_info("Hello", "Sending Hello\n");
-    CRPHelloSend(sockfd, 0, 1, 1, 1);
+    CRPHelloSend(sockfd, 0, 1, 1, 1, 1);
     CRPBaseHeader *header;
     header = CRPRecv(sockfd);
     if (header->packetID != CRP_PACKET_OK)
     {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 0;
+    }
+    char sendKey[32], iv[32];
+    CRPSwitchProtocolSend(sockfd, 1, sendKey, iv);
+    header = CRPRecv(sockfd);
+    if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL)
+    {
+        log_error("SwitchProtocol", "Can not enable encrypt!\n", header->packetID);
+    }
+    else
+    {
+        CRPPacketSwitchProtocol *packet = CRPSwitchProtocolCast(header);
+        CRPEncryptEnable(sockfd, sendKey, packet->key, packet->iv);
+        if ((void *) packet != header->data)
+            free(packet);
     }
     log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];

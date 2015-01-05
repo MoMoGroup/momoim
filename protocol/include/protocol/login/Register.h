@@ -24,8 +24,9 @@ CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base);
 * 发送注册请求
 */
 int CRPLoginRegisterSend(
-        int sockfd,
+        CRPContext context,
         uint32_t sessionID,
         const char *username,
         const unsigned char *password,
-        const char *nickname);
+        const char *nickname
+);

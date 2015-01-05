@@ -1,15 +1,3 @@
-#include <pthread.h>
-#include <stdio.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <protocol/status/Hello.h>
-#include <protocol/CRPPackets.h>
-#include <logger.h>
-#include <openssl/md5.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <protocol/base.h>
-
 #define CLIENT_COUNT 100
 
 pthread_t child[CLIENT_COUNT];

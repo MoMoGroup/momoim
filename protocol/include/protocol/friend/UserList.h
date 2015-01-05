@@ -16,4 +16,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFriendUserList *CRPFriendUserListCast(CRPBaseHeader *base);
 
-int CRPFriendUserListSend(int sockfd, uint32_t sessionID, uint32_t *uids, uint16_t count);
+int CRPFriendUserListSend(CRPContext context, uint32_t sessionID, uint32_t *uids, uint16_t count);

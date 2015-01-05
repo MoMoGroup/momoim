@@ -8,7 +8,7 @@ CRPPacketFriendAccept *CRPFriendAcceptCast(CRPBaseHeader *base)
     return (CRPPacketFriendAccept *) base->data;
 }
 
-int CRPFriendAcceptSend(int sockfd, uint32_t sessionID, uint32_t uid)
+int CRPFriendAcceptSend(CRPContext context, uint32_t sessionID, uint32_t uid)
 {
-    return CRPSend(CRP_PACKET_FRIEND_ACCEPT, sessionID, &uid, (CRP_LENGTH_TYPE) sizeof(CRPPacketFriendAccept), sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_FRIEND_ACCEPT, sessionID, &uid, (CRP_LENGTH_TYPE) sizeof(CRPPacketFriendAccept)) != -1;
 }

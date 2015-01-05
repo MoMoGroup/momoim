@@ -15,4 +15,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFileReset *CRPFileResetCast(CRPBaseHeader *base);
 
-int CRPFileResetSend(int sockfd, uint32_t sessionID, size_t seq);
+int CRPFileResetSend(CRPContext context, uint32_t sessionID, size_t seq);

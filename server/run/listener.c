@@ -21,7 +21,7 @@ void EpollAdd(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll_add");
     }
@@ -33,7 +33,7 @@ void EpollModify(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->sockfd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll modify");
     }
@@ -41,7 +41,7 @@ void EpollModify(POnlineUser user)
 
 void EpollRemove(POnlineUser user)
 {
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd, NULL))
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd->fd, NULL))
     {
         if (errno != ENOENT)//如果fd已经移除,不要报错
             perror("epoll_remove");
@@ -97,7 +97,7 @@ void *ListenMain(void *listenSocket)
     }
     log_info("SERVER-MAIN", "Listenning on TCP %d\n", LISTEN_PORT);
 
-    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);    //创建epoll,在服务端fork时,关闭
+    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);    //创建epoll,在服务端fork时关闭
 
     struct epoll_event event = {
             .data.ptr=NULL,
@@ -130,14 +130,7 @@ void *ListenMain(void *listenSocket)
                             break;
                         }
                     }
-                    flags = fcntl(fd, F_GETFL, 0);//启用非阻塞IO
-                    flags |= O_NONBLOCK;
-                    flags = fcntl(fd, F_SETFL, flags);
-                    if (flags == -1)
-                    {
-                        perror("fcntl");
-                        continue;
-                    }
+                    fcntl(fd, F_SETFL, O_NONBLOCK);
                     PPendingUser user = PendingUserNew(fd);//分配一个用户对象空间(只做简单初始化)
                     EpollAdd((POnlineUser) user);//将其加入事务池
                 }

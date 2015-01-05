@@ -6,11 +6,11 @@ CRPPacketFriendNotify *CRPFriendNotifyCast(CRPBaseHeader *base)
     return (CRPPacketFriendNotify *) base;
 }
 
-int CRPFriendNotifySend(int sockfd, uint32_t sessionID, uint32_t uid, FriendNotifyType type)
+int CRPFriendNotifySend(CRPContext context, uint32_t sessionID, uint32_t uid, FriendNotifyType type)
 {
     CRPPacketFriendNotify packet = {
             .type=(uint8_t) type,
             .uid=uid
     };
-    return CRPSend(CRP_PACKET_FRIEND_NOTIFY, sessionID, &packet, sizeof(CRPPacketFriendNotify), sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_FRIEND_NOTIFY, sessionID, &packet, sizeof(CRPPacketFriendNotify)) != -1;
 }

@@ -7,7 +7,7 @@ CRPPacketFileReset *CRPFileResetCast(CRPBaseHeader *base)
     return (CRPPacketFileReset *) base->data;
 }
 
-int CRPFileResetSend(int sockfd, uint32_t sessionID, size_t seq)
+int CRPFileResetSend(CRPContext context, uint32_t sessionID, size_t seq)
 {
-    return CRPSend(CRP_PACKET_FILE_RESET, sessionID, &seq, sizeof(seq), sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_FILE_RESET, sessionID, &seq, sizeof(seq)) != -1;
 }

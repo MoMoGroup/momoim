@@ -3,7 +3,6 @@
 #include "run/user.h"
 #include <unistd.h>
 #include <asm-generic/errno-base.h>
-#include <asm-generic/errno.h>
 
 
 int ProcessPacketFileData(POnlineUser user, uint32_t session, CRPPacketFileData *packet)

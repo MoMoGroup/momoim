@@ -12,4 +12,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketKick *CRPKickCast(CRPBaseHeader *base);
 
-int CRPKickSend(int sockfd, uint32_t sessionID, const char *reason);
+int CRPKickSend(CRPContext context, uint32_t sessionID, const char *reason);

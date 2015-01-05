@@ -23,4 +23,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFriendNotify *CRPFriendNotifyCast(CRPBaseHeader *base);
 
-int CRPFriendNotifySend(int sockfd, uint32_t sessionID, uint32_t uid, FriendNotifyType type);
+int CRPFriendNotifySend(CRPContext context, uint32_t sessionID, uint32_t uid, FriendNotifyType type);

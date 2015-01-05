@@ -6,8 +6,8 @@ CRPPacketCancel *CRPCancelCast(CRPBaseHeader *base)
     return (CRPPacketCancel *) base->data;
 }
 
-int CRPCancelSend(int sockfd, uint32_t sessionID)
+int CRPCancelSend(CRPContext context, uint32_t sessionID)
 {
 
-    return CRPSend(CRP_PACKET_CANCEL, sessionID, NULL, 0, sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_CANCEL, sessionID, NULL, 0) != -1;
 }

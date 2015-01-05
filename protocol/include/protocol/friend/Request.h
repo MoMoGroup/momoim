@@ -14,4 +14,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFriendRequest *CRPFriendRequestCast(CRPBaseHeader *base);
 
-int CRPFriendRequestSend(int sockfd, uint32_t sessionID);
+int CRPFriendRequestSend(CRPContext context, uint32_t sessionID);

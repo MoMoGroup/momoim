@@ -18,4 +18,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFileData *CRPFileDataCast(CRPBaseHeader *base);
 
-int CRPFileDataSend(int sockfd, uint32_t sessionID, CRP_LENGTH_TYPE length, size_t seq, char *data);
+int CRPFileDataSend(CRPContext context, uint32_t sessionID, CRP_LENGTH_TYPE length, size_t seq, char *data);

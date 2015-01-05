@@ -11,4 +11,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketCancel *CRPCancelCast(CRPBaseHeader *base);
 
-int CRPCancelSend(int sockfd, uint32_t sessionID);
+int CRPCancelSend(CRPContext context, uint32_t sessionID);

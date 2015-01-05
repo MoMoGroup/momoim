@@ -9,13 +9,13 @@
 int TestPacketInfoData()
 {
     UserInfo info;
-    if (!CRPInfoDataSend(sendfd, 0, &info))
+    if (!CRPInfoDataSend(cs, 0, 1, &info))
     {
         log_error("infodata", "Send返回失败\n");
         perror("");
         return 0;
     }
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("infodata", "Recv返回失败\n");
