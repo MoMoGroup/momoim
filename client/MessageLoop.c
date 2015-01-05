@@ -9,7 +9,8 @@
 pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
 
-typedef struct messageloop {
+typedef struct messageloop
+{
     uint32_t sessionid;
     uint16_t packetID;           //包ID，用于区分不同数据包
 
@@ -67,7 +68,7 @@ int MessageLoopFunc()
     while (1)
     {
         header = CRPRecv(sockfd);
-       // log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
+        // log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
         pthread_rwlock_rdlock(&lock);//写锁定
         messageloop *prev = &messagehead, *p;
         int flag = 1;

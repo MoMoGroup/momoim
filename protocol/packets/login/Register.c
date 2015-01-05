@@ -10,8 +10,8 @@ CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
     CRPPacketLoginRegister *packet = (CRPPacketLoginRegister *) base->data;
     packet = (CRPPacketLoginRegister *) malloc(
             sizeof(CRPPacketLoginRegister)
-            + packet->usernameLength + 1
-            + packet->nicknameLength + 1
+                    + packet->usernameLength + 1
+                    + packet->nicknameLength + 1
     );
     char *p = (char *) packet;
     memcpy(p, base->data, sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname));
@@ -24,11 +24,11 @@ CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
 
     memcpy(packet->username, base->data + sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname), packet->usernameLength);
     memcpy(packet->nickname,
-           base->data +
-           sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname) +
-           packet->usernameLength,
+            base->data +
+                    sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname) +
+                    packet->usernameLength,
 
-           packet->nicknameLength);
+            packet->nicknameLength);
     return packet;
 }
 
@@ -46,10 +46,10 @@ int CRPLoginRegisterSend(
             nickLen = (uint8_t) strlen(nickname);
     char *mem = (char *) malloc(
             sizeof(CRPPacketLoginRegister)
-            - sizeof(NILOBJ(CRPPacketLoginRegister)->username)
-            - sizeof(NILOBJ(CRPPacketLoginRegister)->nickname)
-            + userLen
-            + nickLen);
+                    - sizeof(NILOBJ(CRPPacketLoginRegister)->username)
+                    - sizeof(NILOBJ(CRPPacketLoginRegister)->nickname)
+                    + userLen
+                    + nickLen);
     char *p = mem;
     memcpy(p, &userLen, sizeof(userLen));
     p += sizeof(userLen);

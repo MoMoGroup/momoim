@@ -104,28 +104,36 @@ void on_button_clicked()
 
     name = gtk_entry_get_text(GTK_ENTRY(username));
     pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
-    if ((strlen(name) != 0) && (strlen(pwd) != 0)) {
+    if ((strlen(name) != 0) && (strlen(pwd) != 0))
+    {
         int charnum, number = 0;
-        for (charnum = 0; name[charnum];) {
+        for (charnum = 0; name[charnum];)
+        {
             if ((isalnum(name[charnum]) != 0) || (name[charnum] == '@')
-                    || (name[charnum] == '.') || (name[charnum] == '-') || (name[charnum] == '_')) {
-                if (isdigit(name[charnum]) != 0) {
+                    || (name[charnum] == '.') || (name[charnum] == '-') || (name[charnum] == '_'))
+            {
+                if (isdigit(name[charnum]) != 0)
+                {
                     number++;
                 }
                 charnum++;
             }
-            else {
+            else
+            {
                 break;
             }
         }
-        if (charnum == strlen(name)) {
+        if (charnum == strlen(name))
+        {
         }
-        else {
+        else
+        {
             popup("莫默告诉你：", "包含不合格字符");
             return;
         }
     }
-    else {
+    else
+    {
         popup("莫默告诉你：", "请填写登录信息");
         return;
     }

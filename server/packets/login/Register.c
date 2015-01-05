@@ -17,7 +17,7 @@ int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLogi
             UserInfo *info = UserInfoGet(uid);
             bzero(info->nickName, sizeof(info->nickName));
             memcpy(info->nickName, packet->nickname,
-                   packet->nicknameLength > sizeof(info->nickName) ? sizeof(info->nickName) : packet->nicknameLength);
+                    packet->nicknameLength > sizeof(info->nickName) ? sizeof(info->nickName) : packet->nicknameLength);
             UserInfoSave(uid, info);
             UserInfoFree(info);
             CRPOKSend(user->sockfd, session);

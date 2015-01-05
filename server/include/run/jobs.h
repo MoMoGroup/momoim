@@ -7,6 +7,7 @@ void InitJobManger(void);
 
 //将一个用户从事务管理器中移除
 void JobManagerKick(POnlineUser user);
+
 //从事务队列中获得一个用户
 POnlineUser JobManagerPop(void);
 

@@ -3,7 +3,8 @@
 #include <protocol/CRPPackets.h>
 #include <stddef.h>
 
-CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base) {
+CRPPacketCrash *CRPCrashCast(CRPBaseHeader *base)
+{
     return (CRPPacketCrash *) base->data;
 }
 

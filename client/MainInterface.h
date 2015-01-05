@@ -15,15 +15,20 @@ extern int maininterface();
 //extern gboolean backttologinLayout(gpointer user_data);
 
 extern gboolean mythread(gpointer user_data);
+
 extern gboolean destoryall(gpointer user_data);
+
 extern gboolean loadloginLayout(gpointer user_data);
+
 extern gboolean DestoryMainInterFace(gpointer user_data);
 
 gboolean destroyLayout(gpointer user_data);
+
 extern UserFriends *friends;
 extern UserGroup *group;
 
 extern int mainchart(friendinfo *friendinfonode);
+
 extern void recd_server_msg(const gchar *rcvd_text, u_int32_t recd_uid);
 
 extern int MessageLoopFunc();

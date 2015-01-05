@@ -5,8 +5,8 @@
 #include "data/file.h"
 
 const uint8_t DataFilePathLength = sizeof(DATA_FILE_ROOT_PATH) +    //"files/"
-                                   DATAFILE_DEPTH_LEVEL * 3 +//深度字符串
-                                   (16 - DATAFILE_DEPTH_LEVEL) * 2;//剩余十六进制字符
+        DATAFILE_DEPTH_LEVEL * 3 +//深度字符串
+        (16 - DATAFILE_DEPTH_LEVEL) * 2;//剩余十六进制字符
 
 
 int DataFilePath(unsigned char *key, char *buf)

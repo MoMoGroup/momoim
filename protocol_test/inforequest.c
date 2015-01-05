@@ -5,25 +5,30 @@
 #include <stdlib.h>
 #include "test.h"
 
-int TestPacketRequest() {
+int TestPacketRequest()
+{
 
-    if (!CRPInfoRequestSend(sendfd, 0, 0x88)) {
+    if (!CRPInfoRequestSend(sendfd, 0, 0x88))
+    {
         log_error("inforequest", "Send返回失败\n");
         perror("");
         return 0;
 
     }
     CRPBaseHeader *packet = CRPRecv(recvfd);
-    if (packet == NULL) {
+    if (packet == NULL)
+    {
         log_error("inforequest", "Recv返回失败\n");
         return 0;
     }
-    if (packet->packetID != CRP_PACKET_INFO_REQUEST) {
+    if (packet->packetID != CRP_PACKET_INFO_REQUEST)
+    {
         log_error("inforequest", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
     CRPPacketInfoRequest *inforequest = CRPInfoRequestCast(packet);
-    if (inforequest->uid != 0x88) {
+    if (inforequest->uid != 0x88)
+    {
         log_error("inforequest", "包数据错误\n");
         return 0;
     }
@@ -32,7 +37,8 @@ int TestPacketRequest() {
     return 1;
 }
 
-int inforequest_test() {
+int inforequest_test()
+{
     TestPacketRequest();
     return 1;
 }
