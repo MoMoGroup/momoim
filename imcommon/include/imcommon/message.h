@@ -13,6 +13,7 @@ typedef enum
 typedef struct __attribute__ ((packed)) strucUserMessage
 {
     uint32_t from, to;
+    time_t time;
     uint8_t messageType; //USER_MESSAGE_TYPE
     uint16_t messageLen;
     char content[0];
@@ -22,6 +23,7 @@ typedef struct
 {
     size_t count;
     int fd;
+    time_t startTime;
     pthread_mutex_t lock;
 
 } MessageFile;

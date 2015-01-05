@@ -574,20 +574,18 @@ void UserOperationRemoveAll(POnlineUser user)
 }
 
 
-int PostMessage(UserMessage *message)
+void PostMessage(UserMessage *message)
 {
-    POnlineUser toUser = OnlineUserGet(message->to);
-    if (toUser == NULL)
+    MessageFile *file = UserMessageFileOpen(message->to);
+    if (file)
     {
-        MessageFile *file = UserMessageFileOpen(message->to);
-        int ret = MessageFileAppend(file, message);
+        MessageFileAppend(file, message);
         MessageFileClose(file);
-        return ret;
     }
-    else
+    POnlineUser toUser = OnlineUserGet(message->to);
+    if (toUser != NULL)
     {
         CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
         UserDrop(toUser);
-        return 1;
     }
 }

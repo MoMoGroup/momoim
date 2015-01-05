@@ -127,7 +127,7 @@ struct structPendingUsersTableType
 int ProcessUser(POnlineUser user, CRPBaseHeader *packet);
 
 //投递消息
-int PostMessage(UserMessage *message);
+void PostMessage(UserMessage *message);
 
 //保持用户.
 int UserHold(POnlineUser user);

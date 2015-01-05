@@ -31,7 +31,7 @@ int MessageFileCreate(const char *path)
 
 MessageFile *MessageFileOpen(const char *path)
 {
-    int fd = open(path, O_RDWR | O_APPEND | O_CLOEXEC | O_CREAT, 0600);
+    int fd = open(path, O_RDWR | O_CLOEXEC | O_CREAT, 0600);
     if (fd < 0)
     {
         return NULL;
@@ -39,6 +39,7 @@ MessageFile *MessageFileOpen(const char *path)
     MessageFile *file = (MessageFile *) malloc(sizeof(MessageFile));
     file->fd = fd;
     pthread_mutex_init(&file->lock, NULL);
+    read(fd, &file->startTime, sizeof(time_t));
     return file;
 }
 
@@ -49,6 +50,7 @@ int MessageFileCleanup(MessageFile *file)
 
 int MessageFileAppend(MessageFile *file, UserMessage *message)
 {
+    //TODO 消息文件应该有日期索引表.应根据日期索引表来记录消息.
     int ret = 0;
     pthread_mutex_lock(&file->lock);
     off_t posCur = lseek(file->fd, 0, SEEK_CUR);
