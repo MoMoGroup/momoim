@@ -17,8 +17,9 @@ static GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mm
 static cairo_surface_t *surface1, *surface2, *surface3, *surface32, *surface33, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
 static GtkWidget *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
 
-int newsockfd() {
-  //注册按钮点击事件
+int newsockfd()
+{
+    //注册按钮点击事件
     const gchar *newname, *newpwd, *newpwd2, *newnick;
     newname = gtk_entry_get_text(GTK_ENTRY(newusername));
     newpwd = gtk_entry_get_text(GTK_ENTRY(passwd1));
@@ -26,28 +27,36 @@ int newsockfd() {
     newnick = gtk_entry_get_text(GTK_ENTRY(mnickname));
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-    if ((strlen(newname) != 0) && (strlen(newpwd) != 0) && (strlen(newpwd2) != 0) && (strlen(newnick) != 0)) {
+    if ((strlen(newname) != 0) && (strlen(newpwd) != 0) && (strlen(newpwd2) != 0) && (strlen(newnick) != 0))
+    {
         int charnum, number = 0;
-        for (charnum = 0; newname[charnum];) {
+        for (charnum = 0; newname[charnum];)
+        {
 
             if ((isalnum(newname[charnum]) != 0) || (newname[charnum] == '@')
-                    || (newname[charnum] == '.') || (newname[charnum] == '-') || (newname[charnum] == '_')) {
-                if (isdigit(newname[charnum]) != 0) {
+                    || (newname[charnum] == '.') || (newname[charnum] == '-') || (newname[charnum] == '_'))
+            {
+                if (isdigit(newname[charnum]) != 0)
+                {
                     number++;
                 }
                 charnum++;
             }
-            else {
+            else
+            {
                 break;
             }
         }
-        if (charnum == strlen(newname)) {
-            if (number == charnum) {
+        if (charnum == strlen(newname))
+        {
+            if (number == charnum)
+            {
                 log_info("登录名全为数字", "登录名全为数字\n");
                 popup("莫默告诉你：", "登录名全为数字");
                 return 1;
             }
-            if (g_strcmp0(newpwd, newpwd2) != 0) {
+            if (g_strcmp0(newpwd, newpwd2) != 0)
+            {
                 log_info("密码不一致", "密码不一致\n");
                 popup("莫默告诉你：", "两次密码不一致");
                 return 1;
@@ -57,7 +66,8 @@ int newsockfd() {
                     .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
                     .sin_port=htons(8014)
             };
-            if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
+            if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+            {
                 perror("Connect");
                 return 0;
             }
@@ -66,7 +76,8 @@ int newsockfd() {
             CRPBaseHeader *header;
             log_info("Hello", "Waiting OK\n");
             header = CRPRecv(sockfd);
-            if (header->packetID != CRP_PACKET_OK) {
+            if (header->packetID != CRP_PACKET_OK)
+            {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
                 return 1;
             }
@@ -76,7 +87,8 @@ int newsockfd() {
             log_info("注册ing", "momo\n");
             header = CRPRecv(sockfd);
 
-            if (header->packetID != CRP_PACKET_OK) {
+            if (header->packetID != CRP_PACKET_OK)
+            {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
                 popup("莫默告诉你：", "登录名已经存在");
                 return 1;
@@ -85,20 +97,23 @@ int newsockfd() {
             popup("莫默告诉你：", "欢迎你加入莫默");
             free(header);
         }
-        else {
+        else
+        {
             log_info("不合格字符", "momo\n");
             popup("莫默告诉你：", "包含不合格字符");
             return 1;
         }
     }
-    else {
+    else
+    {
         log_info("注册信息不完整", "momo\n");
         popup("莫默告诉你：", "请完善注册信息");
         return 1;
     }
 }
 
-static void create_zhucefaces() {
+static void create_zhucefaces()
+{
 
     surface1 = cairo_image_surface_create_from_png("注册背景1.png");
     surface2 = cairo_image_surface_create_from_png("注册标题.png");
@@ -147,7 +162,8 @@ static void create_zhucefaces() {
 }
 
 static void
-destroy_surfaces() {
+destroy_surfaces()
+{
     g_print("destroying surfaces2");
 
     cairo_surface_destroy(surface1);
@@ -165,7 +181,8 @@ destroy_surfaces() {
 }
 
 //背景的eventbox拖曳窗口
-static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1)
@@ -178,10 +195,12 @@ static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *
 
 //注册
 //鼠标点击事件
-static gint zhuce_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint zhuce_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
 
-    if (event->button == 1) {        //设置注册按钮
+    if (event->button == 1)
+    {        //设置注册按钮
         gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) mminfo, surface32); //置换图标
     }
@@ -190,9 +209,11 @@ static gint zhuce_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 
 //注册
 //鼠标抬起事件
-static gint zhuce_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint zhuce_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         newsockfd();
     }
 
@@ -201,15 +222,17 @@ static gint zhuce_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
 //注册
 //鼠标移动事件
-static gint zhuce_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint zhuce_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
-        gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));
-        gtk_image_set_from_surface((GtkImage *) mminfo, surface33);
+    gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) mminfo, surface33);
     return 0;
 }
 
 //鼠标离开事件
-static gint zhuce_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint zhuce_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) mminfo, surface3);
 
@@ -218,17 +241,21 @@ static gint zhuce_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 
 //关闭按钮
 //鼠标点击事件
-static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-    if (event->button == 1) {              //设置关闭按钮
+static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    if (event->button == 1)
+    {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) endwind, surface82); //置换图标
     }
 
     return 0;
 }
+
 //关闭按钮
 //鼠标抬起事件
-static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
         gtk_image_set_from_surface((GtkImage *) endwind, surface8);  //设置关闭按钮
@@ -238,9 +265,11 @@ static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *eve
     }
     return 0;
 }
+
 //关闭按钮
 //鼠标移动事件
-static gint closebut_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint closebut_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) endwind, surface83);
@@ -249,7 +278,8 @@ static gint closebut_enter_notify_event(GtkWidget *widget, GdkEventButton *event
 }
 
 //鼠标离开事件
-static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) endwind, surface8);
@@ -257,7 +287,8 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-int newface() {
+int newface()
+{
     newwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     //g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL);
     //gtk_window_set_default_size(GTK_WINDOW(newwindow), 500, 500);

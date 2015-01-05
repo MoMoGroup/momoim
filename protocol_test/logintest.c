@@ -31,7 +31,7 @@ int TestPacketLogin()
 
     CRPPacketLogin *msgHello = CRPLoginLoginCast(packet);
     if (memcmp(msgHello->username, "xia", 3) ||
-        memcmp(msgHello->password, "1234561234567890", 16))
+            memcmp(msgHello->password, "1234561234567890", 16))
     {
 
         log_error("Login", "包数据错误\n");

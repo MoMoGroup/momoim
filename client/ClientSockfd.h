@@ -6,7 +6,8 @@
 
 extern int mysockfd();
 
-typedef struct friendinfo {
+typedef struct friendinfo
+{
     uint32_t sessionid;
     int flag;
     //用来判断是否接受成功
@@ -17,10 +18,10 @@ typedef struct friendinfo {
     GtkWidget *chartlayout2;
     GtkWidget *imageflowerbackgroud, *imagesend, *imagehead3, *imagevoice, *imagevideo;
     GtkWidget *imageclose, *imageclosebut;
-    GtkWidget *imagelook, *imagejietu, *imagefile, *imagephoto,*imagewordart;
+    GtkWidget *imagelook, *imagejietu, *imagefile, *imagephoto, *imagewordart;
     GtkWidget *input_text, *show_text;
-    GtkScrolledWindow *sw1,*sw2;
-    GtkTextBuffer *input_buffer,*show_buffer;
+    GtkScrolledWindow *sw1, *sw2;
+    GtkTextBuffer *input_buffer, *show_buffer;
     struct friendinfo *next;
 } friendinfo;
 extern friendinfo *friendinfohead;

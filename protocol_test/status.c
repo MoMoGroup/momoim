@@ -28,8 +28,8 @@ int TestPacketHello()
 
     CRPPacketHello *msgHello = CRPHelloCast(packet);
     if (msgHello->protocolVersion != 0x78 ||
-        msgHello->clientVersion != 0x21 ||
-        msgHello->sessionState != 0x32)
+            msgHello->clientVersion != 0x21 ||
+            msgHello->sessionState != 0x32)
     {
 
         log_error("Hello", "包数据错误\n");

@@ -48,10 +48,10 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         if (!group)
         {
             log_warning("FriendAccept",
-                        "无法获得用户%u的默认好友分组.无法将用户%u加入到%u的好友列表中\n",
-                        user->info->uid,
-                        packet->uid,
-                        user->info->uid
+                    "无法获得用户%u的默认好友分组.无法将用户%u加入到%u的好友列表中\n",
+                    user->info->uid,
+                    packet->uid,
+                    user->info->uid
             );
             UserFriendsDrop(user->info->uid);
             CRPFailureSend(user->sockfd, session, ENOENT, "无法找到目标分组");
@@ -60,9 +60,9 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         if (!UserFriendsUserAdd(group, packet->uid))
         {
             log_warning("FriendAccept",
-                        "无法将用户%u加入到%u的好友列表中\n",
-                        packet->uid,
-                        user->info->uid
+                    "无法将用户%u加入到%u的好友列表中\n",
+                    packet->uid,
+                    user->info->uid
             );
             CRPFailureSend(user->sockfd, session, ENOENT, "无法将好友加入到好友列表中");
             return 1;

@@ -6,10 +6,10 @@
 size_t UserFriendsSize(UserFriends *friends)
 {
     size_t length = sizeof(friends->groupCount) +
-                    friends->groupCount * (uint16_t) (
-                            sizeof(*friends->groups) -
+            friends->groupCount * (uint16_t) (
+                    sizeof(*friends->groups) -
                             sizeof(friends->groups->friends)
-                    );
+            );
     for (int i = 0; i < friends->groupCount; ++i)
     {
         length += friends->groups[i].friendCount * sizeof(*(friends->groups[i].friends));
@@ -151,7 +151,8 @@ UserGroup *UserFriendsGroupAdd(UserFriends *friends, uint8_t groupId, const char
     group->friends = NULL;
     group->groupId = groupId;
     size_t nameLen = strlen(name);
-    if (nameLen > 63)nameLen = 63;
+    if (nameLen > 63)
+        nameLen = 63;
     memcpy(group->groupName, name, nameLen);
     group->groupName[nameLen] = 0;
     ++friends->groupCount;

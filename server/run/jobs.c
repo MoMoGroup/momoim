@@ -12,7 +12,7 @@ void JobManagerKick(POnlineUser user)
     pthread_mutex_lock(&jobLock);
     POnlineUser *p = pJobQueueHead;
     while (!(p + 1 == pJobQueueTail ||
-             p + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
+            p + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
     {
         p = jobQueue + (p - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
         if (*p == user)
@@ -27,7 +27,7 @@ POnlineUser JobManagerPop(void)
     pthread_mutex_lock(&jobLock);
     redo:
     while ((pJobQueueHead + 1 == pJobQueueTail) ||
-           (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
+            (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
     {
         pthread_cond_wait(&cond, &jobLock);     //等待队列非空
     }
@@ -59,7 +59,7 @@ void JobManagerPush(POnlineUser v)
         pthread_cond_wait(&cond, &jobLock);     //等待队列非满
     }
     int isEmpty = (pJobQueueHead + 1 == pJobQueueTail) ||
-                  (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue)));
+            (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue)));
 
     *pJobQueueTail = v;
     pJobQueueTail = jobQueue + (pJobQueueTail - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;//移除节点
