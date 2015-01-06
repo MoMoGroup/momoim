@@ -135,7 +135,7 @@ static void create_surfaces()
 static void loadinfo()
 {
     GtkWidget *userid;
-    userid = gtk_label_new(userdata.nickName);
+    userid = gtk_label_new(CurrentUserInfo.nickName);
     //设置字体大小
     PangoFontDescription *font;
     font = pango_font_description_from_string("Sans");//"Sans"字体名
@@ -149,7 +149,7 @@ static void loadinfo()
     friendinfo *rear = friendinfohead;
     while (rear)
     {
-        if (rear->user.uid == userdata.uid)
+        if (rear->user.uid == CurrentUserInfo.uid)
         {
             finduidflag = 1;
             break;
@@ -162,7 +162,7 @@ static void loadinfo()
         static cairo_t *cr;
         cairo_surface_t *surface;
 
-        sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, userdata.uid);
+        sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, CurrentUserInfo.uid);
         surfacehead2 = cairo_image_surface_create_from_png(userhead);
         //加载一个图片
         surface = cairo_image_surface_create_from_png(userhead);
