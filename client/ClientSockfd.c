@@ -18,7 +18,7 @@ pthread_t ThreadKeepAlive;
 CRPContext sockfd;
 UserFriends *friends;
 UserGroup *group;
-UserInfo userdata;
+UserInfo CurrentUserInfo;
 gchar *uidname;
 FILE *fp;
 //
@@ -214,8 +214,8 @@ int mysockfd()
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-                        userdata = infodata->info;//放到结构提里，保存昵称，性别等资料
-                        log_info("USERDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
+                        CurrentUserInfo = infodata->info;//放到结构提里，保存昵称，性别等资料
+                        log_info("USERDATA", "Nick:%s\n", CurrentUserInfo.nickName);//用户昵称是否获取成功
 
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
@@ -240,7 +240,7 @@ int mysockfd()
                         add_node(node);             //添加新节点
                         //free(node);
 
-                        // log_info("GROUPDATA", "Nick:%s\n", userdata.nickName);//用户昵称是否获取成功
+                        // log_info("GROUPDATA", "Nick:%s\n", CurrentUserInfo.nickName);//用户昵称是否获取成功
                         // log_info("循环1", "循环1%s\n", mulu);
                     }
                     break;

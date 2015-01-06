@@ -27,5 +27,5 @@ typedef struct friendinfo
 } friendinfo;
 extern friendinfo *friendinfohead;
 extern CRPContext sockfd;
-extern UserInfo userdata;
+extern UserInfo CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;

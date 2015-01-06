@@ -1,10 +1,14 @@
 #include <gtk/gtk.h>
-#include <stdlib.h>
+#include <imcommon/friends.h>
+#include <pwd.h>
+#include "ClientSockfd.h"
+#include "common.h"
+#include "MainInterface.h"
 
 
 static GtkWidget *Infowind;
 static GtkWidget *Infolayout;
-static GtkWidget *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
+static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
 static GtkWidget *Infobackground, *Infosave, *Infocancel, *Infoguanbi;
 static cairo_surface_t *Surfaceback, *Surfacesave, *Surfacesave1, *Surfacecancel, *Surfacecancel1, *Surfaceend, *Surfaceend1, *Surfaceend2;
 
@@ -20,21 +24,10 @@ static void create_infofaces() {
     Surfaceend2 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
     Infobackground = gtk_image_new_from_surface(Surfaceback);
-    gtk_container_add(GTK_CONTAINER(Infobackg_event_box), Infobackground);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Infobackg_event_box, 0, 0);//起始坐标
-    gtk_widget_set_size_request(GTK_WIDGET(Infobackground), 550, 488);
-
     Infosave = gtk_image_new_from_surface(Surfacesave);
-    gtk_container_add(GTK_CONTAINER(Save_event_box), Infosave);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Save_event_box, 350, 440);
-
     Infocancel = gtk_image_new_from_surface(Surfacecancel);
-    gtk_container_add(GTK_CONTAINER(Cancel_event_box), Infocancel);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Cancel_event_box, 450, 440);
-
     Infoguanbi = gtk_image_new_from_surface(Surfaceend);
-    gtk_container_add(GTK_CONTAINER(Guanxx_event_box), Infoguanbi);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
+    gtk_widget_set_size_request(GTK_WIDGET(Infobackground), 550, 488);
 
 }
 
@@ -182,31 +175,80 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
-/*// 使用GtkTreeModel作为下拉列表框的数据来源
-static GtkWidget *create_combobox_with_model()
-{
-    GtkWidget *combobox = NULL;
-    GtkListStore *store = NULL;
-    GtkTreeIter iter;
-    GtkCellRenderer *renderer = NULL;
+void infotv() {
+    /*session_id_t saizdoa=CountSessionId();
+    AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
+    CRPInfoDataSend(sockfd,saizdoa , 0, &CurrentUserInfo);*/
 
-    // 填充数据。在这里只需要一列字符串。
-    store = gtk_list_store_new(1, G_TYPE_STRING);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "home", -1);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "work", -1);
-    gtk_list_store_append(store, &iter);
-    gtk_list_store_set(store, &iter, 0, "public", -1);
+    GtkWidget *iid, *isex, *inickName, *inote, *iname, *ibloodtype, *ibirthday, *iconstellation, *izodiac, *iprovinces, *icity, *icounty;
+    GtkWidget *iphonenumber, *itel, *ischoolrecord, *iprofessional, *ischool, *ihometown, *ihome;
+    static cairo_surface_t *surfacehead;
+    GtkWidget *headicon;
 
-    combobox = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-    // 设置GtkTreeModel中的每一项数据如何在列表框中显示
-    renderer = gtk_cell_renderer_text_new();
-    gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(combobox), renderer, TRUE);
-    gtk_cell_layout_set_attributes(
-            GTK_CELL_LAYOUT(combobox), renderer, "text", 0, NULL);
-    return combobox;
-}*/
+    char infohead[80] = {0};
+    sprintf(infohead, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, CurrentUserInfo.uid);
+    surfacehead = cairo_image_surface_create_from_png(infohead);
+    headicon = gtk_image_new_from_surface(surfacehead);
+    gtk_fixed_put(GTK_FIXED(Infolayout), headicon, 23, 16);
+
+    char idstring[80] = {0};
+    sprintf(idstring, "%d", CurrentUserInfo.uid);
+    iid = gtk_label_new(idstring);
+    gtk_fixed_put(GTK_FIXED(Infolayout), iid, 35, 173);
+
+    inote = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), inote, 48, 195);
+
+    iname = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 244);
+
+    isex = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), isex, 222, 244);
+
+    ibloodtype = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ibloodtype, 405, 244);
+
+    ibirthday = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ibirthday, 48, 266);
+
+    iconstellation = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), iconstellation, 222, 266);
+
+    icity = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), icity, 222, 287);
+
+    iprovinces = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), iprovinces, 48, 287);
+
+    iphonenumber = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), iphonenumber, 48, 340);
+
+    ischoolrecord = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ischoolrecord, 48, 362);
+
+    ihometown = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ihometown, 48, 408);
+
+    ihome = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ihome, 63, 430);
+
+    izodiac = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), izodiac, 405, 266);
+
+    icounty = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), icounty, 405, 287);
+
+    itel = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), itel, 295, 340);
+
+    iprofessional = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), iprofessional, 295, 362);
+
+    ischool = gtk_label_new(CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ischool, 75, 385);
+
+
+}
 
 int info() {
 
@@ -225,67 +267,43 @@ int info() {
     create_infofaces();
     gtk_container_add(GTK_CONTAINER(Infowind), Infolayout);
 
-//    GtkWidget *combobox;
-//    combobox = create_combobox_with_model();
+    Infobackg_event_box = BuildEventBox(
+            Infobackground,
+            G_CALLBACK(Infobackg_button_press_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL);
+    gtk_fixed_put(GTK_FIXED(Infolayout), Infobackg_event_box, 0, 0);
 
-    gtk_widget_set_events(Infobackg_event_box,  // 设置窗体获取鼠标事件
+    Save_event_box = BuildEventBox(
+            Infosave,
+            G_CALLBACK(save_button_press_event),
+            G_CALLBACK(save_enter_notify_event),
+            G_CALLBACK(save_leave_notify_event),
+            G_CALLBACK(save_button_release_event),
+            NULL);
+    gtk_fixed_put(GTK_FIXED(Infolayout), Save_event_box, 350, 440);
 
-            GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+    Cancel_event_box = BuildEventBox(
+            Infocancel,
+            G_CALLBACK(cancel_button_press_event),
+            G_CALLBACK(cancel_enter_notify_event),
+            G_CALLBACK(cancel_leave_notify_event),
+            G_CALLBACK(cancel_button_release_event),
+            NULL);
+    gtk_fixed_put(GTK_FIXED(Infolayout), Cancel_event_box, 450, 440);
 
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT(Infobackg_event_box), "button_press_event",
-            G_CALLBACK(Infobackg_button_press_event), NULL);
+    Guanxx_event_box = BuildEventBox(
+            Infoguanbi,
+            G_CALLBACK(guanxx_button_press_event),
+            G_CALLBACK(guanxx_enter_notify_event),
+            G_CALLBACK(guanxx_leave_notify_event),
+            G_CALLBACK(guanxx_button_release_event),
+            NULL);
+    gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
 
-    gtk_widget_set_events(Save_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(Save_event_box), "button_press_event",
-            G_CALLBACK(save_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(Save_event_box), "enter_notify_event",
-            G_CALLBACK(save_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(Save_event_box), "button_release_event",
-            G_CALLBACK(save_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(Save_event_box), "leave_notify_event",
-            G_CALLBACK(save_leave_notify_event), NULL);
-
-    gtk_widget_set_events(Cancel_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(Cancel_event_box), "button_press_event",
-            G_CALLBACK(cancel_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(Cancel_event_box), "enter_notify_event",
-            G_CALLBACK(cancel_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(Cancel_event_box), "button_release_event",
-            G_CALLBACK(cancel_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(Cancel_event_box), "leave_notify_event",
-            G_CALLBACK(cancel_leave_notify_event), NULL);
-
-    gtk_widget_set_events(Guanxx_event_box,  // 设置窗体获取鼠标事件
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(Guanxx_event_box), "button_press_event",
-            G_CALLBACK(guanxx_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(Guanxx_event_box), "enter_notify_event",
-            G_CALLBACK(guanxx_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(Guanxx_event_box), "button_release_event",
-            G_CALLBACK(guanxx_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(Guanxx_event_box), "leave_notify_event",
-            G_CALLBACK(guanxx_leave_notify_event), NULL);
+    infotv();
 
     gtk_widget_show_all(Infowind);
 }
