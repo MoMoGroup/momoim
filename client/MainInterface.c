@@ -541,7 +541,7 @@ int maininterface()
 
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
-    gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
+    gtk_fixed_put(GTK_FIXED(MainLayout), search_event_box, 0, 140);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);
     loadinfo();
 
