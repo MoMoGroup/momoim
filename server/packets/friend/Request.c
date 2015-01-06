@@ -13,6 +13,7 @@ int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFrie
         UserFriendsEncode(user->info->friends, data);
         pthread_rwlock_unlock(user->info->friendsLock);
         CRPSend(user->sockfd, CRP_PACKET_FRIEND_DATA, 0, data, (CRP_LENGTH_TYPE) length);
+
         free(data);
     }
     else

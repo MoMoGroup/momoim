@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include "MainInterface.h"
+#include "addfriend.h"
 
 pthread_t ThreadKeepAlive;
 
@@ -64,10 +65,7 @@ void *keepalive(void *dada)
     }
 }
 
-int printfun(CRPBaseHeader *header, void *data)
-{
-    return 1;
-}
+
 
 
 gboolean postMessage(gpointer user_data)
@@ -409,9 +407,9 @@ int mysockfd()
 
 
         }
-        AddMessageNode(0, CRP_PACKET_OK, printfun, "daaaa");//添加事件
-        AddMessageNode(0, CRP_PACKET_MESSAGE_NORMAL, printfmessage, "dfg");//添加事件
-        AddMessageNode(0, CRP_PACKET_KICK, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
+
+        AddMessageNode(0, printfmessage, "dfg");//添加事件
+        AddMessageNode(0, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }

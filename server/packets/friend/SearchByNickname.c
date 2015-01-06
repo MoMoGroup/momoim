@@ -1,7 +1,7 @@
 #include <protocol/CRPPackets.h>
 #include <string.h>
-#include <data/user.h>
 #include <asm-generic/errno-base.h>
+#include "datafile/user.h"
 #include "run/user.h"
 
 int ProcessPacketFriendSearchByNickname(POnlineUser user, uint32_t session, CRPPacketFriendSearchByNickname *packet)
