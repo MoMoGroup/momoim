@@ -8,6 +8,7 @@
 #include <math.h>
 #include "chart.h"
 #include "common.h"
+#include "addfriend.h"
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -21,7 +22,7 @@ static GtkTreeStore *store;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
-static GtkEventBox *closebut_event_box, *background_event_box;
+static GtkEventBox *closebut_event_box, *background_event_box,*search_event_box;
 
 enum
 {
@@ -488,6 +489,14 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
 //
 //}
 
+static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event,
+
+        gpointer data)
+{
+    AddFriendFun(); //调用添加好友函数
+    return 0;
+}
+
 int maininterface()
 {
     GtkCellRenderer *renderer;
@@ -518,9 +527,22 @@ int maininterface()
             G_CALLBACK(closebut_button_release_event),
             NULL);
 
+    search = gtk_image_new_from_surface(surfaceresearch);
+    search_event_box = BuildEventBox(
+            search,
+            NULL,
+            NULL,
+            NULL,
+            G_CALLBACK(search_button_release_event),
+            NULL
+    );
+
+
+
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
-    gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
+    gtk_fixed_put(GTK_FIXED(MainLayout), search_event_box, 0, 140);
+    //gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
     loadinfo();
 
