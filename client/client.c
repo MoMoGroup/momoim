@@ -7,6 +7,7 @@
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
+#include "Infomation.h"
 
 
 static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
@@ -246,6 +247,7 @@ static gint registered_button_release_event(GtkWidget *widget, GdkEventButton *e
 
         gpointer data)
 {
+    //info();
     newface(); //调用注册界面
     return 0;
 }

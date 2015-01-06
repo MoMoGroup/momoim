@@ -15,6 +15,23 @@ typedef struct __attribute__ ((packed))
     char sex;
     char nickName[32];
     unsigned char icon[16];
+    char note[31];
+    char name[13];
+    char bloodtype;
+    char birthday[11];
+    char constellation;
+    char zodiac;
+    char provinces[10];
+    char city[13];
+    char county[28];
+    char phonenumber[12];
+    char tel[14];
+    char schoolrecord;
+    char professional[19];
+    char school[28];
+    char hometown[51];
+    char home[51];
+
 } UserInfo;
 
 typedef struct __attribute__ ((packed))
