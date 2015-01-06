@@ -945,10 +945,10 @@ int mainchart(friendinfo *friendinfonode)
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(friendinfonode->show_text), FALSE);
 
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 0, 440);//文本框位置
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 0, 100);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 0, 90);
 
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 80);
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 300);//大小
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 65);
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 317);//大小
 
     GdkRGBA rgba = {1, 1, 1, 0.2};
     gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_NORMAL, &rgba);//设置透明

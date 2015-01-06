@@ -399,6 +399,7 @@ gboolean destoryall(gpointer user_data)
         free(p);
     }
     g_idle_add(loadloginLayout, NULL);
+    popup("异地登录","您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
     return FALSE;
 }
 
@@ -415,6 +416,7 @@ gboolean loadloginLayout(gpointer user_data)
 
     g_signal_connect(G_OBJECT(window), "delete_event",
             G_CALLBACK(gtk_main_quit), NULL);
+
 
     //gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置
@@ -439,13 +441,18 @@ gboolean loadloginLayout(gpointer user_data)
 //    gtk_container_add (GTK_CONTAINER(loginLayout), closebutevent_box);
 //    gtk_container_add (GTK_CONTAINER(loginLayout),cancelevent_box);
 
+
+
+
     backgroundevent_box = BuildEventBox(
             imagebackground,
             G_CALLBACK(background_button_press_event),
             NULL, NULL, NULL, NULL);
+
     waitevent_box = BuildEventBox(iwait,
             G_CALLBACK(wait_button_press_event),
             NULL, NULL, NULL, NULL);
+
     landbutevent_box = BuildEventBox(
             imagelandbut,
             G_CALLBACK(landbut_button_press_event),
