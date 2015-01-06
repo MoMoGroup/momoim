@@ -23,7 +23,7 @@ static void create_surfaces(friendinfo *information)
 {
     if (schartbackgroud == NULL)
     {
-        schartbackgroud = cairo_image_surface_create_from_png("聊天背景1.png");
+        schartbackgroud = cairo_image_surface_create_from_png("聊天背景.png");
         surfacesend1 = cairo_image_surface_create_from_png("发送1.png");
         surfacesend2 = cairo_image_surface_create_from_png("发送2.png");
 
@@ -184,7 +184,6 @@ void CodingTextImage(friendinfo *info, gchar *coding, int *count)
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
 void send_text(friendinfo *info)
 {
-
     gchar *char_text;
     int count;
     char_text = (gchar *) malloc(100000);
@@ -986,15 +985,15 @@ int mainchart(friendinfo *friendinfonode)
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), nicheng, 100, 20);
 
 //发送
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), send_event_box, 390, 510);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), send_event_box, 390, 512);
 //语音
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), voice_event_box, 80, 50);
 //视频按钮
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), video_event_box, 120, 50);
 //下方关闭按钮
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_event_box, 300, 512);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_event_box, 300, 514);
 //右上角关闭按钮
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_but_event_box, 470, 0);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_but_event_box, 460, 0);
 //表情
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), look_event_box, 40, 405);
 //截图
@@ -1035,13 +1034,13 @@ int mainchart(friendinfo *friendinfonode)
             0);//不可编辑
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(friendinfonode->show_text), FALSE);
 
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 5, 440);//文本框位置
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 0, 100);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 0, 438);//文本框位置
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 0, 89);
 
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 75);
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 300);//大小
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 320);//大小
 
-    GdkRGBA rgba = {1, 1, 1, 0.2};
+    GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
     gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_NORMAL, &rgba);//设置透明
     gtk_widget_override_background_color(friendinfonode->show_text, GTK_STATE_NORMAL, &rgba);//设置透明
 

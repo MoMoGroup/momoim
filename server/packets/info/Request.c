@@ -1,8 +1,8 @@
 #include <protocol/CRPPackets.h>
 #include "run/user.h"
 #include <stdlib.h>
-#include <data/user.h>
 #include <asm-generic/errno.h>
+#include "datafile/user.h"
 
 int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRequest *packet)
 {

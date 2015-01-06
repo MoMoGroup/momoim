@@ -33,8 +33,8 @@ extern void recd_server_msg(const gchar *rcvd_text, u_int32_t recd_uid);
 
 extern int MessageLoopFunc();
 
-extern void AddMessageNode(uint32_t sessionid, uint16_t packetID, int  (*fn)(CRPBaseHeader *, void *data), void *data);
+extern void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *), void *data);
 
-extern void DeleteMessageNode(uint32_t sessid, uint16_t packetid);
+extern void DeleteMessageNode(uint32_t sessid);
 
 //extern UserFriends *friends;

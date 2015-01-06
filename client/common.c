@@ -1,9 +1,13 @@
 #include <gtk/gtk.h>
+#include <stdint.h>
+#include <protocol/base.h>
 #include <cairo-script-interpreter.h>
 #include <glib-unix.h>
 #include "common.h"
 #include <string.h>
 #include <pwd.h>
+
+pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
 GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release, void *data)
 {
@@ -100,4 +104,15 @@ void HexadecimalConversion(char *filename, char *strdest)
         memcpy(&sDest[i * 2], szTmp, 2);
     }
     sprintf(filename, "%s/momo/image/%s", getpwuid(getuid())->pw_dir, sDest);
+}
+
+
+session_id_t CountSessionId()
+{
+    static session_id_t OnlySessionId = 1000;
+    session_id_t ret;
+    pthread_rwlock_wrlock(&onllysessionidlock);//写锁定
+    ret = ++OnlySessionId;
+    pthread_rwlock_unlock(&onllysessionidlock);//取消锁
+    return ret;
 }

@@ -1,6 +1,6 @@
 #include <protocol/CRPPackets.h>
-#include <data/user.h>
 #include <asm-generic/errno-base.h>
+#include "datafile/user.h"
 #include "run/user.h"
 
 int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData *packet)

@@ -1,9 +1,10 @@
 #include <protocol/CRPPackets.h>
 #include "run/user.h"
-#include <data/auth.h>
-#include <data/user.h>
 #include <string.h>
 #include <asm-generic/errno-base.h>
+#include "datafile/auth.h"
+#include "datafile/user.h"
+#include "datafile/friend.h"
 
 int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLoginRegister *packet)
 {
@@ -14,6 +15,7 @@ int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLogi
         if (uid > 0)
         {
             UserCreateDirectory(uid);
+            UserFriendsCreate(uid);
             UserInfo *info = UserInfoGet(uid);
             bzero(info->nickName, sizeof(info->nickName));
             memcpy(info->nickName, packet->nickname,
