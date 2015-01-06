@@ -1,5 +1,6 @@
 #pragma once
 
+#include "protocol/base.h"
 /**
 * 通用接受包，表示上一个操作已接受
 */
@@ -10,4 +11,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketOK *CRPOKCast(CRPBaseHeader *base);
 
-int CRPOKSend(int sockfd, uint32_t sessionID);
+int CRPOKSend(CRPContext context, uint32_t sessionID);

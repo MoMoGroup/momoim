@@ -6,14 +6,14 @@
 
 int TestInfoQuery()
 {
-    if (!CRPInfoRequestSend(sendfd, 0, 0xabcdef01))
+    if (!CRPInfoRequestSend(cs, 0, 0xabcdef01))
     {
         log_error("InfoQuery", "Send返回失败\n");
         perror("");
         return 0;
     }
 
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("InfoQuery", "Recv返回失败\n");

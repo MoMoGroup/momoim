@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
-#include "fcntl.h"
+#include <errno.h>
+#include <stdio.h>
+#include <unistd.h>
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
 
@@ -11,8 +13,12 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_OK]                 = (void *(*)(CRPBaseHeader *base)) CRPOKCast,
         [CRP_PACKET_FAILURE]            = (void *(*)(CRPBaseHeader *base)) CRPFailureCast,
         [CRP_PACKET_CRASH]              = (void *(*)(CRPBaseHeader *base)) CRPCrashCast,
+        [CRP_PACKET_KICK]               = (void *(*)(CRPBaseHeader *base)) CRPKickCast,
+        [CRP_PACKET_CANCEL]             = (void *(*)(CRPBaseHeader *base)) CRPCancelCast,
+        [CRP_PACKET_SWITCH_PROTOCOL]    = (void *(*)(CRPBaseHeader *base)) CRPSwitchProtocolCast,
 
         [CRP_PACKET_LOGIN__START]       = (void *(*)(CRPBaseHeader *base)) NULL,
+        [CRP_PACKET_LOGIN_ACCEPT]       = (void *(*)(CRPBaseHeader *base)) CRPLoginAcceptCast,
         [CRP_PACKET_LOGIN_LOGIN]        = (void *(*)(CRPBaseHeader *base)) CRPLoginLoginCast,
         [CRP_PACKET_LOGIN_LOGOUT]       = (void *(*)(CRPBaseHeader *base)) CRPLoginLogoutCast,
         [CRP_PACKET_LOGIN_REGISTER]     = (void *(*)(CRPBaseHeader *base)) CRPLoginRegisterCast,
@@ -24,68 +30,280 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
         [CRP_PACKET_FRIEND__START]      = (void *(*)(CRPBaseHeader *base)) NULL,
         [CRP_PACKET_FRIEND_REQUEST]     = (void *(*)(CRPBaseHeader *base)) CRPFriendRequestCast,
         [CRP_PACKET_FRIEND_DATA]        = (void *(*)(CRPBaseHeader *base)) CRPFriendDataCast,
+        [CRP_PACKET_FRIEND_ADD]         = (void *(*)(CRPBaseHeader *base)) CRPFriendAddCast,
+        [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]= (void *(*)(CRPBaseHeader *base)) CRPFriendSearchByNicknameCast,
+        [CRP_PACKET_FRIEND_USER_LIST]   = (void *(*)(CRPBaseHeader *base)) CRPFriendUserListCast,
+        [CRP_PACKET_FRIEND_NOTIFY]      = (void *(*)(CRPBaseHeader *base)) CRPFriendNotifyCast,
+        [CRP_PACKET_FRIEND_ACCEPT]      = (void *(*)(CRPBaseHeader *base)) CRPFriendAcceptCast,
 
         [CRP_PACKET_FILE__START]        = (void *(*)(CRPBaseHeader *base)) NULL,
-        [CRP_PACKET_FILE_REQUEST]       = (void *(*)(CRPBaseHeader *base)) CRPFileRequestCast,
         [CRP_PACKET_FILE_DATA]          = (void *(*)(CRPBaseHeader *base)) CRPFileDataCast,
         [CRP_PACKET_FILE_DATA_END]      = (void *(*)(CRPBaseHeader *base)) CRPFileDataEndCast,
+        [CRP_PACKET_FILE_DATA_START]    = (void *(*)(CRPBaseHeader *base)) CRPFileDataStartCast,
+        [CRP_PACKET_FILE_REQUEST]       = (void *(*)(CRPBaseHeader *base)) CRPFileRequestCast,
+        [CRP_PACKET_FILE_RESET]         = (void *(*)(CRPBaseHeader *base)) CRPFileResetCast,
         [CRP_PACKET_FILE_STORE_REQUEST] = (void *(*)(CRPBaseHeader *base)) CRPFileStoreRequestCast,
 
         [CRP_PACKET_MESSAGE__START]     = (void *(*)(CRPBaseHeader *base)) NULL,
-        [CRP_PACKET_MESSAGE_TEXT]       = (void *(*)(CRPBaseHeader *base)) CRPTextMessageCast,
+        [CRP_PACKET_MESSAGE_NORMAL]       = (void *(*)(CRPBaseHeader *base)) CRPMessageNormalCast,
 };
 
-ssize_t CRPSend(uint16_t packetID, uint32_t sessionID, void *data, size_t length, int fd)
+static void CRPEncryptDisableUnlock(CRPContext context)
 {
-    CRPBaseHeader *header = (CRPBaseHeader *) malloc(sizeof(CRPBaseHeader) + length);
+    if (context->sendTd || context->recvTd)
+    {
+        mcrypt_generic_deinit(context->sendTd);
+        mcrypt_module_close(context->sendTd);
+        context->sendTd = NULL;
+
+        mcrypt_generic_deinit(context->recvTd);
+        mcrypt_module_close(context->recvTd);
+        context->recvTd = NULL;
+    }
+}
+
+CRPContext CRPOpen(int fd)
+{
+    CRPContext context = (CRPContext) malloc(sizeof(__CRPContext));
+    //int state = 1;
+    //setsockopt(fd, IPPROTO_TCP, TCP_CORK, &state, sizeof(state));
+    context->fd = fd;
+    context->sendTd = NULL;
+    context->recvTd = NULL;
+    pthread_mutex_init(&context->sendLock, NULL);
+    pthread_mutex_init(&context->recvLock, NULL);
+    return context;
+}
+
+int CRPClose(CRPContext context)
+{
+    if (!context)
+        return 0;
+    CRPEncryptDisableUnlock(context);
+    shutdown(context->fd, SHUT_RDWR);
+    close(context->fd);
+    pthread_mutex_destroy(&context->sendLock);
+    pthread_mutex_destroy(&context->recvLock);
+    free(context);
+    return 1;
+}
+
+int CRPEncryptTest(const char key[32], const char iv[32])
+{
+    int ret = 0;
+    char *cpKey = (char *) malloc(32),
+            *cpIV = (char *) malloc(32);
+    if (cpKey == NULL || cpIV == NULL)
+        goto cleanup;
+    MCRYPT td = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
+    if (td == MCRYPT_FAILED)
+        goto cleanup;
+    if (32 != mcrypt_enc_get_key_size(td) || 32 != mcrypt_enc_get_iv_size(td) || 32 != mcrypt_enc_get_block_size(td))
+        goto cleanup;
+    if (0 != mcrypt_enc_self_test(td))
+        goto cleanup;
+    memcpy(cpKey, key, 32);
+    memcpy(cpIV, iv, 32);
+    int r = mcrypt_generic_init(td, cpKey, 32, cpIV);
+    if (r < 0)
+    {
+        goto cleanup;
+    }
+    mcrypt_generic_deinit(td);
+    ret = 1;
+    cleanup:
+    if (td)
+    {
+        mcrypt_module_close(td);
+    }
+    free(cpKey);
+    free(cpIV);
+    return ret;
+}
+
+int CRPEncryptEnable(CRPContext context, const char sendKey[32], const char recvKey[32], const char iv[32])
+{
+    int retcode = 0;
+    pthread_mutex_lock(&context->sendLock);
+    pthread_mutex_lock(&context->recvLock);
+    if (context->sendTd || context->recvTd)
+        CRPEncryptDisableUnlock(context);
+    MCRYPT sendTd = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
+    if (sendTd == MCRYPT_FAILED)
+        goto cleanup;
+    if (mcrypt_enc_get_key_size(sendTd) != 32 || mcrypt_enc_get_iv_size(sendTd) != 32 || mcrypt_enc_get_block_size(sendTd) != 32)
+    {
+        fprintf(stderr, "CRP Warning: Cannot enable data encrypt!\nKey Size Error\n");
+        mcrypt_module_close(sendTd);
+        goto cleanup;
+    }
+    memcpy(&context->sendKey, sendKey, 32);
+    memcpy(&context->recvKey, recvKey, 32);
+    memcpy(&context->sendIV, iv, 32);
+    memcpy(&context->recvIV, iv, 32);
+
+    retcode = mcrypt_generic_init(sendTd, context->sendKey, 32, context->sendIV);
+    if (retcode < 0)
+    {
+        fprintf(stderr, "CRP Warning: Cannot enable data encrypt!\nmcrypt_generic_init return:%d\n", retcode);
+        mcrypt_module_close(sendTd);
+        goto cleanup;
+    }
+    MCRYPT recvTd = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
+    if (recvTd == MCRYPT_FAILED)
+    {
+        mcrypt_generic_deinit(sendTd);
+        mcrypt_module_close(sendTd);
+        goto cleanup;
+    }
+
+    retcode = mcrypt_generic_init(recvTd, context->recvKey, 32, context->recvIV);
+    if (retcode < 0)
+    {
+        fprintf(stderr, "CRP Warning: Cannot enable data encrypt!\nmcrypt_generic_init return:%d\n", retcode);
+        mcrypt_generic_deinit(sendTd);
+        mcrypt_module_close(sendTd);
+        mcrypt_module_close(recvTd);
+        goto cleanup;
+    }
+
+    context->sendTd = sendTd;
+    context->recvTd = recvTd;
+    cleanup:
+    pthread_mutex_unlock(&context->recvLock);
+    pthread_mutex_unlock(&context->sendLock);
+    return retcode;
+}
+
+void CRPEncryptDisable(CRPContext context)
+{
+    pthread_mutex_lock(&context->recvLock);
+    pthread_mutex_lock(&context->sendLock);
+    CRPEncryptDisableUnlock(context);
+    pthread_mutex_unlock(&context->sendLock);
+    pthread_mutex_unlock(&context->recvLock);
+}
+
+ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID, void const *data, CRP_LENGTH_TYPE dataLength)
+{
+    void *packet;
+    CRPBaseHeader *header;
+    CRP_LENGTH_TYPE protocolLength = (CRP_LENGTH_TYPE) (sizeof(CRPBaseHeader) + dataLength),
+            encryptedLength = protocolLength,
+            fullLength;
+    ssize_t ret = 0;
+
+    pthread_mutex_lock(&context->sendLock);
+
+    if (context->sendTd != NULL)
+    {
+        if (protocolLength % 32 != 0)
+        {
+            encryptedLength += 32 - protocolLength % 32;
+        }
+        fullLength = (CRP_LENGTH_TYPE) (sizeof(CRP_LENGTH_TYPE) + encryptedLength);
+        packet = malloc(fullLength);
+        header = (CRPBaseHeader *) (packet + sizeof(CRP_LENGTH_TYPE));
+        CRP_LENGTH_TYPE draw = encryptedLength >> 5;
+        memcpy(packet, &draw, sizeof(CRP_LENGTH_TYPE));
+        bzero((char *) (header) + protocolLength, encryptedLength - protocolLength);
+    }
+    else
+    {
+        fullLength = protocolLength;
+        packet = header = malloc(protocolLength);
+    }
+
     header->magicCode = 0x464F5573;
-    header->totalLength = (CRP_LENGTH_TYPE) (sizeof(CRPBaseHeader) + length);
-    header->dataLength = (CRP_LENGTH_TYPE) length;
+    header->totalLength = (CRP_LENGTH_TYPE) protocolLength;
     header->packetID = packetID;
     header->sessionID = sessionID;
-    if (length)
-        memcpy(header->data, data, length);
-    ssize_t len = send(fd, header, header->totalLength, 0);
-    free(header);
-    return len;
+    if (dataLength)
+        memcpy(header->data, data, dataLength);
+
+    if (context->sendTd)
+    {
+        if (0 != mcrypt_generic(context->sendTd, header, (int) encryptedLength))
+        {
+            fprintf(stderr, "CRP Fault: Cannot encrypt data using CRPContext.\n");
+            abort();
+        }
+    }
+    while (-1 == (ret = send(context->fd, packet, fullLength, 0/*MSG_MORE*/)) &&
+           (errno == EWOULDBLOCK || errno == EAGAIN))
+    {
+        //如果系统要求重发则阻塞当前线程,等待重发
+        fd_set fdWr, fdEx;
+        FD_ZERO(&fdWr);
+        FD_SET(context->fd, &fdWr);
+        fdEx = fdWr;
+        struct timeval time = {
+                .tv_sec=3   //当前线程只停留3秒钟.3秒后还无法发送数据,本次发送失败.
+        };
+        int n = select(context->fd + 1, NULL, &fdWr, &fdEx, &time);
+        if (n == -1 || FD_ISSET(context->fd, &fdEx))//如果select失败或者fd异常,本次发送失败.警告用户.
+        {
+            perror("Warning: Fail to send packet");
+            goto cleanup;
+        }
+        //其他情况都重试发送
+    }
+
+    cleanup:
+    pthread_mutex_unlock(&context->sendLock);
+    if (packet)
+        free(packet);
+    return ret;
 }
 
-CRPBaseHeader *CRPRecv(int fd)
+CRPBaseHeader *CRPRecv(CRPContext context)
 {
-    CRPBaseHeader h;
+    CRPBaseHeader *packet = NULL;
     ssize_t ret;
-
-    ret = recv(fd, &h, sizeof(CRPBaseHeader), MSG_PEEK);
-    if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
+    pthread_mutex_lock(&context->recvLock);
+    if (context->recvTd)
     {
-        return NULL;
+        CRP_LENGTH_TYPE encryptedLength;
+        ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
+        if (ret != sizeof(encryptedLength))
+            return NULL;
+        encryptedLength <<= 5;
+        packet = (CRPBaseHeader *) malloc(encryptedLength);
+        ret = recv(context->fd, packet, encryptedLength, MSG_WAITALL);
+        if (ret != encryptedLength)
+        {
+            free(packet);
+            return NULL;
+        }
+        if (0 != mdecrypt_generic(context->recvTd, packet, encryptedLength))
+        {
+            free(packet);
+            return NULL;
+        }
+        if (packet->magicCode != 0x464F5573)
+        {
+            free(packet);
+            return NULL;
+        }
     }
-    CRPBaseHeader *packet = (CRPBaseHeader *) malloc(h.totalLength);
-    ret = recv(fd, packet, h.totalLength, MSG_WAITALL);
-    if (ret != h.totalLength)
+    else
     {
-        free(packet);
-        return NULL;
+        CRPBaseHeader h;
+        ret = recv(context->fd, &h, sizeof(CRPBaseHeader), MSG_PEEK | MSG_WAITALL);
+        if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
+        {
+            fprintf(stderr, "ret:%d,errno:%d,strerror:%s\n", (int) ret, errno, strerror(errno));
+            return NULL;
+        }
+        packet = (CRPBaseHeader *) malloc(h.totalLength);
+        ret = recv(context->fd, packet, h.totalLength, MSG_WAITALL);
+        if (ret != h.totalLength)
+        {
+            fprintf(stderr, "Recv Error 2-%d bytes.%d/%s\n", (int) ret, errno, strerror(errno));
+            free(packet);
+            return NULL;
+        }
     }
-    return packet;
-}
-
-CRPBaseHeader *CRPRecvNonBlock(int fd)
-{
-    CRPBaseHeader h;
-    ssize_t ret;
-
-    ret = recv(fd, &h, sizeof(CRPBaseHeader), MSG_PEEK | O_NONBLOCK);
-    if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
-    {
-        return NULL;
-    }
-    CRPBaseHeader *packet = (CRPBaseHeader *) malloc(h.totalLength);
-    ret = recv(fd, packet, h.totalLength, MSG_WAITALL);
-    if (ret != h.totalLength)
-    {
-        free(packet);
-        return NULL;
-    }
+    pthread_mutex_unlock(&context->recvLock);
     return packet;
 }

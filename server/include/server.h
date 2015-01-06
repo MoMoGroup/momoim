@@ -2,26 +2,26 @@
 
 #include <pthread.h>
 #include <sqlite3.h>
-#include "worker.h"
-#include "user.h"
+#include "config.h"
+#include "run/worker.h"
+#include "run/user.h"
 
 //socket监听线程主函数
 void *ListenMain(void *listenSocket);
 
-//最大客户端数
-#define MAX_CLIENTS 500
 //服务端是否正在退出
-extern int server_exit;
+extern int IsServerRunning;
 //监听线程
 extern pthread_t ThreadListener;
 
-//事务处理线程数
-#define WORKER_COUNT 8
 //事务处理器
 extern WorkerType worker[WORKER_COUNT];
 
 //将一个用户加入到epoll中
-void UserJoinToPoll(OnlineUser *);
+void EpollAdd(POnlineUser);
 
 //将一个用户从epoll中移除
-void UserRemoveFromPoll(OnlineUser *);
+void EpollRemove(POnlineUser);
+
+//重新设置fd事件
+void EpollModify(POnlineUser);

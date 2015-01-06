@@ -22,4 +22,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFileDataEnd *CRPFileDataEndCast(CRPBaseHeader *base);
 
-int CRPFileDataEndSend(int sockfd, uint32_t sessionID, uint8_t code);
+int CRPFileDataEndSend(CRPContext context, uint32_t sessionID, uint8_t code);

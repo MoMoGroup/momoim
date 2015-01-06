@@ -2,7 +2,6 @@
 #include <protocol/CRPPackets.h>
 #include <string.h>
 #include <stdlib.h>
-#include <protocol/login/Register.h>
 
 
 CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
@@ -10,8 +9,8 @@ CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
     CRPPacketLoginRegister *packet = (CRPPacketLoginRegister *) base->data;
     packet = (CRPPacketLoginRegister *) malloc(
             sizeof(CRPPacketLoginRegister)
-            + packet->usernameLength + 1
-            + packet->nicknameLength + 1
+                    + packet->usernameLength + 1
+                    + packet->nicknameLength + 1
     );
     char *p = (char *) packet;
     memcpy(p, base->data, sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname));
@@ -24,11 +23,11 @@ CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
 
     memcpy(packet->username, base->data + sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname), packet->usernameLength);
     memcpy(packet->nickname,
-           base->data +
-           sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname) +
-           packet->usernameLength,
+            base->data +
+                    sizeof(CRPPacketLoginRegister) - sizeof(packet->username) - sizeof(packet->nickname) +
+                    packet->usernameLength,
 
-           packet->nicknameLength);
+            packet->nicknameLength);
     return packet;
 }
 
@@ -36,7 +35,7 @@ CRPPacketLoginRegister *CRPLoginRegisterCast(CRPBaseHeader *base)
 * 发送登陆包
 */
 int CRPLoginRegisterSend(
-        int sockfd,
+        CRPContext context,
         uint32_t sessionID,
         const char *username,
         const unsigned char *password,
@@ -46,10 +45,10 @@ int CRPLoginRegisterSend(
             nickLen = (uint8_t) strlen(nickname);
     char *mem = (char *) malloc(
             sizeof(CRPPacketLoginRegister)
-            - sizeof(NILOBJ(CRPPacketLoginRegister)->username)
-            - sizeof(NILOBJ(CRPPacketLoginRegister)->nickname)
-            + userLen
-            + nickLen);
+                    - sizeof(NILOBJ(CRPPacketLoginRegister)->username)
+                    - sizeof(NILOBJ(CRPPacketLoginRegister)->nickname)
+                    + userLen
+                    + nickLen);
     char *p = mem;
     memcpy(p, &userLen, sizeof(userLen));
     p += sizeof(userLen);
@@ -61,7 +60,7 @@ int CRPLoginRegisterSend(
     p += userLen;
     memcpy(p, nickname, nickLen);
     p += nickLen;
-    ssize_t ret = CRPSend(CRP_PACKET_LOGIN_REGISTER, sessionID, mem, p - mem, sockfd);
+    ssize_t ret = CRPSend(context, CRP_PACKET_LOGIN_REGISTER, sessionID, mem, p - mem);
     free(mem);
     return ret != -1;
 }

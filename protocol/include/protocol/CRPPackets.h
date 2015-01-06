@@ -1,8 +1,14 @@
 #pragma once
 
 #include <stddef.h>
+#include "protocol/base.h"
 #include "protocol/friend/Request.h"
 #include "protocol/friend/Data.h"
+#include "protocol/friend/SearchByNickname.h"
+#include "protocol/friend/UserList.h"
+#include "protocol/friend/Notify.h"
+#include "protocol/friend/Add.h"
+#include "protocol/friend/Accept.h"
 
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
@@ -12,7 +18,7 @@
 #include "protocol/file/DataStart.h"
 #include "protocol/file/DataEnd.h"
 #include "protocol/file/StoreRequest.h"
-#include "protocol/file/StoreAccept.h"
+#include "protocol/file/Reset.h"
 
 #include "protocol/login/Login.h"
 #include "protocol/login/Accept.h"
@@ -23,8 +29,12 @@
 #include "protocol/status/KeepAlive.h"
 #include "protocol/status/OK.h"
 #include "protocol/status/Failure.h"
+#include "protocol/status/Kick.h"
 #include "protocol/status/Crash.h"
-#include "protocol/message/TextMessage.h"
+#include "protocol/status/Cancel.h"
+#include "protocol/status/SwitchProtocol.h"
+
+#include "protocol/message/Normal.h"
 
 typedef enum
 {
@@ -32,6 +42,9 @@ typedef enum
     CRP_PACKET_HELLO,               //Hello包
     CRP_PACKET_FAILURE,             //通用失败包
     CRP_PACKET_OK,                  //通用接受包
+    CRP_PACKET_KICK,                //通用失败包
+    CRP_PACKET_CANCEL,              //取消操作
+    CRP_PACKET_SWITCH_PROTOCOL,     //切换协议
     CRP_PACKET_CRASH = UINT16_MAX,  //崩溃包
 
 
@@ -48,17 +61,22 @@ typedef enum
     CRP_PACKET_FRIEND__START = 0x30,
     CRP_PACKET_FRIEND_REQUEST,      //请求好友列表
     CRP_PACKET_FRIEND_DATA,         //答复好友列表
+    CRP_PACKET_FRIEND_NOTIFY,       //好友通知
+    CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME, //通过昵称查找好友
+    CRP_PACKET_FRIEND_USER_LIST,    //用户列表
+    CRP_PACKET_FRIEND_ADD,          //添加用户请求
+    CRP_PACKET_FRIEND_ACCEPT,       //同意用户请求
 
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件
     CRP_PACKET_FILE_DATA,          //响应数据
     CRP_PACKET_FILE_DATA_START,    //响应数据结束
     CRP_PACKET_FILE_DATA_END,      //响应数据结束
+    CRP_PACKET_FILE_RESET,         //重置文件发送进程
     CRP_PACKET_FILE_STORE_REQUEST, //请求存储新文件
-    CRP_PACKET_FILE_STORE_ACCEPT,  //接受新文件
 
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
-    CRP_PACKET_MESSAGE_TEXT,        //文本消息
+    CRP_PACKET_MESSAGE_NORMAL,        //文本消息
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID
 } CRPPacketIDs;

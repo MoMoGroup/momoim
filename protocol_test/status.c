@@ -1,20 +1,20 @@
 #include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
-#include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <asm-generic/errno-base.h>
 #include "test.h"
 
 int TestPacketHello()
 {
-    if (!CRPHelloSend(sendfd, 0, 0x78, 0x21, 0x32))
+    if (!CRPHelloSend(cs, 0, 0x78, 0x21, 0x32, 0))
     {
         log_error("Hello", "Send返回失败\n");
         return 0;
     }
 
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("Hello", "Recv返回失败\n");
@@ -28,8 +28,8 @@ int TestPacketHello()
 
     CRPPacketHello *msgHello = CRPHelloCast(packet);
     if (msgHello->protocolVersion != 0x78 ||
-        msgHello->clientVersion != 0x21 ||
-        msgHello->sessionState != 0x32)
+            msgHello->clientVersion != 0x21 ||
+            msgHello->sessionState != 0x32)
     {
 
         log_error("Hello", "包数据错误\n");
@@ -44,14 +44,14 @@ int TestPacketHello()
 int Testfail()
 {
 
-    if (!CRPFailureSend(sendfd, 0, "dada"))
+    if (!CRPFailureSend(cs, 0, ENOENT, "dada"))
     {
         log_error("Loginfailue", "loginfailu返回失败\n");
         return 0;
     }
 
 
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("Login", "Recv返回失败\n");

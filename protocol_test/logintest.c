@@ -9,7 +9,7 @@
 int TestPacketLogin()
 {
 //login test
-    if (!CRPLoginLoginSend(sendfd, 0, "xia", (const unsigned char *) "1234561234567890"))
+    if (!CRPLoginLoginSend(cs, 0, "xia", (const unsigned char *) "1234561234567890"))
     {
         log_error("Login", "login返回失败\n");
         perror("");
@@ -17,7 +17,7 @@ int TestPacketLogin()
     }
 
 
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("Login", "Recv返回失败\n");
@@ -31,7 +31,7 @@ int TestPacketLogin()
 
     CRPPacketLogin *msgHello = CRPLoginLoginCast(packet);
     if (memcmp(msgHello->username, "xia", 3) ||
-        memcmp(msgHello->password, "1234561234567890", 16))
+            memcmp(msgHello->password, "1234561234567890", 16))
     {
 
         log_error("Login", "包数据错误\n");
@@ -45,14 +45,14 @@ int TestPacketLogin()
 int LogAccept()
 {
 
-    if (!CRPLoginAcceptSend(sendfd, 0, 0x12345678))
+    if (!CRPLoginAcceptSend(cs, 0, 0x12345678))
     {
         log_error("LoginAccept", "login返回失败\n");
         return 0;
     }
 
 
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("LoginAccept", "Recv返回失败\n");
@@ -80,7 +80,7 @@ int LogAccept()
 int Logout()
 {
 
-    if (!CRPLoginLogoutSend(sendfd, 0))
+    if (!CRPLoginLogoutSend(cs, 0))
     {
 
         log_error("Logout", "loginout错误\n");
@@ -89,7 +89,7 @@ int Logout()
     log_info("Logout", "Logout通过\n");
 
 
-    CRPBaseHeader *packet = CRPRecv(recvfd);
+    CRPBaseHeader *packet = CRPRecv(cr);
     if (packet == NULL)
     {
         log_error("Login", "Recv返回失败\n");

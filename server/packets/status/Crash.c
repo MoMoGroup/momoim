@@ -1,8 +1,8 @@
 #include <protocol/CRPPackets.h>
-#include <user.h>
+#include "run/user.h"
 #include <logger.h>
 
-int ProcessPacketStatusCrash(OnlineUser *user, uint32_t session, CRPPacketCrash *packet)
+int ProcessPacketStatusCrash(POnlineUser user, uint32_t session, CRPPacketCrash *packet)
 {
     log_error("User", "Client %d Crashed.\n", user->sockfd);
     return 0;

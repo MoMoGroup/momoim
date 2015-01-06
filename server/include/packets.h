@@ -1,39 +1,59 @@
 #pragma once
 
-#include <user.h>
 #include <protocol/CRPPackets.h>
 #include <stddef.h>
+#include "run/Structures.h"
+#include "run/user.h"
 
 //数据包处理
-int ProcessPacketStatusHello(OnlineUser *user, uint32_t session, CRPPacketHello *packet);
+//状态消息
+int ProcessPacketStatusHello(POnlineUser user, uint32_t session, CRPPacketHello *packet);
 
-int ProcessPacketStatusKeepAlive(OnlineUser *user, uint32_t session, CRPPacketKeepAlive *packet);
+int ProcessPacketStatusKeepAlive(POnlineUser user, uint32_t session, CRPPacketKeepAlive *packet);
 
-int ProcessPacketStatusOK(OnlineUser *user, uint32_t session, CRPPacketOK *packet);
+int ProcessPacketStatusOK(POnlineUser user, uint32_t session, CRPPacketOK *packet);
 
-int ProcessPacketStatusCrash(OnlineUser *user, uint32_t session, CRPPacketCrash *packet);
+int ProcessPacketStatusFailure(POnlineUser user, uint32_t session, CRPPacketFailure *packet);
 
-int ProcessPacketLoginLogin(OnlineUser *user, uint32_t session, CRPPacketLogin *packet);
+int ProcessPacketStatusCancel(POnlineUser user, uint32_t session, CRPPacketCancel *packet);
 
-int ProcessPacketStatusFailure(OnlineUser *user, uint32_t session, CRPPacketFailure *packet);
+int ProcessPacketStatusSwitchProtocol(POnlineUser user, uint32_t session, CRPPacketSwitchProtocol *packet);
 
-int ProcessPacketLoginLogout(OnlineUser *user, uint32_t session, CRPPacketLoginLogout *packet);
+int ProcessPacketStatusCrash(POnlineUser user, uint32_t session, CRPPacketCrash *packet);
 
-int ProcessPacketMessageTextMessage(OnlineUser *user, uint32_t session, CRPPacketTextMessage *packet);
 
-int ProcessPacketInfoRequest(OnlineUser *user, uint32_t session, CRPPacketInfoRequest *packet);
+//登陆登出消息
+int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet);
 
-int ProcessPacketFriendRequest(OnlineUser *user, uint32_t session, CRPPacketFriendRequest *packet);
+int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLoginRegister *packet);
 
-int ProcessPacketFileRequest(OnlineUser *user, uint32_t session, CRPPacketFileRequest *packet);
+int ProcessPacketLoginLogout(POnlineUser user, uint32_t session, CRPPacketLoginLogout *packet);
 
-int ProcessPacketFileData(OnlineUser *user, uint32_t session, CRPPacketFileData *packet);
+//消息处理
+int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet);
 
-int ProcessPacketFileDataEnd(OnlineUser *user, uint32_t session, CRPPacketFileDataEnd *packet);
+//信息处理
+int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRequest *packet);
 
-int ProcessPacketFileStoreRequest(OnlineUser *user, uint32_t session, CRPPacketFileStoreRequest *packet);
+int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData *packet);
 
-int ProcessPacketLoginRegister(OnlineUser *user, uint32_t session, CRPPacketLoginRegister *packet);
+//好友处理
+int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFriendRequest *packet);
 
-//数据包处理函数映射
-extern int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(OnlineUser *user, uint32_t session, void *packet);
+int ProcessPacketFriendSearchByNickname(POnlineUser user, uint32_t session, CRPPacketFriendSearchByNickname *packet);
+
+int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAdd *packet);
+
+int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFriendAccept *packet);
+
+//文件处理
+int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRequest *packet);
+
+int ProcessPacketFileData(POnlineUser user, uint32_t session, CRPPacketFileData *packet);
+
+int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileReset *packet);
+
+int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDataEnd *packet);
+
+int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet);
+

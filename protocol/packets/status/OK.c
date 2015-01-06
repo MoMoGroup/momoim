@@ -1,7 +1,5 @@
 #include <protocol/base.h>
-#include <protocol/status/OK.h>
 #include <protocol/CRPPackets.h>
-#include <stddef.h>
 
 /**
 * 将基本包转换为CRPPacketOK包
@@ -14,7 +12,7 @@ CRPPacketOK *CRPOKCast(CRPBaseHeader *base)
 /**
 * 向目标socket发送OK消息
 */
-int CRPOKSend(int sockfd, uint32_t sessionID)
+int CRPOKSend(CRPContext context, uint32_t sessionID)
 {
-    return CRPSend(CRP_PACKET_OK, sessionID, NULL, 0, sockfd) != -1;
+    return CRPSend(context, CRP_PACKET_OK, sessionID, NULL, 0) != -1;
 }

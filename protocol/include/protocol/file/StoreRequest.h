@@ -23,4 +23,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketFileStoreRequest *CRPFileStoreRequestCast(CRPBaseHeader *base);
 
-int CRPFileStoreRequestSend(int sockfd, uint32_t sessionID, size_t length, uint8_t type, unsigned char key[16]);
+int CRPFileStoreRequestSend(CRPContext context, uint32_t sessionID, size_t length, uint8_t type, unsigned char key[16]);
