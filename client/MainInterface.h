@@ -22,7 +22,7 @@ extern gboolean loadloginLayout(gpointer user_data);
 
 extern gboolean DestoryMainInterFace(gpointer user_data);
 
-gboolean destroyLayout(gpointer user_data);
+gboolean DestroyLayout(gpointer user_data);
 
 extern UserFriends *friends;
 extern UserGroup *group;

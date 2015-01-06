@@ -29,7 +29,7 @@ gboolean mythread(gpointer user_data)//合并
     return 0;
 }//合并
 
-gboolean destroyLayout(gpointer user_data)
+gboolean DestroyLayout(gpointer user_data)
 {
     gtk_widget_hide(pendingLayout);
     gtk_widget_show_all(loginLayout);

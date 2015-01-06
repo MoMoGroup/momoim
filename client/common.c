@@ -92,7 +92,7 @@ int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithP
     return 0;
 }
 
-void HexadecimalConversion(char *filename, char *strdest)
+void HexadecimalConversion(char *filename,const char *strdest)
 {
     char sDest[33] = {0};
     short i;
@@ -103,7 +103,7 @@ void HexadecimalConversion(char *filename, char *strdest)
         sprintf(szTmp, "%02x", (unsigned char) strdest[i]);
         memcpy(&sDest[i * 2], szTmp, 2);
     }
-    sprintf(filename, "%s/momo/image/%s", getpwuid(getuid())->pw_dir, sDest);
+    sprintf(filename, "%s/.momo/files/%s", getpwuid(getuid())->pw_dir, sDest);
 }
 
 

@@ -10,4 +10,4 @@ extern void Md5Coding(gchar *filename, unsigned char *coding_text);
 
 extern int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithPath);
 
-extern void HexadecimalConversion(char *filename, char *strdest);
+extern void HexadecimalConversion(char *filename,const char *strdest);
