@@ -7,13 +7,13 @@
 #include "common.h"
 #include <pwd.h>
 #include <math.h>
+#include <stdio.h>
 #include <cairo-script-interpreter.h>
 #include <ftlist.h>
 
+
 int X = 0;
 int Y = 0;
-
-
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
 static cairo_surface_t *surfaceclose1, *surfaceclose2, *surfaceclosebut1, *surfaceclosebut2, *surfaceclosebut3;
 static cairo_surface_t *surfacelook1, *surfacelook2, *surfacejietu1, *surfacejietu2, *surfacefile1, *surfacefile2, *surfaceimage1, *surfaceimage2;
@@ -78,18 +78,46 @@ static void create_surfaces(friendinfo *information)
 }
 
 //将输入的文本框输出在显示的文本框中
-void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times)
+void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times, int count)
 {
     GtkTextIter start, end;
+
+    gchar *char_rear;
+    GtkTextChildAnchor *anchor;
+    int num;
+    int i = 0;
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             nicheng_times, -1, "red_foreground", NULL);
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
-            text, -1, "gray_foreground", NULL);
+    while (i < count)
+    {
+        if (text[i] != '\0')
+        {
+            gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
+                    &text[i], 1, "gray_foreground", NULL);
+            i++;
+        }
+        else
+        {
+            GtkTextChildAnchor *anchor;
+            GtkWidget *image;
+            char filename[256] = {0};
+            char strdest[17] = {0};
+            i++;
+            memcpy(strdest, &text[i], 16);
+            HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
+            anchor = gtk_text_buffer_create_child_anchor(info->show_buffer, &end);
+            image = gtk_image_new_from_file(filename);
+            gtk_widget_show_all(image);
+            gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->show_text), image, anchor);
+            i = i + 16;
+        }
+    }
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
 
 }
+
 
 //将服务器发过来的的消息显示在文本框上
 void Show_remote_text(const gchar *rcvd_text, friendinfo *info)
@@ -110,25 +138,62 @@ void Show_remote_text(const gchar *rcvd_text, friendinfo *info)
 
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
+}
 
 
+//编码
+void CodingTextImage(friendinfo *info, gchar *coding, int *count)
+{
+    gchar *char_rear = coding;
+    gunichar c;
+
+    GtkTextIter iter;
+    GtkTextChildAnchor *anchor;
+    int num;
+    gtk_text_buffer_get_start_iter(info->input_buffer, &iter);
+    while (!gtk_text_iter_is_end(&iter))
+    {
+        anchor = gtk_text_iter_get_child_anchor(&iter);
+        if (anchor == NULL)
+        {
+            c = gtk_text_iter_get_char(&iter);
+            num = g_unichar_to_utf8(c, char_rear);
+            char_rear = char_rear + num;
+        }
+        else
+        {
+            char_rear[0] = 0;
+            ++char_rear;
+            GList *list = gtk_text_child_anchor_get_widgets(anchor);
+            GtkWidget *imageWidget = g_list_nth_data(list, 0);
+            g_list_free(list);
+            gchar *src = g_object_get_data(imageWidget, "ImageSrc");
+            Md5Coding(src, char_rear);
+            char targetfilename[256] = {0};
+            HexadecimalConversion(targetfilename, char_rear); //进制转换，将MD5值的字节流转换成十六进制
+            CopyFile(src, targetfilename);
+            char_rear = char_rear + MD5_DIGEST_LENGTH;
+
+        }
+        gtk_text_iter_forward_char(&iter);
+    }
+    *count = char_rear - coding;
 }
 
 
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
 void send_text(friendinfo *info)
 {
-    GtkTextIter start, end;
+
     gchar *char_text;
-    char_text = (gchar *) malloc(1024);
+    int count;
+    char_text = (gchar *) malloc(100000);
     if (char_text == NULL)
     {
         printf("Malloc error!\n");
         exit(1);
     }
-
-    gtk_text_buffer_get_bounds(info->input_buffer, &start, &end);
-    char_text = gtk_text_buffer_get_text(info->input_buffer, &start, &end, FALSE);
+    CodingTextImage(info, char_text, &count);
     char nicheng_times[40] = {0};
     time_t timep;
     struct tm *p;
@@ -137,9 +202,9 @@ void send_text(friendinfo *info)
     sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     gtk_text_buffer_set_text(info->input_buffer, "", 0);//发送消息后本地的文本框清0
     CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, strlen(char_text), char_text);
-    show_local_text(char_text, info, nicheng_times);
-    free(char_text);
 
+    show_local_text(char_text, info, nicheng_times, count);
+    free(char_text);
 
 }
 
@@ -654,7 +719,7 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
     {
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
         GtkWidget *dialog;
-        GSList *filename;
+        gchar *filename;
         dialog = gtk_file_chooser_dialog_new("Open File(s) ...", info->chartwindow,
                 GTK_FILE_CHOOSER_ACTION_OPEN,
                 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
@@ -667,11 +732,21 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
             // GtkTextBuffer *buffer;
             GtkTextMark *mark;
             GtkTextIter iter;
-            //GdkPixbuf *image;
+            GtkTextChildAnchor *anchor;
+            GtkWidget *image;
+            size_t filenamelen;
             mark = gtk_text_buffer_get_insert(info->input_buffer);
             gtk_text_buffer_get_iter_at_mark(info->input_buffer, &iter, mark);
-            info->pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
-            gtk_text_buffer_insert_pixbuf(info->input_buffer, &iter, info->pixbuf);
+            anchor = gtk_text_buffer_create_child_anchor(info->input_buffer, &iter); //添加衍生构件
+            filenamelen = strlen(filename);
+            image = gtk_image_new_from_file(filename);
+            char *pSrc = malloc(filenamelen + 1);
+            memcpy(pSrc, filename, filenamelen);
+            pSrc[filenamelen] = 0;
+            g_object_set_data_full(G_OBJECT(image), "ImageSrc", pSrc, free); //将路径存成为key值在image控件中保存
+            gtk_widget_show_all(image);
+            gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->input_text), image, anchor);
+
         }
         gtk_widget_destroy(dialog);
     }
@@ -960,10 +1035,10 @@ int mainchart(friendinfo *friendinfonode)
             0);//不可编辑
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(friendinfonode->show_text), FALSE);
 
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 0, 440);//文本框位置
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 5, 440);//文本框位置
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 0, 100);
 
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 80);
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 75);
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 300);//大小
 
     GdkRGBA rgba = {1, 1, 1, 0.2};

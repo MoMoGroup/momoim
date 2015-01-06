@@ -162,7 +162,6 @@ static void loadinfo()
         cairo_surface_t *surface;
 
         sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, userdata.uid);
-        surfacehead2 = cairo_image_surface_create_from_png(userhead);
         //加载一个图片
         surface = cairo_image_surface_create_from_png(userhead);
         int w = cairo_image_surface_get_width(surface);
