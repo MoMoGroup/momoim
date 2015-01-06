@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <pthread.h>
+#include <fcntl.h>
 //Message Post
 
 typedef enum
@@ -23,19 +24,19 @@ typedef struct
 {
     size_t count;
     int fd;
-    time_t startTime;
+    uint32_t fileBeginDate, lastUpdateDate, currentDate;
+    off_t fileBeginOffset, currentBeginOffset;
     pthread_mutex_t lock;
-
 } MessageFile;
 
-int MessageFileCreate(const char *path);
+extern int MessageFileCreate(const char *path);
 
-MessageFile *MessageFileOpen(const char *path);
+extern MessageFile *MessageFileOpen(const char *path);
 
-int MessageFileCleanup(MessageFile *);
+extern int MessageFileClose(MessageFile *);
 
-int MessageFileClose(MessageFile *);
+extern int MessageFileAppend(MessageFile *, UserMessage *message);
 
-int MessageFileAppend(MessageFile *, UserMessage *message);
+extern int MessageFileSeek(MessageFile *, uint32_t date);
 
-UserMessage *MessageFileNext(MessageFile *);
+extern UserMessage *MessageFileNext(MessageFile *);

@@ -13,6 +13,7 @@ int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMess
         msg->messageLen = packet->messageLen;
         msg->from = user->info->uid;
         msg->to = packet->uid;
+        time(&msg->time);
         memcpy(msg->content, packet->message, packet->messageLen);
         PostMessage(msg);
         CRPOKSend(user->sockfd, session);

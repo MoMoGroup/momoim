@@ -64,6 +64,7 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
         message->from = user->info->uid;
         message->to = packet->uid;
         message->messageLen = (uint16_t) noteLen;
+        time(&message->time);
         memcpy(message->content, packet->note, noteLen);
         PostMessage(message);
         free(message);
