@@ -14,14 +14,8 @@ int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMess
         msg->from = user->info->uid;
         msg->to = packet->uid;
         memcpy(msg->content, packet->message, packet->messageLen);
-        if (PostMessage(msg))
-        {
-            CRPOKSend(user->sockfd, session);
-        }
-        else
-        {
-            CRPFailureSend(user->sockfd, session, EFAULT, "无法送达消息");
-        }
+        PostMessage(msg);
+        CRPOKSend(user->sockfd, session);
         free(msg);
     }
     else
