@@ -148,15 +148,23 @@ int PendingUserDelete(PPendingUser user)
 static POnlineUser OnlineUserGetUnlock(uint32_t uid)
 {
     uint32_t current = uid;
-    OnlineUsersTableType *currentTable = &OnlineUserTable;
+    int reserve[sizeof(current) * 2];
+    int end = 0;
     while (current)
     {
-        if (currentTable->next[current & 0xf] == NULL)
+        reserve[end++] = current & 0xf;
+        current >>= 4;
+    }
+    --end;
+    OnlineUsersTableType *currentTable = &OnlineUserTable;
+    while (end >= 0)
+    {
+        if (currentTable->next[reserve[end]] == NULL)
         {
             return NULL;
         }
-        currentTable = currentTable->next[current & 0xf];
-        current >>= 4;
+        currentTable = currentTable->next[reserve[end]];
+        --end;
     }
     if (currentTable->user && UserHold(currentTable->user))
         return currentTable->user;
@@ -164,18 +172,26 @@ static POnlineUser OnlineUserGetUnlock(uint32_t uid)
         return NULL;
 }
 
-static POnlineUser OnlineUserSetUnlock(uint32_t uid, OnlineUser *user)
+static POnlineUser OnlineUserTableSetUnlock(uint32_t uid, OnlineUser *user)
 {
     uint32_t current = uid;
-    POnlineUsersTableType currentTable = &OnlineUserTable;
+    int reserve[sizeof(current) * 2];
+    int end = 0;
     while (current)
     {
-        if (currentTable->next[current & 0xf] == NULL)
-        {
-            currentTable->next[current & 0xf] = calloc(1, sizeof(OnlineUsersTableType));
-        }
-        currentTable = currentTable->next[current & 0xf];
+        reserve[end++] = current & 0xf;
         current >>= 4;
+    }
+    --end;
+    POnlineUsersTableType currentTable = &OnlineUserTable;
+    while (end >= 0)
+    {
+        if (currentTable->next[reserve[end]] == NULL)
+        {
+            currentTable->next[reserve[end]] = calloc(1, sizeof(OnlineUsersTableType));
+        }
+        currentTable = currentTable->next[reserve[end]];
+        --end;
     }
     currentTable->user = user;
     return user;
@@ -190,11 +206,11 @@ POnlineUser OnlineUserGet(uint32_t uid)
     return ret;
 }
 
-POnlineUser OnlineUserSet(uint32_t uid, OnlineUser *user)
+POnlineUser OnlineUserTableSet(uint32_t uid, OnlineUser *user)
 {
     POnlineUser ret = NULL;
     pthread_rwlock_wrlock(&OnlineUserTableLock);
-    ret = OnlineUserSetUnlock(uid, user);
+    ret = OnlineUserTableSetUnlock(uid, user);
     pthread_rwlock_unlock(&OnlineUserTableLock);
     return ret;
 }
@@ -231,7 +247,7 @@ int OnlineUserDelete(POnlineUser user)
         return 0;
     uint32_t uid = user->info->uid;
     pthread_rwlock_unlock(user->holdLock);
-    OnlineUserSet(uid, NULL);
+    OnlineUserTableSet(uid, NULL);
 
     pthread_rwlock_wrlock(user->holdLock);
     JobManagerKick(user);
@@ -317,7 +333,7 @@ POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUser
         pthread_mutex_init(&user->operations.lock, NULL);
         user->status = OUS_ONLINE;
         broadcastNotify(user, FNT_ONLINE);
-        return OnlineUserSet(info->uid, user);
+        return OnlineUserTableSet(info->uid, user);
     }
     else if (user->status == OUS_ONLINE && status == OUS_PENDING_CLEAN)
     {

@@ -74,7 +74,8 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
                 .messageType=UMT_NEW_FRIEND,
                 .messageLen=0,
                 .from=user->info->uid,
-                .to=packet->uid
+                .to=packet->uid,
+                .time=time(NULL)
         };
         PostMessage(&message);
     }
