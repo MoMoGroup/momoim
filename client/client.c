@@ -43,7 +43,7 @@ static void
 create_surfaces1()
 {
 
-    sbackground = cairo_image_surface_create_from_png("背景.png");
+    sbackground = cairo_image_surface_create_from_png("背景2.png");
     sheadimage = cairo_image_surface_create_from_png("头像.png");
     swhite = cairo_image_surface_create_from_png("白色.png");
     slandbut1 = cairo_image_surface_create_from_png("登陆按钮.png");
@@ -401,6 +401,7 @@ gboolean destoryall(gpointer user_data)
         free(p);
     }
     g_idle_add(loadloginLayout, NULL);
+    popup("异地登录","您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
     return FALSE;
 }
 
@@ -417,6 +418,7 @@ gboolean loadloginLayout(gpointer user_data)
 
     g_signal_connect(G_OBJECT(window), "delete_event",
             G_CALLBACK(gtk_main_quit), NULL);
+
 
     //gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置
@@ -441,13 +443,18 @@ gboolean loadloginLayout(gpointer user_data)
 //    gtk_container_add (GTK_CONTAINER(loginLayout), closebutevent_box);
 //    gtk_container_add (GTK_CONTAINER(loginLayout),cancelevent_box);
 
+
+
+
     backgroundevent_box = BuildEventBox(
             imagebackground,
             G_CALLBACK(background_button_press_event),
             NULL, NULL, NULL, NULL);
+
     waitevent_box = BuildEventBox(iwait,
             G_CALLBACK(wait_button_press_event),
             NULL, NULL, NULL, NULL);
+
     landbutevent_box = BuildEventBox(
             imagelandbut,
             G_CALLBACK(landbut_button_press_event),
@@ -491,9 +498,9 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
     gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
     gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 0, 0);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 80, 20);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 70, 310);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 0, 0);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 55, 110);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 75, 350);
 
     gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER (frameLayout), loginLayout);

@@ -1,7 +1,8 @@
 #include <unistd.h>
 #include <imcommon/message.h>
 #include <malloc.h>
-#include <fcntl.h>
+#include <string.h>
+#include <stdlib.h>
 
 int MessageFileClose(MessageFile *file)
 {
@@ -15,11 +16,25 @@ int MessageFileClose(MessageFile *file)
     return !ret;
 }
 
+static void MessageFileReset(int fd)
+{
+    ftruncate(fd, 0);
+    lseek(fd, 0, SEEK_SET);
+    uint32_t startTime = (uint32_t) (time(NULL) / (24 * 60 * 60));
+    write(fd, &startTime, sizeof(uint32_t));//fileBeginDate
+    write(fd, &startTime, sizeof(uint32_t));//lastUpdateDate
+    off_t messageBegin = sizeof(uint32_t) + sizeof(uint32_t) + (10 * 365 * sizeof(off_t));
+    write(fd, &messageBegin, sizeof(off_t));//First Message Offset
+    lseek(fd, messageBegin - 1, SEEK_SET);
+    write(fd, "", 1);
+}
+
 int MessageFileCreate(const char *path)
 {
     int fd = creat(path, 0600);
     if (fd)
     {
+        MessageFileReset(fd);
         close(fd);
         return 1;
     }
@@ -39,22 +54,48 @@ MessageFile *MessageFileOpen(const char *path)
     MessageFile *file = (MessageFile *) malloc(sizeof(MessageFile));
     file->fd = fd;
     pthread_mutex_init(&file->lock, NULL);
-    read(fd, &file->startTime, sizeof(time_t));
-    return file;
-}
 
-int MessageFileCleanup(MessageFile *file)
-{
-    return !ftruncate(file->fd, 0);
+    if (sizeof(uint32_t) == read(fd, &file->fileBeginDate, sizeof(uint32_t)))
+    {
+        read(fd, &file->lastUpdateDate, sizeof(uint32_t));
+    }
+    else
+    {
+        MessageFileReset(fd);
+        file->fileBeginDate = file->lastUpdateDate = (uint32_t) (time(NULL) / (24 * 60 * 60));
+    }
+    file->currentDate = file->fileBeginDate;
+    file->currentBeginOffset = file->fileBeginOffset =
+            sizeof(file->fileBeginDate)
+            + sizeof(file->lastUpdateDate)
+            + 10 * 365 * sizeof(off_t);
+    if (file->fileBeginOffset != lseek(file->fd, file->fileBeginOffset, SEEK_SET))
+    {
+        abort();
+    }
+    return file;
 }
 
 int MessageFileAppend(MessageFile *file, UserMessage *message)
 {
-    //TODO 消息文件应该有日期索引表.应根据日期索引表来记录消息.
     int ret = 0;
+    uint32_t messageDate = (uint32_t) (message->time / (24 * 60 * 60));
     pthread_mutex_lock(&file->lock);
     off_t posCur = lseek(file->fd, 0, SEEK_CUR);
     off_t posEnd = lseek(file->fd, 0, SEEK_END);
+    if (file->lastUpdateDate != messageDate)
+    {
+        lseek(file->fd, sizeof(file->fileBeginDate) +
+                        sizeof(file->lastUpdateDate) +
+                        sizeof(off_t) * (messageDate - file->lastUpdateDate + 1),
+              SEEK_SET);
+        for (int i = file->lastUpdateDate + 1; i <= messageDate; ++i)
+        {
+            write(file->fd, &posEnd, sizeof(off_t));
+        }
+        file->lastUpdateDate = messageDate;
+        lseek(file->fd, 0, SEEK_END);
+    }
     ssize_t nbytes;
     nbytes = write(file->fd, message, sizeof(UserMessage));
     if (nbytes != sizeof(UserMessage))
@@ -88,16 +129,48 @@ UserMessage *MessageFileNext(MessageFile *file)
     {
         goto cleanup;
     }
-    lseek(file->fd, posCur, SEEK_SET);
     ret = (UserMessage *) malloc(sizeof(UserMessage) + header.messageLen);
-    nbytes = read(file->fd, &header, sizeof(UserMessage) + header.messageLen);
-    if (nbytes != sizeof(UserMessage) + header.messageLen)
+    memcpy(ret, &header, sizeof(UserMessage));
+    nbytes = read(file->fd, ret->content, header.messageLen);
+    if (nbytes != header.messageLen)
     {
         free(ret);
+        ret = NULL;
         goto cleanup;
     }
     cleanup:
     lseek(file->fd, posCur, SEEK_SET);
+    pthread_mutex_unlock(&file->lock);
+    return ret;
+}
+
+int MessageFileSeek(MessageFile *file, uint32_t date)
+{
+    int ret = 0;
+    pthread_mutex_lock(&file->lock);
+
+    if (date < file->fileBeginDate || date > file->lastUpdateDate)
+        goto cleanup;
+    if (date == file->currentDate)
+    {
+        ret = file->currentBeginOffset == lseek(file->fd, file->currentBeginOffset, SEEK_SET);
+    }
+    else
+    {
+        lseek(file->fd, sizeof(file->fileBeginDate) +
+                        sizeof(file->lastUpdateDate) +
+                        sizeof(off_t) * (date - file->fileBeginDate), SEEK_SET);
+        off_t dateSet;
+        if (sizeof(dateSet) != read(file->fd, &dateSet, sizeof(dateSet)))
+        {
+            lseek(file->fd, file->currentBeginOffset, SEEK_SET);
+            goto cleanup;
+        }
+        file->currentDate = date;
+        file->currentBeginOffset = dateSet;
+        ret = file->currentBeginOffset == lseek(file->fd, file->currentBeginOffset, SEEK_SET);
+    }
+    cleanup:
     pthread_mutex_unlock(&file->lock);
     return ret;
 }
