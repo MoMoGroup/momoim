@@ -128,8 +128,6 @@ static void create_surfaces()
     friend = gtk_image_new_from_surface(surfacefriendimage);
     closebut = gtk_image_new_from_surface(surfaceclose51);
 
-    gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
-    gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
 
 }
 
@@ -522,6 +520,8 @@ int maininterface()
 
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
+    gtk_fixed_put(GTK_FIXED(MainLayout), search, 0, 140);
+    gtk_fixed_put(GTK_FIXED(MainLayout), friend, -10, 174);
     loadinfo();
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
