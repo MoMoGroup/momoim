@@ -119,7 +119,7 @@ gboolean putimage(gpointer user_data)
     cairo_paint(cr);
 
     smallhead = gtk_image_new_from_surface(surfacehead);
-    gtk_fixed_put(GTK_FIXED(addlayout2), smallhead, 28, 19);
+    gtk_fixed_put(GTK_FIXED(addlayout2), smallhead, 27, 15);
     cairo_destroy(cr);
 
 
