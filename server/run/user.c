@@ -8,6 +8,7 @@
 #include <server.h>
 #include <run/jobs.h>
 #include<errno.h>
+#include <data/friend.h>
 
 OnlineUsersTableType OnlineUserTable = {
         .user=NULL,

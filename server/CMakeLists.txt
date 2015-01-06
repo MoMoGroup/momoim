@@ -12,10 +12,11 @@ SET(SERVER_SOURCE_FILE
     run/user.c
     run/worker.c
 
-    data/base.c
-    data/auth.c
-    data/user.c
-    data/file.c
+    datafile/base.c
+    datafile/auth.c
+    datafile/user.c
+    datafile/file.c
+    datafile/friends.c
 
     packets/file/Request.c
     packets/file/Data.c
