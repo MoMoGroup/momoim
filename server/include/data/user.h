@@ -1,22 +1,15 @@
 #pragma once
 
 #include <stdint.h>
-#include "imcommon/friends.h"
 #include "imcommon/message.h"
+#include "imcommon/friends.h"
 
-typedef struct
+typedef struct structUserMessagesTable
 {
-    UserFriends *friends;
-    pthread_rwlock_t lock;
-    pthread_mutex_t refLock;
-    int refCount;
+    MessageFile *file;
+    struct structUserMessagesTable *next[0x10];
+} UserMessagesTable;
 
-} UserFriendsEntry;
-typedef struct structUserFriendsTable
-{
-    UserFriendsEntry *entry;
-    struct structUserFriendsTable *next[0x10];
-} UserFriendsTable;
 
 int UserInit();
 
@@ -37,18 +30,6 @@ UserInfo *UserInfoGet(uint32_t uid);
 
 void UserInfoFree(UserInfo *info);
 
-//Friends-Groups
-void UserFriendsCreate(uint32_t uid);
-
-int UserFriendsSave(uint32_t uid, UserFriends *friends);
-
-UserFriendsEntry *UserFriendsEntryGet(uint32_t uid);
-
-UserFriendsEntry *UserFriendsEntrySet(uint32_t uid, UserFriends *friends);
-
-UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock);
-
-void UserFriendsDrop(uint32_t uid);
 
 int UserMessageFileCreate(uint32_t uid);
 

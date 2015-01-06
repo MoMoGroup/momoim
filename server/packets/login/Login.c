@@ -2,9 +2,8 @@
 #include "run/user.h"
 #include <data/auth.h>
 #include <logger.h>
-#include <data/user.h>
 #include <asm-generic/errno-base.h>
-#include <unistd.h>
+#include <data/friend.h>
 
 int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet)
 {
@@ -76,6 +75,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                         };
                 UserFriendsDrop(uid);
                 UserFriendsSave(uid, &friends);
+                user->info->friends = NULL;
                 user->info->friends = UserFriendsGet(uid, &user->info->friendsLock);
             }
             //测试数据导入结束
