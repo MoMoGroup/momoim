@@ -9,13 +9,14 @@
 #include <ctype.h>
 #include "newuser.h"
 #include "PopupWinds.h"
+#include "common.h"
 
 static GtkWidget *newwindow;
 static GtkWidget *zhuceLayout;
 static GtkWidget *mnickname, *newusername, *passwd1, *passwd2;
 static GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mminfo, *endwind;
 static cairo_surface_t *surface1, *surface2, *surface3, *surface32, *surface33, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
-static GtkWidget *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
+static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
 
 int newsockfd()
 {
@@ -134,35 +135,6 @@ static void create_zhucefaces()
     surface8 = cairo_image_surface_create_from_png("关闭按钮1.png");
     surface82 = cairo_image_surface_create_from_png("关闭按钮2.png");
     surface83 = cairo_image_surface_create_from_png("关闭按钮3.png");
-
-    background = gtk_image_new_from_surface(surface1);
-    gtk_container_add(GTK_CONTAINER(newbackground_event_box), background);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), newbackground_event_box, 0, 0);//起始坐标
-    gtk_widget_set_size_request(GTK_WIDGET(background), 500, 500);
-
-    headline = gtk_image_new_from_surface(surface2);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), headline, 7, 10);
-
-    mminfo = gtk_image_new_from_surface(surface3);
-    gtk_container_add(GTK_CONTAINER(zhuce_event_box), mminfo);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), zhuce_event_box, 20, 440);
-
-    nickid = gtk_image_new_from_surface(surface4);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickid, 10, 80);
-
-    nick = gtk_image_new_from_surface(surface5);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nick, 10, 150);
-
-    nickmm1 = gtk_image_new_from_surface(surface6);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickmm1, 10, 215);
-
-    nickmm2 = gtk_image_new_from_surface(surface7);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickmm2, 10, 290);
-
-    endwind = gtk_image_new_from_surface(surface8);
-    gtk_container_add(GTK_CONTAINER(closebut_event_box), endwind);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), closebut_event_box, 530, 0);
-
 }
 
 static void
@@ -294,21 +266,56 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
 int newface()
 {
     newwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    //g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(gtk_main_quit), NULL);
-    //gtk_window_set_default_size(GTK_WINDOW(newwindow), 500, 500);
-    //gtk_window_set_position(GTK_WINDOW(newwindow), GTK_WIN_POS_MOUSE);
     gtk_window_set_position(GTK_WINDOW(newwindow), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (newwindow), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(newwindow), FALSE);//去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(newwindow), 500, 500);
 
-    newbackground_event_box = gtk_event_box_new();
-    zhuce_event_box = gtk_event_box_new();
-    closebut_event_box = gtk_event_box_new();
     zhuceLayout = gtk_fixed_new();
     create_zhucefaces();
-
     gtk_container_add(GTK_CONTAINER(newwindow), zhuceLayout);
+    background = gtk_image_new_from_surface(surface1);
+    headline = gtk_image_new_from_surface(surface2);
+    mminfo = gtk_image_new_from_surface(surface3);
+    nickid = gtk_image_new_from_surface(surface4);
+    nick = gtk_image_new_from_surface(surface5);
+    nickmm1 = gtk_image_new_from_surface(surface6);
+    nickmm2 = gtk_image_new_from_surface(surface7);
+    endwind = gtk_image_new_from_surface(surface8);
+
+    newbackground_event_box = BuildEventBox(
+            background,
+            G_CALLBACK(newbackground_button_press_event),
+            NULL, NULL, NULL, NULL);
+
+    zhuce_event_box = BuildEventBox(
+            mminfo,
+            G_CALLBACK(zhuce_button_press_event),
+            G_CALLBACK(zhuce_enter_notify_event),
+            G_CALLBACK(zhuce_leave_notify_event),
+            G_CALLBACK(zhuce_button_release_event),
+            NULL);
+
+    closebut_event_box = BuildEventBox(
+            endwind,
+            G_CALLBACK(closebut_button_press_event),
+            G_CALLBACK(closebut_enter_notify_event),
+            G_CALLBACK(closebut_leave_notify_event),
+            G_CALLBACK(closebut_button_release_event),
+            NULL);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), newbackground_event_box, 0, 0);//起始坐标
+    gtk_widget_set_size_request(GTK_WIDGET(background), 500, 500);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), zhuce_event_box, 20, 440);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), closebut_event_box, 530, 0);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), headline, 7, 10);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickid, 10, 80);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), nick, 10, 150);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickmm1, 10, 215);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickmm2, 10, 290);
+
+
+
+
 
     mnickname = gtk_entry_new();//昵称
     newusername = gtk_entry_new();//id
@@ -324,48 +331,6 @@ int newface()
     gtk_fixed_put(GTK_FIXED(zhuceLayout), mnickname, 100, 180);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd1, 100, 255);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd2, 100, 326);
-
-    gtk_widget_set_events(newbackground_event_box,  // 设置窗体获取鼠标事件
-
-                          GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-    g_signal_connect(G_OBJECT(newbackground_event_box), "button_press_event",
-                     G_CALLBACK(newbackground_button_press_event), NULL);
-
-    gtk_widget_set_events(zhuce_event_box,  // 设置窗体获取鼠标事件
-
-                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(zhuce_event_box), "button_press_event",
-                     G_CALLBACK(zhuce_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(zhuce_event_box), "enter_notify_event",
-                     G_CALLBACK(zhuce_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(zhuce_event_box), "button_release_event",
-                     G_CALLBACK(zhuce_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(zhuce_event_box), "leave_notify_event",
-                     G_CALLBACK(zhuce_leave_notify_event), NULL);
-
-    gtk_widget_set_events(closebut_event_box,  // 设置窗体获取鼠标事件
-
-                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(closebut_event_box), "button_press_event",
-                     G_CALLBACK(closebut_button_press_event), NULL);       // 加入事件回调
-    g_signal_connect(G_OBJECT(closebut_event_box), "enter_notify_event",
-                     G_CALLBACK(closebut_enter_notify_event), NULL);
-    g_signal_connect(G_OBJECT(closebut_event_box), "button_release_event",
-                     G_CALLBACK(closebut_button_release_event), NULL);
-    g_signal_connect(G_OBJECT(closebut_event_box), "leave_notify_event",
-                     G_CALLBACK(closebut_leave_notify_event), NULL);
 
     gtk_widget_show_all(newwindow);
 }

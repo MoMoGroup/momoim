@@ -7,6 +7,8 @@
 #include "common.h"
 #include <pwd.h>
 #include <math.h>
+#include <cairo-script-interpreter.h>
+#include <ftlist.h>
 
 int X = 0;
 int Y = 0;
@@ -84,7 +86,6 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times)
             nicheng_times, -1, "red_foreground", NULL);
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             text, -1, "gray_foreground", NULL);
-
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
 
@@ -102,8 +103,6 @@ void Show_remote_text(const gchar *rcvd_text, friendinfo *info)
     sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     GtkTextBuffer *show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
-
-    // gtk_text_buffer_apply_tag (info->show_buffer, tag, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
             nicheng_times, -1, "blue_foreground", NULL);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
@@ -120,7 +119,6 @@ void Show_remote_text(const gchar *rcvd_text, friendinfo *info)
 void send_text(friendinfo *info)
 {
     GtkTextIter start, end;
-    GdkPixbuf *pixbuf;
     gchar *char_text;
     char_text = (gchar *) malloc(1024);
     if (char_text == NULL)
@@ -128,12 +126,9 @@ void send_text(friendinfo *info)
         printf("Malloc error!\n");
         exit(1);
     }
-//
-//    pixbuf = gdk_pixbuf_new_from_file("ss.png", NULL);
-//    gtk_text_buffer_insert_pixbuf(info->input_buffer, &start, pixbuf);
+
     gtk_text_buffer_get_bounds(info->input_buffer, &start, &end);
     char_text = gtk_text_buffer_get_text(info->input_buffer, &start, &end, FALSE);
-    g_print("%s\n", char_text);
     char nicheng_times[40] = {0};
     time_t timep;
     struct tm *p;
@@ -658,6 +653,27 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
+        GtkWidget *dialog;
+        GSList *filename;
+        dialog = gtk_file_chooser_dialog_new("Open File(s) ...", info->chartwindow,
+                GTK_FILE_CHOOSER_ACTION_OPEN,
+                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                NULL);
+        gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+        if (result == GTK_RESPONSE_ACCEPT)
+        {
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            // GtkTextBuffer *buffer;
+            GtkTextMark *mark;
+            GtkTextIter iter;
+            //GdkPixbuf *image;
+            mark = gtk_text_buffer_get_insert(info->input_buffer);
+            gtk_text_buffer_get_iter_at_mark(info->input_buffer, &iter, mark);
+            info->pixbuf = gdk_pixbuf_new_from_file(filename, NULL);
+            gtk_text_buffer_insert_pixbuf(info->input_buffer, &iter, info->pixbuf);
+        }
+        gtk_widget_destroy(dialog);
     }
     return 0;
 
