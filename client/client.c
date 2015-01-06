@@ -42,7 +42,7 @@ static void
 create_surfaces1()
 {
 
-    sbackground = cairo_image_surface_create_from_png("背景.png");
+    sbackground = cairo_image_surface_create_from_png("背景2.png");
     sheadimage = cairo_image_surface_create_from_png("头像.png");
     swhite = cairo_image_surface_create_from_png("白色.png");
     slandbut1 = cairo_image_surface_create_from_png("登陆按钮.png");
@@ -489,9 +489,9 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
     gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
     gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 0, 0);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 80, 20);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 70, 310);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 0, 0);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 55, 110);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 75, 350);
 
     gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER (frameLayout), loginLayout);

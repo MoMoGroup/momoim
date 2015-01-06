@@ -171,7 +171,7 @@ int popup(const char *title, const char *tell)
             G_CALLBACK(button_release_event), popupwindow);
 
     gtk_widget_show_all(popupwindow);
-    //gtk_widget_hide(action);//隐藏留白的action
+    gtk_widget_hide(action);//隐藏留白的action
 
     gtk_dialog_run(GTK_DIALOG(popupwindow));
 
