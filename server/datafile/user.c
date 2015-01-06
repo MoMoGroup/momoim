@@ -7,13 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <sqlite3.h>
-#include <data/user.h>
+
+#include "datafile/user.h"
 
 static sqlite3 *db = NULL;
 static const char sqlNickInsert[] = "INSERT OR REPLACE INTO info(uid,nick) VALUES(?,?);";
 static const char sqlNickQuery[] = "SELECT uid FROM info WHERE nick LIKE ? LIMIT ? OFFSET ?;";
-static UserMessagesTable userMessagesTable;
-static pthread_rwlock_t userMessageTableLock;
 
 int UserInit()
 {
@@ -29,13 +28,11 @@ int UserInit()
     {
         return 0;
     }
-    pthread_rwlock_init(&userMessageTableLock, NULL);
     return 1;
 }
 
 void UserFinalize()
 {
-    pthread_rwlock_destroy(&userMessageTableLock);
     sqlite3_close(db);
 }
 
@@ -154,19 +151,4 @@ void UserInfoFree(UserInfo *info)
 {
     if (info)
         free(info);
-}
-
-
-int UserMessageFileCreate(uint32_t uid)
-{
-    char path[30];
-    UserGetDir(path, uid, "message");
-    return MessageFileCreate(path);
-}
-
-MessageFile *UserMessageFileOpen(uint32_t uid)
-{
-    char path[30];
-    UserGetDir(path, uid, "message");
-    return MessageFileOpen(path);
 }

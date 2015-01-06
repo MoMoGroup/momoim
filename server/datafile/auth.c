@@ -1,7 +1,7 @@
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
-#include <data/auth.h>
+#include "datafile/auth.h"
 
 static sqlite3 *db = 0;
 static const char sqlAuth[] = "SELECT id FROM users WHERE name = ? AND key = ?;";

@@ -1,11 +1,12 @@
+#pragma once
+
+#include<pthread.h>
 #include "imcommon/friends.h"
 
 typedef struct
 {
     UserFriends *friends;
-    pthread_rwlock_t lock;
-    pthread_mutex_t refLock;
-    int refCount;
+    pthread_rwlock_t lock, refLock;
 
 } UserFriendsEntry;
 typedef struct structUserFriendsTable
@@ -15,6 +16,10 @@ typedef struct structUserFriendsTable
 } UserFriendsTable;
 
 //Friends-Groups
+int UserFriendsInit();
+
+void UserFriendsFinalize();
+
 void UserFriendsCreate(uint32_t uid);
 
 int UserFriendsSave(uint32_t uid, UserFriends *friends);

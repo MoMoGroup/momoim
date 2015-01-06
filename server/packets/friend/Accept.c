@@ -1,8 +1,7 @@
 #include <asm-generic/errno-base.h>
 #include <protocol/friend/Accept.h>
-#include <data/user.h>
 #include <logger.h>
-#include <data/friend.h>
+#include "datafile/friend.h"
 #include "run/user.h"
 
 static int sub(POnlineUser user, uint32_t session, UserFriends *friends)

@@ -1,14 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "imcommon/message.h"
 #include "imcommon/friends.h"
-
-typedef struct structUserMessagesTable
-{
-    MessageFile *file;
-    struct structUserMessagesTable *next[0x10];
-} UserMessagesTable;
 
 
 int UserInit();
@@ -29,8 +22,3 @@ int UserInfoSave(uint32_t uid, UserInfo *info);
 UserInfo *UserInfoGet(uint32_t uid);
 
 void UserInfoFree(UserInfo *info);
-
-
-int UserMessageFileCreate(uint32_t uid);
-
-MessageFile *UserMessageFileOpen(uint32_t uid);

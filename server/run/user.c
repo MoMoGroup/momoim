@@ -2,13 +2,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <logger.h>
-#include <packets.h>
 #include <sys/stat.h>
-#include "data/user.h"
-#include <server.h>
 #include <run/jobs.h>
-#include<errno.h>
-#include <data/friend.h>
+#include <errno.h>
+#include <datafile/message.h>
+
+#include "datafile/user.h"
+#include "datafile/friend.h"
 
 OnlineUsersTableType OnlineUserTable = {
         .user=NULL,
@@ -593,11 +593,11 @@ void UserOperationRemoveAll(POnlineUser user)
 
 void PostMessage(UserMessage *message)
 {
-    MessageFile *file = UserMessageFileOpen(message->to);
+    MessageFile *file = UserMessageFileGet(message->to);
     if (file)
     {
         MessageFileAppend(file, message);
-        MessageFileClose(file);
+        UserMessageFileDrop(message->to);
     }
     POnlineUser toUser = OnlineUserGet(message->to);
     if (toUser != NULL)

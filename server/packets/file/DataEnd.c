@@ -1,10 +1,9 @@
-#include <protocol/base.h>
-#include <protocol/CRPPackets.h>
-#include "run/user.h"
 #include <unistd.h>
 #include <stdio.h>
-#include <data/file.h>
 #include <asm-generic/errno-base.h>
+#include "protocol.h"
+#include "run/user.h"
+#include "datafile/file.h"
 
 int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDataEnd *packet)
 {

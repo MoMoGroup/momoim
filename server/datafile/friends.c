@@ -4,13 +4,13 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <fcntl.h>
-#include <data/user.h>
 #include <logger.h>
 #include <sys/stat.h>
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "data/friend.h"
+#include <datafile/friend.h>
+#include "datafile/user.h"
 
 static UserFriendsTable friendsTable;
 static pthread_rwlock_t friendsTableLock;
@@ -18,6 +18,7 @@ static pthread_rwlock_t friendsTableLock;
 int UserFriendsInit()
 {
     pthread_rwlock_init(&friendsTableLock, NULL);
+    return 1;
 }
 
 void UserFriendsFinalize()
@@ -91,15 +92,23 @@ int UserFriendsSave(uint32_t uid, UserFriends *friends)
 static UserFriendsEntry *UserFriendsEntryGetUnlock(uint32_t uid)
 {
     uint32_t current = uid;
-    UserFriendsTable *currentTable = &friendsTable;
+    int reserve[sizeof(current) * 2];
+    int end = 0;
     while (current)
     {
-        if (currentTable->next[current & 0xf] == NULL)
+        reserve[end++] = current & 0xf;
+        current >>= 4;
+    }
+    --end;
+    UserFriendsTable *currentTable = &friendsTable;
+    while (end >= 0)
+    {
+        if (currentTable->next[reserve[end]] == NULL)
         {
             return NULL;
         }
-        currentTable = currentTable->next[current & 0xf];
-        current >>= 4;
+        currentTable = currentTable->next[reserve[end]];
+        --end;
     }
     return currentTable->entry;
 }
@@ -115,21 +124,28 @@ UserFriendsEntry *UserFriendsEntryGet(uint32_t uid)
 static UserFriendsEntry *UserFriendsEntrySetUnlock(uint32_t uid, UserFriends *friends)
 {
     uint32_t current = uid;
-    UserFriendsTable *currentTable = &friendsTable;
+    int reserve[sizeof(current) * 2];
+    int end = 0;
     while (current)
     {
-        if (currentTable->next[current & 0xf] == NULL)
-        {
-            currentTable->next[current & 0xf] = calloc(1, sizeof(UserFriendsTable));
-        }
-        currentTable = currentTable->next[current & 0xf];
+        reserve[end++] = current & 0xf;
         current >>= 4;
+    }
+    --end;
+    UserFriendsTable *currentTable = &friendsTable;
+    while (end >= 0)
+    {
+        if (currentTable->next[reserve[end]] == NULL)
+        {
+            currentTable->next[reserve[end]] = calloc(1, sizeof(UserFriendsTable));
+        }
+        currentTable = currentTable->next[reserve[end]];
+        --end;
     }
     UserFriendsEntry *entry = malloc(sizeof(UserFriendsEntry));
     entry->friends = friends;
-    entry->refCount = 0;
     pthread_rwlock_init(&entry->lock, NULL);
-    pthread_mutex_init(&entry->refLock, NULL);
+    pthread_rwlock_init(&entry->refLock, NULL);
     currentTable->entry = entry;
     return entry;
 }
@@ -179,9 +195,7 @@ UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock)
     {
         friends = entry->friends;
     }
-    pthread_mutex_lock(&entry->refLock);
-    ++entry->refCount;
-    pthread_mutex_unlock(&entry->refLock);
+    pthread_rwlock_rdlock(&entry->refLock);
     *lock = &entry->lock;
 
     cleanup:
@@ -200,21 +214,19 @@ void UserFriendsDrop(uint32_t uid)
     UserFriendsEntry *entry = UserFriendsEntryGetUnlock(uid);
     UserFriends *friends = entry->friends;
     pthread_rwlock_unlock(&entry->lock);
-    pthread_mutex_lock(&entry->refLock);
-    --entry->refCount;
-    if (entry->refCount <= 0)
+    pthread_rwlock_unlock(&entry->refLock);
+
+    if (pthread_rwlock_trywrlock(&entry->refLock) == 0)
     {
         UserFriendsEntrySetUnlock(uid, NULL);
+        pthread_rwlock_unlock(&friendsTableLock);
         UserFriendsSave(uid, friends);
         UserFriendsFree(friends);
         pthread_rwlock_destroy(&entry->lock);
-        pthread_mutex_unlock(&entry->refLock);
-        pthread_mutex_destroy(&entry->refLock);
+        pthread_rwlock_unlock(&entry->refLock);
+        pthread_rwlock_destroy(&entry->refLock);
         free(entry);
-    }
-    else
-    {
-        pthread_mutex_unlock(&entry->refLock);
+        return;
     }
     pthread_rwlock_unlock(&friendsTableLock);
 }

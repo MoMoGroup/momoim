@@ -1,10 +1,10 @@
 #include <protocol/CRPPackets.h>
 #include "run/user.h"
-#include <data/auth.h>
-#include <data/user.h>
 #include <string.h>
 #include <asm-generic/errno-base.h>
-#include <data/friend.h>
+#include "datafile/auth.h"
+#include "datafile/user.h"
+#include "datafile/friend.h"
 
 int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLoginRegister *packet)
 {
