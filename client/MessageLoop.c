@@ -24,10 +24,9 @@ typedef struct messageloop
 
 messageloop messagehead;
 
-void AddMessageNode(uint32_t sessionid, uint16_t packetID, int  (*fn)(CRPBaseHeader *, void *data), void *data)
+void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *), void *data)
 {
     messageloop *entry = (messageloop *) malloc(sizeof(messageloop));
-    entry->packetID = packetID;
     entry->sessionid = sessionid;
     entry->fn = fn;
     entry->data = data;
@@ -44,7 +43,7 @@ void AddMessageNode(uint32_t sessionid, uint16_t packetID, int  (*fn)(CRPBaseHea
     pthread_rwlock_unlock(&lock);//取消锁
 }
 
-void DeleteMessageNode(uint32_t sessid, uint16_t packetid)
+void DeleteMessageNode(uint32_t sessid)
 {
     messageloop *p, *delete;
     pthread_rwlock_wrlock(&lock);//写锁定
@@ -52,7 +51,7 @@ void DeleteMessageNode(uint32_t sessid, uint16_t packetid)
     while (p)
     {
         delete = p->next;
-        if ((delete->sessionid == sessid && delete->packetID == packetid))//找到要删除的delete之后,删除
+        if ((delete->sessionid == sessid))//找到要删除的delete之后,删除
         {
             p->next = delete->next;
             free(delete);
@@ -68,14 +67,14 @@ int MessageLoopFunc()
     while (1)
     {
         header = CRPRecv(sockfd);
-        // log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
+        log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
         pthread_rwlock_rdlock(&lock);//写锁定
         messageloop *prev = &messagehead, *p;
         int flag = 1;
         while (prev->next)
         {
             p = prev->next;
-            if (p->packetID == header->packetID && p->sessionid == header->sessionID)
+            if ( p->sessionid == header->sessionID)
             {
                 log_info("MSG", "Processing\n");
                 flag = p->fn(header, p->data);

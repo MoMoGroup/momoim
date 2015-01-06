@@ -1,5 +1,9 @@
 #include <gtk/gtk.h>
+#include <stdint.h>
+#include <protocol/base.h>
 #include "common.h"
+
+pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
 GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release, void *data)
 {
@@ -24,4 +28,15 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
     gtk_widget_override_background_color(GTK_WIDGET(eventBox), GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
     gtk_container_add((GTK_CONTAINER(eventBox)), warp);
     return eventBox;
+}
+
+
+session_id_t CountSessionId()
+{
+    static session_id_t OnlySessionId = 1000;
+    session_id_t ret;
+    pthread_rwlock_wrlock(&onllysessionidlock);//写锁定
+    ret = ++OnlySessionId;
+    pthread_rwlock_unlock(&onllysessionidlock);//取消锁
+    return ret;
 }
