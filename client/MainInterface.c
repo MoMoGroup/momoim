@@ -9,6 +9,7 @@
 #include "chart.h"
 #include "common.h"
 #include "addfriend.h"
+#include "Infomation.h"
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -22,7 +23,7 @@ static GtkTreeStore *store;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
-static GtkEventBox *closebut_event_box, *background_event_box,*search_event_box;
+static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box;
 
 enum
 {
@@ -168,7 +169,7 @@ static void loadinfo()
         int w = cairo_image_surface_get_width(surface);
         int h = cairo_image_surface_get_height(surface);
         //创建画布
-        surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 300, 150);
+        surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
         //创建画笔
         cr = cairo_create(surfacehead2);
         //缩放
@@ -179,7 +180,7 @@ static void loadinfo()
         cairo_set_source_surface(cr, surface, 0, 0);
         cairo_paint(cr);
         headx = gtk_image_new_from_surface(surfacehead2);
-        gtk_fixed_put(GTK_FIXED(MainLayout), headx, 10, 15);
+        //gtk_fixed_put(GTK_FIXED(MainLayout), headx, 10, 15);
         cairo_destroy(cr);
         // cairo_surface_destroy(surface);
     }
@@ -406,6 +407,44 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+//头像
+//鼠标点击事件
+static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    if (event->button == 1) {
+        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+        //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
+    }
+    return 0;
+}
+
+//头像
+//鼠标抬起事件
+static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    if (event->button == 1) {
+        info();
+    }
+
+    return 0;
+}
+
+//头像
+//鼠标移动事件
+static gint headx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
+    return 0;
+}
+
+//头像
+//鼠标离开事件
+static gint headx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave);
+    return 0;
+}
+
 //右键菜单发送即时消息
 static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -536,13 +575,21 @@ int maininterface()
             NULL
     );
 
-
-
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
     gtk_fixed_put(GTK_FIXED(MainLayout), search_event_box, 0, 140);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);
     loadinfo();
+
+    headx_event_box = BuildEventBox(
+            headx,
+            G_CALLBACK(headx_button_press_event),
+            G_CALLBACK(headx_enter_notify_event),
+            G_CALLBACK(headx_leave_notify_event),
+            G_CALLBACK(headx_button_release_event),
+            NULL);
+    gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
+
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
