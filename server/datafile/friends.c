@@ -50,7 +50,7 @@ void UserFriendsCreate(uint32_t uid)
             }
     };
     UserFriends friends = {
-            .groupCount=2,
+            .groupCount=3,
             .groups=groups
     };
     UserFriendsSave(uid, &friends);
