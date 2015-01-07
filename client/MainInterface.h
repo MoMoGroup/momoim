@@ -51,6 +51,4 @@ struct RECVImageMessagedata
     int charlen;
     char *message_data;
     friendinfo *userinfo;
-
-    // uint32_t uid;
 };

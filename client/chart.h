@@ -6,7 +6,7 @@ struct PictureMessageFileUploadingData
 {
     size_t seq;
     FILE *fp;
-    struct ImageMessageFileData *imagemessagedata;
+    struct ImageMessageFileData *image_message_data;
 };
 
 struct ImageMessageFileData
