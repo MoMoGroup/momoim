@@ -1,10 +1,12 @@
 #include <datafile/message.h>
+#include <sys/stat.h>
 #include "datafile/base.h"
 #include "datafile/user.h"
 #include "datafile/friend.h"
 
 int DataModuleInit()
 {
+    mkdir("temp", 0700);
     if (!AuthInit())
         return 0;
     if (!UserInit())
