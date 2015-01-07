@@ -11,7 +11,15 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <protocol/message/Normal.h>
+#include <protocol/friend/Notify.h>
+#include <ftlist.h>
+#include <protocol/base.h>
+#include <protocol/info/Data.h>
+#include <imcommon/friends.h>
+#include <protocol/message/Normal.h>
 #include "MainInterface.h"
+#include "PopupWinds.h"
+#include "common.h"
 
 pthread_t ThreadKeepAlive;
 
@@ -69,22 +77,47 @@ void *keepalive(void *dada)
 gboolean postMessage(gpointer user_data)
 {
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
-
     CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
 
-    char *message = (char *) malloc(packet->messageLen + 1);
-    memcpy(message, packet->message, packet->messageLen);
-    //packet->uid;
-    message[packet->messageLen] = '\0';
-    //fun();
-    RecdServerMsg(message, packet->messageLen, packet->uid);
-    free(message);
-    if ((void *) packet != header->data)
+    if (packet->messageType == UMT_TEXT)
     {
-        free(packet);
+        char *message = (char *) malloc(packet->messageLen + 1);
+        memcpy(message, packet->message, packet->messageLen);
+        //packet->uid;
+        message[packet->messageLen] = '\0';
+        //fun();
+        RecdServerMsg(message, packet->messageLen, packet->uid);
+        free(message);
+        if ((void *) packet != header->data)
+        {
+            free(packet);
+        }
+     }
+
+    if( packet->messageType==UMT_NEW_FRIEND )
+    {
+        popup("添加请求","用户请求添加你为好友");
+        CRPFriendAcceptSend(sockfd, 1, packet->uid);
     }
-    free(header);
     return 0;
+}
+int shuaxin(void *data)
+{
+
+}
+
+int newfriend(CRPBaseHeader *header,void *data)
+{
+    switch (header->packetID)
+    {
+        case CRP_PACKET_INFO_DATA: //用户资料回复
+        {
+            CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+            infodata->info;//放到结构体里，保存昵称，性别等资料
+            FindImage(infodata->info.icon, infodata, shuaxin);
+            return 0;//0删除
+        }
+    }
 }
 
 int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
@@ -95,7 +128,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //服务器通知下线
         case CRP_PACKET_KICK:
         {
-            log_info("销毁", "\n");
             g_idle_add(destoryall, NULL);
             CRPClose(sockfd);
             pthread_t pth = pthread_self();
@@ -110,17 +142,27 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             g_idle_add(postMessage, dup);
             return 1;
         };
+            //haoyou通知
+        case CRP_PACKET_FRIEND_NOTIFY:
+        {
+            CRPPacketFriendNotify *data= CRPFriendNotifyCast(header);
+            log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n",data->type);
+
+            UserGroup* grou= UserFriendsGroupGet(friends, UGI_DEFAULT);//friends,好友分组信息
+
+            UserFriendsUserAdd(grou, data->uid);
+
+            session_id_t sessionid = CountSessionId();
+            AddMessageNode(sessionid, newfriend, NULL);
+            CRPInfoRequestSend(sockfd,sessionid , data->uid); //请求用户资料
+
+        };
+        default:
+            log_info("服务器消息异常", "%u\n", header->packetID);
+            return 0;
     }
 }
 
-//int printfmessage(CRPBaseHeader *header, void *data)
-//{
-//
-//}//请求好友成功
-//case CRP_PACKET_OK:
-//{
-//    log_info("messageloop", "添加好友成功\n");
-//};
 
 
 
@@ -227,7 +269,6 @@ int mysockfd()
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
                         CurrentUserInfo = infodata->info;//放到结构提里，保存昵称，性别等资料
-                        log_info("USERDATA", "Nick:%s\n", CurrentUserInfo.nickName);//用户昵称是否获取成功
 
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
@@ -414,11 +455,6 @@ int mysockfd()
 
         }
         AddMessageNode(0, servemessage, "");//注册服务器发来的消息
-//        AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
-//        AddMessageNode(0, printfmessage, "dfg");//添加事件
-//        AddMessageNode(0, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
-//        AddMessageNode(0, tianjia, "a");
-  //      AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
 
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();

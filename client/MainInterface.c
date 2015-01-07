@@ -103,7 +103,7 @@ GtkTreeModel *createModel()
             cairo_show_text(cr, friendname);
 
             pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
-            gtk_tree_store_append(store, &iter2, &iter1);
+            gtk_tree_store_append(store, &iter2, &iter1);//
             gtk_tree_store_set(store, &iter2,
                     PIXBUF_COL, pixbuf,
                     FRIENDUID_COL, friends->groups[i].friends[j],
@@ -605,36 +605,6 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     }
 }
 
-
-//右键菜单实现添加分组
-//右键菜单发送即时消息
-//static gint add_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-//{
-//
-//    gint i, j;
-//    cairo_surface_t *surface;
-//    cairo_surface_t *surfaceIcon;
-//
-//    store = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
-//
-//        surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
-//        cr = cairo_create(surface);
-//        cairo_move_to(cr, 0, 20);
-//        cairo_set_font_size(cr, 14);
-//        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-//        cairo_show_text(cr, friends->groups[i].groupName);
-//        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
-//        gtk_tree_store_append(store, &iter1, NULL);
-//        gtk_tree_store_set(store, &iter1,
-//                PIXBUF_COL, pixbuf,
-//                FRIENDUID_COL, friends->groups[i].groupId,
-//                -1);
-//    }
-//    cairo_destroy(cr);
-//    cairo_surface_destroy(surfaceIcon);
-//    return GTK_TREE_MODEL(store);
-//
-//}
 
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event,
 

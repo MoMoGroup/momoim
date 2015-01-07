@@ -41,45 +41,6 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
             user = onlineUser;
             log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
 
-            //测试数据导入,开始
-            if (uid == 10000 || uid == 10001)
-            {
-                uint32_t userFriends1[2];
-                if (uid == 10000)
-                {
-                    userFriends1[0] = 10000;
-                    userFriends1[1] = 10001;
-                }
-                else
-                {
-                    userFriends1[0] = 10001;
-                    userFriends1[1] = 10000;
-                }
-
-                UserGroup group[3] = {
-                        {
-                                .groupId=0,
-                                .groupName="我的好友",
-                                .friendCount=2,
-                                .friends=userFriends1
-                        },
-                        {
-                                .groupId=255,
-                                .groupName="黑名单",
-                                .friendCount=0,
-                                .friends=NULL
-                        },
-                };
-                UserFriends friends =
-                        {
-                                .groupCount=2,
-                                .groups=group
-                        };
-                UserFriendsDrop(uid);
-                UserFriendsSave(uid, &friends);
-                user->info->friends = UserFriendsGet(uid, &user->info->friendsLock);
-            }
-            //测试数据导入结束
             CRPLoginAcceptSend(user->sockfd, session, uid);
 
         }
