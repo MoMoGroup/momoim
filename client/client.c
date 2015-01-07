@@ -12,7 +12,6 @@ static GtkWidget *ssun,*imagelandbut, *imageregistered, *imageclosebut, *imageca
 GtkWidget *username, *passwd;
 const gchar *name, *pwd;
 static pthread_t thread1;
-static int nX = 0, nY = 0;
 static GtkWidget *window;
 
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd;

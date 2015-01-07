@@ -175,7 +175,7 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
-//备注
+/*//备注
 //鼠标点击事件
 static gint inote_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
@@ -187,7 +187,6 @@ static gint inote_button_press_event(GtkWidget *widget, GdkEventButton *event, g
     }
     return 0;
 }
-
 //备注
 //鼠标抬起事件
 static gint inote_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -196,20 +195,18 @@ static gint inote_button_release_event(GtkWidget *widget, GdkEventButton *event,
     }
     return 0;
 }
-
 //备注
 //鼠标移动事件
 static gint inote_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
     return 0;
 }
-
 //备注
 //鼠标离开事件
 static gint inote_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     return 0;
-}
+}*/
 
 void infotv() {
 
@@ -225,13 +222,14 @@ void infotv() {
     gtk_fixed_put(GTK_FIXED(Infolayout), iid, 35, 173);
 
     //gtk_text_view_set_border_window_size(inote, GTK_TEXT_WINDOW_LEFT, 10);
-    gtk_entry_set_has_frame((GtkEntry *) inote, FALSE);
+    //gtk_entry_set_has_frame((GtkEntry *) inote, FALSE);
     inote = gtk_entry_new();
+    gtk_widget_set_size_request(inote, 3, 3);
     gtk_entry_set_text(inote, CurrentUserInfo.nickName);
     gtk_fixed_put(GTK_FIXED(Infolayout), inote, 48, 188);
     //gtk_entry_set_inner_border(<#(GtkEntry*)entry#>, <#(const GtkBorder*)border#>)
-    GtkStyleContext *context = gtk_widget_get_style_context(inote);
-    gtk_style_context_list_classes(context);
+    //GtkStyleContext *context = gtk_widget_get_style_context(inote);
+    //gtk_style_context_list_classes(context);
     //gtk_style_context_add_class(context, myclass);
 
     iname = gtk_label_new(CurrentUserInfo.nickName);
