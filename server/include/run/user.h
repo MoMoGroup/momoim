@@ -40,7 +40,6 @@ struct structUserMessageProcessor
 //存储文件操作
 struct structUserOperationFileStore
 {
-    uint32_t session;
     size_t totalLength, remainLength, seq;
     unsigned char key[16];
     char tmpfile[30];
