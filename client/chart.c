@@ -193,62 +193,82 @@ void CodingTextImage(friendinfo *info, gchar *coding, int *count)
     *count = char_rear - coding;
 }
 
-int dealwithmessage(CRPBaseHeader *header, void *data)
+int deal_with_message(CRPBaseHeader *header, void *data)
 {
     struct PictureMessageFileUploadingData *photomessage = (struct PictureMessageFileUploadingData *) data;
     char *imagedata = (char *) malloc(4096);
     size_t num;
+    int ret = 1;
     if (header->packetID == CRP_PACKET_FAILURE)
     {
         CRPPacketFailure *infodata = CRPFailureCast(header);
         log_info("FAILURE reason", infodata->reason);
+        fclose(photomessage->fp);
+        free(photomessage);
         return 0;
     }
     log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
-    if (photomessage->fp != NULL)
+
+    if (header->packetID == CRP_PACKET_OK)
     {
+        if (photomessage->fp != NULL)
+        {
 
-        num = fread(imagedata, sizeof(char), 4096, photomessage->fp);
-        if (num > 0)
-        {
-            CRPFileDataSend(sockfd, header->sessionID, num, photomessage->seq, imagedata);
-            photomessage->seq++;
-        }
-        else
-        {
-            fclose(photomessage->fp);
-            CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
-            photomessage->imagemessagedata->imagecount--;
-            if (photomessage->imagemessagedata->imagecount == 0)
+            num = fread(imagedata, sizeof(char), 4096, photomessage->fp);
+            if (num > 0)
             {
-                CRPMessageNormalSend(sockfd, photomessage->imagemessagedata->uid, UMT_TEXT,
-                        photomessage->imagemessagedata->uid, photomessage->imagemessagedata->charlen,
-                        photomessage->imagemessagedata->message_data);
-                free(photomessage->imagemessagedata->message_data);
-                free(photomessage->imagemessagedata);
+                CRPFileDataSend(sockfd, header->sessionID, num, photomessage->seq, imagedata);
+                photomessage->seq++;
             }
-            free(photomessage);
-        }
+            else
+            {
+                fclose(photomessage->fp);
+                CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
+                photomessage->imagemessagedata->imagecount--;
+                if (photomessage->imagemessagedata->imagecount == 0)
+                {
+                    CRPMessageNormalSend(sockfd, photomessage->imagemessagedata->uid, UMT_TEXT,
+                            photomessage->imagemessagedata->uid, photomessage->imagemessagedata->charlen,
+                            photomessage->imagemessagedata->message_data);
+                    free(photomessage->imagemessagedata->message_data);
+                    free(photomessage->imagemessagedata);
+                    ret = 0;
+                }
+                free(photomessage);
+            }
 
+        }
+    }
+    else if (header->packetID == CRP_PACKET_FILE_DATA_END)
+    {
+        fclose(photomessage->fp);
+        photomessage->imagemessagedata->imagecount--;
+        if (photomessage->imagemessagedata->imagecount == 0)
+        {
+            CRPMessageNormalSend(sockfd, photomessage->imagemessagedata->uid, UMT_TEXT,
+                    photomessage->imagemessagedata->uid, photomessage->imagemessagedata->charlen,
+                    photomessage->imagemessagedata->message_data);
+            free(photomessage->imagemessagedata->message_data);
+            free(photomessage->imagemessagedata);
+        }
+        free(photomessage);
+        ret = 0;
     }
     free(imagedata);
+    return ret;
 }
 
-int ImageMessageSend(gchar *char_text, friendinfo *info, int charlen)
+int image_message_send(gchar *char_text, friendinfo *info, int charlen)
 {
     int i = 0;
     int isimageflag = 0;
-    GtkTextBuffer *show_buffer;
-    GtkTextIter start, end;
+
     struct ImageMessageFileData *imagemessagedatastate
             = (struct ImageMessageFileData *) malloc(sizeof(struct ImageMessageFileData));
     imagemessagedatastate->imagecount = 0;
     imagemessagedatastate->message_data = char_text;
     imagemessagedatastate->uid = info->user.uid;
     imagemessagedatastate->charlen = charlen;
-    show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
-    gtk_text_buffer_get_bounds(show_buffer, &start, &end);
-
     while (i < charlen)
     {
         if (char_text[i] != '\0')
@@ -272,7 +292,7 @@ int ImageMessageSend(gchar *char_text, friendinfo *info, int charlen)
             imagemessge->seq = 0;
             imagemessge->fp = (fopen(filename, "r"));
             imagemessge->imagemessagedata = imagemessagedatastate;
-            AddMessageNode(session_id, dealwithmessage, imagemessge);
+            AddMessageNode(session_id, deal_with_message, imagemessge);
             CRPFileStoreRequestSend(sockfd, session_id, stat_buf.st_size, 0, char_text + i);
             imagemessge->imagemessagedata->imagecount++;
             i = i + 16;
@@ -287,6 +307,7 @@ int ImageMessageSend(gchar *char_text, friendinfo *info, int charlen)
     }
     return 1;
 }
+
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
 void send_text(friendinfo *info)
 {
@@ -308,7 +329,7 @@ void send_text(friendinfo *info)
     sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     gtk_text_buffer_set_text(info->input_buffer, "", 0);//发送消息后本地的文本框清0
     show_local_text(char_text, info, nicheng_times, count);
-    isimageflag = ImageMessageSend(char_text, info, count);
+    isimageflag = image_message_send(char_text, info, count);
     if (isimageflag == 0)
     {
         free(char_text);

@@ -77,7 +77,7 @@ gboolean postMessage(gpointer user_data)
     //packet->uid;
     message[packet->messageLen] = '\0';
     //fun();
-    RecdServerMsg(packet->message, packet->messageLen, packet->uid);
+    RecdServerMsg(message, packet->messageLen, packet->uid);
     free(message);
     if ((void *) packet != header->data)
     {
