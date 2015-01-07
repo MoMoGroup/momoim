@@ -2,6 +2,7 @@
 #include <asm-generic/errno-base.h>
 #include <stdlib.h>
 #include <string.h>
+#include <logger.h>
 #include "run/user.h"
 
 int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAdd *packet)

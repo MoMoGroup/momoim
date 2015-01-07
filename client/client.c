@@ -7,10 +7,8 @@
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
-#include "Infomation.h"
 
-
-static GtkWidget *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
+static GtkWidget *ssun,*imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
 const gchar *name, *pwd;
 static pthread_t thread1;
@@ -20,7 +18,7 @@ static GtkWidget *window;
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd;
 static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *slandimage, *scancel10_1, *scancel10_2, *scancel10_3;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
-static GtkEventBox *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
+static GtkEventBox *sunevent_box,*landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
 
 gboolean mythread(gpointer user_data)//合并
 {
@@ -42,8 +40,8 @@ gboolean DestroyLayout(gpointer user_data)
 static void
 create_surfaces1()
 {
-
     sbackground = cairo_image_surface_create_from_png("背景2.png");
+    ssun = gtk_image_new_from_file("1.gif");
     sheadimage = cairo_image_surface_create_from_png("头像.png");
     swhite = cairo_image_surface_create_from_png("白色.png");
     slandbut1 = cairo_image_surface_create_from_png("登陆按钮.png");
@@ -444,8 +442,6 @@ gboolean loadloginLayout(gpointer user_data)
 //    gtk_container_add (GTK_CONTAINER(loginLayout),cancelevent_box);
 
 
-
-
     backgroundevent_box = BuildEventBox(
             imagebackground,
             G_CALLBACK(background_button_press_event),
@@ -463,6 +459,14 @@ gboolean loadloginLayout(gpointer user_data)
             G_CALLBACK(landbut_button_release_event),
             NULL
     );
+
+    sunevent_box = BuildEventBox(
+            ssun,
+            G_CALLBACK(background_button_press_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL);
 
     registeredevent_box = BuildEventBox(
             imageregistered,
@@ -493,11 +497,12 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), backgroundevent_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
-    gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 70, 300);
+    gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 75, 300);
     gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 35, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
     gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
     gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
+    gtk_fixed_put(GTK_FIXED(loginLayout), sunevent_box, 3, 3);
     gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 0, 0);
     gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 55, 110);
     gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 75, 350);
@@ -509,6 +514,9 @@ gboolean loadloginLayout(gpointer user_data)
     passwd = gtk_entry_new();
     gtk_entry_set_max_length(username, 20);//设置输入的最大长度
     gtk_entry_set_max_length(passwd, 20);
+
+    gtk_test_text_set(username, "a");
+    gtk_test_text_set(passwd, "a");
 
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');

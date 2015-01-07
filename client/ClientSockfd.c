@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/base.h>
 #include "MainInterface.h"
 #include "addfriend.h"
 
@@ -88,26 +89,42 @@ gboolean postMessage(gpointer user_data)
     return 0;
 }
 
-int printfmessage(CRPBaseHeader *header, void *data)
+int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
 {
-    CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
-    memcpy(dup, header, header->totalLength);
-    g_idle_add(postMessage, dup);
-    return 1;
+    switch (header->packetID)
+    {
+
+            //服务器通知下线
+        case CRP_PACKET_KICK:
+        {
+            log_info("销毁", "\n");
+            g_idle_add(destoryall, NULL);
+            CRPClose(sockfd);
+            pthread_t pth = pthread_self();
+            pthread_cancel(pth);
+            return 0;
+        };
+            //消息
+        case CRP_PACKET_MESSAGE_NORMAL:
+        {
+            CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
+            memcpy(dup, header, header->totalLength);
+            g_idle_add(postMessage, dup);
+            return 1;
+        };
+    }
 }
 
-int backtologin(CRPBaseHeader *header, void *data)
-{
-    log_info("销毁", "\n");
-    g_idle_add(destoryall, NULL);
-    CRPClose(sockfd);
-//    log_info("加载", "\n");
-//    g_idle_add(loadloginLayout, NULL);
+//int printfmessage(CRPBaseHeader *header, void *data)
+//{
+//
+//}//请求好友成功
+//case CRP_PACKET_OK:
+//{
+//    log_info("messageloop", "添加好友成功\n");
+//};
 
-    pthread_t pth = pthread_self();
-    pthread_cancel(pth);
-    return 0;
-}
+
 
 int mysockfd()
 {
@@ -398,9 +415,13 @@ int mysockfd()
 
 
         }
+        AddMessageNode(0, servemessage, "");//注册服务器发来的消息
+//        AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
+//        AddMessageNode(0, printfmessage, "dfg");//添加事件
+//        AddMessageNode(0, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
+//        AddMessageNode(0, tianjia, "a");
+  //      AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
 
-        AddMessageNode(0, printfmessage, "dfg");//添加事件
-        AddMessageNode(0, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }
