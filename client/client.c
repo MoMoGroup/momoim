@@ -464,10 +464,10 @@ gboolean loadloginLayout(gpointer user_data)
 
     sunevent_box = BuildEventBox(
             ssun,
-            G_CALLBACK(registered_button_press_event),
-            G_CALLBACK(registered_enter_notify_event),
-            G_CALLBACK(registered_leave_notify_event),
-            G_CALLBACK(registered_button_release_event),
+            G_CALLBACK(background_button_press_event),
+            NULL,
+            NULL,
+            NULL,
             NULL);
 
     registeredevent_box = BuildEventBox(
@@ -499,7 +499,7 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), backgroundevent_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
-    gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 70, 300);
+    gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 75, 300);
     gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 35, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
     gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
