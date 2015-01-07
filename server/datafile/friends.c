@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <imcommon/friends.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/mman.h>
@@ -9,7 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include <datafile/friend.h>
+#include "imcommon/friends.h"
+#include "datafile/friend.h"
 #include "datafile/user.h"
 
 static UserFriendsTable friendsTable;
@@ -113,14 +113,6 @@ static UserFriendsEntry *UserFriendsEntryGetUnlock(uint32_t uid)
     return currentTable->entry;
 }
 
-UserFriendsEntry *UserFriendsEntryGet(uint32_t uid)
-{
-    pthread_rwlock_rdlock(&friendsTableLock);
-    UserFriendsEntry *entry = UserFriendsEntryGetUnlock(uid);
-    pthread_rwlock_unlock(&friendsTableLock);
-    return entry;
-}
-
 static UserFriendsEntry *UserFriendsEntrySetUnlock(uint32_t uid, UserFriends *friends)
 {
     uint32_t current = uid;
@@ -150,10 +142,18 @@ static UserFriendsEntry *UserFriendsEntrySetUnlock(uint32_t uid, UserFriends *fr
     return entry;
 }
 
-UserFriendsEntry *UserFriendsEntrySet(uint32_t uid, UserFriends *friends)
+static UserFriendsEntry *UserFriendsEntrySet(uint32_t uid, UserFriends *friends)
 {
     pthread_rwlock_wrlock(&friendsTableLock);
     UserFriendsEntry *entry = UserFriendsEntrySetUnlock(uid, friends);
+    pthread_rwlock_unlock(&friendsTableLock);
+    return entry;
+}
+
+static UserFriendsEntry *UserFriendsEntryGet(uint32_t uid)
+{
+    pthread_rwlock_rdlock(&friendsTableLock);
+    UserFriendsEntry *entry = UserFriendsEntryGetUnlock(uid);
     pthread_rwlock_unlock(&friendsTableLock);
     return entry;
 }
