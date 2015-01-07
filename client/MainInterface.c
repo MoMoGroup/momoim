@@ -491,9 +491,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
                 gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
             }
         }
-
     }
-
 }
 
 

@@ -14,8 +14,8 @@
 static GtkWidget *newwindow;
 static GtkWidget *zhuceLayout;
 static GtkWidget *mnickname, *newusername, *passwd1, *passwd2;
-static GtkWidget *background, *headline, *nickid, *nick, *nickmm1, *nickmm2, *mminfo, *endwind;
-static cairo_surface_t *surface1, *surface2, *surface3, *surface32, *surface33, *surface4, *surface5, *surface6, *surface7, *surface8, *surface82, *surface83;
+static GtkWidget *background, *mminfo, *endwind;
+static cairo_surface_t *surface1, *surface3, *surface32, *surface33, *surface8, *surface82, *surface83;
 static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
 
 int newsockfd()
@@ -119,18 +119,11 @@ int newsockfd()
 
 static void create_zhucefaces()
 {
-
-    surface1 = cairo_image_surface_create_from_png("注册背景1.png");
-    surface2 = cairo_image_surface_create_from_png("注册标题.png");
+    surface1 = cairo_image_surface_create_from_png("注册背景.png");
 
     surface3 = cairo_image_surface_create_from_png("注册按钮.png");
     surface32 = cairo_image_surface_create_from_png("注册按钮3.png");
     surface33 = cairo_image_surface_create_from_png("注册按钮2.png");
-
-    surface4 = cairo_image_surface_create_from_png("资料1.png");
-    surface5 = cairo_image_surface_create_from_png("资料2.png");
-    surface6 = cairo_image_surface_create_from_png("资料3.png");
-    surface7 = cairo_image_surface_create_from_png("资料4.png");
 
     surface8 = cairo_image_surface_create_from_png("关闭按钮1.png");
     surface82 = cairo_image_surface_create_from_png("关闭按钮2.png");
@@ -143,14 +136,9 @@ destroy_surfaces()
     g_print("destroying surfaces2");
 
     cairo_surface_destroy(surface1);
-    cairo_surface_destroy(surface2);
     cairo_surface_destroy(surface3);
     cairo_surface_destroy(surface32);
     cairo_surface_destroy(surface33);
-    cairo_surface_destroy(surface4);
-    cairo_surface_destroy(surface5);
-    cairo_surface_destroy(surface6);
-    cairo_surface_destroy(surface7);
     cairo_surface_destroy(surface8);
     cairo_surface_destroy(surface82);
     cairo_surface_destroy(surface83);
@@ -275,12 +263,7 @@ int newface()
     create_zhucefaces();
     gtk_container_add(GTK_CONTAINER(newwindow), zhuceLayout);
     background = gtk_image_new_from_surface(surface1);
-    headline = gtk_image_new_from_surface(surface2);
     mminfo = gtk_image_new_from_surface(surface3);
-    nickid = gtk_image_new_from_surface(surface4);
-    nick = gtk_image_new_from_surface(surface5);
-    nickmm1 = gtk_image_new_from_surface(surface6);
-    nickmm2 = gtk_image_new_from_surface(surface7);
     endwind = gtk_image_new_from_surface(surface8);
 
     newbackground_event_box = BuildEventBox(
@@ -307,15 +290,6 @@ int newface()
     gtk_widget_set_size_request(GTK_WIDGET(background), 500, 500);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), zhuce_event_box, 20, 440);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), closebut_event_box, 530, 0);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), headline, 7, 10);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickid, 10, 80);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nick, 10, 150);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickmm1, 10, 215);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), nickmm2, 10, 290);
-
-
-
-
 
     mnickname = gtk_entry_new();//昵称
     newusername = gtk_entry_new();//id
