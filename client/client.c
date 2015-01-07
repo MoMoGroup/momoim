@@ -22,7 +22,7 @@ static GtkEventBox *sunevent_box,*landbutevent_box, *registeredevent_box, *close
 gboolean mythread(gpointer user_data)//合并
 {
     gtk_widget_destroy(window);
-    maininterface();
+    MainInterFace();
     return 0;
 }//合并
 

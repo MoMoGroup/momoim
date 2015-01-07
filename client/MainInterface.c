@@ -308,7 +308,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
             {
                 if (friendinforear->chartwindow == NULL)
                 {
-                    mainchart(friendinforear);
+                    MainChart(friendinforear);
                 }
                 else
                 {
@@ -322,7 +322,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 
 }
 
-void recd_server_msg(const gchar *rcvd_text, uint32_t recd_uid)
+void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
 {
 
     log_info("DEBUG", "Posting Message.From %u,Text:%s\n", recd_uid, rcvd_text);
@@ -344,9 +344,9 @@ void recd_server_msg(const gchar *rcvd_text, uint32_t recd_uid)
     {
         if (userinfo->chartwindow == NULL)
         {
-            mainchart(userinfo);
+            MainChart(userinfo);
         }
-        Show_remote_text(rcvd_text, userinfo);
+        ShoweRmoteText(rcvd_text, userinfo, len);
     }
 }
 
@@ -484,7 +484,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
         {
             if (friendinforear->chartwindow == NULL)
             {
-                mainchart(friendinforear);
+                MainChart(friendinforear);
             }
             else
             {
@@ -533,7 +533,7 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-int maininterface()
+int MainInterFace()
 {
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
@@ -572,6 +572,7 @@ int maininterface()
             G_CALLBACK(search_button_release_event),
             NULL
     );
+
 
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);

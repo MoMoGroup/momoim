@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/message/Normal.h>
 #include "MainInterface.h"
 
 pthread_t ThreadKeepAlive;
@@ -65,8 +66,6 @@ void *keepalive(void *dada)
 }
 
 
-
-
 gboolean postMessage(gpointer user_data)
 {
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
@@ -78,7 +77,7 @@ gboolean postMessage(gpointer user_data)
     //packet->uid;
     message[packet->messageLen] = '\0';
     //fun();
-    recd_server_msg(message, packet->uid);
+    RecdServerMsg(packet->message, packet->messageLen, packet->uid);
     free(message);
     if ((void *) packet != header->data)
     {
