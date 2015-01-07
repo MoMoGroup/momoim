@@ -339,8 +339,8 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
     if (event->button == 1)
     {                                         //设置取消按钮
         gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
-        CRPClose(sockfd);
         pthread_cancel(thread1);
+        CRPClose(sockfd);
         gtk_widget_hide(pendingLayout);
         gtk_widget_show_all(loginLayout);
     }
