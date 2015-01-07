@@ -42,7 +42,9 @@ UserFriends *UserFriendsDecode(unsigned char *p)
     //I.Alloc Object
     friends = (UserFriends *) malloc(sizeof(UserFriends));
     if (friends == NULL)
+    {
         return NULL;
+    }
     memcpy(&friends->groupCount, p, sizeof(friends->groupCount));   //1.Read group count
     p += sizeof(friends->groupCount);
 
@@ -86,7 +88,9 @@ void UserFriendsFree(UserFriends *friends)
             for (int i = 0; i < friends->groupCount; ++i)
             {
                 if (friends->groups[i].friends)
-                    free(friends->groups[i].friends);//III.Free Friends
+                {
+                    free(friends->groups[i].friends);
+                }//III.Free Friends
             }
             free(friends->groups);//II.Free Group Info
         }
@@ -152,7 +156,9 @@ UserGroup *UserFriendsGroupAdd(UserFriends *friends, uint8_t groupId, const char
     group->groupId = groupId;
     size_t nameLen = strlen(name);
     if (nameLen > 63)
+    {
         nameLen = 63;
+    }
     memcpy(group->groupName, name, nameLen);
     group->groupName[nameLen] = 0;
     ++friends->groupCount;
@@ -176,6 +182,7 @@ int UserFriendsUserAdd(UserGroup *group, uint32_t user)
         errno = ENOMEM;
         return 0;
     }
+    group->friends = ptr;
     ++group->friendCount;
     group->friends[group->friendCount - 1] = user;
     return 1;
@@ -193,11 +200,19 @@ int UserFriendsUserDelete(UserGroup *group, uint32_t user)
                 group->friends[j - 1] = group->friends[j];
             }
             --group->friendCount;
-            ptr = realloc(group->friends, sizeof(uint32_t) * group->friendCount);
-            if (ptr != NULL)//如果内存重分配成功,则重设用户组指针.
+            if (group->friendCount == 0)
             {
-                group->friends = ptr;
-            }//一般内存减小不会导致内存分配失败,如果内存重分配失败问题也不大.到时候释放内存时还是能够保证内存干净.
+                free(group->friends);
+                group->friends= NULL;
+            }
+            else
+            {
+                ptr = realloc(group->friends, sizeof(uint32_t) * group->friendCount);
+                if (ptr != NULL)//如果内存重分配成功,则重设用户组指针.
+                {
+                    group->friends = ptr;
+                }//一般内存减小不会导致内存分配失败,如果内存重分配失败问题也不大.到时候释放内存时还是能够保证内存干净.
+            }
             return 1;
         }
     }
@@ -208,7 +223,9 @@ int UserFriendsJoin(UserFriends *friends, uint8_t groupId, uint32_t uid)
 {
     UserGroup *group = UserFriendsGroupGet(friends, groupId);
     if (!group)
+    {
         return 0;
+    }
     return UserFriendsUserAdd(group, uid);
 }
 

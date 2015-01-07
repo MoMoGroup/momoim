@@ -9,7 +9,7 @@
 */
 typedef enum
 {
-    FNT_FRIEND_ONLINE,
+    FNT_FRIEND_ONLINE=0,
     FNT_FRIEND_OFFLINE,
     FNT_FRIEND_NEW,
     FNT_FRIEND_DELETE,
