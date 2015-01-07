@@ -9,8 +9,7 @@
 pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
 
-typedef struct messageloop
-{
+typedef struct messageloop {
     uint32_t sessionid;
     uint16_t packetID;           //包ID，用于区分不同数据包
 
@@ -74,9 +73,9 @@ int MessageLoopFunc()
         while (prev->next)
         {
             p = prev->next;
-            if ( p->sessionid == header->sessionID)
+            if (p->sessionid == header->sessionID)
             {
-                log_info("MSG", "Processing\n");
+                log_info("MSG", "Processing session %u\n", p->sessionid);
                 flag = p->fn(header, p->data);
                 break;
 

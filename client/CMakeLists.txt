@@ -18,6 +18,7 @@ SET(CLIENT_SOURCE_FILE
     PopupWinds.c
     MessageLoop.c
     common.c
+    Infomation.c
     addfriend.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})

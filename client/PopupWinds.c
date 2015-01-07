@@ -109,9 +109,9 @@ int popup(const char *title, const char *tell)
 {
     popupwindow = gtk_dialog_new();
     gtk_window_set_position(GTK_WINDOW(popupwindow), GTK_WIN_POS_CENTER);//窗口位置
-    //gtk_window_set_resizable(GTK_WINDOW (popupwindow), FALSE);//固定窗口大小
+    gtk_window_set_resizable(GTK_WINDOW (popupwindow), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(popupwindow), FALSE);//去掉边框
-    //gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
+    gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
 
     box = gtk_dialog_get_content_area((GtkDialog *) popupwindow);//得到dialog的box
     action = gtk_dialog_get_action_area((GtkDialog *) popupwindow);//得到dialog的action_area
@@ -170,8 +170,8 @@ int popup(const char *title, const char *tell)
     g_signal_connect(G_OBJECT(popupwindow), "button_release_event",
             G_CALLBACK(button_release_event), popupwindow);
 
-    gtk_widget_show_all(popupwindow);
-    //gtk_widget_hide(action);//隐藏留白的action
+    gtk_widget_show_all(popupLayout);
+    gtk_widget_hide(action);//隐藏留白的action
 
     gtk_dialog_run(GTK_DIALOG(popupwindow));
 

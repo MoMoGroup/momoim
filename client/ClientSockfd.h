@@ -22,10 +22,9 @@ typedef struct friendinfo
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;
-    GdkPixbuf *pixbuf;
     struct friendinfo *next;
 } friendinfo;
 extern friendinfo *friendinfohead;
 extern CRPContext sockfd;
-extern UserInfo userdata;
+extern UserInfo CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;
