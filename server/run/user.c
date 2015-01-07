@@ -22,38 +22,42 @@ pthread_rwlock_t OnlineUserTableLock, PendingUserTableLock;
 
 //消息处理器映射表
 static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header) = {
-        [CRP_PACKET_KEEP_ALIVE]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusKeepAlive,
-        [CRP_PACKET_HELLO]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusHello,
-        [CRP_PACKET_OK]                 = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusOK,
-        [CRP_PACKET_FAILURE]            = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusFailure,
-        [CRP_PACKET_CRASH]              = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCrash,
-        [CRP_PACKET_CANCEL]             = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusCancel,
-        [CRP_PACKET_SWITCH_PROTOCOL]    = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketStatusSwitchProtocol,
+        [CRP_PACKET_KEEP_ALIVE]         = (GeneralPacketProcessor) ProcessPacketStatusKeepAlive,
+        [CRP_PACKET_HELLO]              = (GeneralPacketProcessor) ProcessPacketStatusHello,
+        [CRP_PACKET_OK]                 = (GeneralPacketProcessor) ProcessPacketStatusOK,
+        [CRP_PACKET_FAILURE]            = (GeneralPacketProcessor) ProcessPacketStatusFailure,
+        [CRP_PACKET_CRASH]              = (GeneralPacketProcessor) ProcessPacketStatusCrash,
+        [CRP_PACKET_CANCEL]             = (GeneralPacketProcessor) ProcessPacketStatusCancel,
+        [CRP_PACKET_SWITCH_PROTOCOL]    = (GeneralPacketProcessor) ProcessPacketStatusSwitchProtocol,
 
-        [CRP_PACKET_LOGIN__START]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_LOGIN_LOGIN]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogin,
-        [CRP_PACKET_LOGIN_LOGOUT]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginLogout,
-        [CRP_PACKET_LOGIN_REGISTER]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketLoginRegister,
+        [CRP_PACKET_LOGIN__START]       = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_LOGIN_LOGIN]        = (GeneralPacketProcessor) ProcessPacketLoginLogin,
+        [CRP_PACKET_LOGIN_LOGOUT]       = (GeneralPacketProcessor) ProcessPacketLoginLogout,
+        [CRP_PACKET_LOGIN_REGISTER]     = (GeneralPacketProcessor) ProcessPacketLoginRegister,
 
-        [CRP_PACKET_INFO__START]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_INFO_REQUEST]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketInfoRequest,
-        [CRP_PACKET_INFO_DATA]          = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketInfoData,
+        [CRP_PACKET_INFO__START]        = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_INFO_REQUEST]       = (GeneralPacketProcessor) ProcessPacketInfoRequest,
+        [CRP_PACKET_INFO_DATA]          = (GeneralPacketProcessor) ProcessPacketInfoData,
 
-        [CRP_PACKET_FRIEND__START]      = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_FRIEND_REQUEST]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendRequest,
-        [CRP_PACKET_FRIEND_ADD]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendAdd,
-        [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]=(int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFriendSearchByNickname,
-
-        [CRP_PACKET_FILE__START]        = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_FILE_REQUEST]       = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileRequest,
-        [CRP_PACKET_FILE_DATA]          = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileData,
-        [CRP_PACKET_FILE_RESET]         = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileReset,
-        [CRP_PACKET_FILE_DATA_END]      = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileDataEnd,
-        [CRP_PACKET_FILE_STORE_REQUEST] = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketFileStoreRequest,
+        [CRP_PACKET_FRIEND__START]      = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_FRIEND_REQUEST]     = (GeneralPacketProcessor) ProcessPacketFriendRequest,
+        [CRP_PACKET_FRIEND_ADD]         = (GeneralPacketProcessor) ProcessPacketFriendAdd,
+        [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]=(GeneralPacketProcessor) ProcessPacketFriendSearchByNickname,
+        [CRP_PACKET_FRIEND_ACCEPT]      =  (GeneralPacketProcessor) ProcessPacketFriendAccept,
+        [CRP_PACKET_FRIEND_DELETE]      = (GeneralPacketProcessor) ProcessPacketFriendDelete,
+        [CRP_PACKET_FRIEND_MOVE]        = (GeneralPacketProcessor) ProcessPacketFriendMove,
 
 
-        [CRP_PACKET_MESSAGE__START]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) NULL,
-        [CRP_PACKET_MESSAGE_NORMAL]     = (int (*)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header)) ProcessPacketMessageNormal,
+        [CRP_PACKET_FILE__START]        = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_FILE_REQUEST]       = (GeneralPacketProcessor) ProcessPacketFileRequest,
+        [CRP_PACKET_FILE_DATA]          = (GeneralPacketProcessor) ProcessPacketFileData,
+        [CRP_PACKET_FILE_RESET]         = (GeneralPacketProcessor) ProcessPacketFileReset,
+        [CRP_PACKET_FILE_DATA_END]      = (GeneralPacketProcessor) ProcessPacketFileDataEnd,
+        [CRP_PACKET_FILE_STORE_REQUEST] = (GeneralPacketProcessor) ProcessPacketFileStoreRequest,
+
+
+        [CRP_PACKET_MESSAGE__START]     = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_MESSAGE_NORMAL]     = (GeneralPacketProcessor) ProcessPacketMessageNormal,
 };
 
 void InitUserManager()
@@ -235,29 +239,24 @@ PPendingUser PendingUserNew(int fd)
 
 int OnlineUserDelete(POnlineUser user)
 {
-    if (user->status == OUS_PENDING_HELLO || user->status == OUS_PENDING_CLEAN)
+    if (user->status == OUS_PENDING_HELLO || user->status == OUS_PENDING_LOGIN)
         return PendingUserDelete((PPendingUser) user);
     if (user->status == OUS_PENDING_CLEAN)
         return 1;
     if (user->status != OUS_ONLINE)
     {
-        log_error("UserManager", "Illegal user status.\n");
+        log_error("UserManager", "Trying to delete online user on illegal user status.\n");
         return 0;
     }
     if (UserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
         return 0;
-    uint32_t uid = user->info->uid;
     pthread_rwlock_unlock(user->holdLock);
-    OnlineUserTableSet(uid, NULL);
 
     pthread_rwlock_wrlock(user->holdLock);
-    JobManagerKick(user);
-    EpollRemove(user);
     UserOperationRemoveAll(user);
     pthread_mutex_destroy(&user->operations.lock);
     CRPClose(user->sockfd);
     UserFreeOnlineInfo(user);
-
 
     pthread_rwlock_unlock(user->holdLock);
     pthread_rwlock_destroy(user->holdLock);
@@ -338,6 +337,9 @@ POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUser
     }
     else if (user->status == OUS_ONLINE && status == OUS_PENDING_CLEAN)
     {
+        OnlineUserTableSet(user->info->uid, NULL);
+        JobManagerKick(user);
+        EpollRemove(user);
         broadcastNotify(user, FNT_OFFLINE);
     }
     else if (status == OUS_PENDING_CLEAN)

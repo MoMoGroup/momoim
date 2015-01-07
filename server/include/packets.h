@@ -5,6 +5,7 @@
 #include "run/Structures.h"
 #include "run/user.h"
 
+typedef int (*GeneralPacketProcessor)(POnlineUser, uint32_t, void *packet, CRPBaseHeader *);
 //数据包处理
 //状态消息
 int ProcessPacketStatusHello(POnlineUser user, uint32_t session, CRPPacketHello *packet);
@@ -43,6 +44,10 @@ int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFrie
 int ProcessPacketFriendSearchByNickname(POnlineUser user, uint32_t session, CRPPacketFriendSearchByNickname *packet);
 
 int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAdd *packet);
+
+int ProcessPacketFriendDelete(POnlineUser user, uint32_t session, CRPPacketFriendDelete *packet);
+
+int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendMove *packet);
 
 int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFriendAccept *packet);
 

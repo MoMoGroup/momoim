@@ -200,7 +200,7 @@ void send_text(friendinfo *info)
     p = localtime(&timep);
     sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     gtk_text_buffer_set_text(info->input_buffer, "", 0);//发送消息后本地的文本框清0
-    CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, strlen(char_text), char_text);
+    CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, count, char_text);
 
     show_local_text(char_text, info, nicheng_times, count);
     free(char_text);

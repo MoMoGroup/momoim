@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/base.h>
 #include "MainInterface.h"
 #include "addfriend.h"
 
@@ -88,26 +89,42 @@ gboolean postMessage(gpointer user_data)
     return 0;
 }
 
-int printfmessage(CRPBaseHeader *header, void *data)
+int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
 {
-    CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
-    memcpy(dup, header, header->totalLength);
-    g_idle_add(postMessage, dup);
-    return 1;
+    switch (header->packetID)
+    {
+
+            //服务器通知下线
+        case CRP_PACKET_KICK:
+        {
+            log_info("销毁", "\n");
+            g_idle_add(destoryall, NULL);
+            CRPClose(sockfd);
+            pthread_t pth = pthread_self();
+            pthread_cancel(pth);
+            return 0;
+        };
+            //消息
+        case CRP_PACKET_MESSAGE_NORMAL:
+        {
+            CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
+            memcpy(dup, header, header->totalLength);
+            g_idle_add(postMessage, dup);
+            return 1;
+        };
+    }
 }
 
-int backtologin(CRPBaseHeader *header, void *data)
-{
-    log_info("销毁", "\n");
-    g_idle_add(destoryall, NULL);
-    CRPClose(sockfd);
-//    log_info("加载", "\n");
-//    g_idle_add(loadloginLayout, NULL);
+//int printfmessage(CRPBaseHeader *header, void *data)
+//{
+//
+//}//请求好友成功
+//case CRP_PACKET_OK:
+//{
+//    log_info("messageloop", "添加好友成功\n");
+//};
 
-    pthread_t pth = pthread_self();
-    pthread_cancel(pth);
-    return 0;
-}
+
 
 int mysockfd()
 {
@@ -126,7 +143,6 @@ int mysockfd()
         return 0;
     }
     sockfd = CRPOpen(fd);
-    log_info("Hello", "Sending Hello\n");
     CRPHelloSend(sockfd, 0, 1, 1, 1, 1);
     CRPBaseHeader *header;
     header = CRPRecv(sockfd);
@@ -149,11 +165,9 @@ int mysockfd()
         if ((void *) packet != header->data)
             free(packet);
     }
-    log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];
     MD5((unsigned char *) pwd, strlen(pwd), hash);
     CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
-    log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
@@ -163,7 +177,7 @@ int mysockfd()
         char *mem = malloc(strlen(f->reason) + 1);
         memcpy(mem, f->reason, strlen(f->reason));
         mem[strlen(f->reason)] = 0;
-        g_idle_add(destroyLayout, mem);
+        g_idle_add(DestroyLayout, mem);
         return 1;
     }
 
@@ -249,9 +263,7 @@ int mysockfd()
                 }
                 case CRP_PACKET_FILE_DATA_START://服务器准备发送头像
                 {
-                    log_info("CRP_PACKET_FILE_DATA_START", "%u\n", header->sessionID);
                     CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
-
 
                     if (header->sessionID < 10000)//用户的资料，准备工作，打开文件等
                     {
@@ -297,7 +309,6 @@ int mysockfd()
 
                 case CRP_PACKET_FILE_DATA://接受头像
                 {
-                    log_info("CRP_PACKET_FILE_DATA", "%u\n", header->sessionID);
 
                     CRPPacketFileData *packet = CRPFileDataCast(header);
                     if (header->sessionID < 10000)
@@ -333,7 +344,6 @@ int mysockfd()
 
                 case CRP_PACKET_FILE_DATA_END://头像接受完
                 {
-                    log_info("CRP_PACKET_FILE_DATA_END", "%u\n", header->sessionID);
 
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
 
@@ -371,7 +381,6 @@ int mysockfd()
 
                         if (node == NULL)
                         {
-                            log_info("开始加载主界面", "dadada\n");
                             g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
                             loop = 0;
                         }
@@ -386,7 +395,6 @@ int mysockfd()
                 }
                 case CRP_PACKET_FRIEND_DATA://分组
                 {
-                    log_info("CRP_PACKET_FRIEND_DATA", "555\n");
 
                     friends = UserFriendsDecode((unsigned char *) header->data);
 
@@ -407,9 +415,13 @@ int mysockfd()
 
 
         }
+        AddMessageNode(0, servemessage, "");//注册服务器发来的消息
+//        AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
+//        AddMessageNode(0, printfmessage, "dfg");//添加事件
+//        AddMessageNode(0, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
+//        AddMessageNode(0, tianjia, "a");
+  //      AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
 
-        AddMessageNode(0, printfmessage, "dfg");//添加事件
-        AddMessageNode(0, backtologin, "挤掉返回");//挤掉返回登陆界面事件注册
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
         MessageLoopFunc();
     }

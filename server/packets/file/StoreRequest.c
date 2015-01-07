@@ -28,7 +28,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
     {
         if (packet->type != FST_SHARED)
         {
-            CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的文件类型");
+            CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的存储类型");
             return 1;
         }
         if (DataFileExist(packet->key))
