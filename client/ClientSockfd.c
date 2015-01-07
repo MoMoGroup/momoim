@@ -10,9 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/base.h>
 #include "MainInterface.h"
-#include "addfriend.h"
 
 pthread_t ThreadKeepAlive;
 
@@ -74,6 +72,7 @@ gboolean postMessage(gpointer user_data)
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
 
     CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
+
     char *message = (char *) malloc(packet->messageLen + 1);
     memcpy(message, packet->message, packet->messageLen);
     //packet->uid;

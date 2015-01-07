@@ -296,7 +296,7 @@ static void broadcastNotify(POnlineUser user, FriendNotifyType type)
             {
                 if (duser->status == OUS_ONLINE)
                 {
-                    CRPFriendNotifySend(duser->sockfd, 0, info->uid, type);
+                    CRPFriendNotifySend(duser->sockfd, 0, type, info->uid, 0, 0);
                 }
                 UserDrop(duser);
             }
@@ -332,7 +332,7 @@ POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUser
         //初始化用户操作锁
         pthread_mutex_init(&user->operations.lock, NULL);
         user->status = OUS_ONLINE;
-        broadcastNotify(user, FNT_ONLINE);
+        broadcastNotify(user, FNT_FRIEND_ONLINE);
         return OnlineUserTableSet(info->uid, user);
     }
     else if (user->status == OUS_ONLINE && status == OUS_PENDING_CLEAN)
@@ -340,7 +340,7 @@ POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUser
         OnlineUserTableSet(user->info->uid, NULL);
         JobManagerKick(user);
         EpollRemove(user);
-        broadcastNotify(user, FNT_OFFLINE);
+        broadcastNotify(user, FNT_FRIEND_OFFLINE);
     }
     else if (status == OUS_PENDING_CLEAN)
     {
@@ -402,7 +402,7 @@ void UserFreeOnlineInfo(POnlineUser user)
                 {
                     if (duser->status == OUS_ONLINE)
                     {
-                        CRPFriendNotifySend(duser->sockfd, 0, user->info->uid, FNT_OFFLINE);
+                        CRPFriendNotifySend(duser->sockfd, 0, FNT_FRIEND_OFFLINE, user->info->uid, 0, 0);
                     }
                     UserDrop(duser);
                 }
