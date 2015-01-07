@@ -12,7 +12,6 @@ static GtkWidget *ssun,*imagelandbut, *imageregistered, *imageclosebut, *imageca
 GtkWidget *username, *passwd;
 const gchar *name, *pwd;
 static pthread_t thread1;
-static int nX = 0, nY = 0;
 static GtkWidget *window;
 
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd;
@@ -339,8 +338,8 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
     if (event->button == 1)
     {                                         //设置取消按钮
         gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
-        CRPClose(sockfd);
         pthread_cancel(thread1);
+        CRPClose(sockfd);
         gtk_widget_hide(pendingLayout);
         gtk_widget_show_all(loginLayout);
     }
