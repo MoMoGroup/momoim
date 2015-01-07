@@ -24,10 +24,6 @@ void UserFriendsCreate(uint32_t uid);
 
 int UserFriendsSave(uint32_t uid, UserFriends *friends);
 
-UserFriendsEntry *UserFriendsEntryGet(uint32_t uid);
-
-UserFriendsEntry *UserFriendsEntrySet(uint32_t uid, UserFriends *friends);
-
 UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock);
 
 void UserFriendsDrop(uint32_t uid);

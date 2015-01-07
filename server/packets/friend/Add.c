@@ -56,7 +56,10 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
             pthread_rwlock_unlock(user->info->friendsLock);
             return 1;
         }
+
+
         pthread_rwlock_unlock(user->info->friendsLock);
+        CRPOKSend(user->sockfd, session);
 
         size_t noteLen = strlen(packet->note);
         UserMessage *message = (UserMessage *) malloc(sizeof(UserMessage) + noteLen);

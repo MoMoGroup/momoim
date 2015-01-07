@@ -126,7 +126,6 @@ int mysockfd()
         return 0;
     }
     sockfd = CRPOpen(fd);
-    log_info("Hello", "Sending Hello\n");
     CRPHelloSend(sockfd, 0, 1, 1, 1, 1);
     CRPBaseHeader *header;
     header = CRPRecv(sockfd);
@@ -149,11 +148,9 @@ int mysockfd()
         if ((void *) packet != header->data)
             free(packet);
     }
-    log_info("Login", "Sending Login Request\n");
     unsigned char hash[16];
     MD5((unsigned char *) pwd, strlen(pwd), hash);
     CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
-    log_info("Hello", "Waiting OK\n");
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
@@ -163,7 +160,7 @@ int mysockfd()
         char *mem = malloc(strlen(f->reason) + 1);
         memcpy(mem, f->reason, strlen(f->reason));
         mem[strlen(f->reason)] = 0;
-        g_idle_add(destroyLayout, mem);
+        g_idle_add(DestroyLayout, mem);
         return 1;
     }
 
@@ -249,9 +246,7 @@ int mysockfd()
                 }
                 case CRP_PACKET_FILE_DATA_START://服务器准备发送头像
                 {
-                    log_info("CRP_PACKET_FILE_DATA_START", "%u\n", header->sessionID);
                     CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
-
 
                     if (header->sessionID < 10000)//用户的资料，准备工作，打开文件等
                     {
@@ -297,7 +292,6 @@ int mysockfd()
 
                 case CRP_PACKET_FILE_DATA://接受头像
                 {
-                    log_info("CRP_PACKET_FILE_DATA", "%u\n", header->sessionID);
 
                     CRPPacketFileData *packet = CRPFileDataCast(header);
                     if (header->sessionID < 10000)
@@ -333,7 +327,6 @@ int mysockfd()
 
                 case CRP_PACKET_FILE_DATA_END://头像接受完
                 {
-                    log_info("CRP_PACKET_FILE_DATA_END", "%u\n", header->sessionID);
 
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
 
@@ -371,7 +364,6 @@ int mysockfd()
 
                         if (node == NULL)
                         {
-                            log_info("开始加载主界面", "dadada\n");
                             g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
                             loop = 0;
                         }
@@ -386,7 +378,6 @@ int mysockfd()
                 }
                 case CRP_PACKET_FRIEND_DATA://分组
                 {
-                    log_info("CRP_PACKET_FRIEND_DATA", "555\n");
 
                     friends = UserFriendsDecode((unsigned char *) header->data);
 
