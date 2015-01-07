@@ -7,8 +7,6 @@
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
-#include "Infomation.h"
-
 
 static GtkWidget *ssun,*imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;

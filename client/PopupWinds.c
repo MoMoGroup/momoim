@@ -3,14 +3,12 @@
 #include "PopupWinds.h"
 #include "common.h"
 
-GtkWidget *popupwindow; //dialog
-GtkWidget *popupLayout; //放入box
-GtkWidget *popback, *popanniu;
-GtkWidget *box, *action; //dialog的box和action_area
-cairo_surface_t *backface, *anniuface, *anniuface1;
+static GtkWidget *popupwindow; //dialog
+static GtkWidget *popupLayout; //放入box
+static GtkWidget *popback, *popanniu;
+static GtkWidget *box, *action; //dialog的box和action_area
+static cairo_surface_t *backface, *anniuface, *anniuface1;
 static GtkEventBox *Popback_event_box, *Anniu_event_box;
-//int px = 0;
-//int py = 0;
 
 static void create_popupfaces()
 {
@@ -78,76 +76,6 @@ static gint ok_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpoi
     gtk_image_set_from_surface((GtkImage *) popanniu, anniuface);
     return 0;
 }
-
-/*
-//鼠标点击事件
-static gint pop_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-    px = event->x;  // 取得鼠标相对于窗口的位置
-    py = event->y;
-
-    if (event->button == 1 && (px > 220 && px < 255) && (py > 2 && py < 28))
-    {              //设置关闭按钮
-        //gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-    }
-    else if (event->button == 1 && (px > 60 && px < 192) && (py > 178 && py < 208))
-    {        //设置注册按钮
-        gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-
-    }
-    else
-    {
-        gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
-        if (event->button == 1)
-        { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
-            gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                    event->x_root, event->y_root, event->time);
-        }
-    }
-    return 0;
-}
-
-//鼠标抬起事件
-static gint pop_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-
-    px = event->x;  // 取得鼠标相对于窗口的位置
-    py = event->y;
-
-    if (event->button == 1 && (px > 60 && px < 192) && (py > 178 && py < 208))
-    {
-        gtk_dialog_response((GtkDialog *) popupwindow, 1);
-    }
-    else if (event->button == 1)       // 判断是否是点击关闭图标
-    {
-        if ((px > 220 && px < 250) && (py > 2 && py < 28))
-        {
-            //gtk_dialog_response((GtkDialog *) popupwindow, 1);
-        }
-    }
-    return 0;
-}
-
-//鼠标移动事件
-static gint pop_motion_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-
-    px = event->x;  // 取得鼠标相对于窗口的位置
-    py = event->y;
-    if ((px > 220 && px < 255) && (py > 2 && py < 28))
-    {
-        //gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
-    }
-    else if (event->button == 1 && (px > 60 && px < 192) && (py > 178 && py < 208))
-    {
-        gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
-
-    } else
-    {
-        gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
-    }
-    return 0;
-}*/
 
 int popup(const char *title, const char *tell)
 {
