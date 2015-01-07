@@ -35,6 +35,13 @@ int main(int argc, char **argv)
     setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
+    struct sigaction act = {
+            .sa_flags=0
+    };
+    act.sa_handler = sigInterupt;
+    sigaction(SIGINT, &act, NULL);
+    act.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE, &act, NULL);
     if (!DataModuleInit())
     {
         log_error("MAIN", "Fail to initliaze data module.\n");
@@ -49,10 +56,6 @@ int main(int argc, char **argv)
         initWorker(i, worker + i);
     }
     InitUserManager();
-    struct sigaction act = {
-            .sa_handler=sigInterupt,
-    };
-    sigaction(SIGINT, &act, NULL);
 
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
     pthread_join(ThreadListener, NULL);
