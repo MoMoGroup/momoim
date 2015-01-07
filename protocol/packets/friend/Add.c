@@ -19,5 +19,5 @@ int CRPFriendAddSend(CRPContext context, uint32_t sessionID, uint32_t uid, const
     };
     size_t lenNote = strlen(note);
     memcpy(packet.note, note, lenNote);
-    return CRPSend(context, CRP_PACKET_FAILURE, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendData) + lenNote)) != -1;
+    return CRPSend(context, CRP_PACKET_FRIEND_ADD, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendData) + lenNote)) != -1;
 }

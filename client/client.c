@@ -515,6 +515,9 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_entry_set_max_length(username, 20);//设置输入的最大长度
     gtk_entry_set_max_length(passwd, 20);
 
+    gtk_test_text_set(username, "a");
+    gtk_test_text_set(passwd, "a");
+
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
 
