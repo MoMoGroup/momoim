@@ -24,7 +24,7 @@ int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileRese
                 opData->aio.aio_offset = packet->seq * opData->aio.aio_nbytes;
                 if (-1 == aio_read(&opData->aio))
                 {
-                    CRPFailureSend(user->sockfd, session, EFAULT, "重定位失败");
+                    CRPFailureSend(user->sockfd, session, EFAULT, "无法重定位失败");
                 }
                 else
                 {

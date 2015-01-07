@@ -9,6 +9,8 @@
 #include "protocol/friend/Notify.h"
 #include "protocol/friend/Add.h"
 #include "protocol/friend/Accept.h"
+#include "protocol/friend/Move.h"
+#include "protocol/friend/Delete.h"
 
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
@@ -42,7 +44,7 @@ typedef enum
     CRP_PACKET_HELLO,               //Hello包
     CRP_PACKET_FAILURE,             //通用失败包
     CRP_PACKET_OK,                  //通用接受包
-    CRP_PACKET_KICK,                //通用失败包
+    CRP_PACKET_KICK,                //被服务器踢出
     CRP_PACKET_CANCEL,              //取消操作
     CRP_PACKET_SWITCH_PROTOCOL,     //切换协议
     CRP_PACKET_CRASH = UINT16_MAX,  //崩溃包
@@ -50,7 +52,7 @@ typedef enum
 
     CRP_PACKET_LOGIN__START = 0x10, //登陆类数据包开始
     CRP_PACKET_LOGIN_LOGIN,         //登陆
-    CRP_PACKET_LOGIN_ACCEPT,        //登陆
+    CRP_PACKET_LOGIN_ACCEPT,        //接受登陆
     CRP_PACKET_LOGIN_LOGOUT,        //登出
     CRP_PACKET_LOGIN_REGISTER,      //注册请求
 
@@ -64,8 +66,10 @@ typedef enum
     CRP_PACKET_FRIEND_NOTIFY,       //好友通知
     CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME, //通过昵称查找好友
     CRP_PACKET_FRIEND_USER_LIST,    //用户列表
-    CRP_PACKET_FRIEND_ADD,          //添加用户请求
-    CRP_PACKET_FRIEND_ACCEPT,       //同意用户请求
+    CRP_PACKET_FRIEND_ADD,          //添加好友请求
+    CRP_PACKET_FRIEND_ACCEPT,       //同意好友添加请求
+    CRP_PACKET_FRIEND_MOVE,         //好友分组请求
+    CRP_PACKET_FRIEND_DELETE,       //删除好友请求
 
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件
@@ -76,7 +80,7 @@ typedef enum
     CRP_PACKET_FILE_STORE_REQUEST, //请求存储新文件
 
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
-    CRP_PACKET_MESSAGE_NORMAL,        //文本消息
+    CRP_PACKET_MESSAGE_NORMAL,        //消息
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID
 } CRPPacketIDs;

@@ -30,20 +30,20 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
     if (user->status == OUS_ONLINE)
     {
         pthread_rwlock_t *lock;
-        UserFriends *friends = UserFriendsGet(packet->uid, &lock);
+        UserFriends *markFriends = UserFriendsGet(packet->uid, &lock);
         pthread_rwlock_wrlock(lock);
-        int succ = sub(user, session, friends);
+        int succ = sub(user, session, markFriends);
         UserFriendsDrop(packet->uid);
         if (!succ)
             return 1;
-        friends = user->info->friends;
+        UserFriends *myFriends = user->info->friends;
         lock = user->info->friendsLock;
         pthread_rwlock_wrlock(lock);
 
-        UserGroup *group = UserFriendsGroupGet(friends, UGI_DEFAULT);
+        UserGroup *group = UserFriendsGroupGet(myFriends, UGI_DEFAULT);
         if (!group)
         {
-            group = UserFriendsGroupAdd(friends, 1, "我的好友");
+            group = UserFriendsGroupAdd(myFriends, 1, "我的好友");
         }
         if (!group)
         {
@@ -53,7 +53,6 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
                     packet->uid,
                     user->info->uid
             );
-            UserFriendsDrop(user->info->uid);
             CRPFailureSend(user->sockfd, session, ENOENT, "无法找到目标分组");
             return 1;
         }
@@ -67,7 +66,6 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
             CRPFailureSend(user->sockfd, session, ENOENT, "无法将好友加入到好友列表中");
             return 1;
         }
-        UserFriendsDrop(user->info->uid);
         CRPOKSend(user->sockfd, session);
         CRPFriendNotifySend(user->sockfd, 0, packet->uid, FNT_NEW);
         UserMessage message = {

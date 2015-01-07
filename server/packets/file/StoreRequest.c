@@ -28,7 +28,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
     {
         if (packet->type != FST_SHARED)
         {
-            CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的文件类型");
+            CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的存储类型");
             return 1;
         }
         if (DataFileExist(packet->key))
@@ -54,6 +54,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             memcpy(storeOperation->key, packet->key, sizeof(storeOperation->key));
             storeOperation->totalLength = packet->length;
             storeOperation->remainLength = packet->length;
+            storeOperation->seq = 0;
 
             memcpy(storeOperation->tmpfile, "/tmp/m0MoXXXXXX", sizeof("/tmp/m0MoXXXXXX"));
             mkstemp(storeOperation->tmpfile);
