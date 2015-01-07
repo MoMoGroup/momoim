@@ -54,6 +54,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             memcpy(storeOperation->key, packet->key, sizeof(storeOperation->key));
             storeOperation->totalLength = packet->length;
             storeOperation->remainLength = packet->length;
+            storeOperation->seq = 0;
 
             memcpy(storeOperation->tmpfile, "/tmp/m0MoXXXXXX", sizeof("/tmp/m0MoXXXXXX"));
             mkstemp(storeOperation->tmpfile);
@@ -65,7 +66,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
                 CRPFailureSend(user->sockfd, session, EIO, "无法创建文件");
                 return 1;
             }
-            storeOperation->session = session;
+            UserOperationDrop(user, operation);
             CRPOKSend(user->sockfd, session);
         }
     }
