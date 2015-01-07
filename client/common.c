@@ -39,7 +39,7 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
 }
 
 
-void Md5Coding(gchar *filename, unsigned char *coding_text)
+void Md5Coding(const gchar *filename, unsigned char *coding_text)
 {
     MD5_CTX c;
     char buf[512];
@@ -96,7 +96,7 @@ int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithP
     return 0;
 }
 
-void HexadecimalConversion(char *filename, const char *strdest)
+void HexadecimalConversion(char *filename, const char *strdest) //strdest为md5值。filename是文件名
 {
     char sDest[33] = {0};
     short i;

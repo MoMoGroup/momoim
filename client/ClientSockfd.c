@@ -16,6 +16,7 @@
 #include <protocol/base.h>
 #include <protocol/info/Data.h>
 #include <imcommon/friends.h>
+#include <protocol/message/Normal.h>
 #include "MainInterface.h"
 #include "PopupWinds.h"
 #include "common.h"
@@ -85,7 +86,7 @@ gboolean postMessage(gpointer user_data)
         //packet->uid;
         message[packet->messageLen] = '\0';
         //fun();
-        recd_server_msg(message, packet->uid);
+        RecdServerMsg(message, packet->messageLen, packet->uid);
         free(message);
         if ((void *) packet != header->data)
         {
@@ -124,7 +125,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
     switch (header->packetID)
     {
 
-        //服务器通知下线
+            //服务器通知下线
         case CRP_PACKET_KICK:
         {
             g_idle_add(destoryall, NULL);
@@ -137,7 +138,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_MESSAGE_NORMAL:
         {
             CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
-
             memcpy(dup, header, header->totalLength);
             g_idle_add(postMessage, dup);
             return 1;
@@ -203,9 +203,7 @@ int mysockfd()
         CRPPacketSwitchProtocol *packet = CRPSwitchProtocolCast(header);
         CRPEncryptEnable(sockfd, sendKey, packet->key, packet->iv);
         if ((void *) packet != header->data)
-        {
             free(packet);
-        }
     }
     unsigned char hash[16];
     MD5((unsigned char *) pwd, strlen(pwd), hash);
@@ -295,7 +293,8 @@ int mysockfd()
                         add_node(node);             //添加新节点
                         //free(node);
 
-
+                        // log_info("GROUPDATA", "Nick:%s\n", CurrentUserInfo.nickName);//用户昵称是否获取成功
+                        // log_info("循环1", "循环1%s\n", mulu);
                     }
                     break;
 
@@ -308,8 +307,6 @@ int mysockfd()
                     if (header->sessionID < 10000)//用户的资料，准备工作，打开文件等
                     {
                         sprintf(mulu, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, uid);
-//                        char filaname[256];
-//                        HexadecimalConversion(filaname,)
                         if ((fp = fopen(mulu, "w")) == NULL)
                         {
                             perror("openfile1\n");
@@ -450,7 +447,6 @@ int mysockfd()
                             CRPInfoRequestSend(sockfd, group->friends[j], group->friends[j]); //请求用户资料,
                         }
                     }
-
                     break;
                 }
             }

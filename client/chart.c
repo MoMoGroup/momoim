@@ -5,11 +5,16 @@
 #include <ftadvanc.h>
 #include "chart.h"
 #include "common.h"
+#include "Infomation.h"
 #include <pwd.h>
 #include <math.h>
 #include <stdio.h>
 #include <cairo-script-interpreter.h>
 #include <ftlist.h>
+#include <logger.h>
+#include <sys/stat.h>
+#include <protocol/base.h>
+#include <imcommon/friends.h>
 
 
 int X = 0;
@@ -77,23 +82,20 @@ static void create_surfaces(friendinfo *information)
     cairo_surface_destroy(surface);
 }
 
-//将输入的文本框输出在显示的文本框中
-void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times, int count)
-{
-    GtkTextIter start, end;
+//解码
 
-    gchar *char_rear;
-    GtkTextChildAnchor *anchor;
-    int num;
+void DecodingText(const gchar *text, friendinfo *info, int count)
+{
     int i = 0;
-    gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
-            nicheng_times, -1, "red_foreground", NULL);
+    GtkTextBuffer *show_buffer;
+    GtkTextIter start, end;
+    show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
+    gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     while (i < count)
     {
         if (text[i] != '\0')
         {
-            gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
+            gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                     &text[i], 1, "gray_foreground", NULL);
             i++;
         }
@@ -102,42 +104,53 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times, i
             GtkTextChildAnchor *anchor;
             GtkWidget *image;
             char filename[256] = {0};
-            char strdest[17] = {0};
+            char strdest[16] = {0};
             i++;
             memcpy(strdest, &text[i], 16);
             HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
-            anchor = gtk_text_buffer_create_child_anchor(info->show_buffer, &end);
+            anchor = gtk_text_buffer_create_child_anchor(show_buffer, &end);
             image = gtk_image_new_from_file(filename);
             gtk_widget_show_all(image);
             gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->show_text), image, anchor);
             i = i + 16;
         }
+
     }
-    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
+    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
             "\n", -1, "gray_foreground", NULL);
+
+}
+
+//将输入的文本框输出在显示的文本框中
+void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times, int count)
+{
+    GtkTextIter start, end;
+    gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
+    gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
+            nicheng_times, -1, "red_foreground", NULL);
+    DecodingText(text, info, count); //解码
 
 }
 
 
 //将服务器发过来的的消息显示在文本框上
-void Show_remote_text(const gchar *rcvd_text, friendinfo *info)
+void ShoweRmoteText(const gchar *rcvd_text, friendinfo *info, uint16_t len)
 {
     GtkTextIter start, end;
+    GtkTextBuffer *show_buffer;
     char nicheng_times[40] = {0};
     time_t timep;
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
-    sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
-    GtkTextBuffer *show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
+    sprintf(nicheng_times, " %s  %d: %d: %d \n", CurrentUserInfo.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
-    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-            nicheng_times, -1, "blue_foreground", NULL);
-    gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-            rcvd_text, -1, "gray_foreground", NULL);
 
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-            "\n", -1, "gray_foreground", NULL);
+            nicheng_times, -1, "blue_foreground", NULL);
+    DecodingText(rcvd_text, info, len); //解码
+
 }
 
 
@@ -180,12 +193,127 @@ void CodingTextImage(friendinfo *info, gchar *coding, int *count)
     *count = char_rear - coding;
 }
 
+int deal_with_message(CRPBaseHeader *header, void *data)
+{
+    struct PictureMessageFileUploadingData *photomessage = (struct PictureMessageFileUploadingData *) data;
+    char *imagedata = (char *) malloc(4096);
+    size_t num;
+    int ret = 1;
+    if (header->packetID == CRP_PACKET_FAILURE)
+    {
+        CRPPacketFailure *infodata = CRPFailureCast(header);
+        log_info("FAILURE reason", infodata->reason);
+        fclose(photomessage->fp);
+        free(photomessage);
+        return 0;
+    }
+    log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
+
+    if (header->packetID == CRP_PACKET_OK)
+    {
+        if (photomessage->fp != NULL)
+        {
+
+            num = fread(imagedata, sizeof(char), 4096, photomessage->fp);
+            if (num > 0)
+            {
+                CRPFileDataSend(sockfd, header->sessionID, num, photomessage->seq, imagedata);
+                photomessage->seq++;
+            }
+            else
+            {
+                fclose(photomessage->fp);
+                CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
+                photomessage->imagemessagedata->imagecount--;
+                if (photomessage->imagemessagedata->imagecount == 0)
+                {
+                    CRPMessageNormalSend(sockfd, photomessage->imagemessagedata->uid, UMT_TEXT,
+                            photomessage->imagemessagedata->uid, photomessage->imagemessagedata->charlen,
+                            photomessage->imagemessagedata->message_data);
+                    free(photomessage->imagemessagedata->message_data);
+                    free(photomessage->imagemessagedata);
+                    ret = 0;
+                }
+                free(photomessage);
+            }
+
+        }
+    }
+    else if (header->packetID == CRP_PACKET_FILE_DATA_END)
+    {
+        fclose(photomessage->fp);
+        photomessage->imagemessagedata->imagecount--;
+        if (photomessage->imagemessagedata->imagecount == 0)
+        {
+            CRPMessageNormalSend(sockfd, photomessage->imagemessagedata->uid, UMT_TEXT,
+                    photomessage->imagemessagedata->uid, photomessage->imagemessagedata->charlen,
+                    photomessage->imagemessagedata->message_data);
+            free(photomessage->imagemessagedata->message_data);
+            free(photomessage->imagemessagedata);
+        }
+        free(photomessage);
+        ret = 0;
+    }
+    free(imagedata);
+    return ret;
+}
+
+int image_message_send(gchar *char_text, friendinfo *info, int charlen)
+{
+    int i = 0;
+    int isimageflag = 0;
+
+    struct ImageMessageFileData *imagemessagedatastate
+            = (struct ImageMessageFileData *) malloc(sizeof(struct ImageMessageFileData));
+    imagemessagedatastate->imagecount = 0;
+    imagemessagedatastate->message_data = char_text;
+    imagemessagedatastate->uid = info->user.uid;
+    imagemessagedatastate->charlen = charlen;
+    while (i < charlen)
+    {
+        if (char_text[i] != '\0')
+        {
+            i++;
+        }
+        else
+        {
+            isimageflag = 1;
+            char filename[256] = {0};
+            char strdest[17] = {0};
+            struct stat stat_buf;
+            session_id_t session_id;
+            struct PictureMessageFileUploadingData *imagemessge
+                    = (struct PictureMessageFileUploadingData *) malloc(sizeof(struct PictureMessageFileUploadingData));
+            i++;
+            memcpy(strdest, &char_text[i], 16);
+            HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
+            stat(filename, &stat_buf);
+            session_id = CountSessionId();
+            imagemessge->seq = 0;
+            imagemessge->fp = (fopen(filename, "r"));
+            imagemessge->imagemessagedata = imagemessagedatastate;
+            AddMessageNode(session_id, deal_with_message, imagemessge);
+            CRPFileStoreRequestSend(sockfd, session_id, stat_buf.st_size, 0, char_text + i);
+            imagemessge->imagemessagedata->imagecount++;
+            i = i + 16;
+        }
+
+    }
+
+    if (isimageflag == 0)
+    {
+        CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, charlen, char_text);
+        return 0;
+    }
+    return 1;
+}
 
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
 void send_text(friendinfo *info)
 {
     gchar *char_text;
     int count;
+    int isimageflag;
     char_text = (gchar *) malloc(100000);
     if (char_text == NULL)
     {
@@ -198,13 +326,14 @@ void send_text(friendinfo *info)
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
-    sprintf(nicheng_times, " %s  %d : %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     gtk_text_buffer_set_text(info->input_buffer, "", 0);//发送消息后本地的文本框清0
-    CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, count, char_text);
-
     show_local_text(char_text, info, nicheng_times, count);
-    free(char_text);
-
+    isimageflag = image_message_send(char_text, info, count);
+    if (isimageflag == 0)
+    {
+        free(char_text);
+    }
 }
 
 //背景的eventbox
@@ -284,6 +413,8 @@ static gint send_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
     friendinfo *info = (friendinfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
+
+    return 0;
 }
 
 //声音
@@ -833,7 +964,7 @@ static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 
-int mainchart(friendinfo *friendinfonode)
+int MainChart(friendinfo *friendinfonode)
 {
 
     GtkEventBox *chartbackground_event_box, *send_event_box, *voice_event_box, *video_event_box;
@@ -1034,8 +1165,8 @@ int mainchart(friendinfo *friendinfonode)
             0);//不可编辑
     gtk_text_view_set_cursor_visible(GTK_TEXT_VIEW(friendinfonode->show_text), FALSE);
 
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 0, 438);//文本框位置
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 0, 89);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 2, 438);//文本框位置
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 3, 89);
 
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 75);
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 320);//大小
