@@ -1,30 +1,25 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include "PopupWinds.h"
+#include "common.h"
 
 GtkWidget *popupwindow; //dialog
 GtkWidget *popupLayout; //放入box
-GtkWidget *popback, *popend, *popanniu;
+GtkWidget *popback, *popanniu;
 GtkWidget *box, *action; //dialog的box和action_area
-cairo_surface_t *backface, *endface, *anniuface;
-int px = 0;
-int py = 0;
+cairo_surface_t *backface, *anniuface, *anniuface1;
+static GtkEventBox *Popback_event_box, *Anniu_event_box;
+//int px = 0;
+//int py = 0;
 
 static void create_popupfaces()
 {
     backface = cairo_image_surface_create_from_png("提示框.png");
-    //endface = cairo_image_surface_create_from_png("提示框关闭.png");
     anniuface = cairo_image_surface_create_from_png("提示框按钮1.png");
+    anniuface1 = cairo_image_surface_create_from_png("提示框按钮2.png");
 
     popback = gtk_image_new_from_surface(backface);
-    gtk_fixed_put(GTK_FIXED(popupLayout), popback, 0, 0);//起始坐标
-
-    popend = gtk_image_new_from_surface(endface);
-    gtk_fixed_put(GTK_FIXED(popupLayout), popend, 220, 2);
-
     popanniu = gtk_image_new_from_surface(anniuface);
-    gtk_fixed_put(GTK_FIXED(popupLayout), popanniu, 52, 170);
-
 }
 
 static void
@@ -32,12 +27,61 @@ destroy_popfaces()
 {
     g_print("destroying poppuwinds");
     cairo_surface_destroy(backface);
-    cairo_surface_destroy(endface);
     cairo_surface_destroy(anniuface);
+    cairo_surface_destroy(anniuface1);
 }
 
+//背景的eventbox拖曳窗口
+static gint popback_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
+    if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+        gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
+                event->x_root, event->y_root, event->time);
+    }
+    return 0;
+}
+
+//确定
 //鼠标点击事件
-static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+static gint ok_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    if (event->button == 1) {
+        gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+        //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
+    }
+    return 0;
+}
+
+//确定
+//鼠标抬起事件
+static gint ok_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    if (event->button == 1) {
+        gtk_dialog_response((GtkDialog *) popupwindow, 1);
+    }
+    return 0;
+}
+
+//确定
+//鼠标移动事件
+static gint ok_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) popanniu, anniuface1);
+    return 0;
+}
+
+//确定
+//鼠标离开事件
+static gint ok_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) popanniu, anniuface);
+    return 0;
+}
+
+/*
+//鼠标点击事件
+static gint pop_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     px = event->x;  // 取得鼠标相对于窗口的位置
     py = event->y;
@@ -64,7 +108,7 @@ static gint button_press_event(GtkWidget *widget, GdkEventButton *event, gpointe
 }
 
 //鼠标抬起事件
-static gint button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+static gint pop_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     px = event->x;  // 取得鼠标相对于窗口的位置
@@ -85,7 +129,7 @@ static gint button_release_event(GtkWidget *widget, GdkEventButton *event, gpoin
 }
 
 //鼠标移动事件
-static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+static gint pop_motion_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     px = event->x;  // 取得鼠标相对于窗口的位置
@@ -103,7 +147,7 @@ static gint motion_notify_event(GtkWidget *widget, GdkEventButton *event, gpoint
         gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
     }
     return 0;
-}
+}*/
 
 int popup(const char *title, const char *tell)
 {
@@ -122,9 +166,9 @@ int popup(const char *title, const char *tell)
     cairo_t *cr;
     cairo_text_extents_t te;
 
-
     GtkWidget *telltitle, *tellyou;
     gtk_container_add(GTK_CONTAINER(box), popupLayout);
+
     telltitle = gtk_label_new(title);//标题
     tellyou = gtk_label_new(tell);//内容
 
@@ -135,42 +179,41 @@ int popup(const char *title, const char *tell)
     pango_layout_set_text(layout, tell, strlen(tell));
     pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
     pango_layout_get_pixel_size(layout, &maWidth, &maHeight);
+
+    // 设置窗体获取鼠标事件
+    Popback_event_box = BuildEventBox(
+            popback,
+            G_CALLBACK(popback_button_press_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL);
+    gtk_fixed_put(GTK_FIXED(popupLayout), Popback_event_box, 0, 0);
+
+    Anniu_event_box = BuildEventBox(
+            popanniu,
+            G_CALLBACK(ok_button_press_event),
+            G_CALLBACK(ok_enter_notify_event),
+            G_CALLBACK(ok_leave_notify_event),
+            G_CALLBACK(ok_button_release_event),
+            NULL);
+    gtk_fixed_put(GTK_FIXED(popupLayout), Anniu_event_box, 52, 170);
+
+    gtk_fixed_put(GTK_FIXED(popupLayout), telltitle, 14, 10);
     if (maWidth > 400)
         maWidth = 400;
     //gtk_label_set_justify(GTK_LABEL(tellyou),GTK_JUSTIFY_CENTER);/*设置标号对齐方式为居中对齐*/
     //gtk_label_set_line_wrap(GTK_LABEL(tellyou),TRUE);/*打开自动换行*/
 
-    gtk_fixed_put(GTK_FIXED(popupLayout), telltitle, 14, 10);
-    if (80 + maWidth < 250)
-    {
+    if (80 + maWidth < 250) {
         gtk_fixed_put(GTK_FIXED(popupLayout), tellyou, (250 - maWidth) / 2, 110);
         gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
-    } else
-    {
+    } else {
         gtk_fixed_put(GTK_FIXED(popupLayout), tellyou, 40, 110);
         gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 80 + maWidth, 235);
     }
-
-
-    // 设置窗体获取鼠标事件
-    gtk_widget_set_events(popupwindow,
-
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-    g_signal_connect(G_OBJECT(popupwindow), "button_press_event",
-            G_CALLBACK(button_press_event), popupwindow);    //加入事件回调
-
-    g_signal_connect(G_OBJECT(popupwindow), "motion_notify_event",
-            G_CALLBACK(motion_notify_event), popupwindow);
-
-    g_signal_connect(G_OBJECT(popupwindow), "button_release_event",
-            G_CALLBACK(button_release_event), popupwindow);
-
-    gtk_widget_show_all(popupLayout);
+    //gtk_widget_show_all(popupLayout);
+    gtk_widget_show_all(popupwindow);
     gtk_widget_hide(action);//隐藏留白的action
 
     gtk_dialog_run(GTK_DIALOG(popupwindow));

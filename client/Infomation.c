@@ -3,8 +3,6 @@
 #include <pwd.h>
 #include "ClientSockfd.h"
 #include "common.h"
-#include "MainInterface.h"
-
 
 static GtkWidget *Infowind;
 static GtkWidget *Infolayout;
@@ -12,13 +10,19 @@ static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Gu
 static GtkWidget *Infobackground, *Infosave, *Infocancel, *Infoguanbi;
 static cairo_surface_t *Surfaceback, *Surfacesave, *Surfacesave1, *Surfacecancel, *Surfacecancel1, *Surfaceend, *Surfaceend1, *Surfaceend2;
 
+static GtkWidget *iid, *isex, *inickName, *inote, *iname, *ibloodtype, *ibirthday, *iconstellation, *izodiac, *iprovinces, *icity, *icounty;
+static GtkWidget *iphonenumber, *itel, *ischoolrecord, *iprofessional, *ischool, *ihometown, *ihome;
+static cairo_surface_t *surfacehead;
+static GtkWidget *headicon;
+static GtkEventBox *Inote_event_box;
+
 static void create_infofaces() {
 
     Surfaceback = cairo_image_surface_create_from_png("资料.png");
-    Surfacesave = cairo_image_surface_create_from_png("保存.png");
-    Surfacesave1 = cairo_image_surface_create_from_png("保存2.png");
-    Surfacecancel = cairo_image_surface_create_from_png("取消.png");
-    Surfacecancel1 = cairo_image_surface_create_from_png("取消2.png");
+    Surfacesave = cairo_image_surface_create_from_png("资料保存.png");
+    Surfacesave1 = cairo_image_surface_create_from_png("资料保存2.png");
+    Surfacecancel = cairo_image_surface_create_from_png("资料取消.png");
+    Surfacecancel1 = cairo_image_surface_create_from_png("资料取消2.png");
     Surfaceend = cairo_image_surface_create_from_png("关闭按钮1.png");
     Surfaceend1 = cairo_image_surface_create_from_png("关闭按钮2.png");
     Surfaceend2 = cairo_image_surface_create_from_png("关闭按钮3.png");
@@ -58,9 +62,8 @@ static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *even
 //鼠标点击事件
 static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
-    if (event->button == 1) {        //设置注册按钮
+    if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
     }
     return 0;
 }
@@ -81,7 +84,7 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
-    //gtk_image_set_from_surface((GtkImage *) mminfo, surface33);
+    gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
     return 0;
 }
 
@@ -90,7 +93,6 @@ static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave);
-
     return 0;
 }
 
@@ -98,9 +100,8 @@ static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标点击事件
 static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
-    if (event->button == 1) {        //设置注册按钮
+    if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) Infocancel, Surfacecancel1); //置换图标
     }
     return 0;
 }
@@ -122,7 +123,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
 static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
-    //gtk_image_set_from_surface((GtkImage *) Infocancel, surface33);
+    gtk_image_set_from_surface((GtkImage *) Infocancel, Surfacecancel1); //置换图标
     return 0;
 }
 
@@ -139,7 +140,7 @@ static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 //鼠标点击事件
 static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
-    if (event->button == 1) {        //设置注册按钮
+    if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend1); //置换图标
     }
@@ -171,19 +172,46 @@ static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
 static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend);
+    return 0;
+}
 
+//备注
+//鼠标点击事件
+static gint inote_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    if (event->button == 1) {
+        gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+        GtkWidget *newnote;
+        newnote = gtk_entry_new();
+        gtk_fixed_put(GTK_FIXED(Infolayout), newnote, 48, 195);
+    }
+    return 0;
+}
+
+//备注
+//鼠标抬起事件
+static gint inote_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    if (event->button == 1) {
+    }
+    return 0;
+}
+
+//备注
+//鼠标移动事件
+static gint inote_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
+    return 0;
+}
+
+//备注
+//鼠标离开事件
+static gint inote_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     return 0;
 }
 
 void infotv() {
-    /*session_id_t saizdoa=CountSessionId();
-    AddMessageNode(<#(uint32_t)sessionid#>, <#(int (*)(CRPBaseHeader *, void *))fn#>, <#(void*)data#>)
-    CRPInfoDataSend(sockfd,saizdoa , 0, &CurrentUserInfo);*/
-
-    GtkWidget *iid, *isex, *inickName, *inote, *iname, *ibloodtype, *ibirthday, *iconstellation, *izodiac, *iprovinces, *icity, *icounty;
-    GtkWidget *iphonenumber, *itel, *ischoolrecord, *iprofessional, *ischool, *ihometown, *ihome;
-    static cairo_surface_t *surfacehead;
-    GtkWidget *headicon;
 
     char infohead[80] = {0};
     sprintf(infohead, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, CurrentUserInfo.uid);
@@ -196,8 +224,15 @@ void infotv() {
     iid = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), iid, 35, 173);
 
-    inote = gtk_label_new(CurrentUserInfo.nickName);
-    gtk_fixed_put(GTK_FIXED(Infolayout), inote, 48, 195);
+    //gtk_text_view_set_border_window_size(inote, GTK_TEXT_WINDOW_LEFT, 10);
+    gtk_entry_set_has_frame((GtkEntry *) inote, FALSE);
+    inote = gtk_entry_new();
+    gtk_entry_set_text(inote, CurrentUserInfo.nickName);
+    gtk_fixed_put(GTK_FIXED(Infolayout), inote, 48, 188);
+    //gtk_entry_set_inner_border(<#(GtkEntry*)entry#>, <#(const GtkBorder*)border#>)
+    GtkStyleContext *context = gtk_widget_get_style_context(inote);
+    gtk_style_context_list_classes(context);
+    //gtk_style_context_add_class(context, myclass);
 
     iname = gtk_label_new(CurrentUserInfo.nickName);
     gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 244);
@@ -247,7 +282,6 @@ void infotv() {
     ischool = gtk_label_new(CurrentUserInfo.nickName);
     gtk_fixed_put(GTK_FIXED(Infolayout), ischool, 75, 385);
 
-
 }
 
 int info() {
@@ -258,10 +292,10 @@ int info() {
     gtk_window_set_decorated(GTK_WINDOW(Infowind), FALSE);//去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(Infowind), 550, 488);
 
-    Infobackg_event_box = gtk_event_box_new();
+    /*Infobackg_event_box = gtk_event_box_new();
     Save_event_box = gtk_event_box_new();
     Cancel_event_box = gtk_event_box_new();
-    Guanxx_event_box = gtk_event_box_new();
+    Guanxx_event_box = gtk_event_box_new();*/
 
     Infolayout = gtk_fixed_new();
     create_infofaces();
@@ -304,6 +338,15 @@ int info() {
     gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
 
     infotv();
+
+    /*Inote_event_box=BuildEventBox(
+            inote,
+            G_CALLBACK(inote_button_press_event),
+            G_CALLBACK(inote_enter_notify_event),
+            G_CALLBACK(inote_leave_notify_event),
+            G_CALLBACK(inote_button_release_event),
+            NULL);
+    gtk_fixed_put(GTK_FIXED(Infolayout), Inote_event_box, 48, 195);*/
 
     gtk_widget_show_all(Infowind);
 }
