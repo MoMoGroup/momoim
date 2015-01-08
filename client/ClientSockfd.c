@@ -107,7 +107,7 @@ gboolean postMessage(gpointer user_data)
 }
 
 //接收新添加好友资料的，
-int newfriend(CRPBaseHeader *header,void *data)
+int new_friend_info(CRPBaseHeader *header,void *data)
 {
     switch (header->packetID)
     {
@@ -115,7 +115,7 @@ int newfriend(CRPBaseHeader *header,void *data)
         {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
             //infodata->info;//昵称，性别等用户资料
-            FindImage(infodata->info.icon, header, UpFriendList);//判断是否有头像
+            FindImage(infodata->info.icon, data, UpFriendList);//判断是否有头像
             return 0;//0删除
         }
     }
@@ -149,16 +149,17 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             CRPPacketFriendNotify *data= CRPFriendNotifyCast(header);
 
             UserGroup* grou= UserFriendsGroupGet(friends, UGI_DEFAULT);//friends,好友分组信息
-            UserFriendsUserAdd(grou, data->uid);
+            UserFriendsUserAdd(grou, data->uid);//加入这个分组
 
             session_id_t sessionid = CountSessionId();
-            AddMessageNode(sessionid, newfriend, NULL);//注册一个会话，接收新添加好友资料
+            AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
             CRPInfoRequestSend(sockfd,sessionid , data->uid); //请求用户资料
+            break;
 
         };
         default:
             log_info("服务器消息异常", "%u\n", header->packetID);
-            return 0;
+            return 1;
     }
 }
 
@@ -272,7 +273,6 @@ int mysockfd()
                     {
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
                         CurrentUserInfo = infodata->info;//放到结构提里，保存昵称，性别等资料
-
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
                         if ((const char *) infodata != header->data)

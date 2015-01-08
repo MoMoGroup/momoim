@@ -19,7 +19,6 @@ static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
 static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
-static GtkTreeIter iter1, iter2;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 
 
@@ -37,6 +36,7 @@ enum
 
 int UpFriendList(void *data)//更新好友列表
 {
+    GtkTreeIter iter1, iter2;
     cairo_surface_t *surface;
 
     CRPPacketInfoData *infodata = CRPInfoDataCast(data);
@@ -54,7 +54,8 @@ int UpFriendList(void *data)//更新好友列表
     cairo_save(cr);
     cairo_arc(cr, 30, 30, 30, 0, M_PI * 2);
     cairo_clip(cr);
-    //缩放
+    //缩放    pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
+
     cairo_scale(cr, 60.0 / w, 60.0 / h);
     //把画笔和图片相结合。
     cairo_set_source_surface(cr, new_friend_surface, 0, 0);
@@ -71,6 +72,7 @@ int UpFriendList(void *data)//更新好友列表
     cairo_show_text(cr, infodata->info.nickName);
 
     int num=friends->groups[0].friendCount;//分组好友数
+
 
     pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
     gtk_tree_store_append(store, &iter2, &iter1);//
@@ -91,6 +93,8 @@ GtkTreeModel *createModel()
     gint i, j;
     cairo_surface_t *surface;
     cairo_surface_t *surfaceIcon;
+
+    GtkTreeIter iter1, iter2;
 
     store = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
     for (i = 0; i < friends->groupCount; i++)
