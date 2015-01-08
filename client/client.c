@@ -444,11 +444,11 @@ gboolean loadloginLayout(gpointer user_data)
     backgroundevent_box = BuildEventBox(
             imagebackground,
             G_CALLBACK(background_button_press_event),
-            NULL, NULL, NULL, NULL);
+            NULL, NULL, NULL, NULL, NULL);
 
     waitevent_box = BuildEventBox(iwait,
             G_CALLBACK(wait_button_press_event),
-            NULL, NULL, NULL, NULL);
+            NULL, NULL, NULL, NULL, NULL);
 
     landbutevent_box = BuildEventBox(
             imagelandbut,
@@ -456,7 +456,7 @@ gboolean loadloginLayout(gpointer user_data)
             G_CALLBACK(landbut_enter_notify_event),
             G_CALLBACK(landbut_leave_notify_event),
             G_CALLBACK(landbut_button_release_event),
-            NULL
+            NULL, NULL
     );
 
     sunevent_box = BuildEventBox(
@@ -465,7 +465,7 @@ gboolean loadloginLayout(gpointer user_data)
             NULL,
             NULL,
             NULL,
-            NULL);
+            NULL, NULL);
 
     registeredevent_box = BuildEventBox(
             imageregistered,
@@ -473,21 +473,21 @@ gboolean loadloginLayout(gpointer user_data)
             G_CALLBACK(registered_enter_notify_event),
             G_CALLBACK(registered_leave_notify_event),
             G_CALLBACK(registered_button_release_event),
-            NULL);
+            NULL, NULL);
     closebutevent_box = BuildEventBox(
             imageclosebut,
             G_CALLBACK(closebut_button_press_event),
             G_CALLBACK(closebut_enter_notify_event),
             G_CALLBACK(closebut_leave_notify_event),
             G_CALLBACK(closebut_button_release_event),
-            NULL);
+            NULL, NULL);
     cancelevent_box = BuildEventBox(
             imagecancel,
             G_CALLBACK(cancel_button_press_event),
             G_CALLBACK(cancel_enter_notify_event),
             G_CALLBACK(cancel_leave_notify_event),
             G_CALLBACK(cancel_button_release_event),
-            NULL);
+            NULL, NULL);
 
     frameLayout = gtk_layout_new(NULL, NULL);
     pendingLayout = gtk_fixed_new();

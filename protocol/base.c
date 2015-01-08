@@ -48,6 +48,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *base) = 
 
         [CRP_PACKET_MESSAGE__START]           = (void *(*)(CRPBaseHeader *base)) NULL,
         [CRP_PACKET_MESSAGE_NORMAL]           = (void *(*)(CRPBaseHeader *base)) CRPMessageNormalCast,
+        [CRP_PACKET_MESSAGE_QUERY_OFFLINE]    = (void *(*)(CRPBaseHeader *base)) CRPMessageQueryOfflineCast
 };
 
 static void CRPEncryptDisableUnlock(CRPContext context)

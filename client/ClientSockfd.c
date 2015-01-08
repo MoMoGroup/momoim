@@ -97,24 +97,21 @@ gboolean postMessage(gpointer user_data)
     if( packet->messageType==UMT_NEW_FRIEND )
     {
         popup("添加请求","用户请求添加你为好友");
-        CRPFriendAcceptSend(sockfd, 1, packet->uid);
+        CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送
     }
     return 0;
 }
-int shuaxin(void *data)
-{
 
-}
-
-int newfriend(CRPBaseHeader *header,void *data)
+//接收新添加好友资料的，
+int new_friend_info(CRPBaseHeader *header,void *data)
 {
     switch (header->packetID)
     {
         case CRP_PACKET_INFO_DATA: //用户资料回复
         {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-            infodata->info;//放到结构体里，保存昵称，性别等资料
-            FindImage(infodata->info.icon, infodata, shuaxin);
+            //infodata->info;//昵称，性别等用户资料
+            FindImage(infodata->info.icon, data, UpFriendList);//判断是否有头像
             return 0;//0删除
         }
     }
@@ -143,19 +140,19 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             return 1;
         };
             //haoyou通知
-        case CRP_PACKET_FRIEND_NOTIFY:
+        case CRP_PACKET_FRIEND_NOTIFY://对方同意之后收到的包
         {
             CRPPacketFriendNotify *data= CRPFriendNotifyCast(header);
             log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n",data->type);
 
             UserGroup* grou= UserFriendsGroupGet(friends, UGI_DEFAULT);//friends,好友分组信息
-
-            UserFriendsUserAdd(grou, data->uid);
+            UserFriendsUserAdd(grou, data->uid);//加入这个分组
 
             session_id_t sessionid = CountSessionId();
-            AddMessageNode(sessionid, newfriend, NULL);
+            AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
             CRPInfoRequestSend(sockfd,sessionid , data->uid); //请求用户资料
             break;
+
         };
         default:
             log_info("服务器消息异常", "%u\n", header->packetID);
@@ -177,6 +174,10 @@ int mysockfd()
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
+
+//    .sin_port=htons(8014)
+//};
+//inet_aton("192.168.8.143",&server_addr.sin_addr);
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
         perror("Connect");
@@ -267,7 +268,6 @@ int mysockfd()
                     log_info("CRP_PACKET_INFO_DATA", "111\n");
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
-
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
                         CurrentUserInfo = infodata->info;//放到结构提里，保存昵称，性别等资料
                         log_info("user nickname:", "%s\n", infodata->info.nickName);

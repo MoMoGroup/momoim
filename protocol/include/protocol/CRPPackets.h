@@ -37,6 +37,7 @@
 #include "protocol/status/SwitchProtocol.h"
 
 #include "protocol/message/Normal.h"
+#include "protocol/message/QueryOffline.h"
 
 typedef enum
 {
@@ -81,6 +82,7 @@ typedef enum
 
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
     CRP_PACKET_MESSAGE_NORMAL,        //消息
+    CRP_PACKET_MESSAGE_QUERY_OFFLINE, //查询离线消息
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID
 } CRPPacketIDs;

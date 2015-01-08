@@ -109,22 +109,16 @@ int popup(const char *title, const char *tell)
     pango_layout_get_pixel_size(layout, &maWidth, &maHeight);
 
     // 设置窗体获取鼠标事件
-    Popback_event_box = BuildEventBox(
-            popback,
-            G_CALLBACK(popback_button_press_event),
-            NULL,
-            NULL,
-            NULL,
-            NULL);
+    Popback_event_box = BuildEventBox(popback, G_CALLBACK(popback_button_press_event), NULL, NULL, NULL, NULL, NULL);
     gtk_fixed_put(GTK_FIXED(popupLayout), Popback_event_box, 0, 0);
 
-    Anniu_event_box = BuildEventBox(
-            popanniu,
-            G_CALLBACK(ok_button_press_event),
-            G_CALLBACK(ok_enter_notify_event),
-            G_CALLBACK(ok_leave_notify_event),
-            G_CALLBACK(ok_button_release_event),
-            NULL);
+    Anniu_event_box = BuildEventBox(popanniu,
+                                    G_CALLBACK(ok_button_press_event),
+                                    G_CALLBACK(ok_enter_notify_event),
+                                    G_CALLBACK(ok_leave_notify_event),
+                                    G_CALLBACK(ok_button_release_event),
+                                    NULL,
+                                    NULL);
     gtk_fixed_put(GTK_FIXED(popupLayout), Anniu_event_box, 52, 170);
 
     gtk_fixed_put(GTK_FIXED(popupLayout), telltitle, 14, 10);

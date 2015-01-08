@@ -52,3 +52,4 @@ struct RECVImageMessagedata
     char *message_data;
     friendinfo *userinfo;
 };
+extern int UpFriendList(void *data);

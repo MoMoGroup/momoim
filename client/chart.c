@@ -5,16 +5,10 @@
 #include <ftadvanc.h>
 #include "chart.h"
 #include "common.h"
-#include "Infomation.h"
 #include <pwd.h>
 #include <math.h>
-#include <stdio.h>
-#include <cairo-script-interpreter.h>
-#include <ftlist.h>
 #include <logger.h>
 #include <sys/stat.h>
-#include <protocol/base.h>
-#include <imcommon/friends.h>
 
 
 int X = 0;
@@ -1007,7 +1001,7 @@ int MainChart(friendinfo *friendinfonode)
     chartbackground_event_box = BuildEventBox(
             friendinfonode->imageflowerbackgroud,
             G_CALLBACK(chartbackground_button_press_event),
-            NULL, NULL, NULL, friendinfonode);
+            NULL, NULL, NULL, NULL, friendinfonode);
 
     //发送
 
@@ -1017,6 +1011,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(send_enter_notify_event),
             G_CALLBACK(send_leave_notify_event),
             G_CALLBACK(send_button_release_event),
+            NULL,
             friendinfonode);
     //语音
 
@@ -1027,6 +1022,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(voice_enter_notify_event),
             G_CALLBACK(voice_leave_notify_event),
             G_CALLBACK(voice_button_release_event),
+            NULL,
             friendinfonode);
     //视频
 
@@ -1036,6 +1032,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(video_enter_notify_event),
             G_CALLBACK(video_leave_notify_event),
             G_CALLBACK(video_button_release_event),
+            NULL,
             friendinfonode);
 //下方关闭按钮
 
@@ -1045,6 +1042,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(close_enter_notify_event),
             G_CALLBACK(close_leave_notify_event),
             G_CALLBACK(close_button_release_event),
+            NULL,
             friendinfonode);
 
 //右上方关闭按钮
@@ -1054,6 +1052,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(close_but_enter_notify_event),
             G_CALLBACK(close_but_leave_notify_event),
             G_CALLBACK(close_but_button_release_event),
+            NULL,
             friendinfonode);
 //表情
 
@@ -1063,6 +1062,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(look_enter_notify_event),
             G_CALLBACK(look_leave_notify_event),
             G_CALLBACK(look_button_release_event),
+            NULL,
             friendinfonode);
 
     //截图
@@ -1073,6 +1073,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(jietu_enter_notify_event),
             G_CALLBACK(jietu_leave_notify_event),
             G_CALLBACK(jietu_button_release_event),
+            NULL,
             friendinfonode);
 //文件
 
@@ -1082,6 +1083,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(file_enter_notify_event),
             G_CALLBACK(file_leave_notify_event),
             G_CALLBACK(file_button_release_event),
+            NULL,
             friendinfonode);
 
     //图片
@@ -1092,6 +1094,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(photo_enter_notify_event),
             G_CALLBACK(photo_leave_notify_event),
             G_CALLBACK(photo_button_release_event),
+            NULL,
             friendinfonode);
     //字体
 
@@ -1101,6 +1104,7 @@ int MainChart(friendinfo *friendinfonode)
             G_CALLBACK(wordart_enter_notify_event),
             G_CALLBACK(wordart_leave_notify_event),
             G_CALLBACK(wordart_button_release_event),
+            NULL,
             friendinfonode);
 
 //背景

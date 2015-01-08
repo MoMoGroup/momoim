@@ -7,31 +7,30 @@
 #include "MainInterface.h"
 #include <string.h>
 #include <pwd.h>
-#include <ftlist.h>
 #include <protocol/info/Data.h>
 #include <t1tables.h>
+#include <lber.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
-GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release, void *data)
+GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release,
+        GCallback click, void *data)
 {
     GtkEventBox *eventBox = GTK_EVENT_BOX(gtk_event_box_new());
     gtk_widget_set_events(GTK_WIDGET(eventBox),  // 设置窗体获取鼠标事件
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
     if (press)
-        g_signal_connect(G_OBJECT(eventBox), "button_press_event",
-                G_CALLBACK(press), data);       // 加入事件回调
+        g_signal_connect(G_OBJECT(eventBox), "button_press_event", G_CALLBACK(press), data);       // 加入事件回调
     if (enter)
-        g_signal_connect(G_OBJECT(eventBox), "enter_notify_event",
-                G_CALLBACK(enter), data);
+        g_signal_connect(G_OBJECT(eventBox), "enter_notify_event", G_CALLBACK(enter), data);
     if (release)
-        g_signal_connect(G_OBJECT(eventBox), "button_release_event",
-                G_CALLBACK(release), data);
+        g_signal_connect(G_OBJECT(eventBox), "button_release_event", G_CALLBACK(release), data);
     if (leave)
-        g_signal_connect(G_OBJECT(eventBox), "leave_notify_event",
-                G_CALLBACK(leave), data);
+        g_signal_connect(G_OBJECT(eventBox), "leave_notify_event", G_CALLBACK(leave), data);
+    if (click)
+        g_signal_connect(G_OBJECT(eventBox), "click", G_CALLBACK(click), data);
     GdkRGBA rgba = {1, 1, 1, 0};
     gtk_widget_override_background_color(GTK_WIDGET(eventBox), GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
     gtk_container_add((GTK_CONTAINER(eventBox)), warp);
@@ -39,7 +38,7 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
 }
 
 
-void Md5Coding(const gchar *filename, unsigned char *coding_text)
+void Md5Coding(gchar *filename, const unsigned char *coding_text)
 {
     MD5_CTX c;
     char buf[512];
@@ -96,7 +95,7 @@ int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithP
     return 0;
 }
 
-void HexadecimalConversion(char *filename, const char *strdest) //strdest为md5值。filename是文件名
+void HexadecimalConversion(char *filename, const char *strdest)
 {
     char sDest[33] = {0};
     short i;
@@ -122,8 +121,9 @@ session_id_t CountSessionId()
 }
 
 
-typedef struct newfriend{
-    int  (*fn)(CRPBaseHeader *, void *data);
+typedef struct find_image_recv_new {
+    gboolean  (*fn)(void *data);
+    void *data;
     char key[16];
     FILE *fp;
 
@@ -131,7 +131,7 @@ typedef struct newfriend{
 
 int recv_new_friend_image(CRPBaseHeader *header, void *data)
 {
-    struct newfriend *p=(struct newfriend *)data;
+    struct find_image_recv_new *p=(struct find_image_recv_new *)data;
 
     switch (header->packetID)
     {
@@ -178,8 +178,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
             {
                 free(packet);
             }
-            g_idle_add(p->fn, data);
-            free(data);
+            g_idle_add(p->fn, p->data);
             free(p);
             return 0;
         }
@@ -191,16 +190,18 @@ int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
 {
     CRPPacketInfoData *infodata = CRPInfoDataCast(data);
     char filaname[256];
-    HexadecimalConversion(filaname, key);
+    HexadecimalConversion(filaname, key);//计算一个文件名
     //0存在，1不存在
     if (access(filaname, F_OK))//不存在，先加载图片
     {
-        struct newfriend *p;
+        struct find_image_recv_new *p=malloc(sizeof(struct find_image_recv_new));
         memcpy(p->key, key, 16);
         p->fn=fn;
+        p->data=data;
+        //注册一个接收新添加好友头像的会话
         session_id_t sessionid = CountSessionId();
-        AddMessageNode(sessionid, recv_new_friend_image, malloc(sizeof(struct newfriend)));
-        CRPFileRequestSend(sockfd, sessionid, 0, filaname);//发送用户头像请求
+        AddMessageNode(sessionid, recv_new_friend_image,p);
+        CRPFileRequestSend(sockfd, sessionid, 0, key);//发送用户头像请求
     }
     else
     {

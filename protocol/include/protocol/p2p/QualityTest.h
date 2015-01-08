@@ -6,8 +6,8 @@
 
 CRP_STRUCTURE
 {
-    uint32_t uid;
-    char key[32];
+    uint16_t seq;
+    char pad[1024 - sizeof(uint16_t)];
 } CRPPacketMessageDiscover;
 
 __attribute_malloc__
