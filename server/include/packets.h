@@ -6,6 +6,7 @@
 #include "run/user.h"
 
 typedef int (*GeneralPacketProcessor)(POnlineUser, uint32_t, void *packet, CRPBaseHeader *);
+
 //数据包处理
 //状态消息
 int ProcessPacketStatusHello(POnlineUser user, uint32_t session, CRPPacketHello *packet);
@@ -32,6 +33,8 @@ int ProcessPacketLoginLogout(POnlineUser user, uint32_t session, CRPPacketLoginL
 
 //消息处理
 int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet);
+
+int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPacketMessageQueryOffline *packet);
 
 //信息处理
 int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRequest *packet);

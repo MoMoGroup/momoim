@@ -127,6 +127,7 @@ UserMessage *MessageFileNext(MessageFile *file)
     ssize_t nbytes = read(file->fd, &header, sizeof(UserMessage));
     if (nbytes != sizeof(UserMessage))
     {
+        lseek(file->fd, posCur, SEEK_SET);
         goto cleanup;
     }
     ret = (UserMessage *) malloc(sizeof(UserMessage) + header.messageLen);
@@ -136,10 +137,10 @@ UserMessage *MessageFileNext(MessageFile *file)
     {
         free(ret);
         ret = NULL;
+        lseek(file->fd, posCur, SEEK_SET);
         goto cleanup;
     }
     cleanup:
-    lseek(file->fd, posCur, SEEK_SET);
     pthread_mutex_unlock(&file->lock);
     return ret;
 }

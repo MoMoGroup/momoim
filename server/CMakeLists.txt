@@ -48,6 +48,7 @@ SET(SERVER_SOURCE_FILE
     packets/login/Register.c
 
     packets/message/Normal.c
+    packets/message/QueryOffline.c
     )
 add_executable(server ${SERVER_SOURCE_FILE})
 target_link_libraries(server protocol)

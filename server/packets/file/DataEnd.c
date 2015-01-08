@@ -29,9 +29,9 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
             char *path = (char *) malloc(len);
             DataFilePath(fop->key, path);
 
-            if (rename(fop->tmpfile, path))
+            if (rename(fop->tmpfile, path) != 0)//FEATURE 文件移动失败,可能目标不在同一文件系统.需要进行复制.
             {
-                perror("rename");
+                unlink(fop->tmpfile);
                 CRPFailureSend(user->sockfd, session, EFAULT, "文件移动失败\n");
             }
             else

@@ -1,7 +1,6 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 #include <protocol/base.h>
-#include <cairo-script-interpreter.h>
 #include <glib-unix.h>
 #include "common.h"
 #include <string.h>
@@ -10,12 +9,13 @@
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
 GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release,
-                           GCallback click, void *data) {
+        GCallback click, void *data)
+{
     GtkEventBox *eventBox = GTK_EVENT_BOX(gtk_event_box_new());
     gtk_widget_set_events(GTK_WIDGET(eventBox),  // 设置窗体获取鼠标事件
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
     if (press)
         g_signal_connect(G_OBJECT(eventBox), "button_press_event", G_CALLBACK(press), data);       // 加入事件回调
     if (enter)
@@ -33,20 +33,24 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
 }
 
 
-void Md5Coding(gchar *filename, unsigned char *coding_text) {
+void Md5Coding(gchar *filename, const unsigned char *coding_text)
+{
     MD5_CTX c;
     char buf[512];
     ssize_t bytes;
     int fd;
     MD5_Init(&c);
 
-    if ((fd = open(filename, O_RDONLY)) < -1) {
+    if ((fd = open(filename, O_RDONLY)) < -1)
+    {
         printf("can not open filename");
 
     }
-    else {
+    else
+    {
         bytes = read(fd, buf, 512);
-        while (bytes > 0) {
+        while (bytes > 0)
+        {
             MD5_Update(&c, buf, bytes);
             bytes = read(fd, buf, 512);
         }
@@ -56,21 +60,26 @@ void Md5Coding(gchar *filename, unsigned char *coding_text) {
     close(fd);
 }
 
-int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithPath) {
+int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithPath)
+{
     FILE *fpR, *fpW;
     char buffer[256] = "0";
     int lenR, lenW;
-    if ((fpR = fopen(sourceFileNameWithPath, "r")) == NULL) {
+    if ((fpR = fopen(sourceFileNameWithPath, "r")) == NULL)
+    {
         return 0;
     }
 
-    if ((fpW = fopen(targetFileNameWithPath, "w")) == NULL) {
+    if ((fpW = fopen(targetFileNameWithPath, "w")) == NULL)
+    {
         fclose(fpR);
         return 0;
     }
     memset(buffer, 0, 256);
-    while ((lenR = fread(buffer, 1, 256, fpR)) > 0) {
-        if ((lenW = fwrite(buffer, 1, lenR, fpW)) != lenR) {
+    while ((lenR = fread(buffer, 1, 256, fpR)) > 0)
+    {
+        if ((lenW = fwrite(buffer, 1, lenR, fpW)) != lenR)
+        {
             fclose(fpR);
             fclose(fpW);
             return 1;
@@ -81,12 +90,14 @@ int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithP
     return 0;
 }
 
-void HexadecimalConversion(char *filename, const char *strdest) {
+void HexadecimalConversion(char *filename, const char *strdest)
+{
     char sDest[33] = {0};
     short i;
     char szTmp[3];
 
-    for (i = 0; i < MD5_DIGEST_LENGTH; i++) {
+    for (i = 0; i < MD5_DIGEST_LENGTH; i++)
+    {
         sprintf(szTmp, "%02x", (unsigned char) strdest[i]);
         memcpy(&sDest[i * 2], szTmp, 2);
     }
@@ -94,7 +105,8 @@ void HexadecimalConversion(char *filename, const char *strdest) {
 }
 
 
-session_id_t CountSessionId() {
+session_id_t CountSessionId()
+{
     static session_id_t OnlySessionId = 1000;
     session_id_t ret;
     pthread_rwlock_wrlock(&onllysessionidlock);//写锁定

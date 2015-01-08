@@ -38,6 +38,7 @@ SET(LIBPROTOCOL_SRC
     packets/file/StoreRequest.c
 
     packets/message/Normal.c
+    packets/message/QueryOffline.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
 target_link_libraries(protocol mcrypt)
