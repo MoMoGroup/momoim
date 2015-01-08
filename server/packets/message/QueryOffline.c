@@ -1,5 +1,4 @@
 #include <protocol/CRPPackets.h>
-#include <stdlib.h>
 #include <asm-generic/errno-base.h>
 #include <datafile/message.h>
 #include <datafile/user.h>
@@ -12,9 +11,9 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
         MessageFile *file = UserMessageFileGet(user->info->uid);
         UserInfo *info = UserInfoGet(user->info->uid);
 
-        PostMessage(msg);
+        //PostMessage(msg);
         CRPOKSend(user->sockfd, session);
-        free(msg);
+        //free(msg);
         UserMessageFileDrop(user->info->uid);
 
     }
