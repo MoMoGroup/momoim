@@ -16,6 +16,7 @@
 #include "PopupWinds.h"
 #include "common.h"
 #include "UpdataFriendList.h"
+#include "addfriend.h"
 
 pthread_t ThreadKeepAlive;
 
@@ -79,6 +80,7 @@ gboolean postMessage(gpointer user_data)
     if (packet->messageType == UMT_NEW_FRIEND)
     {
         popup("添加请求", "用户请求添加你为好友");
+
         CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
     }
     return 0;
@@ -86,12 +88,9 @@ gboolean postMessage(gpointer user_data)
 
 int UpFriendList(void *data)//更新好友列表
 {
-    //第一步
-    //  g_idle_add(upda_first, data);
+
     upda_first(data);
-//    treeView = (GtkTreeView *) gtk_tree_view_new_with_model(upda_first(data));//list
-    //第2步
-    //第3步
+
     return 0;
 }
 

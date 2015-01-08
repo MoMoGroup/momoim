@@ -6,7 +6,6 @@
 #include <glib-unix.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
-#include <lber.h>
 #include "addfriend.h"
 #include "common.h"
 #include "ClientSockfd.h"
@@ -15,17 +14,17 @@
 int searchfriend(CRPBaseHeader *header, void *data);
 
 GtkWidget *addwindow, *addframelayout;
-GtkWidget *addlayout2, *addlayout1, *addlayout3;//layout
+GtkWidget *addlayout2, *addlayout1, *addlayout31;//layout
 
 GtkWidget *addtext;
 
 cairo_surface_t *surfacebiaoji, *surfacenext, *surfacenext_press, *surfaceclose;
-cairo_surface_t *surfacebackground, *surfacebackground0, *surfacebackground3, *surfacedone,*surfacedone2;
+cairo_surface_t *surfacebackground1, *surfacebackground3, *surfacebackground0, *surfacebackground2, *surfacedone, *surfacedone2;
 cairo_surface_t *surfacehead;
 //资源
 
-GtkWidget *background, *background3, *biaoji, *next, *next_press, *addclose;    //引用
-GtkWidget  *smallhead, *done,*done2;
+GtkWidget *background1, *background2, *background3, *biaoji, *next, *next_press, *addclose;    //引用
+GtkWidget *smallhead, *done, *done2;
 
 GtkEventBox *next_enent_box, *close_event_box;
 GtkEventBox *next_enent_box2, *close_event_box2;
@@ -48,23 +47,27 @@ typedef struct add_friend_info {
 void create_surface()
 {
     //加载资源，第1个
-    surfacebackground = cairo_image_surface_create_from_png("查找背景2.png");
-    surfacebackground3 = cairo_image_surface_create_from_png("查找.png");
+    surfacebackground1 = cairo_image_surface_create_from_png("查找背景1.png");
+    surfacebackground2 = cairo_image_surface_create_from_png("查找背景2.png");
+    surfacebackground3 = cairo_image_surface_create_from_png("查找背景3.png");
+
     surfacebiaoji = cairo_image_surface_create_from_png("标记.png");
     surfacenext = cairo_image_surface_create_from_png("下一步.png");
     surfacenext_press = cairo_image_surface_create_from_png("下一步2.png");
     surfaceclose = cairo_image_surface_create_from_png("关闭按钮1.png");
+
     surfacedone = cairo_image_surface_create_from_png("完成.png");
-    surfacedone2=cairo_image_surface_create_from_png("完成2.png");
+    surfacedone2 = cairo_image_surface_create_from_png("完成2.png");
 
     //获得
-    background = gtk_image_new_from_surface(surfacebackground);
-    background3 = gtk_image_new_from_surface(surfacebackground3);
+    background1 = gtk_image_new_from_surface(surfacebackground1);
+    background2 = gtk_image_new_from_surface(surfacebackground2);
+
     biaoji = gtk_image_new_from_surface(surfacebiaoji);
     next = gtk_image_new_from_surface(surfacenext);
     addclose = gtk_image_new_from_surface(surfaceclose);
     done = gtk_image_new_from_surface(surfacedone);
-    done2= gtk_image_new_from_surface(surfacedone2);
+    done2 = gtk_image_new_from_surface(surfacedone2);
 
 }
 
@@ -80,62 +83,67 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //完成
 static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
+
     struct add_friend_info *p = data;
     CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
     gtk_widget_destroy(addwindow);
 }
-static gint done2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-//    struct add_friend_info *p = data;
-//    CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
-//    gtk_widget_destroy(addwindow);
-}
+//
+//static gint done2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+//{
+////    struct add_friend_info *p = data;
+////    CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
+////    gtk_widget_destroy(addwindow);
+//}
 
 static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    struct add_friend_info *p = data;
+        struct add_friend_info *p = data;
     GtkEntryBuffer *buf=gtk_entry_get_buffer(yanzhengxinxi);
     p->note=gtk_entry_buffer_get_text(buf);
-    gtk_widget_hide(addlayout2);
-    addlayout3 = gtk_fixed_new();
-    create_surface();
-    gtk_fixed_put(GTK_FIXED(addlayout3), background3, 0, 0);
-
+//    create_surface();
+//    gtk_fixed_put(GTK_FIXED(addlayout2), background3, 0, 0);
+//
     done_event_box = BuildEventBox(done,
-                                   G_CALLBACK(done2_button_release_event),
+                                   NULL,
                                    NULL,
                                    NULL,
                                    G_CALLBACK(done_button_release_event),
                                    NULL,
                                    p);
-//    closebut_event_box = BuildEventBox(
-//            closebut,
-//            G_CALLBACK(closebut_button_press_event),
-//            G_CALLBACK(closebut_enter_notify_event),
-//            G_CALLBACK(closebut_leave_notify_event),
-//            G_CALLBACK(closebut_button_release_event),
-//            NULL);
-    gtk_fixed_put(GTK_FIXED(addlayout3), done_event_box, 400, 200);
-    gtk_container_add(GTK_CONTAINER(addframelayout), addlayout3);
-    gtk_widget_show_all(addlayout3);
+
+//
+//    gtk_fixed_put(GTK_FIXED(addlayout2), done_event_box, 400, 200);
+//  //  gtk_container_add(GTK_CONTAINER(addframelayout), addlayout3);
+//    gtk_widget_show_all(addlayout2);
+    //gtk_widget_destroy(addlayout2);
+    //gtk_widget_hide(addlayout2);
+
+    background3 = gtk_image_new_from_surface(surfacebackground3);
+    addclose = gtk_image_new_from_surface(surfaceclose);
+
+    gtk_fixed_put(GTK_FIXED(addlayout2),background3, 183, 0);
+    gtk_fixed_put(GTK_FIXED(addlayout2),addclose, 519, 0);
+    gtk_fixed_put(GTK_FIXED(addlayout2),done_event_box, 400, 200);
+    //gtk_container_add(GTK_CONTAINER (addframelayout), addlayout2);
+    gtk_widget_show_all(addframelayout);
 
     return 0;
 }
 
-
+//第2步put图片
 gboolean first(gpointer user_data)
 {
-    addlayout2 = gtk_fixed_new();
-    surfacebackground0 = cairo_image_surface_create_from_png("查找2.png");
-    background0 = gtk_image_new_from_surface(surfacebackground0);
 
-    gtk_fixed_put(GTK_FIXED(addlayout2), background0, 0, 0);
     return FALSE;
 }
 
 
 gboolean putimage(gpointer user_data)
 {
+    addlayout2 = gtk_fixed_new();
+    gtk_fixed_put(GTK_FIXED(addlayout2), background2, 0, 0);
+
     struct add_friend_info *p = user_data;
     static cairo_t *cr;
     cairo_surface_t *surface;
@@ -166,7 +174,7 @@ gboolean putimage(gpointer user_data)
 
     yanzhengxinxi = gtk_entry_new();
     //yanzhengxinxi=GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
-    gtk_text_view_set_wrap_mode(yanzhengxinxi, GTK_WRAP_WORD_CHAR);//自动换行
+    //gtk_entry_set_wrap_mode(yanzhengxinxi, GTK_WRAP_WORD_CHAR);//自动换行
 
     gtk_widget_set_size_request(yanzhengxinxi, 220, 90);//验证信息窗口大小
     gtk_fixed_put(GTK_FIXED(addlayout2), yanzhengxinxi, 210, 75);//位置
@@ -196,13 +204,28 @@ gboolean putimage(gpointer user_data)
     create_surface();
 
 
-    close_event_box2 = BuildEventBox(addclose, NULL, NULL, NULL, G_CALLBACK(close_button_release_event), NULL, NULL);
-    next_enent_box2 = BuildEventBox(next, NULL, NULL, NULL, G_CALLBACK(next2_button_release_event), NULL, p);
+    close_event_box2 = BuildEventBox(
+            addclose,
+            NULL,
+            NULL,
+            NULL,
+            G_CALLBACK(close_button_release_event),
+            NULL,
+            NULL);
+    next_enent_box2 = BuildEventBox(
+            next,
+            NULL,
+            NULL,
+            NULL,
+            G_CALLBACK(next2_button_release_event),
+            NULL,
+            p);
 
     gtk_fixed_put(GTK_FIXED(addlayout2), next_enent_box2, 400, 200);
     gtk_fixed_put(GTK_FIXED(addlayout2), close_event_box2, 519, 0);
 
-    gtk_widget_hide(addlayout1);//隐藏1
+    //gtk_widget_hide(addlayout1);//隐藏1
+    gtk_widget_destroy(addlayout1);
     gtk_container_add(GTK_CONTAINER (addframelayout), addlayout2);
 
     gtk_widget_show_all(addlayout2);//显示2
@@ -212,7 +235,6 @@ gboolean putimage(gpointer user_data)
 
 int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
 {
-    g_idle_add(first, "");
     struct add_friend_info *p = (struct add_friend_info *) data;
     switch (header->packetID)
     {
@@ -257,9 +279,6 @@ int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
         };
 
 
-
-
-
     }
     return 1;
 }
@@ -275,8 +294,10 @@ static gint next_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
+//构造第一个界面的地方
 int AddFriendFun()
 {
+
     addwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     addframelayout = gtk_layout_new(NULL, NULL);
     addlayout1 = gtk_fixed_new();
@@ -289,10 +310,26 @@ int AddFriendFun()
 
 
     create_surface();
-
-    next_enent_box = BuildEventBox(next, NULL, NULL, NULL, G_CALLBACK(next_button_release_event), NULL, NULL);
-    close_event_box = BuildEventBox(addclose, NULL, NULL, NULL, G_CALLBACK(close_button_release_event), NULL, NULL);
-    gtk_fixed_put(GTK_FIXED(addlayout1), background, 0, 0);
+//第一个界面的关闭和下一步
+    next_enent_box = BuildEventBox(
+            next,
+            NULL,
+            NULL,
+            NULL,
+            G_CALLBACK(next_button_release_event),
+            NULL,
+            NULL
+    );
+    close_event_box = BuildEventBox(
+            addclose,
+            NULL,
+            NULL,
+            NULL,
+            G_CALLBACK(close_button_release_event),
+            NULL,
+            NULL
+    );
+    gtk_fixed_put(GTK_FIXED(addlayout1), background1, 0, 0);
     gtk_fixed_put(GTK_FIXED(addlayout1), biaoji, 6, 75);
     gtk_fixed_put(GTK_FIXED(addlayout1), next_enent_box, 400, 200);
     gtk_fixed_put(GTK_FIXED(addlayout1), close_event_box, 519, 0);
@@ -309,6 +346,5 @@ int AddFriendFun()
 
 
 }
-
 
 

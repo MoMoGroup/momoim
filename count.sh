@@ -1,8 +1,8 @@
 #!/bin/bash
 echo '用户名             添加    删除'
-for i in wangwenmin xia lh WardenMiao
+for i in wangwenmin xia lh WardenMiao xu
 do
-    git log --author="$i" --pretty=tformat: --numstat | gawk '{ add += $1; subs += $2; } END { printf "%15s%8s%8s\n","'$i'", add, subs }' -
+    git log --author="$i " --pretty=tformat: --numstat | gawk '{ add += $1; subs += $2; } END { printf "%15s%8s%8s\n","'$i'", add, subs }' -
 done
 #减去sqlite3库大小
 lc=$(($(wc -l server/include/sqlite3.h|cut -d\  -f1)+$(wc -l server/sqlite3.c|cut -d\  -f1)))

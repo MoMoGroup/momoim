@@ -15,7 +15,7 @@
 #include "addfriend.h"
 #include "Infomation.h"
 
-static GtkWidget *background, *headx, *search, *friend, *closebut;
+static GtkWidget *background1, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
 static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
@@ -132,7 +132,7 @@ static void create_surfaces()
     surfaceclose52 = cairo_image_surface_create_from_png("关闭按钮2.png");
     surfaceclose53 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
-    background = gtk_image_new_from_surface(surfacemainbackgroud);
+    background1 = gtk_image_new_from_surface(surfacemainbackgroud);
     search = gtk_image_new_from_surface(surfaceresearch);
     friend = gtk_image_new_from_surface(surfacefriendimage);
     closebut = gtk_image_new_from_surface(surfaceclose51);
@@ -592,7 +592,7 @@ int MainInterFace()
 
     create_surfaces();
 
-    background_event_box = BuildEventBox(background,
+    background_event_box = BuildEventBox(background1,
             G_CALLBACK(background_button_press_event),
             NULL,
             NULL,

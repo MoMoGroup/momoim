@@ -29,7 +29,7 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
     if (leave)
         g_signal_connect(G_OBJECT(eventBox), "leave_notify_event", G_CALLBACK(leave), data);
     if (click)
-        g_signal_connect(G_OBJECT(eventBox), "click", G_CALLBACK(click), data);
+        g_signal_connect(G_OBJECT(eventBox), "clicked", G_CALLBACK(click), data);
     GdkRGBA rgba = {1, 1, 1, 0};
     gtk_widget_override_background_color(GTK_WIDGET(eventBox), GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
     gtk_container_add((GTK_CONTAINER(eventBox)), warp);

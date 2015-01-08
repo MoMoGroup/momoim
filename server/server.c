@@ -58,6 +58,8 @@ int main(int argc, char **argv)
     InitUserManager();
 
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
+    while (getchar() != 'q')
+        putchar('.');
     pthread_join(ThreadListener, NULL);
     for (i = 0; i < WORKER_COUNT; i++)
     {
