@@ -266,26 +266,29 @@ int newface()
     mminfo = gtk_image_new_from_surface(surface3);
     endwind = gtk_image_new_from_surface(surface8);
 
-    newbackground_event_box = BuildEventBox(
-            background,
-            G_CALLBACK(newbackground_button_press_event),
-            NULL, NULL, NULL, NULL);
+    newbackground_event_box = BuildEventBox(background,
+                                            G_CALLBACK(newbackground_button_press_event),
+                                            NULL,
+                                            NULL,
+                                            NULL,
+                                            NULL,
+                                            NULL);
 
-    zhuce_event_box = BuildEventBox(
-            mminfo,
-            G_CALLBACK(zhuce_button_press_event),
-            G_CALLBACK(zhuce_enter_notify_event),
-            G_CALLBACK(zhuce_leave_notify_event),
-            G_CALLBACK(zhuce_button_release_event),
-            NULL);
+    zhuce_event_box = BuildEventBox(mminfo,
+                                    G_CALLBACK(zhuce_button_press_event),
+                                    G_CALLBACK(zhuce_enter_notify_event),
+                                    G_CALLBACK(zhuce_leave_notify_event),
+                                    G_CALLBACK(zhuce_button_release_event),
+                                    NULL,
+                                    NULL);
 
-    closebut_event_box = BuildEventBox(
-            endwind,
-            G_CALLBACK(closebut_button_press_event),
-            G_CALLBACK(closebut_enter_notify_event),
-            G_CALLBACK(closebut_leave_notify_event),
-            G_CALLBACK(closebut_button_release_event),
-            NULL);
+    closebut_event_box = BuildEventBox(endwind,
+                                       G_CALLBACK(closebut_button_press_event),
+                                       G_CALLBACK(closebut_enter_notify_event),
+                                       G_CALLBACK(closebut_leave_notify_event),
+                                       G_CALLBACK(closebut_button_release_event),
+                                       NULL,
+                                       NULL);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), newbackground_event_box, 0, 0);//起始坐标
     gtk_widget_set_size_request(GTK_WIDGET(background), 500, 500);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), zhuce_event_box, 20, 440);

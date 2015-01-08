@@ -631,28 +631,24 @@ int MainInterFace()
 
     create_surfaces();
 
-    background_event_box = BuildEventBox(
-            background,
-            G_CALLBACK(background_button_press_event),
-            NULL, NULL, NULL, NULL);
+    background_event_box = BuildEventBox(background,
+                                         G_CALLBACK(background_button_press_event),
+                                         NULL,
+                                         NULL,
+                                         NULL,
+                                         NULL,
+                                         NULL);
 
-    closebut_event_box = BuildEventBox(
-            closebut,
-            G_CALLBACK(closebut_button_press_event),
-            G_CALLBACK(closebut_enter_notify_event),
-            G_CALLBACK(closebut_leave_notify_event),
-            G_CALLBACK(closebut_button_release_event),
-            NULL);
+    closebut_event_box = BuildEventBox(closebut,
+                                       G_CALLBACK(closebut_button_press_event),
+                                       G_CALLBACK(closebut_enter_notify_event),
+                                       G_CALLBACK(closebut_leave_notify_event),
+                                       G_CALLBACK(closebut_button_release_event),
+                                       NULL,
+                                       NULL);
 
     search = gtk_image_new_from_surface(surfaceresearch);
-    search_event_box = BuildEventBox(
-            search,
-            NULL,
-            NULL,
-            NULL,
-            G_CALLBACK(search_button_release_event),
-            NULL
-    );
+    search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
 
 
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
@@ -661,13 +657,13 @@ int MainInterFace()
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);
     loadinfo();
 
-    headx_event_box = BuildEventBox(
-            headx,
-            G_CALLBACK(headx_button_press_event),
-            G_CALLBACK(headx_enter_notify_event),
-            G_CALLBACK(headx_leave_notify_event),
-            G_CALLBACK(headx_button_release_event),
-            NULL);
+    headx_event_box = BuildEventBox(headx,
+                                    G_CALLBACK(headx_button_press_event),
+                                    G_CALLBACK(headx_enter_notify_event),
+                                    G_CALLBACK(headx_leave_notify_event),
+                                    G_CALLBACK(headx_button_release_event),
+                                    NULL,
+                                    NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
 
 

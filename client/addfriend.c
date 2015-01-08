@@ -100,14 +100,13 @@ static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event,
     create_surface();
     gtk_fixed_put(GTK_FIXED(addlayout3), background3, 0, 0);
 
-    done_event_box = BuildEventBox(
-            done,
-            G_CALLBACK(done2_button_release_event),
-            NULL,
-            NULL,
-            G_CALLBACK(done_button_release_event),
-            p
-    );
+    done_event_box = BuildEventBox(done,
+                                   G_CALLBACK(done2_button_release_event),
+                                   NULL,
+                                   NULL,
+                                   G_CALLBACK(done_button_release_event),
+                                   NULL,
+                                   p);
 //    closebut_event_box = BuildEventBox(
 //            closebut,
 //            G_CALLBACK(closebut_button_press_event),
@@ -196,20 +195,8 @@ gboolean putimage(gpointer user_data)
     create_surface();
 
 
-    close_event_box2 = BuildEventBox(
-            addclose,
-            NULL,
-            NULL,
-            NULL,
-            G_CALLBACK(close_button_release_event),
-            NULL
-    );
-    next_enent_box2 = BuildEventBox(
-            next,
-            NULL, NULL,
-            NULL,
-            G_CALLBACK(next2_button_release_event),
-            p);
+    close_event_box2 = BuildEventBox(addclose, NULL, NULL, NULL, G_CALLBACK(close_button_release_event), NULL, NULL);
+    next_enent_box2 = BuildEventBox(next, NULL, NULL, NULL, G_CALLBACK(next2_button_release_event), NULL, p);
 
     gtk_fixed_put(GTK_FIXED(addlayout2), next_enent_box2, 400, 200);
     gtk_fixed_put(GTK_FIXED(addlayout2), close_event_box2, 519, 0);
@@ -230,7 +217,7 @@ int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
     {
         case CRP_PACKET_OK:
         {
-            log_info("请求添加", "收到OKBAO\n");
+            log_info("更新成功", "OKBAO\n");
             return 0;
         };
 
@@ -333,22 +320,8 @@ int AddFriendFun()
 
     create_surface();
 
-    next_enent_box = BuildEventBox(
-            next,
-            NULL,
-            NULL,
-            NULL,
-            G_CALLBACK(next_button_release_event),
-            NULL
-    );
-    close_event_box = BuildEventBox(
-            addclose,
-            NULL,
-            NULL,
-            NULL,
-            G_CALLBACK(close_button_release_event),
-            NULL
-    );
+    next_enent_box = BuildEventBox(next, NULL, NULL, NULL, G_CALLBACK(next_button_release_event), NULL, NULL);
+    close_event_box = BuildEventBox(addclose, NULL, NULL, NULL, G_CALLBACK(close_button_release_event), NULL, NULL);
     gtk_fixed_put(GTK_FIXED(addlayout1), background, 0, 0);
     gtk_fixed_put(GTK_FIXED(addlayout1), biaoji, 6, 75);
     gtk_fixed_put(GTK_FIXED(addlayout1), next_enent_box, 400, 200);
