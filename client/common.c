@@ -8,7 +8,7 @@
 #include <string.h>
 #include <pwd.h>
 #include <protocol/info/Data.h>
-#include <t1tables.h>
+#include <logger.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
@@ -188,6 +188,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
 {
     CRPPacketInfoData *infodata = CRPInfoDataCast(data);
+    log_info("IN FINDNAME","%s\n", infodata->info.nickName);
     char filaname[256];
     HexadecimalConversion(filaname, key);//计算一个文件名
     //0存在，1不存在

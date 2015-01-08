@@ -74,8 +74,6 @@ int MessageLoopFunc()
             p = prev->next;
             if (p->sessionid == header->sessionID)
             {
-                log_info("MSG", "Processing session %u\n", p->sessionid);
-                flag = p->fn(header, p->data);
                 break;
 
             }
@@ -84,6 +82,12 @@ int MessageLoopFunc()
 
         }
         pthread_rwlock_unlock(&lock);//取消锁
+
+        if(prev->next)
+        {
+            log_info("MSG", "Processing session %u\n", p->sessionid);
+            flag = p->fn(header, p->data);
+        }
 
         if (flag == 0)
         {

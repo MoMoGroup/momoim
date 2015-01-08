@@ -28,3 +28,4 @@ extern friendinfo *friendinfohead;
 extern CRPContext sockfd;
 extern UserInfo CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;
+extern int UpFriendList(void *data);

@@ -20,6 +20,7 @@ SET(CLIENT_SOURCE_FILE
     common.c
     Infomation.c
     addfriend.c
+    UpdataFriendList.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)

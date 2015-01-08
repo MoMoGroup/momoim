@@ -20,6 +20,7 @@
 #include "MainInterface.h"
 #include "PopupWinds.h"
 #include "common.h"
+#include "UpdataFriendList.h"
 
 pthread_t ThreadKeepAlive;
 
@@ -29,22 +30,9 @@ UserGroup *group;
 UserInfo CurrentUserInfo;
 gchar *uidname;
 FILE *fp;
-//
-//typedef struct friendinfo {
-//    uint32_t sessionid;
-//    int flag;
-//    //用来判断是否接受成功
-//    UserInfo user;
-//    FILE *fp;
-//
-//    struct friendinfo *next;
-//} friendinfo;
 
 
 friendinfo *friendinfohead;
-//
-//
-//friendinfo pnode;
 
 
 
@@ -97,24 +85,38 @@ gboolean postMessage(gpointer user_data)
     if( packet->messageType==UMT_NEW_FRIEND )
     {
         popup("添加请求","用户请求添加你为好友");
-        CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送
+        CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
     }
     return 0;
 }
 
+int UpFriendList(void *data)//更新好友列表
+{
+    //第一步
+    upda_first(data);
+    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
+
+    log_info("NEWfriend nickname","%s\n", infodata->info.nickName);
+//    treeView = (GtkTreeView *) gtk_tree_view_new_with_model(upda_first(data));//list
+    //第2步
+    //第3步
+
+}
 //接收新添加好友资料的，
 int new_friend_info(CRPBaseHeader *header,void *data)
 {
-    switch (header->packetID)
-    {
-        case CRP_PACKET_INFO_DATA: //用户资料回复
-        {
+    log_info("用户资料回复开始", "\n");
+    //switch (header->packetID)
+  //  {
+        //case CRP_PACKET_INFO_DATA: //用户资料回复
+  //      {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
             //infodata->info;//昵称，性别等用户资料
+            log_info("用户资料回复，昵称", "%s\n",infodata->info.nickName);
             FindImage(infodata->info.icon, data, UpFriendList);//判断是否有头像
             return 0;//0删除
-        }
-    }
+   //     }
+ //   }
 }
 
 int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
@@ -143,6 +145,8 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_FRIEND_NOTIFY://对方同意之后收到的包
         {
             CRPPacketFriendNotify *data= CRPFriendNotifyCast(header);
+           // CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+            log_info("收到对方同意消息","\n");
             log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n",data->type);
 
             UserGroup* grou= UserFriendsGroupGet(friends, UGI_DEFAULT);//friends,好友分组信息
@@ -154,9 +158,16 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             break;
 
         };
-        default:
-            log_info("服务器消息异常", "%u\n", header->packetID);
+        case CRP_PACKET_OK:
+        {
+            log_info("服务器OK包", "%x\n", header->packetID);
             return 1;
+        };
+        default:
+        {
+            log_info("服务器其它消息消息", "%x\n", header->packetID);
+            return 1;
+        }
     }
 }
 
