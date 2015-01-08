@@ -43,6 +43,16 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
             CRPFriendNotifySend(user->sockfd, session, FNT_FRIEND_MOVE, user->info->uid, UGI_PENDING, UGI_DEFAULT);
             UserDrop(reqUser);
         }
+
+        UserMessage message = {
+                .messageType=UMT_FRIEND_ACCEPT,
+                .messageLen=0,
+                .from=user->info->uid,
+                .to=packet->uid,
+                .time=time(NULL)
+        };
+        PostMessage(&message);
+
         //处理数据包发送者(接受添加好友者)好友列表
         UserFriends *myFriends = user->info->friends;
         lock = user->info->friendsLock;
@@ -80,14 +90,6 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         CRPOKSend(user->sockfd, session);
         CRPFriendNotifySend(user->sockfd, 0, FNT_FRIEND_NEW, packet->uid, 0, UGI_DEFAULT);
 
-        UserMessage message = {
-                .messageType=UMT_FRIEND_ACCEPT,
-                .messageLen=0,
-                .from=user->info->uid,
-                .to=packet->uid,
-                .time=time(NULL)
-        };
-        PostMessage(&message);
     }
     else
     {

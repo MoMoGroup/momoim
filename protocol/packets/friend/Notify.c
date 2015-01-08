@@ -3,7 +3,7 @@
 
 CRPPacketFriendNotify *CRPFriendNotifyCast(CRPBaseHeader *base)
 {
-    return (CRPPacketFriendNotify *) base;
+    return (CRPPacketFriendNotify *) base->data;
 }
 
 int CRPFriendNotifySend(CRPContext context, uint32_t sessionID, FriendNotifyType type, uint32_t uid, uint8_t fromGid, uint8_t toGid)

@@ -10,9 +10,15 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
     {
         MessageFile *file = UserMessageFileGet(user->info->uid);
         UserInfo *info = UserInfoGet(user->info->uid);
-
+        if (MessageFileSeek(file, info->lastlogin / (24 * 60 * 60)))
+        {
+            CRPOKSend(user->sockfd, session);
+        }
+        else
+        {
+            CRPFailureSend(user->sockfd, session, EFAULT, "无法找到下线时间.");
+        }
         //PostMessage(msg);
-        CRPOKSend(user->sockfd, session);
         //free(msg);
         UserMessageFileDrop(user->info->uid);
 
