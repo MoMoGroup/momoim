@@ -79,9 +79,9 @@ gboolean postMessage(gpointer user_data)
 
     if (packet->messageType == UMT_NEW_FRIEND)
     {
-        popup("添加请求", "用户请求添加你为好友");
-
-        CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
+       // popup("添加请求", "用户请求添加你为好友");
+        friend_request_popup();
+//        CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
     }
     return 0;
 }

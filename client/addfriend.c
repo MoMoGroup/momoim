@@ -344,7 +344,52 @@ int AddFriendFun()
 
     gtk_widget_show_all(addwindow);
 
-
 }
 
 
+int friend_request_popup()
+{
+    GtkWidget *popupcancel,*popupdone,*popupbackground;
+
+    GtkWidget *popupwindow,*popupframelayout,*popuplayout;
+    cairo_t *surfacecancel,*surfacedone;
+    cairo_t *surfacepopupbackground;
+
+    popuplayout = gtk_fixed_new();
+    popupframelayout = gtk_layout_new(NULL, NULL);
+    popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
+    gtk_window_set_position(GTK_WINDOW(popupwindow), GTK_WIN_POS_CENTER);//窗口位置
+    gtk_window_set_resizable(GTK_WINDOW (popupwindow), FALSE);//固定窗口大小
+    gtk_window_set_decorated(GTK_WINDOW(popupwindow), FALSE);//去掉边框
+    gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
+
+
+    surfacecancel = cairo_image_surface_create_from_png("取消.png");
+    surfacedone = cairo_image_surface_create_from_png("确定.png");
+    surfacepopupbackground = cairo_image_surface_create_from_png("提示框.png");
+   //获得
+    popupcancel = gtk_image_new_from_surface(surfacecancel);
+    popupdone = gtk_image_new_from_surface(surfacedone);
+    popupbackground = gtk_image_new_from_surface(surfacepopupbackground);
+
+
+    gtk_fixed_put(GTK_FIXED(popuplayout), popupbackground, 0, 0);
+
+    //gtk_fixed_put(GTK_FIXED(popuplayout), popupcancel, 100, 80);
+    //gtk_fixed_put(GTK_FIXED(popuplayout), popupdone, 170, 80);
+
+
+    gtk_container_add(GTK_CONTAINER (popupwindow), popupframelayout);
+    gtk_container_add(GTK_CONTAINER (popupframelayout), popuplayout);
+
+    gtk_widget_show_all(popupwindow);
+
+
+
+
+
+
+
+    return 0;
+}

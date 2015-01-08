@@ -397,6 +397,7 @@ gboolean destoryall(gpointer user_data)
         }
         free(p);
     }
+    pthread_cancel(ThreadKeepAlive);
     g_idle_add(loadloginLayout, NULL);
     popup("异地登录","您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
     return FALSE;
