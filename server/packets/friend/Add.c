@@ -2,7 +2,6 @@
 #include <asm-generic/errno-base.h>
 #include <stdlib.h>
 #include <string.h>
-#include <logger.h>
 #include "run/user.h"
 
 int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAdd *packet)
@@ -23,18 +22,16 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
             {
                 if (group->friends[j] == packet->uid)
                 {
-                    pthread_rwlock_unlock(user->info->friendsLock);
                     if (group->groupId == UINT8_MAX)//如果好友请求已发出正在等待处理
                     {
-                        pthread_rwlock_unlock(user->info->friendsLock);
                         CRPFailureSend(user->sockfd, session, EAGAIN, "已有添加好友请求");
-                        return 1;
                     }
                     else
                     {
                         CRPFailureSend(user->sockfd, session, EEXIST, "好友已存在");
-                        return 1;
                     }
+                    pthread_rwlock_unlock(user->info->friendsLock);
+                    return 1;
                 }
             }
         }
@@ -57,6 +54,7 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
             pthread_rwlock_unlock(user->info->friendsLock);
             return 1;
         }
+        CRPFriendNotifySend(user->sockfd, session, FNT_FRIEND_NEW, packet->uid, 0, UGI_PENDING);
 
 
         pthread_rwlock_unlock(user->info->friendsLock);
