@@ -17,6 +17,10 @@
 #include <protocol/info/Data.h>
 #include <imcommon/friends.h>
 #include <protocol/message/Normal.h>
+#include <lber.h>
+#include <math.h>
+#include <cairo-script-interpreter.h>
+#include <grp.h>
 #include "MainInterface.h"
 #include "PopupWinds.h"
 #include "common.h"
@@ -97,15 +101,12 @@ gboolean postMessage(gpointer user_data)
     if( packet->messageType==UMT_NEW_FRIEND )
     {
         popup("添加请求","用户请求添加你为好友");
-        CRPFriendAcceptSend(sockfd, 1, packet->uid);
+        CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送
     }
     return 0;
 }
-int shuaxin(void *data)
-{
 
-}
-
+//接收新添加好友资料的，
 int newfriend(CRPBaseHeader *header,void *data)
 {
     switch (header->packetID)
@@ -113,8 +114,8 @@ int newfriend(CRPBaseHeader *header,void *data)
         case CRP_PACKET_INFO_DATA: //用户资料回复
         {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-            infodata->info;//放到结构体里，保存昵称，性别等资料
-            FindImage(infodata->info.icon, infodata, shuaxin);
+            //infodata->info;//昵称，性别等用户资料
+            FindImage(infodata->info.icon, header, UpFriendList);//判断是否有头像
             return 0;//0删除
         }
     }
@@ -143,17 +144,15 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             return 1;
         };
             //haoyou通知
-        case CRP_PACKET_FRIEND_NOTIFY:
+        case CRP_PACKET_FRIEND_NOTIFY://对方同意之后收到的包
         {
             CRPPacketFriendNotify *data= CRPFriendNotifyCast(header);
-            log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n",data->type);
 
             UserGroup* grou= UserFriendsGroupGet(friends, UGI_DEFAULT);//friends,好友分组信息
-
             UserFriendsUserAdd(grou, data->uid);
 
             session_id_t sessionid = CountSessionId();
-            AddMessageNode(sessionid, newfriend, NULL);
+            AddMessageNode(sessionid, newfriend, NULL);//注册一个会话，接收新添加好友资料
             CRPInfoRequestSend(sockfd,sessionid , data->uid); //请求用户资料
 
         };
@@ -177,6 +176,10 @@ int mysockfd()
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
+
+//    .sin_port=htons(8014)
+//};
+//inet_aton("192.168.8.143",&server_addr.sin_addr);
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
         perror("Connect");

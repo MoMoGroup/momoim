@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <cairo-script-interpreter.h>
 #include <protocol/base.h>
+#include <imcommon/friends.h>
 #include "chart.h"
 #include "common.h"
 #include "addfriend.h"
@@ -33,6 +34,57 @@ enum
     PIXBUF_COL = 0,
     FRIENDUID_COL = 1,
 };
+
+int UpFriendList(void *data)//更新好友列表
+{
+    cairo_surface_t *surface;
+
+    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
+    char filename[256];
+    HexadecimalConversion(filename,infodata->info.icon);
+    //加载一个图片
+    cairo_surface_t *new_friend_surface;
+    new_friend_surface = cairo_image_surface_create_from_png(filename);
+    int w = cairo_image_surface_get_width(new_friend_surface);
+    int h = cairo_image_surface_get_height(new_friend_surface);
+//创建画布
+    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
+    //创建画笔
+    cr = cairo_create(surface);
+    cairo_save(cr);
+    cairo_arc(cr, 30, 30, 30, 0, M_PI * 2);
+    cairo_clip(cr);
+    //缩放
+    cairo_scale(cr, 60.0 / w, 60.0 / h);
+    //把画笔和图片相结合。
+    cairo_set_source_surface(cr, new_friend_surface, 0, 0);
+    //把图用画笔画在画布中
+    cairo_paint(cr);
+    cairo_restore(cr);
+    //设置源的颜色
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    //从图像的w+10,30区域开始加入字体
+    cairo_move_to(cr, 90, 40);
+    cairo_set_font_size(cr, 20);
+    cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+
+    cairo_show_text(cr, infodata->info.nickName);
+
+    int num=friends->groups[0].friendCount;//分组好友数
+
+    pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
+    gtk_tree_store_append(store, &iter2, &iter1);//
+    gtk_tree_store_set(store, &iter2,
+            PIXBUF_COL, pixbuf,
+            FRIENDUID_COL, friends->groups[0].friends[num],
+            -1);
+    g_object_unref(pixbuf);
+
+    cairo_destroy(cr);
+    cairo_surface_destroy(new_friend_surface);
+    return GTK_TREE_MODEL(store);
+
+}
 
 GtkTreeModel *createModel()
 {
