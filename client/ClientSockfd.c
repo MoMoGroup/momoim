@@ -155,11 +155,11 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             session_id_t sessionid = CountSessionId();
             AddMessageNode(sessionid, newfriend, NULL);
             CRPInfoRequestSend(sockfd,sessionid , data->uid); //请求用户资料
-
+            break;
         };
         default:
             log_info("服务器消息异常", "%u\n", header->packetID);
-            return 0;
+            return 1;
     }
 }
 
@@ -267,9 +267,10 @@ int mysockfd()
                     log_info("CRP_PACKET_INFO_DATA", "111\n");
                     if (header->sessionID < 10000)//小于10000,用户的自己的
                     {
+
                         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
                         CurrentUserInfo = infodata->info;//放到结构提里，保存昵称，性别等资料
-
+                        log_info("user nickname:", "%s\n", infodata->info.nickName);
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
                         if ((const char *) infodata != header->data)

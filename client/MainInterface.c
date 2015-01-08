@@ -325,6 +325,17 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 
 }
 
+gboolean show_text(void *data)
+{
+    struct RECVImageMessagedata *recv_image_message_data
+            = (struct RECVImageMessagedata *) data;
+    ShoweRmoteText(recv_image_message_data->message_data, recv_image_message_data->userinfo,
+            recv_image_message_data->charlen);
+    free(recv_image_message_data->message_data);
+    free(recv_image_message_data);
+    return FALSE;
+}
+
 int deal_with_recv_message(CRPBaseHeader *header, void *data)
 {
     struct RECvPictureMessageReloadingData *recv_message = (struct RECvPictureMessageReloadingData *) data;
@@ -360,10 +371,7 @@ int deal_with_recv_message(CRPBaseHeader *header, void *data)
             recv_message->image_message_data->imagecount--;
             if (recv_message->image_message_data->imagecount == 0)
             {
-                ShoweRmoteText(recv_message->image_message_data->message_data, recv_message->image_message_data->userinfo,
-                        recv_message->image_message_data->charlen);
-                free(recv_message->image_message_data->message_data);
-                free(recv_message->image_message_data);
+                g_idle_add(show_text, recv_message->image_message_data);
                 ret = 0;
             }
             free(recv_message);
@@ -403,14 +411,24 @@ int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
             struct RECvPictureMessageReloadingData *recvimagemessge
                     = (struct RECvPictureMessageReloadingData *) malloc(sizeof(struct RECvPictureMessageReloadingData));
             i++;
+            recvimagemessge->image_message_data->imagecount++;
             memcpy(strdest, &recv_text[i], 16);
             HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
+//
+//            if ((access(filename, 0)) == 0)
+//            {
+            recvimagemessge->image_message_data->imagecount--;
+//
+//            }
+//            else
+//            {
             recvimagemessge->fp = (fopen(filename, "w"));
             session_id = CountSessionId();
             recvimagemessge->image_message_data = image_message_data;
             AddMessageNode(session_id, deal_with_recv_message, recvimagemessge);
             CRPFileRequestSend(sockfd, session_id, 0, recv_text + i);
-            recvimagemessge->image_message_data->imagecount++;
+//            }
+
             i = i + 16;
         }
 
