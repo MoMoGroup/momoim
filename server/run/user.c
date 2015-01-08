@@ -287,6 +287,10 @@ int OnlineUserDelete(POnlineUser user)
     if (user->info)
     {
         log_info("UserManager", "User %d offline.\n", user->info->uid);
+        UserInfo *info = UserInfoGet(user->info->uid);
+        info->lastlogin = (uint32_t) (time(NULL) / (24 * 60 * 60));
+        UserInfoSave(info->uid, info);
+        UserInfoFree(info);
         broadcastNotify(user, FNT_FRIEND_OFFLINE);
         UserFriendsDrop(user->info->uid);
 
