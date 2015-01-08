@@ -9,7 +9,6 @@
 #include <pwd.h>
 #include <protocol/info/Data.h>
 #include <t1tables.h>
-#include <lber.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 

@@ -39,12 +39,6 @@ extern void DeleteMessageNode(uint32_t sessid);
 
 //extern UserFriends *friends;
 
-struct RECvPictureMessageReloadingData
-{
-    FILE *fp;
-    struct RECVImageMessagedata *image_message_data;
-};
-
 struct RECVImageMessagedata
 {
     int imagecount;
