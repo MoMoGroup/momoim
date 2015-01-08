@@ -1,6 +1,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <asm-generic/errno-base.h>
+#include <stdlib.h>
 #include "protocol.h"
 #include "run/user.h"
 #include "datafile/file.h"
@@ -25,17 +26,19 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
         else
         {
             size_t len = DataFilePathLength;
-            char path[len];
+            char *path = (char *) malloc(len);
             DataFilePath(fop->key, path);
 
             if (rename(fop->tmpfile, path))
             {
-                CRPFailureSend(user->sockfd, session, EFAULT, "文件移动失败");
+                perror("rename");
+                CRPFailureSend(user->sockfd, session, EFAULT, "文件移动失败\n");
             }
             else
             {
                 CRPOKSend(user->sockfd, session);
             }
+            free(path);
         }
         UserOperationUnregister(user, op);
     }

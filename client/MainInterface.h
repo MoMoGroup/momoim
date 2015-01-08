@@ -10,7 +10,7 @@ extern int DeleteEvent();
 
 extern int mysockfd();
 
-extern int maininterface();
+extern int MainInterFace();
 
 //extern gboolean backttologinLayout(gpointer user_data);
 
@@ -27,9 +27,9 @@ gboolean DestroyLayout(gpointer user_data);
 extern UserFriends *friends;
 extern UserGroup *group;
 
-extern int mainchart(friendinfo *friendinfonode);
+extern int MainChart(friendinfo *friendinfonode);
 
-extern void recd_server_msg(const gchar *rcvd_text, u_int32_t recd_uid);
+extern void RecdServerMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid);
 
 extern int MessageLoopFunc();
 
@@ -38,3 +38,17 @@ extern void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *
 extern void DeleteMessageNode(uint32_t sessid);
 
 //extern UserFriends *friends;
+
+struct RECvPictureMessageReloadingData
+{
+    FILE *fp;
+    struct RECVImageMessagedata *image_message_data;
+};
+
+struct RECVImageMessagedata
+{
+    int imagecount;
+    int charlen;
+    char *message_data;
+    friendinfo *userinfo;
+};

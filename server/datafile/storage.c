@@ -2,6 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include "datafile/file.h"
 
 const uint8_t DataFilePathLength = sizeof(DATA_FILE_ROOT_PATH) +    //"files/"
@@ -21,6 +22,8 @@ int DataFilePath(unsigned char *key, char *buf)
         if (i < DATAFILE_DEPTH_LEVEL)
         {
             *p++ = '/';
+            *p = 0;
+            mkdir(buf, 0700);
         }
     }
     *p = 0;

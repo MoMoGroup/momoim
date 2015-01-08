@@ -81,7 +81,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         CRPFriendNotifySend(user->sockfd, 0, FNT_FRIEND_NEW, packet->uid, 0, UGI_DEFAULT);
 
         UserMessage message = {
-                .messageType=UMT_NEW_FRIEND,
+                .messageType=UMT_FRIEND_ACCEPT,
                 .messageLen=0,
                 .from=user->info->uid,
                 .to=packet->uid,

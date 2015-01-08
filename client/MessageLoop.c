@@ -67,7 +67,7 @@ int MessageLoopFunc()
     {
         header = CRPRecv(sockfd);
         log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
-        pthread_rwlock_rdlock(&lock);//写锁定
+        pthread_rwlock_rdlock(&lock);//读锁定
         messageloop *prev = &messagehead, *p;
         int flag = 1;
         while (prev->next)

@@ -56,7 +56,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             storeOperation->remainLength = packet->length;
             storeOperation->seq = 0;
 
-            memcpy(storeOperation->tmpfile, "/tmp/m0MoXXXXXX", sizeof("/tmp/m0MoXXXXXX"));
+            memcpy(storeOperation->tmpfile, "temp/m0MoXXXXXX", sizeof("temp/m0MoXXXXXX"));
             mkstemp(storeOperation->tmpfile);
             storeOperation->fd = creat(storeOperation->tmpfile, 0600);
             if (storeOperation->fd < 0)

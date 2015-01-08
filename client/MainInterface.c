@@ -6,6 +6,9 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
+#include <sys/stat.h>
+#include <cairo-script-interpreter.h>
+#include <protocol/base.h>
 #include "chart.h"
 #include "common.h"
 #include "addfriend.h"
@@ -100,7 +103,7 @@ GtkTreeModel *createModel()
             cairo_show_text(cr, friendname);
 
             pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
-            gtk_tree_store_append(store, &iter2, &iter1);
+            gtk_tree_store_append(store, &iter2, &iter1);//
             gtk_tree_store_set(store, &iter2,
                     PIXBUF_COL, pixbuf,
                     FRIENDUID_COL, friends->groups[i].friends[j],
@@ -308,7 +311,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
             {
                 if (friendinforear->chartwindow == NULL)
                 {
-                    mainchart(friendinforear);
+                    MainChart(friendinforear);
                 }
                 else
                 {
@@ -322,10 +325,111 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 
 }
 
-void recd_server_msg(const gchar *rcvd_text, uint32_t recd_uid)
+int deal_with_recv_message(CRPBaseHeader *header, void *data)
+{
+    struct RECvPictureMessageReloadingData *recv_message = (struct RECvPictureMessageReloadingData *) data;
+    int ret = 1;
+    switch (header->packetID)
+    {
+        case CRP_PACKET_FAILURE:
+        {
+            CRPPacketFailure *infodata = CRPFailureCast(header);
+            log_info("FAILURE reason", infodata->reason);
+            fclose(recv_message->fp);
+            free(recv_message);
+            return 0;
+        };
+        case  CRP_PACKET_FILE_DATA_START:
+        {
+            log_info("Recv Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
+            CRPOKSend(sockfd, header->sessionID);
+            break;
+        };
+        case CRP_PACKET_FILE_DATA:
+        {
+
+            CRPPacketFileData *packet = CRPFileDataCast(header);
+            fwrite(packet->data, 1, packet->length, recv_message->fp);
+            CRPOKSend(sockfd, header->sessionID);
+            break;
+        };
+        case CRP_PACKET_FILE_DATA_END:
+        {
+            fclose(recv_message->fp);
+
+            recv_message->image_message_data->imagecount--;
+            if (recv_message->image_message_data->imagecount == 0)
+            {
+                ShoweRmoteText(recv_message->image_message_data->message_data, recv_message->image_message_data->userinfo,
+                        recv_message->image_message_data->charlen);
+                free(recv_message->image_message_data->message_data);
+                free(recv_message->image_message_data);
+                ret = 0;
+            }
+            free(recv_message);
+
+            break;
+        };
+
+    }
+
+    return ret;
+}
+
+int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
+{
+    int i = 0;
+    int isimageflag = 0;
+    struct RECVImageMessagedata *image_message_data
+            = (struct RECVImageMessagedata *) malloc(sizeof(struct RECVImageMessagedata));
+    gchar *message_recv = (gchar *) malloc(charlen);
+    memcpy(message_recv, recv_text, charlen);
+    image_message_data->imagecount = 0;
+    image_message_data->message_data = message_recv;
+    image_message_data->userinfo = info;
+    image_message_data->charlen = charlen;
+    while (i < charlen)
+    {
+        if (recv_text[i] != '\0')
+        {
+            i++;
+        }
+        else
+        {
+            isimageflag = 1;
+            char filename[256] = {0};
+            char strdest[17] = {0};
+            session_id_t session_id;
+            struct RECvPictureMessageReloadingData *recvimagemessge
+                    = (struct RECvPictureMessageReloadingData *) malloc(sizeof(struct RECvPictureMessageReloadingData));
+            i++;
+            memcpy(strdest, &recv_text[i], 16);
+            HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
+            recvimagemessge->fp = (fopen(filename, "w"));
+            session_id = CountSessionId();
+            recvimagemessge->image_message_data = image_message_data;
+            AddMessageNode(session_id, deal_with_recv_message, recvimagemessge);
+            CRPFileRequestSend(sockfd, session_id, 0, recv_text + i);
+            recvimagemessge->image_message_data->imagecount++;
+            i = i + 16;
+        }
+
+    }
+    if (isimageflag == 0)
+    {
+        ShoweRmoteText(image_message_data->message_data, image_message_data->userinfo,
+                image_message_data->charlen);
+        free(message_recv);
+        return 0;
+    }
+
+    return 1;
+}
+
+void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
 {
 
-    log_info("DEBUG", "Posting Message.From %u,Text:%s\n", recd_uid, rcvd_text);
+    log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
     int uidfindflag = 0;
     friendinfo *userinfo = friendinfohead;
     while (userinfo)
@@ -344,9 +448,10 @@ void recd_server_msg(const gchar *rcvd_text, uint32_t recd_uid)
     {
         if (userinfo->chartwindow == NULL)
         {
-            mainchart(userinfo);
+            MainChart(userinfo);
         }
-        Show_remote_text(rcvd_text, userinfo);
+        image_message_recv(rcvd_text, userinfo, len);
+
     }
 }
 
@@ -409,9 +514,11 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
 
 //头像
 //鼠标点击事件
-static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
     }
@@ -420,9 +527,11 @@ static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 
 //头像
 //鼠标抬起事件
-static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         info();
     }
 
@@ -431,7 +540,8 @@ static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
 //头像
 //鼠标移动事件
-static gint headx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint headx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
     return 0;
@@ -439,7 +549,8 @@ static gint headx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 
 //头像
 //鼠标离开事件
-static gint headx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint headx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
     //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave);
     return 0;
@@ -484,7 +595,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
         {
             if (friendinforear->chartwindow == NULL)
             {
-                mainchart(friendinforear);
+                MainChart(friendinforear);
             }
             else
             {
@@ -495,36 +606,6 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 
-//右键菜单实现添加分组
-//右键菜单发送即时消息
-//static gint add_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-//{
-//
-//    gint i, j;
-//    cairo_surface_t *surface;
-//    cairo_surface_t *surfaceIcon;
-//
-//    store = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
-//
-//        surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
-//        cr = cairo_create(surface);
-//        cairo_move_to(cr, 0, 20);
-//        cairo_set_font_size(cr, 14);
-//        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-//        cairo_show_text(cr, friends->groups[i].groupName);
-//        pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
-//        gtk_tree_store_append(store, &iter1, NULL);
-//        gtk_tree_store_set(store, &iter1,
-//                PIXBUF_COL, pixbuf,
-//                FRIENDUID_COL, friends->groups[i].groupId,
-//                -1);
-//    }
-//    cairo_destroy(cr);
-//    cairo_surface_destroy(surfaceIcon);
-//    return GTK_TREE_MODEL(store);
-//
-//}
-
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data)
@@ -533,7 +614,7 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-int maininterface()
+int MainInterFace()
 {
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
@@ -572,6 +653,7 @@ int maininterface()
             G_CALLBACK(search_button_release_event),
             NULL
     );
+
 
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);

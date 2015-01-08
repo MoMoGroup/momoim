@@ -1,11 +1,15 @@
 #include <gtk/gtk.h>
 #include <stdint.h>
 #include <protocol/base.h>
-#include <cairo-script-interpreter.h>
 #include <glib-unix.h>
 #include "common.h"
+#include "ClientSockfd.h"
+#include "MainInterface.h"
 #include <string.h>
 #include <pwd.h>
+#include <ftlist.h>
+#include <protocol/info/Data.h>
+#include <t1tables.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
@@ -35,7 +39,7 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
 }
 
 
-void Md5Coding(gchar *filename, unsigned char *coding_text)
+void Md5Coding(const gchar *filename, unsigned char *coding_text)
 {
     MD5_CTX c;
     char buf[512];
@@ -92,7 +96,7 @@ int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithP
     return 0;
 }
 
-void HexadecimalConversion(char *filename,const char *strdest)
+void HexadecimalConversion(char *filename, const char *strdest) //strdest为md5值。filename是文件名
 {
     char sDest[33] = {0};
     short i;
@@ -115,4 +119,92 @@ session_id_t CountSessionId()
     ret = ++OnlySessionId;
     pthread_rwlock_unlock(&onllysessionidlock);//取消锁
     return ret;
+}
+
+
+typedef struct newfriend{
+    int  (*fn)(CRPBaseHeader *, void *data);
+    char key[16];
+    FILE *fp;
+
+};
+
+int recv_new_friend_image(CRPBaseHeader *header, void *data)
+{
+    struct newfriend *p=(struct newfriend *)data;
+
+    switch (header->packetID)
+    {
+        case CRP_PACKET_FAILURE:
+        {
+            CRPPacketFailure *infodata = CRPFailureCast(header);
+            break;
+        };
+
+        case CRP_PACKET_FILE_DATA_START:
+        {
+            CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
+
+            char filename[256];
+            HexadecimalConversion(filename, p->key);
+            p->fp = fopen(filename, "w");
+
+            CRPOKSend(sockfd, header->sessionID);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+        };
+
+        case CRP_PACKET_FILE_DATA://接受头像
+        {
+            CRPPacketFileData *packet = CRPFileDataCast(header);
+
+            fwrite(packet->data, 1, packet->length, p->fp);
+            CRPOKSend(sockfd, header->sessionID);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+        };
+        case CRP_PACKET_FILE_DATA_END://头像接受完
+        {
+
+            CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
+            fclose(p->fp);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            g_idle_add(p->fn, data);
+            free(data);
+            free(p);
+            return 0;
+        }
+
+    }
+}
+
+int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
+{
+    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
+    char filaname[256];
+    HexadecimalConversion(filaname, key);
+    //0存在，1不存在
+    if (access(filaname, F_OK))//不存在，先加载图片
+    {
+        struct newfriend *p;
+        memcpy(p->key, key, 16);
+        p->fn=fn;
+        session_id_t sessionid = CountSessionId();
+        AddMessageNode(sessionid, recv_new_friend_image, malloc(sizeof(struct newfriend)));
+        CRPFileRequestSend(sockfd, sessionid, 0, filaname);//发送用户头像请求
+    }
+    else
+    {
+        g_idle_add(fn, data);//执行更新函数
+    }
+
 }
