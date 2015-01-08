@@ -57,7 +57,7 @@ GtkTreeModel *createModel()
         gtk_tree_store_append(TreeViewListStore, &iter1, NULL);
         gtk_tree_store_set(TreeViewListStore, &iter1,
                 PIXBUF_COL, pixbuf,
-                FRIENDUID_COL, friends->groups[i].groupId,
+                FRIENDUID_COL,(uint32_t) friends->groups[i].groupId,
                 -1);
 
         g_object_unref(pixbuf);

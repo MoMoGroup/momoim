@@ -10,13 +10,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/message/Normal.h>
 #include <protocol/friend/Notify.h>
-#include <ftlist.h>
-#include <protocol/base.h>
-#include <protocol/info/Data.h>
-#include <imcommon/friends.h>
-#include <protocol/message/Normal.h>
+#include <lber.h>
 #include "MainInterface.h"
 #include "PopupWinds.h"
 #include "common.h"
@@ -33,7 +28,6 @@ FILE *fp;
 
 
 friendinfo *friendinfohead;
-
 
 
 void add_node(friendinfo *node)
@@ -80,11 +74,11 @@ gboolean postMessage(gpointer user_data)
         {
             free(packet);
         }
-     }
+    }
 
-    if( packet->messageType==UMT_NEW_FRIEND )
+    if (packet->messageType == UMT_NEW_FRIEND)
     {
-        popup("添加请求","用户请求添加你为好友");
+        popup("添加请求", "用户请求添加你为好友");
         CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
     }
     return 0;
@@ -93,30 +87,42 @@ gboolean postMessage(gpointer user_data)
 int UpFriendList(void *data)//更新好友列表
 {
     //第一步
+    //  g_idle_add(upda_first, data);
     upda_first(data);
-    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
-
-    log_info("NEWfriend nickname","%s\n", infodata->info.nickName);
 //    treeView = (GtkTreeView *) gtk_tree_view_new_with_model(upda_first(data));//list
     //第2步
     //第3步
+    return 0;
+}
+
+int friend_group_move(CRPBaseHeader *header, void *data)
+{
 
 }
 //接收新添加好友资料的，
-int new_friend_info(CRPBaseHeader *header,void *data)
+int new_friend_info(CRPBaseHeader *header, void *data)
 {
     log_info("用户资料回复开始", "\n");
-    //switch (header->packetID)
-  //  {
-        //case CRP_PACKET_INFO_DATA: //用户资料回复
-  //      {
+    switch (header->packetID)
+    {
+        case CRP_PACKET_INFO_DATA: //用户资料回复
+        {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+
+            char *mem = malloc(sizeof(CRPPacketInfoData));
+            memcmp(mem, infodata, sizeof(CRPPacketInfoData));
+
             //infodata->info;//昵称，性别等用户资料
-            log_info("用户资料回复，昵称", "%s\n",infodata->info.nickName);
-            FindImage(infodata->info.icon, data, UpFriendList);//判断是否有头像
+            log_info("用户资料回复，昵称", "%s\n", infodata->info.nickName);
+            FindImage(infodata->info.icon, infodata, UpFriendList);//判断是否有头像
+
+            if ((const char *) infodata != header->data)
+            {
+                free(header);
+            }
             return 0;//0删除
-   //     }
- //   }
+        }
+    }
 }
 
 int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
@@ -124,7 +130,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
     switch (header->packetID)
     {
 
-            //服务器通知下线
+        //服务器通知下线
         case CRP_PACKET_KICK:
         {
             g_idle_add(destoryall, NULL);
@@ -142,19 +148,45 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             return 1;
         };
             //haoyou通知
-        case CRP_PACKET_FRIEND_NOTIFY://对方同意之后收到的包
+        case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
-            CRPPacketFriendNotify *data= CRPFriendNotifyCast(header);
-           // CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-            log_info("收到对方同意消息","\n");
-            log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n",data->type);
+            CRPPacketFriendNotify *data = CRPFriendNotifyCast(header);
+            // CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+            log_info("收到对方同意消息", "\n");
+            log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n", data->type);
+            switch (data->type)
+            {
+                case FNT_FRIEND_NEW://新好友
+                {
+                    UserGroup *grou = UserFriendsGroupGet(friends, data->toGid);//friends,好友分组信息
+                    UserFriendsUserAdd(grou, data->uid);//加入这个分组
 
-            UserGroup* grou= UserFriendsGroupGet(friends, UGI_DEFAULT);//friends,好友分组信息
-            UserFriendsUserAdd(grou, data->uid);//加入这个分组
+                    if (data->toGid != UGI_PENDING)
+                    {
+                        session_id_t sessionid = CountSessionId();
+                        AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
+                        CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
+                    }
 
-            session_id_t sessionid = CountSessionId();
-            AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
-            CRPInfoRequestSend(sockfd,sessionid , data->uid); //请求用户资料
+                    break;
+                };
+                case FNT_FRIEND_MOVE:
+                {
+
+                    UserGroup *from_group = UserFriendsGroupGet(friends, data->fromGid),
+                    *to_group= UserFriendsGroupGet(friends, data->toGid);//从哪个分组来
+                    UserFriendsUserMove(from_group, to_group, data->uid);//加入这个分组
+                    session_id_t sessionid = CountSessionId();
+                    if(data->fromGid==UGI_PENDING)
+                    {
+                        AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
+                    }else{
+                        AddMessageNode(sessionid, friend_group_move, NULL);
+                    }
+                    CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
+                    break;
+                };
+            }
             break;
 
         };
@@ -170,8 +202,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         }
     }
 }
-
-
 
 
 int mysockfd()
@@ -215,7 +245,9 @@ int mysockfd()
         CRPPacketSwitchProtocol *packet = CRPSwitchProtocolCast(header);
         CRPEncryptEnable(sockfd, sendKey, packet->key, packet->iv);
         if ((void *) packet != header->data)
+        {
             free(packet);
+        }
     }
     unsigned char hash[16];
     MD5((unsigned char *) pwd, strlen(pwd), hash);

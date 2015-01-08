@@ -3,8 +3,8 @@
 #include <protocol/base.h>
 #include <glib-unix.h>
 #include "common.h"
-#include "ClientSockfd.h"
-#include "MainInterface.h"
+#include "../ClientSockfd.h"
+#include "../MainInterface.h"
 #include <string.h>
 #include <pwd.h>
 #include <protocol/info/Data.h>
@@ -187,8 +187,6 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 
 int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
 {
-    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
-    log_info("IN FINDNAME","%s\n", infodata->info.nickName);
     char filaname[256];
     HexadecimalConversion(filaname, key);//计算一个文件名
     //0存在，1不存在

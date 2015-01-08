@@ -2,65 +2,50 @@
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
 #include <math.h>
+#include <stdlib.h>
+#include <imcommon/friends.h>
 #include "common.h"
 
-enum
-{
+enum {
     PIXBUF_COL = 0,
     FRIENDUID_COL = 1,
 };
 
-upda_first(void *data)
+
+
+void upda_first(void *data)
 {
-    GtkTreeIter iter1, iter2;
-    cairo_t *cr;
-    cairo_surface_t *surface;
+    GtkTreeIter iterGroup, iterUser;
+
     GdkPixbuf *pixbuf;
-
-    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
-    char filename[256];
-    HexadecimalConversion(filename, infodata->info.icon);
-//加载一个图片
-    cairo_surface_t *new_friend_surface;
-    new_friend_surface = cairo_image_surface_create_from_png(filename);
-    int w = cairo_image_surface_get_width(new_friend_surface);
-    int h = cairo_image_surface_get_height(new_friend_surface);
-//创建画布
-    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
-//创建画笔
-    cr = cairo_create(surface);
-    cairo_save(cr);
-    cairo_arc(cr, 30, 30, 30, 0, M_PI * 2);
-    cairo_clip(cr);
-//缩放    pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
-
-    cairo_scale(cr, 60.0 / w, 60.0 / h);
-//把画笔和图片相结合。
-    cairo_set_source_surface(cr, new_friend_surface, 0, 0);
-//把图用画笔画在画布中
-    cairo_paint(cr);
-    cairo_restore(cr);
-//设置源的颜色
-    cairo_set_source_rgb(cr, 0, 0, 0);
-//从图像的w+10,30区域开始加入字体
-    cairo_move_to(cr, 90, 40);
-    cairo_set_font_size(cr, 20);
-    cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-
-    cairo_show_text(cr, infodata->info.nickName);
+//
+    CRPPacketInfoData *p = data;
 
 //分组好友数
     int num = friends->groups[0].friendCount;
 
-    pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
-    gtk_tree_store_append(TreeViewListStore, &iter2, &iter1);//
-    gtk_tree_store_set(TreeViewListStore, &iter2,
+    gtk_tree_model_get_iter_first(TreeViewListStore, &iterGroup);
+    uint32_t t;
+    gtk_tree_model_get(TreeViewListStore, &iterGroup, FRIENDUID_COL, &t, -1);
+
+    while (t != UGI_DEFAULT)
+    {
+        if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup))
+        {
+            abort();
+        }
+        gtk_tree_model_get(TreeViewListStore, &iterGroup, FRIENDUID_COL, &t, -1);
+    }
+
+    pixbuf=draw(data);
+
+    gtk_tree_store_append(TreeViewListStore, &iterUser, &iterGroup);//
+    gtk_tree_store_set(TreeViewListStore, &iterUser,
             PIXBUF_COL, pixbuf,
-            FRIENDUID_COL, friends->groups[0].friends[num],
+            FRIENDUID_COL,p->info.uid,
             -1);
+
     g_object_unref(pixbuf);
 
-    cairo_destroy(cr);
-    cairo_surface_destroy(new_friend_surface);
-    return GTK_TREE_MODEL(TreeViewListStore);
+
 }

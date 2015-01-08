@@ -6,6 +6,7 @@
 #include <glib-unix.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
+#include <lber.h>
 #include "addfriend.h"
 #include "common.h"
 #include "ClientSockfd.h"
@@ -247,48 +248,17 @@ int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
             {
                 free(infodata);
             }
+
+            //显示图片
+            FindImage(p->key, data, putimage);
             break;
 
 
         };
-        case CRP_PACKET_FILE_DATA_START:
-        {
-            CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
-            char filename[256];
-            HexadecimalConversion(filename, p->key);
-            p->fp = fopen(filename, "w");
-            CRPOKSend(sockfd, header->sessionID);
-            if ((void *) packet != header->data)
-            {
-                free(packet);
-            }
-            break;
-        };
 
-        case CRP_PACKET_FILE_DATA://接受头像
-        {
-            CRPPacketFileData *packet = CRPFileDataCast(header);
 
-            fwrite(packet->data, 1, packet->length, p->fp);
-            CRPOKSend(sockfd, header->sessionID);
-            if ((void *) packet != header->data)
-            {
-                free(packet);
-            }
-            break;
-        };
-        case CRP_PACKET_FILE_DATA_END://头像接受完
-        {
 
-            CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
-            fclose(p->fp);
-            if ((void *) packet != header->data)
-            {
-                free(packet);
-            }
-            g_idle_add(putimage, p);
-            return 1;
-        }
+
 
     }
     return 1;

@@ -40,7 +40,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         POnlineUser reqUser = OnlineUserGet(packet->uid);
         if (reqUser)
         {
-            CRPFriendNotifySend(user->sockfd, session, FNT_FRIEND_MOVE, user->info->uid, UGI_PENDING, UGI_DEFAULT);
+            CRPFriendNotifySend(reqUser->sockfd, 0, FNT_FRIEND_MOVE, user->info->uid, UGI_PENDING, UGI_DEFAULT);
             UserDrop(reqUser);
         }
 
