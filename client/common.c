@@ -3,6 +3,7 @@
 #include <protocol/base.h>
 #include <glib-unix.h>
 #include "common.h"
+#include "ClientSockfd.h"
 #include <string.h>
 #include <pwd.h>
 
