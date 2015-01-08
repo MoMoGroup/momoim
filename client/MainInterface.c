@@ -41,7 +41,7 @@ int UpFriendList(void *data)//更新好友列表
 
     CRPPacketInfoData *infodata = CRPInfoDataCast(data);
     char filename[256];
-    HexadecimalConversion(filename,infodata->info.icon);
+    HexadecimalConversion(filename, infodata->info.icon);
     //加载一个图片
     cairo_surface_t *new_friend_surface;
     new_friend_surface = cairo_image_surface_create_from_png(filename);
@@ -71,7 +71,7 @@ int UpFriendList(void *data)//更新好友列表
 
     cairo_show_text(cr, infodata->info.nickName);
 
-    int num=friends->groups[0].friendCount;//分组好友数
+    int num = friends->groups[0].friendCount;//分组好友数
 
 
     pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
@@ -381,63 +381,19 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 
 }
 
-gboolean show_text(void *data)
-{
-    struct RECVImageMessagedata *recv_image_message_data
-            = (struct RECVImageMessagedata *) data;
-    ShoweRmoteText(recv_image_message_data->message_data, recv_image_message_data->userinfo,
-            recv_image_message_data->charlen);
-    free(recv_image_message_data->message_data);
-    free(recv_image_message_data);
-    return FALSE;
-}
 
-int deal_with_recv_message(CRPBaseHeader *header, void *data)
+int deal_with_recv_message(void *data)  //图片处理函数
 {
-    struct RECvPictureMessageReloadingData *recv_message = (struct RECvPictureMessageReloadingData *) data;
-    int ret = 1;
-    switch (header->packetID)
+    struct RECVImageMessagedata *recv_message = (struct RECVImageMessagedata *) data;
+    recv_message->imagecount--;
+    if (recv_message->imagecount == 0)
     {
-        case CRP_PACKET_FAILURE:
-        {
-            CRPPacketFailure *infodata = CRPFailureCast(header);
-            log_info("FAILURE reason", infodata->reason);
-            fclose(recv_message->fp);
-            free(recv_message);
-            return 0;
-        };
-        case  CRP_PACKET_FILE_DATA_START:
-        {
-            log_info("Recv Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
-            CRPOKSend(sockfd, header->sessionID);
-            break;
-        };
-        case CRP_PACKET_FILE_DATA:
-        {
-
-            CRPPacketFileData *packet = CRPFileDataCast(header);
-            fwrite(packet->data, 1, packet->length, recv_message->fp);
-            CRPOKSend(sockfd, header->sessionID);
-            break;
-        };
-        case CRP_PACKET_FILE_DATA_END:
-        {
-            fclose(recv_message->fp);
-
-            recv_message->image_message_data->imagecount--;
-            if (recv_message->image_message_data->imagecount == 0)
-            {
-                g_idle_add(show_text, recv_message->image_message_data);
-                ret = 0;
-            }
-            free(recv_message);
-
-            break;
-        };
-
+        ShoweRmoteText(recv_message->message_data, recv_message->userinfo,
+                recv_message->charlen);
+        free(recv_message->message_data);
+        free(recv_message);
     }
-
-    return ret;
+    return FALSE;
 }
 
 int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
@@ -463,28 +419,11 @@ int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
             isimageflag = 1;
             char filename[256] = {0};
             char strdest[17] = {0};
-            session_id_t session_id;
-            struct RECvPictureMessageReloadingData *recvimagemessge
-                    = (struct RECvPictureMessageReloadingData *) malloc(sizeof(struct RECvPictureMessageReloadingData));
             i++;
-            recvimagemessge->image_message_data->imagecount++;
+            image_message_data->imagecount++;
             memcpy(strdest, &recv_text[i], 16);
             HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
-//
-//            if ((access(filename, 0)) == 0)
-//            {
-            recvimagemessge->image_message_data->imagecount--;
-//
-//            }
-//            else
-//            {
-            recvimagemessge->fp = (fopen(filename, "w"));
-            session_id = CountSessionId();
-            recvimagemessge->image_message_data = image_message_data;
-            AddMessageNode(session_id, deal_with_recv_message, recvimagemessge);
-            CRPFileRequestSend(sockfd, session_id, 0, recv_text + i);
-//            }
-
+            FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
             i = i + 16;
         }
 
@@ -706,20 +645,20 @@ int MainInterFace()
     create_surfaces();
 
     background_event_box = BuildEventBox(background,
-                                         G_CALLBACK(background_button_press_event),
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL);
+            G_CALLBACK(background_button_press_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
 
     closebut_event_box = BuildEventBox(closebut,
-                                       G_CALLBACK(closebut_button_press_event),
-                                       G_CALLBACK(closebut_enter_notify_event),
-                                       G_CALLBACK(closebut_leave_notify_event),
-                                       G_CALLBACK(closebut_button_release_event),
-                                       NULL,
-                                       NULL);
+            G_CALLBACK(closebut_button_press_event),
+            G_CALLBACK(closebut_enter_notify_event),
+            G_CALLBACK(closebut_leave_notify_event),
+            G_CALLBACK(closebut_button_release_event),
+            NULL,
+            NULL);
 
     search = gtk_image_new_from_surface(surfaceresearch);
     search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
@@ -732,12 +671,12 @@ int MainInterFace()
     loadinfo();
 
     headx_event_box = BuildEventBox(headx,
-                                    G_CALLBACK(headx_button_press_event),
-                                    G_CALLBACK(headx_enter_notify_event),
-                                    G_CALLBACK(headx_leave_notify_event),
-                                    G_CALLBACK(headx_button_release_event),
-                                    NULL,
-                                    NULL);
+            G_CALLBACK(headx_button_press_event),
+            G_CALLBACK(headx_enter_notify_event),
+            G_CALLBACK(headx_leave_notify_event),
+            G_CALLBACK(headx_button_release_event),
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
 
 

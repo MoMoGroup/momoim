@@ -80,18 +80,21 @@ static void create_surfaces(friendinfo *information)
 
 void DecodingText(const gchar *text, friendinfo *info, int count)
 {
-    int i = 0;
+
+    gchar *ptext = text, *ptext_end = text + count;
+
     GtkTextBuffer *show_buffer;
     GtkTextIter start, end;
     show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
-    while (i < count)
+    while (ptext < ptext_end)
     {
-        if (text[i] != '\0')
+        if (*ptext != '\0')
         {
+            gchar *next_char = g_utf8_next_char(ptext);
             gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-                    &text[i], 1, "gray_foreground", NULL);
-            i++;
+                    ptext, next_char - ptext, "gray_foreground", NULL);
+            ptext = next_char;
         }
         else
         {
@@ -99,14 +102,14 @@ void DecodingText(const gchar *text, friendinfo *info, int count)
             GtkWidget *image;
             char filename[256] = {0};
             char strdest[16] = {0};
-            i++;
-            memcpy(strdest, &text[i], 16);
+            ptext++;
+            memcpy(strdest, ptext, 16);
             HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
             anchor = gtk_text_buffer_create_child_anchor(show_buffer, &end);
             image = gtk_image_new_from_file(filename);
             gtk_widget_show_all(image);
             gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->show_text), image, anchor);
-            i = i + 16;
+            ptext = ptext + 16;
         }
 
     }
