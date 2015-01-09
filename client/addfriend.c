@@ -6,6 +6,7 @@
 #include <glib-unix.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
+#include <lber.h>
 #include "addfriend.h"
 #include "common.h"
 #include "ClientSockfd.h"
@@ -346,18 +347,43 @@ int AddFriendFun()
 
 }
 
+//以下函数为添加好友提示框，同意或者不同意。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。
 
-int friend_request_popup()
+
+GtkEventBox *popup_accept_eventbox,*popup_cancel_eventbox;
+GtkWidget *popupwindow,*popupframelayout,*popuplayout;
+cairo_t *popupsurfacecancel,*popupsurfacedone;
+cairo_t *popupsurfacebackground;
+
+//取消的话直接销毁
+gint popup_cancel(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
+    gtk_widget_destroy(popupwindow);
+    return 0;
+}
+
+gint popup_done(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+//    char *packet = malloc(sizeof(CRPPacketMessageNormal));
+//    CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
+    uint32_t uid=data;
+    CRPFriendAcceptSend(sockfd, 1, uid);//同意的话发送Accept
+    gtk_widget_destroy(popupwindow);
+    return 0;
+}
+
+
+
+int Friend_Fequest_Popup(uint32_t uid)
+{
+
     GtkWidget *popupcancel,*popupdone,*popupbackground;
 
-    GtkWidget *popupwindow,*popupframelayout,*popuplayout;
-    cairo_t *surfacecancel,*surfacedone;
-    cairo_t *surfacepopupbackground;
 
-    popuplayout = gtk_fixed_new();
-    popupframelayout = gtk_layout_new(NULL, NULL);
+
     popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    popupframelayout = gtk_layout_new(NULL, NULL);
+    popuplayout = gtk_fixed_new();
 
     gtk_window_set_position(GTK_WINDOW(popupwindow), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (popupwindow), FALSE);//固定窗口大小
@@ -365,19 +391,42 @@ int friend_request_popup()
     gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
 
 
-    surfacecancel = cairo_image_surface_create_from_png("取消.png");
-    surfacedone = cairo_image_surface_create_from_png("确定.png");
-    surfacepopupbackground = cairo_image_surface_create_from_png("提示框.png");
+    popupsurfacecancel = cairo_image_surface_create_from_png("关闭1.png");
+    popupsurfacedone = cairo_image_surface_create_from_png("确定.png");
+    popupsurfacebackground = cairo_image_surface_create_from_png("提示框.png");
    //获得
-    popupcancel = gtk_image_new_from_surface(surfacecancel);
-    popupdone = gtk_image_new_from_surface(surfacedone);
-    popupbackground = gtk_image_new_from_surface(surfacepopupbackground);
+    popupcancel = gtk_image_new_from_surface(popupsurfacecancel);
+    popupdone = gtk_image_new_from_surface(popupsurfacedone);
+    popupbackground = gtk_image_new_from_surface(popupsurfacebackground);
 
 
     gtk_fixed_put(GTK_FIXED(popuplayout), popupbackground, 0, 0);
 
-    //gtk_fixed_put(GTK_FIXED(popuplayout), popupcancel, 100, 80);
-    //gtk_fixed_put(GTK_FIXED(popuplayout), popupdone, 170, 80);
+
+
+    popup_cancel_eventbox = BuildEventBox(
+            popupcancel,
+            NULL,
+            NULL,
+            NULL,
+            G_CALLBACK(popup_cancel),
+            NULL,
+            NULL
+    );
+    popup_accept_eventbox = BuildEventBox(
+            popupdone,
+            NULL,
+            NULL,
+            NULL,
+            G_CALLBACK(popup_done),
+            NULL,
+            uid
+    );
+
+
+
+    gtk_fixed_put(GTK_FIXED(popuplayout), popup_cancel_eventbox,30, 170);
+    gtk_fixed_put(GTK_FIXED(popuplayout), popup_accept_eventbox, 150, 170);
 
 
     gtk_container_add(GTK_CONTAINER (popupwindow), popupframelayout);

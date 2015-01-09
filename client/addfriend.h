@@ -2,4 +2,4 @@
 
 #include <gtk/gtk.h>
 extern int AddFriendFun();
-extern int friend_request_popup();
+extern int Friend_Fequest_Popup(uint32_t uid);
