@@ -28,7 +28,7 @@ GtkWidget *background1, *background2, *background3, *biaoji, *next, *next_press,
 GtkWidget *smallhead, *done, *done2;
 
 GtkEventBox *next_enent_box, *close_event_box;
-GtkEventBox *next_enent_box2, *close_event_box2;
+GtkEventBox *next_enent_box2, *close_event_box2,*add_mov_event;
 GtkEventBox *done_event_box;
 
 GtkWidget *yanzhengxinxi;
@@ -71,8 +71,16 @@ void create_surface()
     done2 = gtk_image_new_from_surface(surfacedone2);
 
 }
+//拖拽
+static gint add_mov(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
-
+    gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_ARROW));
+    if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+        gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
+                event->x_root, event->y_root, event->time);
+    }
+    return 0;
+}
 //关闭按钮
 static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -143,7 +151,21 @@ gboolean first(gpointer user_data)
 gboolean putimage(gpointer user_data)
 {
     addlayout2 = gtk_fixed_new();
-    gtk_fixed_put(GTK_FIXED(addlayout2), background2, 0, 0);
+
+    // 设置窗体获取鼠标事件
+    add_mov_event = BuildEventBox(
+            background2,
+            G_CALLBACK(add_mov),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
+
+    //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
+  //  gtk_fixed_put(GTK_FIXED(addlayout1), add_mov_event, 0, 0);
+
+    gtk_fixed_put(GTK_FIXED(addlayout2), add_mov_event, 0, 0);
 
     struct add_friend_info *p = user_data;
     static cairo_t *cr;
@@ -330,7 +352,20 @@ int AddFriendFun()
             NULL,
             NULL
     );
-    gtk_fixed_put(GTK_FIXED(addlayout1), background1, 0, 0);
+
+    // 设置窗体获取鼠标事件
+    add_mov_event = BuildEventBox(
+            background1,
+            G_CALLBACK(add_mov),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
+
+    //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
+    gtk_fixed_put(GTK_FIXED(addlayout1), add_mov_event, 0, 0);
+
     gtk_fixed_put(GTK_FIXED(addlayout1), biaoji, 6, 75);
     gtk_fixed_put(GTK_FIXED(addlayout1), next_enent_box, 400, 200);
     gtk_fixed_put(GTK_FIXED(addlayout1), close_event_box, 519, 0);
@@ -350,7 +385,7 @@ int AddFriendFun()
 //以下函数为添加好友提示框，同意或者不同意。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。
 
 
-GtkEventBox *popup_accept_eventbox,*popup_cancel_eventbox;
+GtkEventBox *popup_accept_eventbox,*popup_cancel_eventbox,*pop_mov_event;
 GtkWidget *popupwindow,*popupframelayout,*popuplayout;
 cairo_t *popupsurfacecancel,*popupsurfacedone;
 cairo_t *popupsurfacebackground;
@@ -371,7 +406,16 @@ gint popup_done(GtkWidget *widget, GdkEventButton *event, gpointer data)
     gtk_widget_destroy(popupwindow);
     return 0;
 }
+//背景的eventbox拖曳窗口
+static gint pop_mov(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
+    gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
+    if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+        gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
+                event->x_root, event->y_root, event->time);
+    }
+    return 0;
+}
 
 
 int Friend_Fequest_Popup(uint32_t uid)
@@ -391,6 +435,7 @@ int Friend_Fequest_Popup(uint32_t uid)
     gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
 
 
+
     popupsurfacecancel = cairo_image_surface_create_from_png("关闭1.png");
     popupsurfacedone = cairo_image_surface_create_from_png("确定.png");
     popupsurfacebackground = cairo_image_surface_create_from_png("提示框.png");
@@ -400,7 +445,20 @@ int Friend_Fequest_Popup(uint32_t uid)
     popupbackground = gtk_image_new_from_surface(popupsurfacebackground);
 
 
-    gtk_fixed_put(GTK_FIXED(popuplayout), popupbackground, 0, 0);
+
+    // 设置窗体获取鼠标事件
+    pop_mov_event = BuildEventBox(
+            popupbackground,
+            G_CALLBACK(pop_mov),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
+
+    gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
+
+   // gtk_fixed_put(GTK_FIXED(popuplayout), popupbackground, 0, 0);
 
 
 
