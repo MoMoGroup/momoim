@@ -155,7 +155,7 @@ static gint combo_change_event() {
     gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);
     name = gtk_combo_box_text_get_active_text(username);
     // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
-
+    gtk_test_text_set(passwd, "");
     if(strcmp(name,"") != 0) {
         for (i = 0; i < flag_cunchu; i = i + 2) //若账号名本地有则相应取出密码
         {
@@ -165,10 +165,6 @@ static gint combo_change_event() {
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//显示记住密码
                 flag_remember = 1;
             }
-            else {
-                gtk_test_text_set(passwd, "");
-            }
-
         }
     }
     else {
@@ -469,9 +465,10 @@ int main(int argc, char *argv[]) {
 gboolean destoryall(gpointer user_data) {
     g_idle_add(DestoryMainInterFace, NULL);//销毁主窗口,--maininterface
 
-    friendinfo *head = friendinfohead;
-    friendinfo *p;
-    while (head->next) {
+    FriendInfo *head = FriendInfoHead;
+    FriendInfo *p;
+    while (head->next)
+    {
         p = head->next;
         head->next = p->next;
         if (p->chartwindow) {

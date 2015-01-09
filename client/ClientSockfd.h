@@ -6,7 +6,7 @@
 
 extern int mysockfd();
 
-typedef struct friendinfo
+typedef struct FriendInfo
 {
     uint32_t sessionid;
     int flag;
@@ -22,9 +22,9 @@ typedef struct friendinfo
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;
-    struct friendinfo *next;
-} friendinfo;
-extern friendinfo *friendinfohead;
+    struct FriendInfo *next;
+} FriendInfo;
+extern FriendInfo *FriendInfoHead;
 extern CRPContext sockfd;
 extern UserInfo CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;

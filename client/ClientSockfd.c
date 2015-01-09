@@ -11,6 +11,8 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <protocol/message/Normal.h>
+#include <lber.h>
+#include <protocol/friend/Notify.h>
 #include "MainInterface.h"
 #include "common.h"
 #include "UpdataFriendList.h"
@@ -26,14 +28,14 @@ gchar *uidname;
 FILE *fp;
 
 
-friendinfo *friendinfohead;
+FriendInfo *FriendInfoHead;
 
 
-void add_node(friendinfo *node)
+void add_node(FriendInfo *node)
 {
-    friendinfo *p;
-    p = friendinfohead;
-    //=(friendinfo *)malloc(sizeof(struct friendinfo));
+    FriendInfo *p;
+    p = FriendInfoHead;
+    //=(FriendInfo *)malloc(sizeof(struct FriendInfo));
     //p=head;
 
     while (p->next)
@@ -114,7 +116,6 @@ int new_friend_info(CRPBaseHeader *header, void *data)
         case CRP_PACKET_INFO_DATA: //用户资料回复
         {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-
             char *mem = malloc(sizeof(CRPPacketInfoData));
             memcmp(mem, infodata, sizeof(CRPPacketInfoData));
 
@@ -136,7 +137,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
     switch (header->packetID)
     {
 
-        //服务器通知下线
+        //服务器通知用户下线
         case CRP_PACKET_KICK:
         {
             g_idle_add(destoryall, NULL);
@@ -148,12 +149,13 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //消息
         case CRP_PACKET_MESSAGE_NORMAL:
         {
+
             CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
             memcpy(dup, header, header->totalLength);
             g_idle_add(postMessage, dup);
             return 1;
         };
-            //haoyou通知
+
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
             CRPPacketFriendNotify *data = CRPFriendNotifyCast(header);
@@ -162,12 +164,31 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n", data->type);
             switch (data->type)
             {
+                case FNT_FRIEND_ONLINE://好友上线
+                {
+                    log_info("Serve Message", "好友上线\n");
+                    char *mem=malloc(sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, data,sizeof(CRPPacketFriendNotify) );
+                    g_idle_add(OnLine ,mem);
+                    break;
+                };
+
+                case FNT_FRIEND_OFFLINE://好友下线
+                {
+                    log_info("Serve Message", "好友下线\n");
+                    char *mem=malloc(sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, data,sizeof(CRPPacketFriendNotify) );
+
+                    g_idle_add(OffLine, mem);
+                    //free(mem);
+                    break;
+                };
                 case FNT_FRIEND_NEW://新好友
                 {
                     UserGroup *grou = UserFriendsGroupGet(friends, data->toGid);//friends,好友分组信息
                     UserFriendsUserAdd(grou, data->uid);//加入这个分组
 
-                    if (data->toGid != UGI_PENDING)
+                    if (data->toGid != UGI_PENDING)//不是添加到pending,说明是有人加你后好友列表需要更新
                     {
                         session_id_t sessionid = CountSessionId();
                         AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
@@ -176,11 +197,11 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
                     break;
                 };
-                case FNT_FRIEND_MOVE:
+                case FNT_FRIEND_MOVE://说明是你添加别人后，需要移动到其它分组
                 {
 
                     UserGroup *from_group = UserFriendsGroupGet(friends, data->fromGid),
-                            *to_group = UserFriendsGroupGet(friends, data->toGid);//从哪个分组来
+                               *to_group = UserFriendsGroupGet(friends, data->toGid);//从哪个分组来
                     UserFriendsUserMove(from_group, to_group, data->uid);//加入这个分组
                     session_id_t sessionid = CountSessionId();
                     if (data->fromGid == UGI_PENDING)
@@ -201,14 +222,15 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_OK:
         {
             log_info("服务器OK包", "%x\n", header->packetID);
-            return 1;
+            break;
         };
         default:
         {
             log_info("服务器其它消息消息", "%x\n", header->packetID);
-            return 1;
+            break;
         }
     }
+    return 1;
 }
 
 
@@ -281,8 +303,8 @@ int mysockfd()
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
 
-        friendinfohead = (friendinfo *) calloc(1, sizeof(struct friendinfo));//创建头节点
-        friendinfohead->flag = 1;
+        FriendInfoHead = (FriendInfo *) calloc(1, sizeof(struct FriendInfo));//创建头节点
+        FriendInfoHead->flag = 1;
 
         free(header);
         if ((void *) ac != header->data)
@@ -336,9 +358,9 @@ int mysockfd()
 
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
 
-                        friendinfo *node;
-                        node = (friendinfo *) calloc(1, sizeof(friendinfo));
-                        //node= (struct friendinfo *)malloc(sizeof(struct friendinfo));
+                        FriendInfo *node;
+                        node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
+                        //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
                         node->sessionid = header->sessionID;//添加id到结构提
                         node->user = infodata->info;
                         memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
@@ -371,9 +393,9 @@ int mysockfd()
                     {
                         sprintf(mulu2, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, header->sessionID);
 
-                        friendinfo *node;
-                        //node = (friendinfo *) malloc(sizeof(friendinfo));
-                        node = friendinfohead;
+                        FriendInfo *node;
+                        //node = (FriendInfo *) malloc(sizeof(FriendInfo));
+                        node = FriendInfoHead;
                         while (node)
                         {
                             if (node->sessionid == header->sessionID)
@@ -408,9 +430,9 @@ int mysockfd()
                     }
                     else
                     {
-                        friendinfo *node;
-                        //node = (friendinfo *) malloc(sizeof(friendinfo));
-                        node = friendinfohead;
+                        FriendInfo *node;
+                        //node = (FriendInfo *) malloc(sizeof(FriendInfo));
+                        node = FriendInfoHead;
                         while (node)
                         {
 
@@ -445,8 +467,8 @@ int mysockfd()
                     else
                     {
                         int friendnum = 0;
-                        friendinfo *node;
-                        node = friendinfohead;
+                        FriendInfo *node;
+                        node = FriendInfoHead;
                         while (node)
                         {
                             if (node->sessionid == header->sessionID)
@@ -460,7 +482,7 @@ int mysockfd()
                         }
 
 
-                        node = friendinfohead;
+                        node = FriendInfoHead;
                         while (node)
                         {
                             if (node->flag == 0)
