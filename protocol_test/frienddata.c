@@ -19,8 +19,8 @@
         log_error("fridata", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
-    CRPPacketFriendData *friendinfo=CRPFriendDataCast(packet);
-    if (friendinfo->data!=)
+    CRPPacketFriendData *FriendInfo=CRPFriendDataCast(packet);
+    if (FriendInfo->data!=)
     {
 
         log_error("message", "包数据错误\n");

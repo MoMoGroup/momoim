@@ -385,8 +385,8 @@ gboolean destoryall(gpointer user_data)
 {
     g_idle_add(DestoryMainInterFace, NULL);//销毁主窗口,--maininterface
 
-    friendinfo *head = friendinfohead;
-    friendinfo *p;
+    FriendInfo *head = FriendInfoHead;
+    FriendInfo *p;
     while (head->next)
     {
         p = head->next;

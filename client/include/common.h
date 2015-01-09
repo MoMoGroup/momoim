@@ -19,4 +19,4 @@ extern void HexadecimalConversion(char *filename, const char *strdest);
 
 extern int FindImage(const char *key, const void *data, gboolean (*fn)(void *data));
 
-GdkPixbuf *draw(void *data);
+GdkPixbuf *draw(const UserInfo *userInfo, int remove_color);
