@@ -21,7 +21,7 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
         UserMessage *msg;
         while ((msg = MessageFileNext(file)) != NULL)
         {
-            if (msg->time > info->lastlogin)
+            if (msg->time >= info->lastlogin)
             {
                 if (!CRPMessageNormalSend(user->sockfd, session, msg->messageType, msg->from, msg->messageLen, msg->content))
                 {

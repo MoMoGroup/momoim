@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../base.h"
+#include "protocol/base.h"
 #include <stdint.h>
 #include "imcommon/message.h"
 
@@ -8,9 +8,9 @@ CRP_STRUCTURE
 {
     uint16_t seq;
     char pad[1024 - sizeof(uint16_t)];
-} CRPPacketMessageDiscover;
+} CRPPacketP2PQualityTest;
 
 __attribute_malloc__
-CRPPacketMessageDiscover *CRPMessageDiscoverCast(CRPBaseHeader *base);
+CRPPacketP2PQualityTest *CRPP2PQualityTestCast(CRPBaseHeader *base);
 
-int CRPMessageDiscoverSend(CRPContext context, uint32_t sessionID, uint32_t uid, char key[32]);
+int CRPP2PQualityTestSend(CRPContext context, uint32_t sessionID, uint16_t seq, const char *pad);

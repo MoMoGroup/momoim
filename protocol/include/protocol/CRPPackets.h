@@ -39,6 +39,10 @@
 #include "protocol/message/Normal.h"
 #include "protocol/message/QueryOffline.h"
 
+#include "protocol/p2p/Discover.h"
+#include "protocol/p2p/QualityTest.h"
+#include "protocol/p2p/Detected.h"
+
 typedef enum
 {
     CRP_PACKET_KEEP_ALIVE = 0,      //心跳包
@@ -48,7 +52,7 @@ typedef enum
     CRP_PACKET_KICK,                //被服务器踢出
     CRP_PACKET_CANCEL,              //取消操作
     CRP_PACKET_SWITCH_PROTOCOL,     //切换协议
-    CRP_PACKET_CRASH = UINT16_MAX,  //崩溃包
+    CRP_PACKET_CRASH = UINT16_MAX - 1,//崩溃包
 
 
     CRP_PACKET_LOGIN__START = 0x10, //登陆类数据包开始
@@ -83,6 +87,10 @@ typedef enum
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
     CRP_PACKET_MESSAGE_NORMAL,        //消息
     CRP_PACKET_MESSAGE_QUERY_OFFLINE, //查询离线消息
+
+    CRP_PACKET_P2P__START = 0x60,   //点对点通讯开始
+    CRP_PACKET_P2P_DISCOVER,
+    CRP_PACKET_P2P_QUALITY_TEST,    //网络质量测试
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID
 } CRPPacketIDs;

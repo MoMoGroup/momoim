@@ -24,6 +24,7 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
                 {
                     if (group->groupId == UINT8_MAX)//如果好友请求已发出正在等待处理
                     {
+                        goto sendNotifyMessage;
                         CRPFailureSend(user->sockfd, session, EAGAIN, "已有添加好友请求");
                     }
                     else
@@ -56,7 +57,7 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
         }
         CRPFriendNotifySend(user->sockfd, session, FNT_FRIEND_NEW, packet->uid, 0, UGI_PENDING);
 
-
+        sendNotifyMessage:
         pthread_rwlock_unlock(user->info->friendsLock);
         CRPOKSend(user->sockfd, session);
 

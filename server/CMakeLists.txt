@@ -11,6 +11,7 @@ SET(SERVER_SOURCE_FILE
     run/listener.c
     run/user.c
     run/worker.c
+    run/p2p.c
 
     datafile/init.c
     datafile/auth.c

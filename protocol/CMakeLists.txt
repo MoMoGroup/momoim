@@ -39,6 +39,10 @@ SET(LIBPROTOCOL_SRC
 
     packets/message/Normal.c
     packets/message/QueryOffline.c
+
+    packets/p2p/Discover.c
+    packets/p2p/QualityTest.c
+    packets/p2p/Detected.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
 target_link_libraries(protocol mcrypt)
