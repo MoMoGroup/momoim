@@ -10,10 +10,8 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/friend/Notify.h>
-#include <lber.h>
+#include <protocol/message/Normal.h>
 #include "MainInterface.h"
-#include "PopupWinds.h"
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
@@ -79,9 +77,17 @@ gboolean postMessage(gpointer user_data)
 
     if (packet->messageType == UMT_NEW_FRIEND)
     {
-       // popup("添加请求", "用户请求添加你为好友");
-        friend_request_popup();
-//        CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
+        // popup("添加请求", "用户请求添加你为好友");
+
+
+        Friend_Fequest_Popup(packet->uid);//
+
+        // CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
+
+        if ((void *) packet != header->data)
+        {
+            free(packet);
+        }
     }
     return 0;
 }
@@ -98,6 +104,7 @@ int friend_group_move(CRPBaseHeader *header, void *data)
 {
 
 }
+
 //接收新添加好友资料的，
 int new_friend_info(CRPBaseHeader *header, void *data)
 {
@@ -173,13 +180,15 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 {
 
                     UserGroup *from_group = UserFriendsGroupGet(friends, data->fromGid),
-                    *to_group= UserFriendsGroupGet(friends, data->toGid);//从哪个分组来
+                            *to_group = UserFriendsGroupGet(friends, data->toGid);//从哪个分组来
                     UserFriendsUserMove(from_group, to_group, data->uid);//加入这个分组
                     session_id_t sessionid = CountSessionId();
-                    if(data->fromGid==UGI_PENDING)
+                    if (data->fromGid == UGI_PENDING)
                     {
                         AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
-                    }else{
+                    }
+                    else
+                    {
                         AddMessageNode(sessionid, friend_group_move, NULL);
                     }
                     CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料

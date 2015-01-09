@@ -571,7 +571,9 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
 
         gpointer data)
 {
+
     AddFriendFun(); //调用添加好友函数
+   // Friend_Fequest_Popup(31);
     return 0;
 }
 
