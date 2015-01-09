@@ -3,21 +3,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include<stdlib.h>
-#include <protocol/status/Hello.h>
 #include <logger.h>
-#include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/message/Normal.h>
-#include <protocol/friend/Notify.h>
+#include "protocol.h"
 #include <ftlist.h>
-#include <protocol/base.h>
-#include <protocol/info/Data.h>
 #include <imcommon/friends.h>
-#include <protocol/message/Normal.h>
-#include <lber.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
 #include <grp.h>

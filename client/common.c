@@ -6,6 +6,7 @@
 #include "ClientSockfd.h"
 #include <string.h>
 #include <pwd.h>
+#include <openssl/md5.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 

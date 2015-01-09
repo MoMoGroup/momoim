@@ -673,10 +673,10 @@ int MainInterFace()
     vbox = gtk_box_new(TRUE, 5);
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), 284, 600);
+    gtk_window_set_resizable(GTK_WINDOW (window), FALSE);//固定窗口大小
+    gtk_widget_set_size_request(GTK_WIDGET(window), 284, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
-
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
@@ -803,7 +803,6 @@ int MainInterFace()
     //隐藏水平滚动条
     gtk_widget_hide(widget);
     //gtk_main();
-
     return 0;
 }
 
