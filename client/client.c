@@ -5,29 +5,31 @@
 #include <logger.h>
 #include <pwd.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
 
-static GtkWidget *ssun,*imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
+static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
 const gchar *name, *pwd;
 static pthread_t thread1;
 static GtkWidget *window;
 char str_cunchu[10][21];
 FILE *passwdfp;
-int flag_username=0,flag_cunchu=0;
-char mulu_username[80]="",mulu_benji[80]="";
+int flag_username = 0, flag_cunchu = 0;
+int flag_remember = 0;
+char mulu_username[80] = "", mulu_benji[80] = "";
 GtkStyleContext *combostyle;
 GtkStyleProvider *comboprovider;
 const gchar *combostring;
 
-static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd;
+static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd, *sremember1, *sremember2;
 static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *slandimage, *scancel10_1, *scancel10_2, *scancel10_3;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
-static GtkEventBox *sunevent_box,*landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
+static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
 
 gboolean mythread(gpointer user_data)//合并
 {
@@ -36,8 +38,7 @@ gboolean mythread(gpointer user_data)//合并
     return 0;
 }//合并
 
-gboolean DestroyLayout(gpointer user_data)
-{
+gboolean DestroyLayout(gpointer user_data) {
     gtk_widget_hide(pendingLayout);
     gtk_widget_show_all(loginLayout);
     popup("莫默告诉你：", user_data);
@@ -47,8 +48,7 @@ gboolean DestroyLayout(gpointer user_data)
 
 //窗口
 static void
-create_surfaces1()
-{
+create_surfaces1() {
     sbackground = cairo_image_surface_create_from_png("背景2.png");
     ssun = gtk_image_new_from_file("1.gif");
     sheadimage = cairo_image_surface_create_from_png("头像.png");
@@ -67,12 +67,12 @@ create_surfaces1()
     scancel10_1 = cairo_image_surface_create_from_png("取消1.png");
     scancel10_2 = cairo_image_surface_create_from_png("取消2.png");
     scancel10_3 = cairo_image_surface_create_from_png("取消3.png");
-
+    sremember1 = cairo_image_surface_create_from_png("记住密码1.png");
+    sremember2 = cairo_image_surface_create_from_png("记住密码2.png");
 }
 
 static void
-destroy_surfaces()
-{
+destroy_surfaces() {
     g_print("destroying surfaces1");
     cairo_surface_destroy(sbackground);
     cairo_surface_destroy(sheadimage);
@@ -91,71 +91,49 @@ destroy_surfaces()
     cairo_surface_destroy(scancel10_1);
     cairo_surface_destroy(scancel10_2);
     cairo_surface_destroy(scancel10_3);
+    cairo_surface_destroy(sremember1);
+    cairo_surface_destroy(sremember2);
 }
 
-extern int DeleteEvent()
-{
+extern int DeleteEvent() {
     gtk_main_quit();
     return TRUE;
 }
 
-void *sendhello(void *M)
-{
+void *sendhello(void *M) {
     mysockfd();
     return 0;
 }
 
 /*获取登陆信息，显示登陆框*/
-void on_button_clicked()
-{
+void on_button_clicked() {
 //获取登录名和密码
     name = gtk_combo_box_text_get_active_text(username);
     pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
-    if(flag_username == 0)//若帐号名本地没有则存储
-    {
-    //存储本地
-        sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
-        mkdir(mulu_benji, 0700);
-        sprintf(mulu_username, "%s/username", mulu_benji);
-        passwdfp = fopen(mulu_username,"a+");
-        fwrite(name, 1, strlen(name), passwdfp);
-        fwrite("\n",1,1,passwdfp);
-        fwrite(pwd, 1, strlen(pwd), passwdfp);
-        fwrite("\n",1,1,passwdfp);
-        fclose(passwdfp);
-    }
 
 //判断输入
-    if ((strlen(name) != 0) && (strlen(pwd) != 0))
-    {
+    if ((strlen(name) != 0) && (strlen(pwd) != 0)) {
         int charnum, number = 0;
-        for (charnum = 0; name[charnum];)
-        {
+        for (charnum = 0; name[charnum];) {
             if ((isalnum(name[charnum]) != 0) || (name[charnum] == '@')
-                    || (name[charnum] == '.') || (name[charnum] == '-') || (name[charnum] == '_'))
-            {
-                if (isdigit(name[charnum]) != 0)
-                {
+                    || (name[charnum] == '.') || (name[charnum] == '-') || (name[charnum] == '_')) {
+                if (isdigit(name[charnum]) != 0) {
                     number++;
                 }
                 charnum++;
             }
-            else
-            {
+            else {
                 break;
             }
         }
-        if (charnum == strlen(name))
-        {
+        if (charnum == strlen(name)) {
         }
-        else
-        {
+        else {
             popup("莫默告诉你：", "包含不合格字符");
             return;
         }
     }
-    else
-    {
+    else {
         popup("莫默告诉你：", "请填写登录信息");
         return;
     }
@@ -171,30 +149,40 @@ void on_button_clicked()
 }
 
 /*账号更改触发*/
-static gint combo_change_event()
-{
+static gint combo_change_event() {
     int i;
+    flag_remember = 0;
+    gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);
     name = gtk_combo_box_text_get_active_text(username);
-   // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
-    for(i=1; i<flag_cunchu; i=i+2) //若账号名本地有则相应取出密码
-    {
-        if(strncmp(name, str_cunchu[i-1], strlen(str_cunchu-1)) == 0)
+    // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
+
+    if(strcmp(name,"") != 0) {
+        for (i = 0; i < flag_cunchu; i = i + 2) //若账号名本地有则相应取出密码
         {
-            gtk_test_text_set(passwd, str_cunchu[i]);
-            flag_username=1;
+            if (strncmp(name, str_cunchu[i], strlen(name)) == 0) {
+                gtk_test_text_set(passwd, str_cunchu[i + 1]);
+                flag_username = 1;
+                gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//显示记住密码
+                flag_remember = 1;
+            }
+            else {
+                gtk_test_text_set(passwd, "");
+            }
+
         }
+    }
+    else {
+        gtk_test_text_set(passwd, "");
     }
 
     return 0;
 }
 
 static gint background_button_press_event(GtkWidget *widget,
-        GdkEventButton *event, gpointer data)
-{
+        GdkEventButton *event, gpointer data) {
     //设置在非按钮区域内移动窗口
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-    if (event->button == 1)
-    {
+    if (event->button == 1) {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                 event->x_root, event->y_root, event->time);
     }
@@ -203,12 +191,10 @@ static gint background_button_press_event(GtkWidget *widget,
 }
 
 static gint wait_button_press_event(GtkWidget *widget,   //第二界面的窗体移动
-        GdkEventButton *event, gpointer data)
-{
+        GdkEventButton *event, gpointer data) {
     //设置在非按钮区域内移动窗口
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-    if (event->button == 1)
-    {
+    if (event->button == 1) {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                 event->x_root, event->y_root, event->time);
     }
@@ -216,8 +202,7 @@ static gint wait_button_press_event(GtkWidget *widget,   //第二界面的窗体
 }
 
 static gint landbut_button_press_event(GtkWidget *widget,
-        GdkEventButton *event, gpointer data)
-{
+        GdkEventButton *event, gpointer data) {
 
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
@@ -226,14 +211,11 @@ static gint landbut_button_press_event(GtkWidget *widget,
     }
 
     return 0;
-
 }
 
 // 鼠标抬起事件
 static gint landbut_button_release_event(GtkWidget *widget, GdkEventButton *event,
-
-        gpointer data)
-{
+        gpointer data) {
     if (event->button == 1)  //判断是否在登陆区域中，设置登陆按钮
     {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
@@ -261,8 +243,7 @@ static gint landbut_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 static gint registered_button_press_event(GtkWidget *widget,
-        GdkEventButton *event, gpointer data)
-{
+        GdkEventButton *event, gpointer data) {
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
         // 设置注册按钮
@@ -276,8 +257,7 @@ static gint registered_button_press_event(GtkWidget *widget,
 
 // 鼠标抬起事件
 static gint registered_button_release_event(GtkWidget *widget, GdkEventButton *event,
-        gpointer data)
-{
+        gpointer data) {
     //info();
     newface(); //调用注册界面
     return 0;
@@ -297,9 +277,8 @@ static gint registered_leave_notify_event(GtkWidget *widget, GdkEventButton *eve
     return 0;
 }
 
-static gint closebut_button_press_event(GtkWidget *widget,
-        GdkEventButton *event, gpointer data)
-{
+static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event,
+        gpointer data) {
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -310,8 +289,7 @@ static gint closebut_button_press_event(GtkWidget *widget,
 
 // 鼠标抬起事件
 static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event,
-        gpointer data)
-{
+        gpointer data) {
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
         gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);  //设置关闭按钮
@@ -340,9 +318,8 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
 }
 
 
-static gint cancel_button_press_event(GtkWidget *widget,
-        GdkEventButton *event, gpointer data)
-{
+static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event,
+        gpointer data) {
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {   //设置第二界面取消按钮
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
@@ -354,10 +331,8 @@ static gint cancel_button_press_event(GtkWidget *widget,
 
 // 鼠标抬起事件
 static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event,
-        gpointer data)
-{
-    if (event->button == 1)
-    {                                         //设置取消按钮
+        gpointer data) {
+    if (event->button == 1) {                                         //设置取消按钮
         gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
         pthread_cancel(thread1);
         CRPClose(sockfd);
@@ -376,15 +351,110 @@ static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
     return 0;
 }
 
-static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)         // 鼠标离开事件
+static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
+        gpointer data)         // 鼠标离开事件
 {
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
     return 0;
 }
 
-int main(int argc, char *argv[])
-{
+//记住密码的鼠标按下事件
+static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event,
+        gpointer data) {
+    if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
+    {
+        if (flag_remember == 0) {
+            name = gtk_combo_box_text_get_active_text(username);
+            pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
+            gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//置换记住图标
+            flag_remember = 1;//置换标志
+            if ((strcmp(name, "") != 0) && (strcmp(pwd, "") != 0)) //不为空则写入
+            {
+                passwdfp = fopen(mulu_username, "a+");
+                fwrite(name, 1, strlen(name), passwdfp);
+                fwrite("\n", 1, 1, passwdfp);
+                fwrite(pwd, 1, strlen(pwd), passwdfp);
+                fwrite("\n", 1, 1, passwdfp);
+                fclose(passwdfp);
+            }
+            else {
+                popup("莫默告诉你", "请输入完整账号信息");
+                gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换取消记住图标
+                flag_remember = 0;
+            }
+        }
+        else {
+            //删除账号
+            int i;
+            gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换取消记住图标
+            flag_remember = 0;
+
+            //从文件中删除信息
+            for (i = 0; i < flag_cunchu; i = i + 2) {
+                if (strcmp(name, str_cunchu[i]) == 0)//查找所在行
+                {
+                    int fd = open(mulu_username, O_RDWR);
+                    if (fd == -1) {
+                        log_error("User", "Cannot read user friends file %s.\n", mulu_username);
+                        break;
+                    }
+                    struct stat statBuf;
+                    if (fstat(fd, &statBuf))
+                        break;
+                    size_t len = (size_t) statBuf.st_size, cpLen;
+                    char *addr = (char *) malloc(len);
+                    read(fd, addr, len);
+                    char *p = addr;
+                    for (int k = 0; k < i; ++k) {
+                        while (*p && *p != '\n')p++;
+                        p++;
+                    }
+                    char *pLine = p;
+                    while (*p && *p != '\n')p++;
+                    p++;
+                    while (*p && *p != '\n')p++;
+                    p++;
+                    cpLen = len - (p - pLine);
+                    while (*p)
+                        *pLine++ = *p++;
+                    lseek(fd, 0, SEEK_SET);
+                    write(fd, addr, cpLen);
+                    ftruncate(fd, cpLen);
+                    close(fd);
+                    free(addr);
+
+                    //重新加载下拉框
+                    gtk_combo_box_text_remove_all(username);//清空原有下拉框内容
+                    if ((passwdfp = fopen(mulu_username, "r")) != NULL) {
+                        int i = 0;
+                        int len_string;
+                        char str_username[21];
+                        while ((fgets(str_username, 21, passwdfp) != NULL) && (i < 10)) {
+                            len_string = strlen(str_username);
+                            str_username[len_string - 1] = 0;
+                            if (i % 2 == 0) {
+                                strcpy(str_cunchu[i], str_username);
+                                gtk_combo_box_text_append(username, NULL, str_username);
+                            }
+                            else {
+                                strcpy(str_cunchu[i], str_username);
+                            }
+                            ++i;
+                        }
+                        flag_cunchu = i;
+                        fclose(passwdfp);
+                    }
+
+                }
+            }
+        }
+    }
+
+    return 0;
+}
+
+int main(int argc, char *argv[]) {
     //初始化GTK+程序
     gtk_init(&argc, &argv);
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
@@ -396,31 +466,27 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-gboolean destoryall(gpointer user_data)
-{
+gboolean destoryall(gpointer user_data) {
     g_idle_add(DestoryMainInterFace, NULL);//销毁主窗口,--maininterface
 
     friendinfo *head = friendinfohead;
     friendinfo *p;
-    while (head->next)
-    {
+    while (head->next) {
         p = head->next;
         head->next = p->next;
-        if (p->chartwindow)
-        {
+        if (p->chartwindow) {
             gtk_widget_destroy(p->chartwindow);
         }
         free(p);
     }
     pthread_cancel(ThreadKeepAlive);
     g_idle_add(loadloginLayout, NULL);
-    popup("异地登录","您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
+    popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
     return FALSE;
 }
 
 
-gboolean loadloginLayout(gpointer user_data)
-{
+gboolean loadloginLayout(gpointer user_data) {
     //加载loginlayout
     create_surfaces1();
     GtkWidget *imagebackground, *imagehead, *imagewhite, *imageaccount, *imagepasswd;
@@ -447,6 +513,7 @@ gboolean loadloginLayout(gpointer user_data)
     iwait = gtk_image_new_from_file("等待.gif");
     imainland = gtk_image_new_from_surface(slandimage);
     imagecancel = gtk_image_new_from_surface(scancel10_1);
+    imageremember = gtk_image_new_from_surface(sremember1);
 
 //    gtk_container_add (GTK_CONTAINER(loginLayout),landbutevent_box);
 //    gtk_container_add (GTK_CONTAINER(loginLayout), registeredevent_box);
@@ -474,10 +541,12 @@ gboolean loadloginLayout(gpointer user_data)
     sunevent_box = BuildEventBox(
             ssun,
             G_CALLBACK(background_button_press_event),
-            NULL,
-            NULL,
-            NULL,
-            NULL, NULL);
+            NULL, NULL, NULL, NULL, NULL);
+
+    remember_box = BuildEventBox(
+            imageremember,
+            G_CALLBACK(remember_button_press_event),
+            NULL, NULL, NULL, NULL, NULL);
 
     registeredevent_box = BuildEventBox(
             imageregistered,
@@ -516,6 +585,7 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
     gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
     gtk_fixed_put(GTK_FIXED(loginLayout), sunevent_box, 3, 3);
+    gtk_fixed_put(GTK_FIXED(loginLayout), remember_box, 190, 185);
     gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 0, 0);
     gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 55, 110);
     gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 75, 350);
@@ -538,35 +608,31 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
 
-    gtk_fixed_put(GTK_FIXED(loginLayout),username, 85, 220);
+    gtk_fixed_put(GTK_FIXED(loginLayout), username, 85, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), passwd, 85, 260);
-    g_signal_connect(username, "changed", G_CALLBACK(combo_change_event),NULL);
+    g_signal_connect(username, "changed", G_CALLBACK(combo_change_event), NULL);
 
 //从本地读取账号记录
     sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
     mkdir(mulu_benji, 0700);
     sprintf(mulu_username, "%s/username", mulu_benji);
-    if((passwdfp = fopen(mulu_username,"r")) != NULL)
-    {
-        int i=0;
+    if ((passwdfp = fopen(mulu_username, "r")) != NULL) {
+        int i = 0;
         int len_string;
         char str_username[21];
-        while((fgets(str_username, 21, passwdfp) != NULL)&&(i<10))
-        {
+        while ((fgets(str_username, 21, passwdfp) != NULL) && (i < 10)) {
             len_string = strlen(str_username);
-            str_username[len_string-1]=0;
-            if(i%2 == 0)
-            {
-                strcpy(str_cunchu[i],str_username);
+            str_username[len_string - 1] = 0;
+            if (i % 2 == 0) {
+                strcpy(str_cunchu[i], str_username);
                 gtk_combo_box_text_append(username, NULL, str_username);
             }
-           else
-            {
-                strcpy(str_cunchu[i],str_username);
+            else {
+                strcpy(str_cunchu[i], str_username);
             }
             ++i;
         }
-        flag_cunchu=i;
+        flag_cunchu = i;
         fclose(passwdfp);
     }
 
