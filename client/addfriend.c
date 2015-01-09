@@ -6,7 +6,6 @@
 #include <glib-unix.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
-#include <lber.h>
 #include "addfriend.h"
 #include "common.h"
 #include "ClientSockfd.h"
