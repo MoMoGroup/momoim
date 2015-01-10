@@ -28,11 +28,11 @@ static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box;
 
-enum
-{
-    PIXBUF_COL = 0,
-    FRIENDUID_COL = 1,
-};
+//enum
+//{
+//    PIXBUF_COL = 0,
+//    FRIENDUID_COL = 1,
+//};
 
 
 
@@ -68,7 +68,7 @@ GtkTreeModel *createModel()
             char mulu[80] = {0};
             sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, friends->groups[i].friends[j]);
             pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
-            friendinfo *rear = friendinfohead;
+            FriendInfo *rear = FriendInfoHead;
             while (rear)
             {
                 if (rear->sessionid == friends->groups[i].friends[j])
@@ -94,6 +94,8 @@ GtkTreeModel *createModel()
             cairo_scale(cr, 60.0 / w, 60.0 / h);
             //把画笔和图片相结合。
             cairo_set_source_surface(cr, surfaceIcon, 0, 0);
+
+
             //把图用画笔画在画布中
             cairo_paint(cr);
             cairo_restore(cr);
@@ -154,7 +156,7 @@ static void loadinfo()
 
     //加载用户头像
     int finduidflag = 0;
-    friendinfo *rear = friendinfohead;
+    FriendInfo *rear = FriendInfoHead;
     while (rear)
     {
         if (rear->user.uid == CurrentUserInfo.uid)
@@ -288,7 +290,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         int i, j;
         int uidfindflag = 0;
         GtkTreePath *path;
-        friendinfo *friendinforear;
+        FriendInfo *friendinforear;
         path = gtk_tree_model_get_path(model, &iter);
         i = gtk_tree_path_get_indices(path)[0];
         j = gtk_tree_path_get_indices(path)[1];
@@ -297,7 +299,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         {
             uint32_t t;
             gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
-            friendinforear = friendinfohead;
+            friendinforear = FriendInfoHead;
             while (friendinforear)
             {
                 if (friendinforear->user.uid == t)
@@ -344,7 +346,7 @@ int deal_with_recv_message(void *data)  //图片处理函数
     return FALSE;
 }
 
-int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
+int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
 {
     int i = 0;
     int isimageflag = 0;
@@ -392,7 +394,7 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
 
     log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
     int uidfindflag = 0;
-    friendinfo *userinfo = friendinfohead;
+    FriendInfo *userinfo = FriendInfoHead;
     while (userinfo)
     {
         if (userinfo->user.uid == recd_uid)
@@ -529,7 +531,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     int i, j;
     int uidfindflag = 0;
     GtkTreePath *path;
-    friendinfo *friendinforear;
+    FriendInfo *friendinforear;
     path = gtk_tree_model_get_path(model, &iter);
     i = gtk_tree_path_get_indices(path)[0];
     j = gtk_tree_path_get_indices(path)[1];
@@ -538,7 +540,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     {
         uint32_t t;
         gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
-        friendinforear = friendinfohead;
+        friendinforear = FriendInfoHead;
         while (friendinforear)
         {
             if (friendinforear->user.uid == t)
@@ -573,7 +575,7 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
 {
 
     AddFriendFun(); //调用添加好友函数
-   // Friend_Fequest_Popup(31);
+    //Friend_Fequest_Popup(10001);
     return 0;
 }
 

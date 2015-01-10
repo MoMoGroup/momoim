@@ -6,7 +6,6 @@
 #include <glib-unix.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
-#include <lber.h>
 #include "addfriend.h"
 #include "common.h"
 #include "ClientSockfd.h"
@@ -436,8 +435,8 @@ int Friend_Fequest_Popup(uint32_t uid)
 
 
 
-    popupsurfacecancel = cairo_image_surface_create_from_png("关闭1.png");
-    popupsurfacedone = cairo_image_surface_create_from_png("确定.png");
+    popupsurfacecancel = cairo_image_surface_create_from_png("忽略1.png");
+    popupsurfacedone = cairo_image_surface_create_from_png("同意1.png");
     popupsurfacebackground = cairo_image_surface_create_from_png("提示框.png");
    //获得
     popupcancel = gtk_image_new_from_surface(popupsurfacecancel);
@@ -481,6 +480,16 @@ int Friend_Fequest_Popup(uint32_t uid)
             uid
     );
 
+    GtkTextView *text;
+    text= gtk_text_view_new();
+    char mes[80];
+    sprintf(mes, "用户%d请求添加你为好友",uid);
+    gtk_test_text_set(text, mes);
+    
+    GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
+    gtk_widget_override_background_color(text, GTK_STATE_NORMAL, &rgba);//设置透明
+
+    gtk_fixed_put(GTK_FIXED(popuplayout), text,30, 100);
 
 
     gtk_fixed_put(GTK_FIXED(popuplayout), popup_cancel_eventbox,30, 170);

@@ -27,7 +27,7 @@ gboolean DestroyLayout(gpointer user_data);
 extern UserFriends *friends;
 extern UserGroup *group;
 
-extern int MainChart(friendinfo *friendinfonode);
+extern int MainChart(FriendInfo *friendinfonode);
 
 extern void RecdServerMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid);
 
@@ -44,6 +44,11 @@ struct RECVImageMessagedata
     int imagecount;
     int charlen;
     char *message_data;
-    friendinfo *userinfo;
+    FriendInfo *userinfo;
 };
 extern GtkTreeStore *TreeViewListStore;
+extern enum {
+    PIXBUF_COL = 0,
+    FRIENDUID_COL = 1,
+};
+

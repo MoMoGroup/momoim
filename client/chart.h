@@ -1,6 +1,6 @@
 #pragma once
 
-extern void ShoweRmoteText(const gchar *rcvd_text, friendinfo *info, uint16_t len);
+extern void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len);
 
 struct PictureMessageFileUploadingData
 {
