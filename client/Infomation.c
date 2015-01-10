@@ -4,20 +4,26 @@
 #include <string.h>
 #include <logger.h>
 #include <stdlib.h>
+#include <bits/string2.h>
 #include "ClientSockfd.h"
 #include "common.h"
 #include "MainInterface.h"
+#include "PopupWinds.h"
+
+static cairo_surface_t *Surfaceback, *Surfacesave, *Surfacesave1, *Surfacecancel, *Surfacecancel1, *Surfaceend, *Surfaceend1, *Surfaceend2;
+static cairo_surface_t *surfacehead;
+int RiliFlag = 0;
+guint year = 2011;
+guint month = 11;
+guint day = 11;
 
 static GtkWidget *Infowind;
 static GtkWidget *Infolayout;
-static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box, *Calendar_event_box;
 static GtkWidget *Infobackground, *Infosave, *Infocancel, *Infoguanbi;
-static cairo_surface_t *Surfaceback, *Surfacesave, *Surfacesave1, *Surfacecancel, *Surfacecancel1, *Surfaceend, *Surfaceend1, *Surfaceend2;
-
-static GtkWidget *iid, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
+static GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
 static GtkWidget *itel, *ischool, *ipostcode, *ihometown, *icalendar;
-static cairo_surface_t *surfacehead;
 static GtkWidget *headicon;
+
 
 static const char *constellations[] = {
         "水瓶座", "双鱼座", "白羊座", "金牛座",
@@ -137,6 +143,12 @@ static const char *allcity[35][41] = {
         {"澳门地区"},
 //其它地区
         {"其它地区"}};
+static const char *xingzuo[12][2] = {
+        {"魔蝎座", "水瓶座"}, {"水瓶座", "双鱼座"}, {"双鱼座", "白羊座"},
+        {"白羊座", "金牛座"}, {"金牛座", "双子座"}, {"双子座", "巨蟹座"},
+        {"巨蟹座", "狮子座"}, {"狮子座", "处女座"}, {"处女座", "天秤座"},
+        {"天秤座", "天蝎座"}, {"天蝎座", "射手座"}, {"射手座", "魔蝎座"}
+};
 
 int sheng_change_city() {
     const gchar *buf;
@@ -156,7 +168,35 @@ int sheng_change_city() {
 }
 
 int calendar_change_birthday() {
-    gtk_widget_hide(icalendar);
+    if (RiliFlag == 0) {
+        icalendar = gtk_calendar_new();
+        char nian[4] = {0}, yue[2] = {0}, ri[2] = {0};
+        strncpy(nian, CurrentUserInfo.birthday, 4);
+        strncpy(yue, CurrentUserInfo.birthday + 5, 2);
+        if (yue[1] == '-')
+            yue[1] = 0;
+        if (CurrentUserInfo.birthday[6] != '-') {
+            ri[0] = CurrentUserInfo.birthday[8];
+            ri[1] = CurrentUserInfo.birthday[9];
+        } else {
+            ri[0] = CurrentUserInfo.birthday[7];
+            ri[1] = CurrentUserInfo.birthday[8];
+        }
+        if (ri[1] == '-')
+            ri[1] = 0;
+        log_info("年年", "%s%s%s", nian, yue, ri);
+        int i = 0;
+        i = atoi(yue) - 1;
+        gtk_calendar_select_month(GTK_CALENDAR(icalendar), (guint) i, (guint) atoi(nian));
+        gtk_calendar_select_day(GTK_CALENDAR(icalendar), (guint) atoi(ri));
+        gtk_fixed_put(GTK_FIXED(Infolayout), icalendar, 140, 263);
+        gtk_widget_show(icalendar);
+        RiliFlag = 1;
+    }
+    else {
+        gtk_widget_hide(icalendar);
+        RiliFlag = 0;
+    }
     return 0;
 }
 
@@ -210,6 +250,8 @@ int infosockfd() {
     UserInfo weinfo = CurrentUserInfo;
     const gchar *buf;
     buf = gtk_entry_get_text(GTK_ENTRY(inickname));
+    if (strlen(buf) == 0)
+        popup("莫默告诉你", "给自己起个昵称");
     memset(weinfo.nickName, 0, strlen(weinfo.nickName));
     memcpy(weinfo.nickName, buf, strlen(buf));
 
@@ -217,47 +259,10 @@ int infosockfd() {
     memset(weinfo.name, 0, strlen(weinfo.name));
     memcpy(weinfo.name, buf, strlen(buf));
 
-    buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) isex);
-    if (strcmp(buf, "男") == 0)
-        weinfo.sex = 1;
-    else
-        weinfo.sex = 0;
-
-    buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iconstellation);
-    for (int i = 0; i < 12; ++i) {
-        if (strcmp(constellations[i], buf) == 0) {
-            weinfo.constellation = i;
-            break;
-        }
-    }
-
-    buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iprovinces);
-    for (int i = 0; i < 35; ++i) {
-        if (strcmp(provinces[i], buf) == 0) {
-            memset(weinfo.provinces, 0, strlen(weinfo.provinces));
-            memcpy(weinfo.provinces, buf, strlen(buf));
-            break;
-        }
-    }
-    log_info("更新资料X", buf);
-    log_info("更新资料X", weinfo.provinces);
-
-    buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) icity);
-    for (int i = 0; i < 35; ++i)
-        for (int j = 0; allcity[i][j]; j++) {
-            if (strcmp(allcity[i][j], buf) == 0) {
-                memset(weinfo.city, 0, strlen(weinfo.city));
-                memcpy(weinfo.city, buf, strlen(buf));
-                break;
-            }
-        }
-    log_info("更新资料X", buf);
-    log_info("更新资料X", weinfo.city);
-
     buf = gtk_entry_get_text(GTK_ENTRY(itel));
     memset(weinfo.tel, 0, strlen(weinfo.tel));
     memcpy(weinfo.tel, buf, strlen(buf));
-    log_info("更新资料", weinfo.tel);
+    log_info("电话", weinfo.tel);
 
     buf = gtk_entry_get_text(GTK_ENTRY(ipostcode));
     memset(weinfo.postcode, 0, strlen(weinfo.postcode));
@@ -274,6 +279,48 @@ int infosockfd() {
     memcpy(weinfo.hometown, buf, strlen(buf));
     log_info("更新资料", weinfo.hometown);
 
+    buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) isex);
+    if (strcmp(buf, "男") == 0)
+        weinfo.sex = 1;
+    else
+        weinfo.sex = 0;
+
+    buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iprovinces);
+    for (int i = 0; i < 35; ++i) {
+        if (strcmp(provinces[i], buf) == 0) {
+            memset(weinfo.provinces, 0, strlen(weinfo.provinces));
+            memcpy(weinfo.provinces, buf, strlen(buf));
+            break;
+        }
+    }
+
+    buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) icity);
+    for (int i = 0; i < 35; ++i)
+        for (int j = 0; allcity[i][j]; j++) {
+            if (strcmp(allcity[i][j], buf) == 0) {
+                memset(weinfo.city, 0, strlen(weinfo.city));
+                memcpy(weinfo.city, buf, strlen(buf));
+                break;
+            }
+        }
+
+    gtk_calendar_get_date(GTK_CALENDAR(icalendar), &year, &month, &day);/*取得选择的年月日*/
+    memset(weinfo.birthday, 0, strlen(weinfo.birthday));
+
+    int x = month + 1;
+    int y = day / 21;
+    sprintf(buf, "%d-%d-%d", year, x, day);
+    memcpy(weinfo.birthday, buf, strlen(buf));
+    //buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iconstellation);
+    buf = xingzuo[month][y];
+    for (int i = 0; i < 12; ++i) {
+        if (strcmp(constellations[i], buf) == 0) {
+            weinfo.constellation = i;
+            break;
+        }
+    }
+    //log_info("获取的日期", "Year:%d Month:%d Day:%d DATE:%s", year, month, day, buf);
+
     session_id_t newinfoid = CountSessionId();
     AddMessageNode(newinfoid, infoupdate, NULL);
     CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
@@ -287,11 +334,13 @@ static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *even
     if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                                    event->x_root, event->y_root, event->time);
+        gtk_widget_hide(icalendar);
+        RiliFlag = 0;
     }
     return 0;
 }
 
-//保存
+//更新
 //鼠标点击事件
 static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
@@ -300,16 +349,24 @@ static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     }
     return 0;
 }
-//保存
+
+//更新
 //鼠标抬起事件
 static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
     if (event->button == 1) {
         infosockfd();
+        const gchar *buf;
+        buf = gtk_entry_get_text(GTK_ENTRY(inickname));
+        if (strlen(buf) != 0) {
+            destroy_infosurfaces();
+            gtk_widget_destroy(Infowind);
+        }
     }
     return 0;
 }
-//保存
+
+//更新
 //鼠标移动事件
 static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
@@ -317,7 +374,8 @@ static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
     gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
     return 0;
 }
-//保存
+
+//更新
 //鼠标离开事件
 static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
@@ -334,6 +392,7 @@ static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, 
     }
     return 0;
 }
+
 //取消
 //鼠标抬起事件
 static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -345,6 +404,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
 
     return 0;
 }
+
 //取消
 //鼠标移动事件
 static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -373,6 +433,7 @@ static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, 
     }
     return 0;
 }
+
 //关闭
 //鼠标抬起事件
 static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -383,6 +444,7 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
     }
     return 0;
 }
+
 //关闭
 //鼠标移动事件
 static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -391,58 +453,12 @@ static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend2);
     return 0;
 }
+
 //关闭
 //鼠标离开事件
 static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend);
-    return 0;
-}
-
-//生日
-//鼠标点击事件
-static gint birthday_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-
-    if (event->button == 1) {
-        gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        GtkWidget *rili;
-        GtkWidget *rililayout;
-        GtkWidget *mm;
-        rili = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-        gtk_window_set_position(GTK_WINDOW(rili), GTK_WIN_POS_CENTER);//窗口位置
-        gtk_window_set_resizable(GTK_WINDOW (rili), FALSE);//固定窗口大小
-        gtk_window_set_decorated(GTK_WINDOW(rili), FALSE);//去掉边框
-        gtk_widget_set_size_request(GTK_WIDGET(rili), 50, 50);
-        rililayout = gtk_fixed_new();
-        gtk_container_add(GTK_CONTAINER(rili), rililayout);
-        icalendar = gtk_calendar_new();
-        gtk_fixed_put(GTK_FIXED(rililayout), icalendar, 0, 0);
-    }
-    return 0;
-}
-
-//生日
-//鼠标抬起事件
-static gint birthday_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-
-    if (event->button == 1) {
-    }
-    return 0;
-}
-
-//生日
-//鼠标移动事件
-static gint birthday_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-
-    gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
-    return 0;
-}
-
-//生日
-//鼠标离开事件
-static gint birthday_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-    gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
-    //gtk_widget_hide(icalendar);
     return 0;
 }
 
@@ -458,6 +474,10 @@ void infotv() {
     sprintf(idstring, "%d", CurrentUserInfo.uid);
     iid = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), iid, 240, 30);
+    memset(idstring, 0, strlen(idstring));
+    sprintf(idstring, "等级：%d", CurrentUserInfo.level);
+    ilevel = gtk_label_new(idstring);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ilevel, 200, 50);
 
     inickname = gtk_entry_new();//昵称
     gtk_entry_set_max_length(inickname, 8);
@@ -471,6 +491,33 @@ void infotv() {
     gtk_entry_set_text(iname, CurrentUserInfo.name);
     gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 235);
 
+
+    ipostcode = gtk_entry_new();//邮编
+    gtk_entry_set_max_length(ipostcode, 6);
+    gtk_entry_set_has_frame((GtkEntry *) ipostcode, FALSE);
+    gtk_entry_set_text(ipostcode, CurrentUserInfo.postcode);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ipostcode, 305, 345);
+
+
+    ischool = gtk_entry_new();//毕业院校
+    gtk_entry_set_max_length(ischool, 10);
+    gtk_entry_set_has_frame((GtkEntry *) ischool, FALSE);
+    gtk_entry_set_text(ischool, CurrentUserInfo.school);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ischool, 75, 375);
+
+    ihometown = gtk_entry_new();//故乡
+    gtk_entry_set_max_length(ihometown, 30);
+    gtk_entry_set_has_frame((GtkEntry *) ihometown, FALSE);
+    gtk_entry_set_text(ihometown, CurrentUserInfo.hometown);
+    gtk_fixed_put(GTK_FIXED(Infolayout), ihometown, 48, 403);
+
+    itel = gtk_entry_new();//电话
+    gtk_entry_set_max_length(itel, 11);
+    gtk_entry_set_has_frame((GtkEntry *) itel, FALSE);
+    log_info("tel", CurrentUserInfo.tel);
+    gtk_entry_set_text(itel, CurrentUserInfo.tel);
+    gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 347);
+
     isex = gtk_combo_box_text_new();//性别
     gtk_combo_box_text_append(isex, "0", "女");
     gtk_combo_box_text_append(isex, "1", "男");
@@ -481,12 +528,7 @@ void infotv() {
         gtk_combo_box_set_active(GTK_COMBO_BOX(isex), 0);
     }
     gtk_fixed_put(GTK_FIXED(Infolayout), isex, 305, 225);
-
-    /*ibirthday = gtk_entry_new();//生日
-    gtk_entry_set_max_length(ibirthday, 10);
-    gtk_entry_set_has_frame((GtkEntry *) ibirthday, FALSE);
-    gtk_entry_set_text(ibirthday, CurrentUserInfo.birthday);
-    gtk_fixed_put(GTK_FIXED(Infolayout), ibirthday, 48, 263);*/
+    gtk_widget_show(isex);
 
     iconstellation = gtk_combo_box_text_new();//星座
     for (int i = 0; i < 12; ++i) {
@@ -499,18 +541,7 @@ void infotv() {
         }
     }
     gtk_fixed_put(GTK_FIXED(Infolayout), iconstellation, 305, 260);
-    /*GtkScrolledWindow *sw = (GtkScrolledWindow *) gtk_scrolled_window_new(NULL, NULL);
-    //设置滚动条常在状态
-    gtk_scrolled_window_set_policy(sw,
-                                   GTK_POLICY_ALWAYS,
-                                   GTK_POLICY_ALWAYS);
-    //获取水平滚动条
-    GtkWidget *widget = gtk_scrolled_window_get_hscrollbar(sw);
-    gtk_container_add(GTK_CONTAINER(sw), (GtkWidget *) iprovinces);
-    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) sw, 48, 290);
-    gtk_widget_set_size_request((GtkWidget *) iprovinces, 100, 200);
-    //隐藏水平滚动条
-    gtk_widget_hide(widget);*/
+    gtk_widget_show(iconstellation);
 
     iprovinces = gtk_combo_box_text_new();//省份
     icity = gtk_combo_box_text_new();//城市
@@ -540,37 +571,18 @@ void infotv() {
     }
     gtk_fixed_put(GTK_FIXED(Infolayout), iprovinces, 48, 290);
     gtk_fixed_put(GTK_FIXED(Infolayout), icity, 305, 290);
+    gtk_widget_show(iprovinces);
+    gtk_widget_show(icity);
 
-    itel = gtk_entry_new();//电话
-    gtk_entry_set_max_length(itel, 11);
-    gtk_entry_set_has_frame((GtkEntry *) itel, FALSE);
-    gtk_entry_set_text(itel, CurrentUserInfo.tel);
-    gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 347);
+    ibirthday = gtk_button_new_with_label(CurrentUserInfo.birthday);//生日
+    gtk_fixed_put(GTK_FIXED(Infolayout), ibirthday, 48, 263);
+    g_signal_connect(ibirthday, "clicked", G_CALLBACK(calendar_change_birthday), NULL);
 
-    ipostcode = gtk_entry_new();//邮编
-    gtk_entry_set_max_length(ipostcode, 6);
-    gtk_entry_set_has_frame((GtkEntry *) ipostcode, FALSE);
-    gtk_entry_set_text(ipostcode, CurrentUserInfo.postcode);
-    gtk_fixed_put(GTK_FIXED(Infolayout), ipostcode, 305, 345);
-
-    ischool = gtk_entry_new();//毕业院校
-    gtk_entry_set_max_length(ischool, 10);
-    gtk_entry_set_has_frame((GtkEntry *) ischool, FALSE);
-    gtk_entry_set_text(ischool, CurrentUserInfo.school);
-    gtk_fixed_put(GTK_FIXED(Infolayout), ischool, 75, 375);
-
-    ihometown = gtk_entry_new();//故乡
-    gtk_entry_set_max_length(ihometown, 30);
-    gtk_entry_set_has_frame((GtkEntry *) ihometown, FALSE);
-    gtk_entry_set_text(ihometown, CurrentUserInfo.hometown);
-    gtk_fixed_put(GTK_FIXED(Infolayout), ihometown, 48, 403);
-
-    /*icalendar= gtk_calendar_new();
-    gtk_fixed_put(GTK_FIXED(Infolayout), icalendar, 48, 263);*/
 }
 
 int info() {
 
+    static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
     Infowind = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_position(GTK_WINDOW(Infowind), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (Infowind), FALSE);//固定窗口大小
@@ -618,16 +630,5 @@ int info() {
     gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
 
     infotv();
-
-    ibirthday = gtk_button_new_with_label(CurrentUserInfo.birthday);//生日
-    Calendar_event_box = BuildEventBox(ibirthday,
-                                       G_CALLBACK(birthday_button_press_event),
-                                       G_CALLBACK(birthday_enter_notify_event),
-                                       G_CALLBACK(birthday_leave_notify_event),
-                                       G_CALLBACK(birthday_button_release_event),
-                                       NULL,
-                                       NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), ibirthday, 48, 263);
-    //gtk_widget_set_sensitive(isex, FALSE);
     gtk_widget_show_all(Infowind);
 }
