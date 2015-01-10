@@ -11,6 +11,7 @@
 #include "addfriend.h"
 #include "Infomation.h"
 #include "onlylookinfo.h"
+#include"Addgroup.h"
 
 static GtkWidget *background1, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -25,22 +26,8 @@ static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box;
 
-//enum
-//{
-//    PIXBUF_COL = 0,
-//    FRIENDUID_COL = 1,
-//};
 
-//typedef struct groupFriendsInfo {
-//    int num;
-//    UserInfo *userInfo;
-//    int online;
-//    struct groupFriendsInfo *next;
-//
-//}groupFriendsInfo;
 
-//头节点
-//groupFriendsInfo *groupFriendsInfo_head;
 static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
 {
     int64_t priA, priB;
@@ -65,7 +52,7 @@ GtkTreeModel *createModel()
 //头节点
     //  groupFriendsInfo_head =(groupFriendsInfo *)calloc(1,sizeof(struct groupFriendsInfo));
 
-    for (i = 0; i < friends->groupCount; i++)
+    for (i = 0; i < friends->groupCount - 1; i++)
     {
         surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
         cr = cairo_create(surface);
@@ -95,7 +82,7 @@ GtkTreeModel *createModel()
 
             while (rear)
             {
-                if (rear->sessionid == friends->groups[i].friends[j])
+                if (rear->uid == friends->groups[i].friends[j])
                 {
                     memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
 
@@ -109,7 +96,7 @@ GtkTreeModel *createModel()
             pixbuf = DrawFriend(&rear->user, rear->inonline);
 
             gtk_tree_store_append(TreeViewListStore, &iter2, &iter1);//
-            if (CurrentUserInfo.uid == friends->groups[i].friends[j])
+            if (CurrentUserInfo->uid == friends->groups[i].friends[j])
             {
                 priority = 5256000;//10年
             }
@@ -157,7 +144,7 @@ static void create_surfaces()
 static void loadinfo()
 {
     GtkWidget *userid;
-    userid = gtk_label_new(CurrentUserInfo.nickName);
+    userid = gtk_label_new(CurrentUserInfo->nickName);
     //设置字体大小
     PangoFontDescription *font;
     font = pango_font_description_from_string("Sans");//"Sans"字体名
@@ -171,7 +158,7 @@ static void loadinfo()
     FriendInfo *rear = FriendInfoHead;
     while (rear)
     {
-        if (rear->user.uid == CurrentUserInfo.uid)
+        if (rear->user.uid == CurrentUserInfo->uid)
         {
             finduidflag = 1;
             break;
@@ -184,7 +171,7 @@ static void loadinfo()
         static cairo_t *cr;
         cairo_surface_t *surface;
 
-        sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, CurrentUserInfo.uid);
+        sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
         //加载一个图片
         surface = cairo_image_surface_create_from_png(userhead);
         int w = cairo_image_surface_get_width(surface);
@@ -307,10 +294,14 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         i = gtk_tree_path_get_indices(path)[0];
         j = gtk_tree_path_get_indices(path)[1];
 
-        if (gtk_tree_model_iter_has_child(model, &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0))))
+        if (gtk_tree_model_iter_has_child(model, &iter) == 0)
         {
             uint32_t t;
             gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
+            if (t == CurrentUserInfo->uid)
+            {
+                return FALSE;
+            }
             friendinforear = FriendInfoHead;
             while (friendinforear)
             {
@@ -629,8 +620,12 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
         gpointer data)
 {
 
-    AddFriendFun(); //调用添加好友函数
-    //Friend_Fequest_Popup(10001,"as");
+    if (AddFriendflag)//判断是否打开搜索窗口
+    {
+        AddFriendFun();
+        //Friend_Fequest_Popup(10001,"as");//添加爱弹出框
+
+    } //调用添加好友函数
     return 0;
 }
 
@@ -748,6 +743,9 @@ int MainInterFace()
 
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
             G_CALLBACK(button2_press_event2), (gpointer) menu1);
+    //添加分组事件
+//    g_signal_connect(G_OBJECT(add), "button_press_event",
+//            G_CALLBACK(button2_press_event2), (gpointer) menu1);
 
     //好友菜单
     menu2 = gtk_menu_new();
@@ -774,7 +772,9 @@ int MainInterFace()
             G_CALLBACK(sendmsg_button_press_event), (gpointer) treeView);
 
     g_signal_connect(G_OBJECT(lookinfo), "button_press_event",
-                     G_CALLBACK(lookinfo_button_press_event), (gpointer) treeView);
+            G_CALLBACK(lookinfo_button_press_event), (gpointer) treeView);
+
+
 
     gtk_widget_show_all(window);
     //隐藏水平滚动条

@@ -8,7 +8,7 @@ extern int mysockfd();
 
 typedef struct FriendInfo
 {
-    uint32_t sessionid;
+    uint32_t uid;
     int flag;
     //用来判断是否接受成功
     UserInfo user;
@@ -36,6 +36,6 @@ typedef struct FriendInfo
 } FriendInfo;
 extern FriendInfo *FriendInfoHead;
 extern CRPContext sockfd;
-extern UserInfo CurrentUserInfo;
+extern UserInfo *CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;
-extern int UpFriendList(void *data);
+extern int AddFriendflag;//判断是否打开搜索窗口

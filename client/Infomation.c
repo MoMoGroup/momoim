@@ -171,16 +171,16 @@ int calendar_change_birthday() {
     if (RiliFlag == 0) {
         icalendar = gtk_calendar_new();
         char nian[4] = {0}, yue[2] = {0}, ri[2] = {0};
-        strncpy(nian, CurrentUserInfo.birthday, 4);
-        strncpy(yue, CurrentUserInfo.birthday + 5, 2);
+        strncpy(nian, CurrentUserInfo->birthday, 4);
+        strncpy(yue, CurrentUserInfo->birthday + 5, 2);
         if (yue[1] == '-')
             yue[1] = 0;
-        if (CurrentUserInfo.birthday[6] != '-') {
-            ri[0] = CurrentUserInfo.birthday[8];
-            ri[1] = CurrentUserInfo.birthday[9];
+        if (CurrentUserInfo->birthday[6] != '-') {
+            ri[0] = CurrentUserInfo->birthday[8];
+            ri[1] = CurrentUserInfo->birthday[9];
         } else {
-            ri[0] = CurrentUserInfo.birthday[7];
-            ri[1] = CurrentUserInfo.birthday[8];
+            ri[0] = CurrentUserInfo->birthday[7];
+            ri[1] = CurrentUserInfo->birthday[8];
         }
         if (ri[1] == '-')
             ri[1] = 0;
@@ -247,7 +247,7 @@ int infoupdate(CRPBaseHeader *header, void *data)//资料更新处理函数
 }
 
 int infosockfd() {
-    UserInfo weinfo = CurrentUserInfo;
+    UserInfo weinfo = *CurrentUserInfo;
     const gchar *buf;
     buf = gtk_entry_get_text(GTK_ENTRY(inickname));
     if (strlen(buf) == 0)
@@ -465,63 +465,63 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 void infotv() {
 
     char infohead[80] = {0};
-    sprintf(infohead, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, CurrentUserInfo.uid);
+    sprintf(infohead, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
     surfacehead = cairo_image_surface_create_from_png(infohead);
     headicon = gtk_image_new_from_surface(surfacehead);
     gtk_fixed_put(GTK_FIXED(Infolayout), headicon, 23, 16);
 
     char idstring[80] = {0};//id
-    sprintf(idstring, "%d", CurrentUserInfo.uid);
+    sprintf(idstring, "%d", CurrentUserInfo->uid);
     iid = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), iid, 240, 30);
     memset(idstring, 0, strlen(idstring));
-    sprintf(idstring, "等级：%d", CurrentUserInfo.level);
+    sprintf(idstring, "等级：%d", CurrentUserInfo->level);
     ilevel = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), ilevel, 200, 50);
 
     inickname = gtk_entry_new();//昵称
     gtk_entry_set_max_length(inickname, 8);
     gtk_entry_set_has_frame((GtkEntry *) inickname, FALSE);
-    gtk_entry_set_text(inickname, CurrentUserInfo.nickName);
+    gtk_entry_set_text(inickname, CurrentUserInfo->nickName);
     gtk_fixed_put(GTK_FIXED(Infolayout), inickname, 58, 175);
 
     iname = gtk_entry_new();//姓名
     gtk_entry_set_max_length(iname, 4);
     gtk_entry_set_has_frame((GtkEntry *) iname, FALSE);
-    gtk_entry_set_text(iname, CurrentUserInfo.name);
+    gtk_entry_set_text(iname, CurrentUserInfo->name);
     gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 235);
 
 
     ipostcode = gtk_entry_new();//邮编
     gtk_entry_set_max_length(ipostcode, 6);
     gtk_entry_set_has_frame((GtkEntry *) ipostcode, FALSE);
-    gtk_entry_set_text(ipostcode, CurrentUserInfo.postcode);
+    gtk_entry_set_text(ipostcode, CurrentUserInfo->postcode);
     gtk_fixed_put(GTK_FIXED(Infolayout), ipostcode, 305, 345);
 
 
     ischool = gtk_entry_new();//毕业院校
     gtk_entry_set_max_length(ischool, 10);
     gtk_entry_set_has_frame((GtkEntry *) ischool, FALSE);
-    gtk_entry_set_text(ischool, CurrentUserInfo.school);
+    gtk_entry_set_text(ischool, CurrentUserInfo->school);
     gtk_fixed_put(GTK_FIXED(Infolayout), ischool, 75, 375);
 
     ihometown = gtk_entry_new();//故乡
     gtk_entry_set_max_length(ihometown, 30);
     gtk_entry_set_has_frame((GtkEntry *) ihometown, FALSE);
-    gtk_entry_set_text(ihometown, CurrentUserInfo.hometown);
+    gtk_entry_set_text(ihometown, CurrentUserInfo->hometown);
     gtk_fixed_put(GTK_FIXED(Infolayout), ihometown, 48, 403);
 
     itel = gtk_entry_new();//电话
     gtk_entry_set_max_length(itel, 11);
     gtk_entry_set_has_frame((GtkEntry *) itel, FALSE);
-    log_info("tel", CurrentUserInfo.tel);
-    gtk_entry_set_text(itel, CurrentUserInfo.tel);
+    log_info("tel", CurrentUserInfo->tel);
+    gtk_entry_set_text(itel, CurrentUserInfo->tel);
     gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 347);
 
     isex = gtk_combo_box_text_new();//性别
     gtk_combo_box_text_append(isex, "0", "女");
     gtk_combo_box_text_append(isex, "1", "男");
-    if (1 == CurrentUserInfo.sex) {
+    if (1 == CurrentUserInfo->sex) {
         gtk_combo_box_set_active(GTK_COMBO_BOX(isex), 1);
     }
     else {
@@ -535,7 +535,7 @@ void infotv() {
         gtk_combo_box_text_append(iconstellation, NULL, constellations[i]);
     }
     for (int i = 0; i < 12; ++i) {
-        if (CurrentUserInfo.constellation == i) {
+        if (CurrentUserInfo->constellation == i) {
             gtk_combo_box_set_active(GTK_COMBO_BOX(iconstellation), i);
             break;
         }
@@ -551,7 +551,7 @@ void infotv() {
         gtk_combo_box_text_append(iprovinces, NULL, provinces[i]);
     }
     for (int i = 0; i < 35; ++i) {
-        if (strcmp(provinces[i], CurrentUserInfo.provinces) == 0) {
+        if (strcmp(provinces[i], CurrentUserInfo->provinces) == 0) {
             gtk_combo_box_set_active(GTK_COMBO_BOX(iprovinces), i);
             weizhi = i;
             break;
@@ -561,7 +561,7 @@ void infotv() {
         }
     }
     for (int j = 0; allcity[weizhi][j]; ++j) {
-        if (strcmp(allcity[weizhi][j], CurrentUserInfo.city) == 0) {
+        if (strcmp(allcity[weizhi][j], CurrentUserInfo->city) == 0) {
             gtk_combo_box_set_active(GTK_COMBO_BOX(icity), j);
             break;
         }
@@ -574,7 +574,7 @@ void infotv() {
     gtk_widget_show(iprovinces);
     gtk_widget_show(icity);
 
-    ibirthday = gtk_button_new_with_label(CurrentUserInfo.birthday);//生日
+    ibirthday = gtk_button_new_with_label(CurrentUserInfo->birthday);//生日
     gtk_fixed_put(GTK_FIXED(Infolayout), ibirthday, 48, 263);
     g_signal_connect(ibirthday, "clicked", G_CALLBACK(calendar_change_birthday), NULL);
 

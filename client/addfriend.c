@@ -11,8 +11,6 @@
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 
-int searchfriend(CRPBaseHeader *header, void *data);
-
 GtkWidget *addwindow, *addframelayout;
 GtkWidget *addlayout2, *addlayout1, *addlayout31;//layout
 
@@ -23,7 +21,7 @@ cairo_surface_t *surfacebackground1, *surfacebackground3, *surfacebackground2, *
 cairo_surface_t *surfacehead;
 //资源
 
-GtkWidget *background1, *background2, *background3, *biaoji, *next, *addclose;    //引用
+GtkWidget *background1, *background2, *background3, *biaoji1,*biaoji2, *next, *addclose;    //引用
 GtkWidget *smallhead, *done, *done2;
 
 GtkEventBox *next_enent_box, *close_event_box;
@@ -63,7 +61,9 @@ void create_surface()
     background1 = gtk_image_new_from_surface(surfacebackground1);
     background2 = gtk_image_new_from_surface(surfacebackground2);
 
-    biaoji = gtk_image_new_from_surface(surfacebiaoji);
+    biaoji1 = gtk_image_new_from_surface(surfacebiaoji);
+    biaoji2 = gtk_image_new_from_surface(surfacebiaoji);
+
     next = gtk_image_new_from_surface(surfacenext);
     addclose = gtk_image_new_from_surface(surfaceclose);
     done = gtk_image_new_from_surface(surfacedone);
@@ -87,6 +87,7 @@ static gint add_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
 //关闭按钮
 static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
+    AddFriendflag=1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
     return 0;
 }
@@ -98,6 +99,7 @@ static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 
     struct add_friend_info *p = data;
     CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
+    AddFriendflag=1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
 }
 //
@@ -259,7 +261,7 @@ gboolean putimage(gpointer user_data)
 }
 
 
-int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
+static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
 {
     struct add_friend_info *p = (struct add_friend_info *) data;
     switch (header->packetID)
@@ -329,7 +331,7 @@ static gint next_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 //构造第一个界面的地方
 int AddFriendFun()
 {
-
+    AddFriendflag=0;//判断是否打开搜索窗口，置0，不能打开
     addwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     addframelayout = gtk_layout_new(NULL, NULL);
     addlayout1 = gtk_fixed_new();
@@ -376,7 +378,9 @@ int AddFriendFun()
     //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
     gtk_fixed_put(GTK_FIXED(addlayout1), add_mov_event, 0, 0);
 
-    gtk_fixed_put(GTK_FIXED(addlayout1), biaoji, 6, 75);
+    gtk_fixed_put(GTK_FIXED(addlayout1), biaoji1, 6, 75);
+    gtk_fixed_put(GTK_FIXED(addlayout1), biaoji2, 6, 118);
+
     gtk_fixed_put(GTK_FIXED(addlayout1), next_enent_box, 400, 200);
     gtk_fixed_put(GTK_FIXED(addlayout1), close_event_box, 519, 0);
 
@@ -437,7 +441,7 @@ static gint pop_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
 }
 
 
-int Friend_Fequest_Popup(uint32_t uid, const char *yanzheng_message)
+int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
 {
 
     GtkWidget *popupcancel, *popupdone, *popupbackground;
@@ -509,7 +513,7 @@ int Friend_Fequest_Popup(uint32_t uid, const char *yanzheng_message)
     sprintf(mes, "用户%d请求添加你为好友", uid);
     gtk_test_text_set(text, mes);
 //    sprintf(mes, "系统消息");
-    gtk_test_text_set(yanzheng, yanzheng_message);
+    gtk_test_text_set(yanzheng, verification_message);
 
     GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
     gtk_widget_override_background_color(text, GTK_STATE_NORMAL, &rgba);//设置透明
