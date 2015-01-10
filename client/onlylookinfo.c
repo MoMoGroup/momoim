@@ -130,7 +130,7 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 
 //更新
 //鼠标点击事件
-static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint change_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -140,7 +140,7 @@ static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 
 //更新
 //鼠标抬起事件
-static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1) {
         ChangeInfo();
@@ -150,7 +150,7 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 
 //更新
 //鼠标移动事件
-static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint change_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) info->Infochange, Surfacechange1); //置换图标
@@ -159,7 +159,7 @@ static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 
 //更新
 //鼠标离开事件
-static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint change_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->Infochange, Surfacechange);
@@ -217,10 +217,10 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
 
     if (CurrentUserInfo->uid == friendinfonode->user.uid) {
         Change_event_box = BuildEventBox(friendinfonode->Infochange,
-                                         G_CALLBACK(save_button_press_event),
-                                         G_CALLBACK(save_enter_notify_event),
-                                         G_CALLBACK(save_leave_notify_event),
-                                         G_CALLBACK(save_button_release_event),
+                                         G_CALLBACK(change_button_press_event),
+                                         G_CALLBACK(change_enter_notify_event),
+                                         G_CALLBACK(change_leave_notify_event),
+                                         G_CALLBACK(change_button_release_event),
                                          NULL,
                                          friendinfonode);
         gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Change_event_box, 350, 440);
