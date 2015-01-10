@@ -206,7 +206,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
                                      friendinfonode);
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Guanxx_event_box, 509, 0);
 
-    if (CurrentUserInfo.uid == friendinfonode->user.uid) {
+    if (CurrentUserInfo->uid == friendinfonode->user.uid) {
         Change_event_box = BuildEventBox(friendinfonode->Infochange,
                                          G_CALLBACK(save_button_press_event),
                                          G_CALLBACK(save_enter_notify_event),
@@ -265,7 +265,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), isex, 305, 240);
 
     for (int i = 0; i < 12; ++i) {
-        if (CurrentUserInfo.constellation == i) {
+        if (CurrentUserInfo->constellation == i) {
             iconstellation = gtk_label_new(friendinfonode->user.name);//星座
             break;
         }
