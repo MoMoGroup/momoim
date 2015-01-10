@@ -22,6 +22,7 @@ typedef struct FriendInfo
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;
+
     struct FriendInfo *next;
 } FriendInfo;
 extern FriendInfo *FriendInfoHead;

@@ -495,6 +495,7 @@ static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     if (event->button == 1)
     {
+        //查看资料
         info();
     }
 
@@ -568,6 +569,10 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     }
 }
 
+static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+
+    return 0;
+}
 
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
@@ -674,6 +679,7 @@ int MainInterFace()
     GtkWidget *deletefriend;
     GtkWidget *remark;
     GtkWidget *sendfile;
+    GtkWidget *lookinfo;
     //分组菜单
     menu1 = gtk_menu_new();
     add = gtk_menu_item_new_with_mnemonic("添加分组");
@@ -706,11 +712,18 @@ int MainInterFace()
     sendfile = gtk_menu_item_new_with_mnemonic("发送文件");
     gtk_container_add(GTK_CONTAINER(menu2), sendfile);
     gtk_widget_show(sendfile);
+    lookinfo = gtk_menu_item_new_with_mnemonic("查看资料");
+    gtk_container_add(GTK_CONTAINER(menu2), lookinfo);
+    gtk_widget_show(lookinfo);
+
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
             G_CALLBACK(button2_press_event), (gpointer) menu2);
 
     g_signal_connect(G_OBJECT(sendmsg), "button_press_event",
             G_CALLBACK(sendmsg_button_press_event), (gpointer) treeView);
+
+    g_signal_connect(G_OBJECT(lookinfo), "button_press_event",
+                     G_CALLBACK(lookinfo_button_press_event), (gpointer) treeView);
 
     gtk_widget_show_all(window);
     //隐藏水平滚动条
