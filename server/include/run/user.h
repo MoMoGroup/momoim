@@ -22,7 +22,8 @@ typedef enum
 typedef enum
 {
     CUOT_FILE_REQUEST,
-    CUOT_FILE_STORE
+    CUOT_FILE_STORE,
+    CUOT_NAT_DISCOVER
 } UserOperationType;
 
 //消息句柄
@@ -152,9 +153,6 @@ POnlineUser OnlineUserGet(uint32_t uid);
 //该字段用于加速对在线用户数据的操作.
 POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid);
 
-//释放一个在线用户字段
-void UserFreeOnlineInfo(POnlineUser user);
-
 //注册一个可取消用户操作
 PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data) __attribute_malloc__;
 
@@ -185,5 +183,3 @@ void FinalizeUserManager();
 
 //在线的小伙伴们！！
 extern OnlineUsersTableType OnlineUserTable;
-//用户表写锁
-extern pthread_rwlock_t UsersTableLock;

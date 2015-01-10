@@ -46,6 +46,10 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t
         [CRP_PACKET_FRIEND_ACCEPT]      =  (GeneralPacketProcessor) ProcessPacketFriendAccept,
         [CRP_PACKET_FRIEND_DELETE]      = (GeneralPacketProcessor) ProcessPacketFriendDelete,
         [CRP_PACKET_FRIEND_MOVE]        = (GeneralPacketProcessor) ProcessPacketFriendMove,
+        [CRP_PACKET_FRIEND_GROUP_ADD]   = (GeneralPacketProcessor) ProcessPacketFriendGroupAdd,
+        [CRP_PACKET_FRIEND_GROUP_DELETE]= (GeneralPacketProcessor) ProcessPacketFriendGroupDelete,
+        [CRP_PACKET_FRIEND_GROUP_RENAME]= (GeneralPacketProcessor) ProcessPacketFriendGroupRename,
+        [CRP_PACKET_FRIEND_GROUP_MOVE]  = (GeneralPacketProcessor) ProcessPacketFriendGroupMove,
 
 
         [CRP_PACKET_FILE__START]        = (GeneralPacketProcessor) NULL,
@@ -58,6 +62,9 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t
 
         [CRP_PACKET_MESSAGE__START]     = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_MESSAGE_NORMAL]     = (GeneralPacketProcessor) ProcessPacketMessageNormal,
+
+        [CRP_PACKET_NET__START]         = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_NAT_DISCOVER]       = (GeneralPacketProcessor) ProcessPacketNatDiscover,
 };
 
 void InitUserManager()
@@ -400,13 +407,8 @@ POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid)
     memcpy(info->userDir, path, userDirSize);
     info->userDir[userDirSize] = 0;
 
-    info->friends = UserFriendsGet(uid, &info->friendsLock);
+    info->friends = UserFriendsGet(uid, &info->friendsLock, -1);
     return UserSetStatus((POnlineUser) user, OUS_ONLINE, info);
-}
-
-void UserFreeOnlineInfo(POnlineUser user)
-{
-
 }
 
 PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data)
@@ -553,17 +555,17 @@ PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int 
 
 int UserOperationCancel(POnlineUser user, PUserOperation op)
 {
-    int ret = 1;
     op->cancel = 1;
     if (op->onCancel != NULL)
     {
-        ret = op->onCancel(user, op);
+        if (op->onCancel(user, op))
+            UserOperationDrop(user, op);
     }
     else
     {
         UserOperationUnregister(user, op);
     }
-    return ret;
+    return 1;
 }
 
 void UserOperationRemoveAll(POnlineUser user)

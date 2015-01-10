@@ -8,8 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
-#include "imcommon/friends.h"
-#include "datafile/friend.h"
+#include <datafile/friend.h>
 #include "datafile/user.h"
 
 static UserFriendsTable friendsTable;
@@ -142,6 +141,7 @@ static UserFriendsEntry *UserFriendsEntrySetUnlock(uint32_t uid, UserFriends *fr
     return entry;
 }
 
+/*
 static UserFriendsEntry *UserFriendsEntrySet(uint32_t uid, UserFriends *friends)
 {
     pthread_rwlock_wrlock(&friendsTableLock);
@@ -157,8 +157,8 @@ static UserFriendsEntry *UserFriendsEntryGet(uint32_t uid)
     pthread_rwlock_unlock(&friendsTableLock);
     return entry;
 }
-
-UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock)
+*/
+UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock, int access)
 {
     UserFriends *friends = NULL;
     void *addr = NULL;
@@ -196,7 +196,18 @@ UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock)
         friends = entry->friends;
     }
     pthread_rwlock_rdlock(&entry->refLock);
-    *lock = &entry->lock;
+    switch (access)
+    {
+        case O_RDONLY:
+            pthread_rwlock_rdlock(&entry->lock);
+            break;
+        case O_WRONLY:
+        case O_RDWR:
+            pthread_rwlock_wrlock(&entry->lock);
+            break;
+    }
+    if (lock)
+        *lock = &entry->lock;
 
     cleanup:
     pthread_rwlock_unlock(&friendsTableLock);

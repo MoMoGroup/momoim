@@ -17,8 +17,8 @@ static int onRequestCancel(POnlineUser user, PUserOperation op)
         free((void *) opData->aio.aio_buf);
         free(opData);
         op->onCancel = NULL;
-        UserOperationUnregister(user, op);
         CRPFileDataEndSend(user->sockfd, op->session, FEC_CANCELED);
+        UserOperationUnregister(user, op);
         return 0;
     }
     return 1;

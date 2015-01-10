@@ -149,8 +149,8 @@ UserGroup *UserFriendsGroupAdd(UserFriends *friends, uint8_t groupId, const char
         return 0;
     }
     friends->groups = ptr;
-
-    UserGroup *group = friends->groups + friends->groupCount;
+    friends->groups[friends->groupCount] = friends->groups[friends->groupCount - 1];//Pending组保持最后一组状态
+    UserGroup *group = friends->groups + friends->groupCount - 1;
     group->friendCount = 0;
     group->friends = NULL;
     group->groupId = groupId;
@@ -203,7 +203,7 @@ int UserFriendsUserDelete(UserGroup *group, uint32_t user)
             if (group->friendCount == 0)
             {
                 free(group->friends);
-                group->friends= NULL;
+                group->friends = NULL;
             }
             else
             {
