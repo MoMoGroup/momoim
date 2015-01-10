@@ -28,9 +28,6 @@ typedef struct FriendInfo
     GtkWidget *Infowind;
     GtkWidget *Infolayout, *Infolayout1;
     GtkWidget *Infobackground, *Infocancel, *Infoguanbi;
-    GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
-    GtkWidget *itel, *ischool, *ipostcode, *ihometown;
-    GtkWidget *headicon;
 
     struct FriendInfo *next;
 } FriendInfo;

@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <protocol/message/Normal.h>
-#include <lber.h>
 #include <protocol/friend/Notify.h>
 #include <protocol/base.h>
 #include <protocol/info/Data.h>
