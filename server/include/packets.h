@@ -54,6 +54,14 @@ int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendM
 
 int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFriendAccept *packet);
 
+int ProcessPacketFriendGroupAdd(POnlineUser user, uint32_t session, CRPPacketFriendGroupAdd *packet);
+
+int ProcessPacketFriendGroupDelete(POnlineUser user, uint32_t session, CRPPacketFriendGroupDelete *packet);
+
+int ProcessPacketFriendGroupMove(POnlineUser user, uint32_t session, CRPPacketFriendGroupMove *packet);
+
+int ProcessPacketFriendGroupRename(POnlineUser user, uint32_t session, CRPPacketFriendGroupRename *packet);
+
 //文件处理
 int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRequest *packet);
 
@@ -65,3 +73,5 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
 
 int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet);
 
+//NAT穿透
+int ProcessPacketNatDiscover(POnlineUser user, uint32_t session, CRPPacketNATDiscover *packet);

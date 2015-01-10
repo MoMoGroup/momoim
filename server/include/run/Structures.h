@@ -29,6 +29,6 @@ typedef UserMessageProcessor *PUserMessageProcessor;
 
 typedef int(*PacketHandler)(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header);
 
-//RESERVE IO池
+
 typedef struct structIOOperation IOOperation;
 typedef IOOperation *PIOOperation;

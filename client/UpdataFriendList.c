@@ -4,9 +4,13 @@
 #include <stdlib.h>
 #include "common.h"
 
+//enum {
+//    PIXBUF_COL = 0,
+//    FRIENDUID_COL = 1,
+//};
 
 
-
+//新添加好友
 int upda_first(void *data)
 {
     GtkTreeIter iterGroup, iterUser;
@@ -23,14 +27,14 @@ int upda_first(void *data)
 
     while (t != UGI_DEFAULT)
     {
-        if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup))
+        if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup))//没有找到分组
         {
             abort();
         }
         gtk_tree_model_get(TreeViewListStore, &iterGroup, FRIENDUID_COL, &t, -1);
     }
 
-    pixbuf = draw(&p->info, 0);
+    pixbuf = DrawFriend(&p->info, 1);
 
     gtk_tree_store_append(TreeViewListStore, &iterUser, &iterGroup);//
     gtk_tree_store_set(TreeViewListStore, &iterUser,
@@ -40,7 +44,10 @@ int upda_first(void *data)
 
     g_object_unref(pixbuf);
 
+    // return GTK_TREE_MODEL(TreeViewListStore);
 
+
+    return 0;
 }
 
 int OnLine(void *data)
@@ -96,14 +103,14 @@ int OnLine(void *data)
         if (p->uid == head->user.uid)
         {
 
-            pixbuf = draw(&head->user, 0);
-
+            pixbuf = DrawFriend(&head->user, 1);
             break;
         }
     }
 
     gtk_tree_store_set(TreeViewListStore, &iterUser,
             PIXBUF_COL, pixbuf,
+            PRIORITY_COL, 1,
             -1);
     return 0;
 }
@@ -160,13 +167,14 @@ int OffLine(void *data)
         if (p->uid == head->user.uid)
         {
 
-            pixbuf = draw(&head->user, 1);
+            pixbuf = DrawFriend(&head->user, 0);
             break;
         }
     }
 
     gtk_tree_store_set(TreeViewListStore, &iterUser,
             PIXBUF_COL, pixbuf,
+            PRIORITY_COL, -1,
             -1);
 
     return 0;

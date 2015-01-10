@@ -11,7 +11,7 @@ SET(SERVER_SOURCE_FILE
     run/listener.c
     run/user.c
     run/worker.c
-    run/p2p.c
+    run/natTraversal.c
 
     datafile/init.c
     datafile/auth.c
@@ -43,6 +43,10 @@ SET(SERVER_SOURCE_FILE
     packets/friend/Accept.c
     packets/friend/Move.c
     packets/friend/Delete.c
+    packets/friend/GroupAdd.c
+    packets/friend/GroupRename.c
+    packets/friend/GroupMove.c
+    packets/friend/GroupDelete.c
 
     packets/login/Login.c
     packets/login/Logout.c
@@ -50,6 +54,8 @@ SET(SERVER_SOURCE_FILE
 
     packets/message/Normal.c
     packets/message/QueryOffline.c
+
+    packets/net/Discover.c
     )
 add_executable(server ${SERVER_SOURCE_FILE})
 target_link_libraries(server protocol)

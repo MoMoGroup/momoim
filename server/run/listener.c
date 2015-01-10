@@ -12,6 +12,7 @@
 
 #include <run/user.h>
 #include <run/jobs.h>
+#include <run/natTraversal.h>
 
 static int ServerIOPool;
 
@@ -55,13 +56,13 @@ void EpollRemove(POnlineUser user)
 
 void *ListenMain(void *listenSocket)
 {
-    int sockListener, sockP2P;
+    int sockListener, sockIdx;
     sockListener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    sockP2P = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sockListener == -1 || sockP2P == -1)
+    sockIdx = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    if (sockListener == -1 || sockIdx == -1)
     {
         close(sockListener);
-        close(sockP2P);
+        close(sockIdx);
         perror("socket");
         return NULL;
     }
@@ -76,15 +77,15 @@ void *ListenMain(void *listenSocket)
     {
         perror("setsockopt reuse address");
         close(sockListener);
-        close(sockP2P);
+        close(sockIdx);
         return NULL;
     }
 
-    if ((setsockopt(sockP2P, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
+    if ((setsockopt(sockIdx, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
     {
         perror("setsockopt reuse address");
         close(sockListener);
-        close(sockP2P);
+        close(sockIdx);
         return NULL;
     }
 
@@ -92,14 +93,14 @@ void *ListenMain(void *listenSocket)
     {
         perror("bind");
         close(sockListener);
-        close(sockP2P);
+        close(sockIdx);
         return NULL;
     }
-    if (-1 == bind(sockP2P, (struct sockaddr *) &addr, sizeof addr))
+    if (-1 == bind(sockIdx, (struct sockaddr *) &addr, sizeof addr))
     {
         perror("bind");
         close(sockListener);
-        close(sockP2P);
+        close(sockIdx);
         return NULL;
     }
 
@@ -107,7 +108,7 @@ void *ListenMain(void *listenSocket)
     {
         perror("listen");
         close(sockListener);
-        close(sockP2P);
+        close(sockIdx);
         return NULL;
     }
     {
@@ -116,7 +117,7 @@ void *ListenMain(void *listenSocket)
         {
             perror("fcntl");
             close(sockListener);
-            close(sockP2P);
+            close(sockIdx);
             return NULL;
         }
 
@@ -126,12 +127,12 @@ void *ListenMain(void *listenSocket)
         {
             perror("fcntl");
             close(sockListener);
-            close(sockP2P);
+            close(sockIdx);
             return NULL;
         }
     }
     log_info("Listener", "Listenning on TCP %d\n", LISTEN_PORT);
-    log_info("Listener", "P2P Index Server Recving on UDP %d\n", LISTEN_PORT);
+    log_info("Listener", "NAT Traversal Server Recving on UDP %d\n", LISTEN_PORT);
 
     ServerIOPool = epoll_create1(EPOLL_CLOEXEC);    //创建epoll,在服务端fork时关闭
     {
@@ -143,10 +144,13 @@ void *ListenMain(void *listenSocket)
 
         event.data.ptr = (void *) -1;
         event.events = EPOLLERR | EPOLLIN | EPOLLET;
-        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockP2P, &event);//P2P索引SOCKET
+        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);//P2P索引SOCKET
     }
 
     struct epoll_event *events = calloc(EPOLL_BACKLOG, sizeof(struct epoll_event));
+    char keyBuffer[32];
+    struct sockaddr_in idxSock;
+    socklen_t addrLen;
     while (IsServerRunning)
     {
         int n = epoll_wait(ServerIOPool, events, EPOLL_BACKLOG, -1);
@@ -183,8 +187,11 @@ void *ListenMain(void *listenSocket)
             }
             else if (events[i].data.ptr == (void *) -1) //P2P发现
             {
-
-                //recvfrom(sockP2P, <#(void*)__buf#>, <#(size_t)__n#>, <#(int)__flags#>, <#(struct sockaddr *)__addr#>, <#(socklen_t*)__addr_len#>)
+                addrLen = sizeof(idxSock);
+                if (32 == recvfrom(sockIdx, keyBuffer, sizeof(keyBuffer), 0, (struct sockaddr *) &idxSock, &addrLen))
+                {
+                    NatHostDiscoverNotify(&idxSock, keyBuffer);
+                }
             }
             else
             {

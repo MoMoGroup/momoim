@@ -37,6 +37,10 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_FRIEND_ACCEPT]            = (void *(*)(CRPBaseHeader *)) CRPFriendAcceptCast,
         [CRP_PACKET_FRIEND_MOVE]              = (void *(*)(CRPBaseHeader *)) CRPFriendMoveCast,
         [CRP_PACKET_FRIEND_DELETE]            = (void *(*)(CRPBaseHeader *)) CRPFriendDeleteCast,
+        [CRP_PACKET_FRIEND_GROUP_ADD]         = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupAddCast,
+        [CRP_PACKET_FRIEND_GROUP_RENAME]      = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupRenameCast,
+        [CRP_PACKET_FRIEND_GROUP_DELETE]      = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupDeleteCast,
+        [CRP_PACKET_FRIEND_GROUP_MOVE]        = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupMoveCast,
 
         [CRP_PACKET_FILE__START]              = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_FILE_DATA]                = (void *(*)(CRPBaseHeader *)) CRPFileDataCast,
@@ -50,8 +54,8 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_MESSAGE_NORMAL]           = (void *(*)(CRPBaseHeader *)) CRPMessageNormalCast,
         [CRP_PACKET_MESSAGE_QUERY_OFFLINE]    = (void *(*)(CRPBaseHeader *)) CRPMessageQueryOfflineCast,
 
-        [CRP_PACKET_P2P_DISCOVER]             = (void *(*)(CRPBaseHeader *)) CRPP2PDiscoverCast,
-        [CRP_PACKET_P2P_QUALITY_TEST]         = (void *(*)(CRPBaseHeader *)) CRPP2PQualityTestCast
+        [CRP_PACKET_NAT_DISCOVER]             = (void *(*)(CRPBaseHeader *)) CRPNATDiscoverCast,
+        [CRP_PACKET_NET_QUALITY_TEST]         = (void *(*)(CRPBaseHeader *)) CRPNETQualityTestCast
 };
 
 static void CRPEncryptDisableUnlock(CRPContext context)

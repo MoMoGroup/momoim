@@ -8,9 +8,9 @@
 CRP_STRUCTURE
 {
     struct sockaddr_in addr;
-} CRPPacketP2PDetected;
+} CRPPacketNATDetected;
 
 __attribute_malloc__
-CRPPacketP2PDetected *CRPP2PDetectedCast(CRPBaseHeader *base);
+CRPPacketNATDetected *CRPNATDetectedCast(CRPBaseHeader *base);
 
-int CRPP2PDetectedSend(CRPContext context, uint32_t sessionID, const struct sockaddr_in *addr);
+int CRPNATDetectedSend(CRPContext context, uint32_t sessionID, const struct sockaddr_in *addr);

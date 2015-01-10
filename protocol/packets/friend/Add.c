@@ -13,11 +13,12 @@ CRPPacketFriendAdd *CRPFriendAddCast(CRPBaseHeader *base)
 
 int CRPFriendAddSend(CRPContext context, uint32_t sessionID, uint32_t uid, const char *note)
 {
-
-    CRPPacketFriendAdd packet = {
-            .uid=uid
-    };
+    int ret;
     size_t lenNote = strlen(note);
-    memcpy(packet.note, note, lenNote);
-    return CRPSend(context, CRP_PACKET_FRIEND_ADD, sessionID, &packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendAdd) + lenNote)) != -1;
+    CRPPacketFriendAdd *packet = (CRPPacketFriendAdd *) malloc(sizeof(CRPPacketFriendAdd) + lenNote);
+    packet->uid = uid;
+    memcpy(packet->note, note, lenNote);
+    ret= CRPSend(context, CRP_PACKET_FRIEND_ADD, sessionID, packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendAdd) + lenNote)) != -1;
+    free(packet);
+    return ret;
 }
