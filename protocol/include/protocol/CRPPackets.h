@@ -11,6 +11,10 @@
 #include "protocol/friend/Accept.h"
 #include "protocol/friend/Move.h"
 #include "protocol/friend/Delete.h"
+#include "protocol/friend/GroupAdd.h"
+#include "protocol/friend/GroupRename.h"
+#include "protocol/friend/GroupDelete.h"
+#include "protocol/friend/GroupMove.h"
 
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
@@ -39,6 +43,11 @@
 #include "protocol/message/Normal.h"
 #include "protocol/message/QueryOffline.h"
 
+#include "protocol/net/Discover.h"
+#include "protocol/net/QualityTest.h"
+#include "protocol/net/Detected.h"
+#include "protocol/net/InetAddress.h"
+
 typedef enum
 {
     CRP_PACKET_KEEP_ALIVE = 0,      //心跳包
@@ -48,7 +57,7 @@ typedef enum
     CRP_PACKET_KICK,                //被服务器踢出
     CRP_PACKET_CANCEL,              //取消操作
     CRP_PACKET_SWITCH_PROTOCOL,     //切换协议
-    CRP_PACKET_CRASH = UINT16_MAX,  //崩溃包
+    CRP_PACKET_CRASH = UINT16_MAX - 1,//崩溃包
 
 
     CRP_PACKET_LOGIN__START = 0x10, //登陆类数据包开始
@@ -71,6 +80,10 @@ typedef enum
     CRP_PACKET_FRIEND_ACCEPT,       //同意好友添加请求
     CRP_PACKET_FRIEND_MOVE,         //好友分组请求
     CRP_PACKET_FRIEND_DELETE,       //删除好友请求
+    CRP_PACKET_FRIEND_GROUP_ADD,    //添加分组
+    CRP_PACKET_FRIEND_GROUP_RENAME, //重命名分组
+    CRP_PACKET_FRIEND_GROUP_DELETE, //删除分组
+    CRP_PACKET_FRIEND_GROUP_MOVE,   //移动分组
 
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件
@@ -83,6 +96,12 @@ typedef enum
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
     CRP_PACKET_MESSAGE_NORMAL,        //消息
     CRP_PACKET_MESSAGE_QUERY_OFFLINE, //查询离线消息
+
+    CRP_PACKET_NET__START = 0x60,   //NAT内网穿透开始
+    CRP_PACKET_NAT_DISCOVER,        //网络发现
+    CRP_PACKET_NET_QUALITY_TEST,    //网络质量测试
+    CRP_PACKET_NET_INET_ADDRESS,    //IP地址数据包
+    CRP_PACKET_NAT_DETECTED,        //主机已检测到
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID
 } CRPPacketIDs;

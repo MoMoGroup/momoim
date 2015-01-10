@@ -27,7 +27,7 @@ gboolean DestroyLayout(gpointer user_data);
 extern UserFriends *friends;
 extern UserGroup *group;
 
-extern int MainChart(friendinfo *friendinfonode);
+extern int MainChart(FriendInfo *friendinfonode);
 
 extern void RecdServerMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid);
 
@@ -39,17 +39,16 @@ extern void DeleteMessageNode(uint32_t sessid);
 
 //extern UserFriends *friends;
 
-struct RECvPictureMessageReloadingData
-{
-    FILE *fp;
-    struct RECVImageMessagedata *image_message_data;
-};
-
 struct RECVImageMessagedata
 {
     int imagecount;
     int charlen;
     char *message_data;
-    friendinfo *userinfo;
+    FriendInfo *userinfo;
 };
-extern int UpFriendList(void *data);
+extern GtkTreeStore *TreeViewListStore;
+extern enum {
+    PIXBUF_COL = 0,
+    FRIENDUID_COL = 1,
+};
+

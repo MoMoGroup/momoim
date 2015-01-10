@@ -3,10 +3,12 @@
 #include <protocol/base.h>
 #include <glib-unix.h>
 #include "common.h"
-#include "ClientSockfd.h"
+#include "../ClientSockfd.h"
+#include "../MainInterface.h"
 #include <string.h>
 #include <pwd.h>
-#include <openssl/md5.h>
+#include <protocol/info/Data.h>
+#include <logger.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
@@ -27,7 +29,7 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
     if (leave)
         g_signal_connect(G_OBJECT(eventBox), "leave_notify_event", G_CALLBACK(leave), data);
     if (click)
-        g_signal_connect(G_OBJECT(eventBox), "click", G_CALLBACK(click), data);
+        g_signal_connect(G_OBJECT(eventBox), "clicked", G_CALLBACK(click), data);
     GdkRGBA rgba = {1, 1, 1, 0};
     gtk_widget_override_background_color(GTK_WIDGET(eventBox), GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
     gtk_container_add((GTK_CONTAINER(eventBox)), warp);
@@ -118,8 +120,9 @@ session_id_t CountSessionId()
 }
 
 
-typedef struct newfriend{
-    int  (*fn)(CRPBaseHeader *, void *data);
+typedef struct find_image_recv_new {
+    gboolean  (*fn)(void *data);
+    void *data;
     char key[16];
     FILE *fp;
 
@@ -127,7 +130,7 @@ typedef struct newfriend{
 
 int recv_new_friend_image(CRPBaseHeader *header, void *data)
 {
-    struct newfriend *p=(struct newfriend *)data;
+    struct find_image_recv_new *p=(struct find_image_recv_new *)data;
 
     switch (header->packetID)
     {
@@ -174,8 +177,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
             {
                 free(packet);
             }
-            g_idle_add(p->fn, data);
-            free(data);
+            g_idle_add(p->fn, p->data);
             free(p);
             return 0;
         }
@@ -185,19 +187,19 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 
 int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
 {
-    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
     char filaname[256];
     HexadecimalConversion(filaname, key);//计算一个文件名
     //0存在，1不存在
     if (access(filaname, F_OK))//不存在，先加载图片
     {
-        struct newfriend *p;
+        struct find_image_recv_new *p=malloc(sizeof(struct find_image_recv_new));
         memcpy(p->key, key, 16);
         p->fn=fn;
+        p->data=data;
         //注册一个接收新添加好友头像的会话
         session_id_t sessionid = CountSessionId();
-        AddMessageNode(sessionid, recv_new_friend_image, malloc(sizeof(struct newfriend)));
-        CRPFileRequestSend(sockfd, sessionid, 0, filaname);//发送用户头像请求
+        AddMessageNode(sessionid, recv_new_friend_image,p);
+        CRPFileRequestSend(sockfd, sessionid, 0, key);//发送用户头像请求
     }
     else
     {

@@ -12,6 +12,10 @@ SET(LIBPROTOCOL_SRC
     packets/friend/Accept.c
     packets/friend/Move.c
     packets/friend/Delete.c
+    packets/friend/GroupAdd.c
+    packets/friend/GroupDelete.c
+    packets/friend/GroupMove.c
+    packets/friend/GroupRename.c
 
     packets/info/Request.c
     packets/info/Data.c
@@ -39,6 +43,11 @@ SET(LIBPROTOCOL_SRC
 
     packets/message/Normal.c
     packets/message/QueryOffline.c
+
+    packets/net/Discover.c
+    packets/net/QualityTest.c
+    packets/net/Detected.c
+    packets/net/InetAddress.c
     )
 ADD_LIBRARY(protocol SHARED ${LIBPROTOCOL_SRC})
 target_link_libraries(protocol mcrypt)

@@ -15,76 +15,26 @@
 #include "addfriend.h"
 #include "Infomation.h"
 
-static GtkWidget *background, *headx, *search, *friend, *closebut;
+static GtkWidget *background1, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
 static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
-static GtkTreeIter iter1, iter2;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 
 
-static GtkTreeStore *store;
+ GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box;
 
-enum
-{
-    PIXBUF_COL = 0,
-    FRIENDUID_COL = 1,
-};
+//enum
+//{
+//    PIXBUF_COL = 0,
+//    FRIENDUID_COL = 1,
+//};
 
-int UpFriendList(void *data)//更新好友列表
-{
-    cairo_surface_t *surface;
 
-    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
-    char filename[256];
-    HexadecimalConversion(filename,infodata->info.icon);
-    //加载一个图片
-    cairo_surface_t *new_friend_surface;
-    new_friend_surface = cairo_image_surface_create_from_png(filename);
-    int w = cairo_image_surface_get_width(new_friend_surface);
-    int h = cairo_image_surface_get_height(new_friend_surface);
-//创建画布
-    surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
-    //创建画笔
-    cr = cairo_create(surface);
-    cairo_save(cr);
-    cairo_arc(cr, 30, 30, 30, 0, M_PI * 2);
-    cairo_clip(cr);
-    //缩放
-    cairo_scale(cr, 60.0 / w, 60.0 / h);
-    //把画笔和图片相结合。
-    cairo_set_source_surface(cr, new_friend_surface, 0, 0);
-    //把图用画笔画在画布中
-    cairo_paint(cr);
-    cairo_restore(cr);
-    //设置源的颜色
-    cairo_set_source_rgb(cr, 0, 0, 0);
-    //从图像的w+10,30区域开始加入字体
-    cairo_move_to(cr, 90, 40);
-    cairo_set_font_size(cr, 20);
-    cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-
-    cairo_show_text(cr, infodata->info.nickName);
-
-    int num=friends->groups[0].friendCount;//分组好友数
-
-    pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
-    gtk_tree_store_append(store, &iter2, &iter1);//
-    gtk_tree_store_set(store, &iter2,
-            PIXBUF_COL, pixbuf,
-            FRIENDUID_COL, friends->groups[0].friends[num],
-            -1);
-    g_object_unref(pixbuf);
-
-    cairo_destroy(cr);
-    cairo_surface_destroy(new_friend_surface);
-    return GTK_TREE_MODEL(store);
-
-}
 
 GtkTreeModel *createModel()
 {
@@ -92,7 +42,9 @@ GtkTreeModel *createModel()
     cairo_surface_t *surface;
     cairo_surface_t *surfaceIcon;
 
-    store = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
+    GtkTreeIter iter1, iter2;
+
+    TreeViewListStore = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
     for (i = 0; i < friends->groupCount; i++)
     {
         surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
@@ -102,10 +54,10 @@ GtkTreeModel *createModel()
         cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_show_text(cr, friends->groups[i].groupName);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
-        gtk_tree_store_append(store, &iter1, NULL);
-        gtk_tree_store_set(store, &iter1,
+        gtk_tree_store_append(TreeViewListStore, &iter1, NULL);
+        gtk_tree_store_set(TreeViewListStore, &iter1,
                 PIXBUF_COL, pixbuf,
-                FRIENDUID_COL, friends->groups[i].groupId,
+                FRIENDUID_COL,(uint32_t) friends->groups[i].groupId,
                 -1);
 
         g_object_unref(pixbuf);
@@ -116,7 +68,7 @@ GtkTreeModel *createModel()
             char mulu[80] = {0};
             sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, friends->groups[i].friends[j]);
             pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
-            friendinfo *rear = friendinfohead;
+            FriendInfo *rear = FriendInfoHead;
             while (rear)
             {
                 if (rear->sessionid == friends->groups[i].friends[j])
@@ -142,6 +94,8 @@ GtkTreeModel *createModel()
             cairo_scale(cr, 60.0 / w, 60.0 / h);
             //把画笔和图片相结合。
             cairo_set_source_surface(cr, surfaceIcon, 0, 0);
+
+
             //把图用画笔画在画布中
             cairo_paint(cr);
             cairo_restore(cr);
@@ -155,8 +109,8 @@ GtkTreeModel *createModel()
             cairo_show_text(cr, friendname);
 
             pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
-            gtk_tree_store_append(store, &iter2, &iter1);//
-            gtk_tree_store_set(store, &iter2,
+            gtk_tree_store_append(TreeViewListStore, &iter2, &iter1);//
+            gtk_tree_store_set(TreeViewListStore, &iter2,
                     PIXBUF_COL, pixbuf,
                     FRIENDUID_COL, friends->groups[i].friends[j],
                     -1);
@@ -165,7 +119,7 @@ GtkTreeModel *createModel()
     }
     cairo_destroy(cr);
     cairo_surface_destroy(surfaceIcon);
-    return GTK_TREE_MODEL(store);
+    return GTK_TREE_MODEL(TreeViewListStore);
 }
 
 
@@ -180,7 +134,7 @@ static void create_surfaces()
     surfaceclose52 = cairo_image_surface_create_from_png("关闭按钮2.png");
     surfaceclose53 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
-    background = gtk_image_new_from_surface(surfacemainbackgroud);
+    background1 = gtk_image_new_from_surface(surfacemainbackgroud);
     search = gtk_image_new_from_surface(surfaceresearch);
     friend = gtk_image_new_from_surface(surfacefriendimage);
     closebut = gtk_image_new_from_surface(surfaceclose51);
@@ -202,7 +156,7 @@ static void loadinfo()
 
     //加载用户头像
     int finduidflag = 0;
-    friendinfo *rear = friendinfohead;
+    FriendInfo *rear = FriendInfoHead;
     while (rear)
     {
         if (rear->user.uid == CurrentUserInfo.uid)
@@ -336,7 +290,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         int i, j;
         int uidfindflag = 0;
         GtkTreePath *path;
-        friendinfo *friendinforear;
+        FriendInfo *friendinforear;
         path = gtk_tree_model_get_path(model, &iter);
         i = gtk_tree_path_get_indices(path)[0];
         j = gtk_tree_path_get_indices(path)[1];
@@ -345,7 +299,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
         {
             uint32_t t;
             gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
-            friendinforear = friendinfohead;
+            friendinforear = FriendInfoHead;
             while (friendinforear)
             {
                 if (friendinforear->user.uid == t)
@@ -377,58 +331,22 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 
 }
 
-int deal_with_recv_message(CRPBaseHeader *header, void *data)
+
+int deal_with_recv_message(void *data)  //图片处理函数
 {
-    struct RECvPictureMessageReloadingData *recv_message = (struct RECvPictureMessageReloadingData *) data;
-    int ret = 1;
-    switch (header->packetID)
+    struct RECVImageMessagedata *recv_message = (struct RECVImageMessagedata *) data;
+    recv_message->imagecount--;
+    if (recv_message->imagecount == 0)
     {
-        case CRP_PACKET_FAILURE:
-        {
-            CRPPacketFailure *infodata = CRPFailureCast(header);
-            log_info("FAILURE reason", infodata->reason);
-            fclose(recv_message->fp);
-            free(recv_message);
-            return 0;
-        };
-        case  CRP_PACKET_FILE_DATA_START:
-        {
-            log_info("Recv Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
-            CRPOKSend(sockfd, header->sessionID);
-            break;
-        };
-        case CRP_PACKET_FILE_DATA:
-        {
-
-            CRPPacketFileData *packet = CRPFileDataCast(header);
-            fwrite(packet->data, 1, packet->length, recv_message->fp);
-            CRPOKSend(sockfd, header->sessionID);
-            break;
-        };
-        case CRP_PACKET_FILE_DATA_END:
-        {
-            fclose(recv_message->fp);
-
-            recv_message->image_message_data->imagecount--;
-            if (recv_message->image_message_data->imagecount == 0)
-            {
-                ShoweRmoteText(recv_message->image_message_data->message_data, recv_message->image_message_data->userinfo,
-                        recv_message->image_message_data->charlen);
-                free(recv_message->image_message_data->message_data);
-                free(recv_message->image_message_data);
-                ret = 0;
-            }
-            free(recv_message);
-
-            break;
-        };
-
+        ShoweRmoteText(recv_message->message_data, recv_message->userinfo,
+                recv_message->charlen);
+        free(recv_message->message_data);
+        free(recv_message);
     }
-
-    return ret;
+    return FALSE;
 }
 
-int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
+int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
 {
     int i = 0;
     int isimageflag = 0;
@@ -451,18 +369,11 @@ int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
             isimageflag = 1;
             char filename[256] = {0};
             char strdest[17] = {0};
-            session_id_t session_id;
-            struct RECvPictureMessageReloadingData *recvimagemessge
-                    = (struct RECvPictureMessageReloadingData *) malloc(sizeof(struct RECvPictureMessageReloadingData));
             i++;
+            image_message_data->imagecount++;
             memcpy(strdest, &recv_text[i], 16);
             HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
-            recvimagemessge->fp = (fopen(filename, "w"));
-            session_id = CountSessionId();
-            recvimagemessge->image_message_data = image_message_data;
-            AddMessageNode(session_id, deal_with_recv_message, recvimagemessge);
-            CRPFileRequestSend(sockfd, session_id, 0, recv_text + i);
-            recvimagemessge->image_message_data->imagecount++;
+            FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
             i = i + 16;
         }
 
@@ -483,7 +394,7 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
 
     log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
     int uidfindflag = 0;
-    friendinfo *userinfo = friendinfohead;
+    FriendInfo *userinfo = FriendInfoHead;
     while (userinfo)
     {
         if (userinfo->user.uid == recd_uid)
@@ -620,7 +531,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     int i, j;
     int uidfindflag = 0;
     GtkTreePath *path;
-    friendinfo *friendinforear;
+    FriendInfo *friendinforear;
     path = gtk_tree_model_get_path(model, &iter);
     i = gtk_tree_path_get_indices(path)[0];
     j = gtk_tree_path_get_indices(path)[1];
@@ -629,7 +540,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     {
         uint32_t t;
         gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
-        friendinforear = friendinfohead;
+        friendinforear = FriendInfoHead;
         while (friendinforear)
         {
             if (friendinforear->user.uid == t)
@@ -662,7 +573,9 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
 
         gpointer data)
 {
+
     AddFriendFun(); //调用添加好友函数
+    //Friend_Fequest_Popup(10001);
     return 0;
 }
 
@@ -683,21 +596,21 @@ int MainInterFace()
 
     create_surfaces();
 
-    background_event_box = BuildEventBox(background,
-                                         G_CALLBACK(background_button_press_event),
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL,
-                                         NULL);
+    background_event_box = BuildEventBox(background1,
+            G_CALLBACK(background_button_press_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
 
     closebut_event_box = BuildEventBox(closebut,
-                                       G_CALLBACK(closebut_button_press_event),
-                                       G_CALLBACK(closebut_enter_notify_event),
-                                       G_CALLBACK(closebut_leave_notify_event),
-                                       G_CALLBACK(closebut_button_release_event),
-                                       NULL,
-                                       NULL);
+            G_CALLBACK(closebut_button_press_event),
+            G_CALLBACK(closebut_enter_notify_event),
+            G_CALLBACK(closebut_leave_notify_event),
+            G_CALLBACK(closebut_button_release_event),
+            NULL,
+            NULL);
 
     search = gtk_image_new_from_surface(surfaceresearch);
     search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
@@ -710,12 +623,12 @@ int MainInterFace()
     loadinfo();
 
     headx_event_box = BuildEventBox(headx,
-                                    G_CALLBACK(headx_button_press_event),
-                                    G_CALLBACK(headx_enter_notify_event),
-                                    G_CALLBACK(headx_leave_notify_event),
-                                    G_CALLBACK(headx_button_release_event),
-                                    NULL,
-                                    NULL);
+            G_CALLBACK(headx_button_press_event),
+            G_CALLBACK(headx_enter_notify_event),
+            G_CALLBACK(headx_leave_notify_event),
+            G_CALLBACK(headx_button_release_event),
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
 
 

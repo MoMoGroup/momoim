@@ -46,6 +46,10 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t
         [CRP_PACKET_FRIEND_ACCEPT]      =  (GeneralPacketProcessor) ProcessPacketFriendAccept,
         [CRP_PACKET_FRIEND_DELETE]      = (GeneralPacketProcessor) ProcessPacketFriendDelete,
         [CRP_PACKET_FRIEND_MOVE]        = (GeneralPacketProcessor) ProcessPacketFriendMove,
+        [CRP_PACKET_FRIEND_GROUP_ADD]   = (GeneralPacketProcessor) ProcessPacketFriendGroupAdd,
+        [CRP_PACKET_FRIEND_GROUP_DELETE]= (GeneralPacketProcessor) ProcessPacketFriendGroupDelete,
+        [CRP_PACKET_FRIEND_GROUP_RENAME]= (GeneralPacketProcessor) ProcessPacketFriendGroupRename,
+        [CRP_PACKET_FRIEND_GROUP_MOVE]  = (GeneralPacketProcessor) ProcessPacketFriendGroupMove,
 
 
         [CRP_PACKET_FILE__START]        = (GeneralPacketProcessor) NULL,
@@ -58,6 +62,9 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t
 
         [CRP_PACKET_MESSAGE__START]     = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_MESSAGE_NORMAL]     = (GeneralPacketProcessor) ProcessPacketMessageNormal,
+
+        [CRP_PACKET_NET__START]         = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_NAT_DISCOVER]       = (GeneralPacketProcessor) ProcessPacketNatDiscover,
 };
 
 void InitUserManager()
@@ -237,46 +244,6 @@ PPendingUser PendingUserNew(int fd)
     return user;
 }
 
-int OnlineUserDelete(POnlineUser user)
-{
-    if (user->status == OUS_PENDING_HELLO || user->status == OUS_PENDING_LOGIN)
-        return PendingUserDelete((PPendingUser) user);
-    if (user->status == OUS_PENDING_CLEAN)
-        return 1;
-    if (user->status != OUS_ONLINE)
-    {
-        log_error("UserManager", "Trying to delete online user on illegal user status.\n");
-        return 0;
-    }
-    if (UserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
-        return 0;
-    pthread_rwlock_unlock(user->holdLock);
-
-    pthread_rwlock_wrlock(user->holdLock);
-    UserOperationRemoveAll(user);
-    pthread_mutex_destroy(&user->operations.lock);
-    CRPClose(user->sockfd);
-    UserFreeOnlineInfo(user);
-
-    pthread_rwlock_unlock(user->holdLock);
-    pthread_rwlock_destroy(user->holdLock);
-    free(user->holdLock);
-
-    free(user);
-    return 1;
-}
-
-int UserHold(POnlineUser user)
-{
-    return user->status != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
-}
-
-void UserDrop(POnlineUser user)
-{
-    if (user)
-        pthread_rwlock_unlock(user->holdLock);
-}
-
 static void broadcastNotify(POnlineUser user, FriendNotifyType type)
 {
     POnlineUserInfo info = user->info;
@@ -303,6 +270,65 @@ static void broadcastNotify(POnlineUser user, FriendNotifyType type)
         }
     }
     pthread_rwlock_unlock(info->friendsLock);
+}
+
+int OnlineUserDelete(POnlineUser user)
+{
+    if (user->status == OUS_PENDING_HELLO || user->status == OUS_PENDING_LOGIN)
+        return PendingUserDelete((PPendingUser) user);
+    if (user->status == OUS_PENDING_CLEAN)
+        return 1;
+    if (user->status != OUS_ONLINE)
+    {
+        log_error("UserManager", "Trying to delete online user on illegal user status.\n");
+        return 0;
+    }
+    if (UserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
+        return 0;
+    pthread_rwlock_unlock(user->holdLock);
+
+    pthread_rwlock_wrlock(user->holdLock);
+    UserOperationRemoveAll(user);
+    pthread_mutex_destroy(&user->operations.lock);
+    CRPClose(user->sockfd);
+    if (user->info)
+    {
+        log_info("UserManager", "User %d offline.\n", user->info->uid);
+        UserInfo *info = UserInfoGet(user->info->uid);
+        if (info)
+        {
+            info->lastlogin = (uint32_t) (time(NULL) / (24 * 60 * 60));
+            UserInfoSave(info->uid, info);
+            UserInfoFree(info);
+        }
+
+        UserFriendsDrop(user->info->uid);
+
+        if (user->info->userDir)
+        {
+            free(user->info->userDir);
+        }
+        free(user->info);
+        user->info = NULL;
+    }
+
+    pthread_rwlock_unlock(user->holdLock);
+    pthread_rwlock_destroy(user->holdLock);
+    free(user->holdLock);
+
+    free(user);
+    return 1;
+}
+
+int UserHold(POnlineUser user)
+{
+    return user->status != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
+}
+
+void UserDrop(POnlineUser user)
+{
+    if (user)
+        pthread_rwlock_unlock(user->holdLock);
 }
 
 POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info)
@@ -338,8 +364,8 @@ POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUser
     else if (user->status == OUS_ONLINE && status == OUS_PENDING_CLEAN)
     {
         OnlineUserTableSet(user->info->uid, NULL);
-        JobManagerKick(user);
         EpollRemove(user);
+        JobManagerKick(user);
         broadcastNotify(user, FNT_FRIEND_OFFLINE);
     }
     else if (status == OUS_PENDING_CLEAN)
@@ -381,50 +407,16 @@ POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid)
     memcpy(info->userDir, path, userDirSize);
     info->userDir[userDirSize] = 0;
 
-    info->friends = UserFriendsGet(uid, &info->friendsLock);
+    info->friends = UserFriendsGet(uid, &info->friendsLock, -1);
     return UserSetStatus((POnlineUser) user, OUS_ONLINE, info);
-}
-
-void UserFreeOnlineInfo(POnlineUser user)
-{
-    if (user->info)
-    {
-        log_info("UserManager", "User %d offline.\n", user->info->uid);
-        for (int i = 0; i < user->info->friends->groupCount; ++i)
-        {
-            UserGroup *group = user->info->friends->groups + i;
-            if (group->groupId == UGI_BLACKLIST || group->groupId == UGI_PENDING)
-                continue;
-            for (int j = 0; j < group->friendCount; ++j)
-            {
-                POnlineUser duser = OnlineUserGet(group->friends[j]);
-                if (duser)
-                {
-                    if (duser->status == OUS_ONLINE)
-                    {
-                        CRPFriendNotifySend(duser->sockfd, 0, FNT_FRIEND_OFFLINE, user->info->uid, 0, 0);
-                    }
-                    UserDrop(duser);
-                }
-            }
-        }
-        UserFriendsDrop(user->info->uid);
-
-        if (user->info->userDir)
-        {
-            free(user->info->userDir);
-        }
-        free(user->info);
-        user->info = NULL;
-    }
 }
 
 PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data)
 {
-/*  the can not support this feature
-    if (user->operations.count >= 100)
+    /* It will cause some trouble */
+    if (user->operations.count >= 1000)
         return NULL;
-*/
+
     PUserOperation operation = (PUserOperation) calloc(1, sizeof(UserOperation));
     if (operation == NULL)
     {
@@ -563,17 +555,17 @@ PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int 
 
 int UserOperationCancel(POnlineUser user, PUserOperation op)
 {
-    int ret = 1;
     op->cancel = 1;
     if (op->onCancel != NULL)
     {
-        ret = op->onCancel(user, op);
+        if (op->onCancel(user, op))
+            UserOperationDrop(user, op);
     }
     else
     {
         UserOperationUnregister(user, op);
     }
-    return ret;
+    return 1;
 }
 
 void UserOperationRemoveAll(POnlineUser user)

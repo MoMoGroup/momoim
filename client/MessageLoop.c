@@ -66,7 +66,7 @@ int MessageLoopFunc()
     while (1)
     {
         header = CRPRecv(sockfd);
-        log_info("MSG", "PacketID:%d,SessionID:%u\n", header->packetID, header->sessionID);
+        log_info("MainMessageLoop", "PacketID:%02x,SessionID:%u\n", (int) header->packetID, header->sessionID);
         pthread_rwlock_rdlock(&lock);//读锁定
         messageloop *prev = &messagehead, *p;
         int flag = 1;
@@ -75,8 +75,6 @@ int MessageLoopFunc()
             p = prev->next;
             if (p->sessionid == header->sessionID)
             {
-                log_info("MSG", "Processing session %u\n", p->sessionid);
-                flag = p->fn(header, p->data);
                 break;
 
             }
@@ -85,6 +83,11 @@ int MessageLoopFunc()
 
         }
         pthread_rwlock_unlock(&lock);//取消锁
+
+        if(prev->next)
+        {
+            flag = p->fn(header, p->data);
+        }
 
         if (flag == 0)
         {

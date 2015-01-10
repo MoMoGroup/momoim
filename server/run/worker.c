@@ -19,7 +19,8 @@ void *WorkerMain(void *arg)
     while (IsServerRunning)
     {
         user = JobManagerPop();
-
+        if (!user && !IsServerRunning)
+            break;
         header = CRPRecv(user->sockfd);
         if (header == NULL)
         {
