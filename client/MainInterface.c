@@ -499,7 +499,7 @@ static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)
     {
         //查看资料
-        info();
+        //OnlyLookInfo(friendinforear);
     }
 
     return 0;

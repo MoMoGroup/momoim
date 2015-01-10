@@ -27,10 +27,7 @@ typedef struct FriendInfo
     //查看资料所需控件
     GtkWidget *Infowind;
     GtkWidget *Infolayout, *Infolayout1;
-    GtkWidget *Infobackground, *Infocancel, *Infoguanbi;
-    GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
-    GtkWidget *itel, *ischool, *ipostcode, *ihometown;
-    GtkWidget *headicon;
+    GtkWidget *Infobackground, *Infocancel, *Infoguanbi, *Infochange;
 
     struct FriendInfo *next;
 } FriendInfo;
