@@ -50,5 +50,6 @@ extern GtkTreeStore *TreeViewListStore;
 extern enum {
     PIXBUF_COL = 0,
     FRIENDUID_COL = 1,
+    PRIORITY_COL,
 };
 

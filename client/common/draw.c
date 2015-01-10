@@ -1,17 +1,17 @@
 #include <math.h>
 #include <imcommon/friends.h>
 #include "common.h"
+#include "../MainInterface.h"
 
-GdkPixbuf *draw(const UserInfo *userInfo, int remove_color)
+GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
 {
     GdkPixbuf *pixbuf;
     cairo_t *cr;
     cairo_surface_t *surface;
 
 
-
     char filename[256];
-    HexadecimalConversion(filename,userInfo->icon);
+    HexadecimalConversion(filename, userInfo->icon);
 //加载一个图片
     cairo_surface_t *new_friend_surface;
     new_friend_surface = cairo_image_surface_create_from_png(filename);
@@ -30,17 +30,17 @@ GdkPixbuf *draw(const UserInfo *userInfo, int remove_color)
 //把画笔和图片相结合。
     cairo_set_source_surface(cr, new_friend_surface, 0, 0);
 ////把图用画笔画在画布中
-    if(remove_color)
+    if (draw_color)
     {
-        cairo_paint_with_alpha(cr,0.5);
+        cairo_paint(cr);//1代表在线
     }
     else
     {
-        cairo_paint(cr);
+        cairo_paint_with_alpha(cr, 0.4);//2不在线
     }
 
- //   cairo_paint_with_alpha(cr,0.5);
- //   cairo_paint(cr);
+    //   cairo_paint_with_alpha(cr,0.5);
+    //   cairo_paint(cr);
     cairo_restore(cr);
 //设置源的颜色
     cairo_set_source_rgb(cr, 0, 0, 0);
@@ -49,12 +49,13 @@ GdkPixbuf *draw(const UserInfo *userInfo, int remove_color)
     cairo_set_font_size(cr, 20);
     cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
-    cairo_show_text(cr,userInfo->nickName);
+    cairo_show_text(cr, userInfo->nickName);
 
     cairo_destroy(cr);
     cairo_surface_destroy(new_friend_surface);
 
     pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
+    cairo_surface_destroy(surface);
 
     return pixbuf;
-}//cairo_paint_with_alpha(cr,0.5);
+}

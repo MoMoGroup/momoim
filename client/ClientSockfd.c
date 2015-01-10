@@ -4,10 +4,16 @@
 #include <netinet/in.h>
 #include<stdlib.h>
 #include <logger.h>
+#include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/message/Normal.h>
+#include <lber.h>
+#include <protocol/friend/Notify.h>
+#include <protocol/base.h>
+#include <protocol/info/Data.h>
 #include "protocol.h"
 #include "MainInterface.h"
 #include "PopupWinds.h"
@@ -23,16 +29,6 @@ UserGroup *group;
 UserInfo CurrentUserInfo;
 gchar *uidname;
 FILE *fp;
-//
-//typedef struct friendinfo {
-//    uint32_t sessionid;
-//    int flag;
-//    //用来判断是否接受成功
-//    UserInfo user;
-//    FILE *fp;
-//
-//    struct friendinfo *next;
-//} friendinfo;
 
 
 FriendInfo *FriendInfoHead;
@@ -89,7 +85,7 @@ gboolean postMessage(gpointer user_data)
         // popup("添加请求", "用户请求添加你为好友");
 
 
-        Friend_Fequest_Popup(packet->uid);//
+        Friend_Fequest_Popup(packet->uid,packet->message);//
 
         // CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
 
@@ -129,7 +125,6 @@ int new_friend_info(CRPBaseHeader *header, void *data)
             //infodata->info;//昵称，性别等用户资料
             log_info("用户资料回复，昵称", "%s\n", infodata->info.nickName);
             FindImage(infodata->info.icon, infodata, UpFriendList);//判断是否有头像
-
             if ((const char *) infodata != header->data)
             {
                 free(header);
@@ -198,6 +193,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     if (data->toGid != UGI_PENDING)//不是添加到pending,说明是有人加你后好友列表需要更新
                     {
                         session_id_t sessionid = CountSessionId();
+
                         AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
                         CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
                     }
@@ -370,6 +366,7 @@ int mysockfd()
                         //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
                         node->sessionid = header->sessionID;//添加id到结构提
                         node->user = infodata->info;
+                        node->inonline=infodata->isOnline;//是否在线
                         memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
                         add_node(node);             //添加新节点
                         //free(node);
