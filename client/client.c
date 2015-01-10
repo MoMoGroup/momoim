@@ -17,7 +17,7 @@ GtkWidget *username, *passwd;
 const gchar *name, *pwd;
 static pthread_t thread1;
 static GtkWidget *window;
-char str_cunchu[10][21];
+char str_cunchu[20][20];
 FILE *passwdfp;
 int flag_username = 0, flag_cunchu = 0;
 int flag_remember = 0;
@@ -153,9 +153,10 @@ static gint combo_change_event() {
     int i;
     flag_remember = 0;
     gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);
+    gtk_test_text_set(passwd, "");
     name = gtk_combo_box_text_get_active_text(username);
     // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
-    gtk_test_text_set(passwd, "");
+ //   gtk_test_text_set(passwd, "");
     if(strcmp(name,"") != 0) {
         for (i = 0; i < flag_cunchu; i = i + 2) //若账号名本地有则相应取出密码
         {
@@ -167,8 +168,10 @@ static gint combo_change_event() {
             }
         }
     }
-    else {
+    else{
         gtk_test_text_set(passwd, "");
+        flag_remember = 0;
+        gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);
     }
 
     return 0;
@@ -421,12 +424,13 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                     free(addr);
 
                     //重新加载下拉框
+                    memcpy(str_cunchu, "", sizeof(str_cunchu));
                     gtk_combo_box_text_remove_all(username);//清空原有下拉框内容
                     if ((passwdfp = fopen(mulu_username, "r")) != NULL) {
                         int i = 0;
                         int len_string;
-                        char str_username[21];
-                        while ((fgets(str_username, 21, passwdfp) != NULL) && (i < 10)) {
+                        char str_username[20];
+                        while ((fgets(str_username, 20, passwdfp) != NULL) && (i < 20)) {
                             len_string = strlen(str_username);
                             str_username[len_string - 1] = 0;
                             if (i % 2 == 0) {
@@ -444,6 +448,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
 
                 }
             }
+            gtk_test_text_set(passwd, "");
         }
     }
 
@@ -616,8 +621,8 @@ gboolean loadloginLayout(gpointer user_data) {
     if ((passwdfp = fopen(mulu_username, "r")) != NULL) {
         int i = 0;
         int len_string;
-        char str_username[21];
-        while ((fgets(str_username, 21, passwdfp) != NULL) && (i < 10)) {
+        char str_username[20];
+        while ((fgets(str_username, 20, passwdfp) != NULL) && (i < 20)) {
             len_string = strlen(str_username);
             str_username[len_string - 1] = 0;
             if (i % 2 == 0) {
