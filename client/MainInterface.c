@@ -14,6 +14,7 @@
 #include "common.h"
 #include "addfriend.h"
 #include "Infomation.h"
+#include "onlylookinfo.h"
 
 static GtkWidget *background1, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -567,10 +568,48 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
             }
         }
     }
+    return 0;
 }
 
+//右键菜单查看好友资料
 static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
 
+    GtkTreeIter iter;
+    GtkTreeView *treeview = GTK_TREE_VIEW(data);
+    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+    gtk_tree_selection_get_selected(selection, &model, &iter);
+    int i, j;
+    int uidfindflag = 0;
+    GtkTreePath *path;
+    FriendInfo *friendinforear;
+    path = gtk_tree_model_get_path(model, &iter);
+    i = gtk_tree_path_get_indices(path)[0];
+    j = gtk_tree_path_get_indices(path)[1];
+
+    if (gtk_tree_model_iter_has_child(model,
+                                      &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0)))) {
+        uint32_t t;
+        gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
+        friendinforear = FriendInfoHead;
+        while (friendinforear) {
+            if (friendinforear->user.uid == t) {
+                uidfindflag = 1;
+                break;
+            }
+            else {
+                friendinforear = friendinforear->next;
+            }
+        }
+        if (uidfindflag == 1) {
+            if (friendinforear->Infowind == NULL) {
+                OnlyLookInfo(friendinforear);
+            }
+            else {
+                gtk_window_set_keep_above(GTK_WINDOW(friendinforear->Infowind), TRUE);
+            }
+        }
+    }
     return 0;
 }
 

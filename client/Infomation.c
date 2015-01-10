@@ -628,7 +628,6 @@ int info() {
                                      NULL,
                                      NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
-
     infotv();
     gtk_widget_show_all(Infowind);
 }
