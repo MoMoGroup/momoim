@@ -20,7 +20,7 @@ typedef struct __attribute__ ((packed))
     char constellation;
     char provinces[10];
     char city[35];
-    char postcode[6];
+    char postcode[7];
     char tel[14];
     char school[28];
     char hometown[51];

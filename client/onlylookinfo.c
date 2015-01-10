@@ -3,11 +3,19 @@
 #include <pwd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <logger.h>
 #include "ClientSockfd.h"
 #include "common.h"
+#include "Infomation.h"
 
 static cairo_surface_t *Surfaceback, *Surfacecancel, *Surfacecancel1, *Surfaceend, *Surfaceend1, *Surfaceend2, *Surfacechange, *Surfacechange1;
 static cairo_surface_t *surfacehead;
+
+static const char *constellations[] = {
+        "水瓶座", "双鱼座", "白羊座", "金牛座",
+        "双子座", "巨蟹座", "狮子座", "处女座",
+        "天秤座", "天蝎座", "射手座", "摩羯座"
+};
 
 static void create_infofaces(FriendInfo *information) {
     if (Surfaceback == NULL) {
@@ -135,7 +143,7 @@ static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1) {
-        //infosockfd();
+        ChangeInfo();
     }
     return 0;
 }
@@ -178,6 +186,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
     friendinfonode->Infobackground = gtk_image_new_from_surface(Surfaceback);
     friendinfonode->Infocancel = gtk_image_new_from_surface(Surfacecancel);
     friendinfonode->Infoguanbi = gtk_image_new_from_surface(Surfaceend);
+    friendinfonode->Infochange = gtk_image_new_from_surface(Surfacechange);
 
     Infobackg_event_box = BuildEventBox(friendinfonode->Infobackground,
                                         G_CALLBACK(Infobackg_button_press_event),
@@ -213,7 +222,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
                                          G_CALLBACK(save_leave_notify_event),
                                          G_CALLBACK(save_button_release_event),
                                          NULL,
-                                         NULL);
+                                         friendinfonode);
         gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Change_event_box, 350, 440);
     }
 
@@ -247,6 +256,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ihometown, 48, 410);
 
     itel = gtk_label_new(friendinfonode->user.tel);//电话
+    log_info("电话1", friendinfonode->user.tel);
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), itel, 48, 355);
 
     iprovinces = gtk_label_new(friendinfonode->user.provinces);//省份
@@ -266,7 +276,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
 
     for (int i = 0; i < 12; ++i) {
         if (CurrentUserInfo->constellation == i) {
-            iconstellation = gtk_label_new(friendinfonode->user.name);//星座
+            iconstellation = gtk_label_new(constellations[i]);//星座
             break;
         }
     }

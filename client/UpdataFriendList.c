@@ -2,7 +2,6 @@
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
 #include <stdlib.h>
-#include <lber.h>
 #include "common.h"
 
 //enum {
