@@ -6,10 +6,6 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
-#include <sys/stat.h>
-#include <cairo-script-interpreter.h>
-#include <protocol/base.h>
-#include <imcommon/friends.h>
 #include "chart.h"
 #include "common.h"
 #include "addfriend.h"
@@ -23,7 +19,7 @@ static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 
 
- GtkTreeStore *TreeViewListStore;
+GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
@@ -35,17 +31,40 @@ static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box
 //    FRIENDUID_COL = 1,
 //};
 
+//typedef struct groupFriendsInfo {
+//    int num;
+//    UserInfo *userInfo;
+//    int online;
+//    struct groupFriendsInfo *next;
+//
+//}groupFriendsInfo;
 
+//头节点
+//groupFriendsInfo *groupFriendsInfo_head;
+static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
+{
+    int64_t priA, priB;
+    gtk_tree_model_get(TreeViewListStore, a, PRIORITY_COL, &priA, -1);
+    gtk_tree_model_get(TreeViewListStore, b, PRIORITY_COL, &priB, -1);
+    return priA - priB;
+}
 
 GtkTreeModel *createModel()
 {
+    int64_t priority;
     gint i, j;
     cairo_surface_t *surface;
     cairo_surface_t *surfaceIcon;
 
     GtkTreeIter iter1, iter2;
 
-    TreeViewListStore = gtk_tree_store_new(2, GDK_TYPE_PIXBUF, G_TYPE_UINT);
+    TreeViewListStore = gtk_tree_store_new(3, GDK_TYPE_PIXBUF, G_TYPE_UINT, G_TYPE_INT64);
+    gtk_tree_sortable_set_default_sort_func(TreeViewListStore, friendListStoreFunc, NULL, NULL);
+    gtk_tree_sortable_set_sort_column_id(TreeViewListStore, GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID, GTK_SORT_DESCENDING);
+
+//头节点
+    //  groupFriendsInfo_head =(groupFriendsInfo *)calloc(1,sizeof(struct groupFriendsInfo));
+
     for (i = 0; i < friends->groupCount; i++)
     {
         surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 33);
@@ -58,68 +77,60 @@ GtkTreeModel *createModel()
         gtk_tree_store_append(TreeViewListStore, &iter1, NULL);
         gtk_tree_store_set(TreeViewListStore, &iter1,
                 PIXBUF_COL, pixbuf,
-                FRIENDUID_COL,(uint32_t) friends->groups[i].groupId,
+                FRIENDUID_COL, (uint32_t) friends->groups[i].groupId,
+                PRIORITY_COL, (int64_t) 0,
                 -1);
 
         g_object_unref(pixbuf);
 
+        //遍历一个分组，找到一个好友,
         for (j = 0; j < friends->groups[i].friendCount; j++)
         {
             char friendname[20] = {0};
             char mulu[80] = {0};
             sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, friends->groups[i].friends[j]);
             pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
+
             FriendInfo *rear = FriendInfoHead;
+
             while (rear)
             {
                 if (rear->sessionid == friends->groups[i].friends[j])
                 {
                     memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
+
+
                     break;
                 }
                 rear = rear->next;
             }
-            // gint h = gdk_pixbuf_get_height(pixbuf);
-            //加载一个图片
-            surfaceIcon = cairo_image_surface_create_from_png(mulu);
-            int w = cairo_image_surface_get_width(surfaceIcon);
-            int h = cairo_image_surface_get_height(surfaceIcon);
-            //创建画布
-            surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
-            //创建画笔
-            cr = cairo_create(surface);
-            cairo_save(cr);
-            cairo_arc(cr, 30, 30, 30, 0, M_PI * 2);
-            cairo_clip(cr);
-            //缩放
-            cairo_scale(cr, 60.0 / w, 60.0 / h);
-            //把画笔和图片相结合。
-            cairo_set_source_surface(cr, surfaceIcon, 0, 0);
 
 
-            //把图用画笔画在画布中
-            cairo_paint(cr);
-            cairo_restore(cr);
-            //设置源的颜色
-            cairo_set_source_rgb(cr, 0, 0, 0);
-            //从图像的w+10,30区域开始加入字体
-            cairo_move_to(cr, 90, 40);
-            cairo_set_font_size(cr, 20);
-            cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+            pixbuf = DrawFriend(&rear->user, rear->inonline);
 
-            cairo_show_text(cr, friendname);
-
-            pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
             gtk_tree_store_append(TreeViewListStore, &iter2, &iter1);//
+            if (CurrentUserInfo.uid == friends->groups[i].friends[j])
+            {
+                priority = 5256000;//10年
+            }
+            else if (rear->inonline)
+            {
+                priority = 1;
+            }
+            else
+            {
+                priority = -1;
+            }
             gtk_tree_store_set(TreeViewListStore, &iter2,
                     PIXBUF_COL, pixbuf,
                     FRIENDUID_COL, friends->groups[i].friends[j],
-                    -1);
+                    PRIORITY_COL, priority
+                            - 1);
             g_object_unref(pixbuf);
+
         }
     }
-    cairo_destroy(cr);
-    cairo_surface_destroy(surfaceIcon);
+
     return GTK_TREE_MODEL(TreeViewListStore);
 }
 
@@ -619,7 +630,7 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
 {
 
     AddFriendFun(); //调用添加好友函数
-    //Friend_Fequest_Popup(10001);
+    //Friend_Fequest_Popup(10001,"as");
     return 0;
 }
 
@@ -688,6 +699,7 @@ int MainInterFace()
     column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
             "pixbuf", PIXBUF_COL,
             NULL);
+    //gtk_tree_view_column_set_sort_column_id(column, 0);
     gtk_tree_view_append_column(GTK_TREE_VIEW (treeView), column);
     gtk_tree_view_column_set_resizable(column, TRUE);
 

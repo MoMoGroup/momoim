@@ -13,10 +13,8 @@ extern void Md5Coding(gchar *filename, const unsigned char *coding_text);
 
 extern int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithPath);
 
-extern void HexadecimalConversion(char *filename, const char *strdest);
-
-extern void HexadecimalConversion(char *filename, const char *strdest);
+extern void HexadecimalConversion(char *filename, unsigned char const *fileKey);
 
 extern int FindImage(const char *key, const void *data, gboolean (*fn)(void *data));
 
-GdkPixbuf *draw(const UserInfo *userInfo, int remove_color);
+GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color);
