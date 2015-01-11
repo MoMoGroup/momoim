@@ -474,7 +474,22 @@ static gint touxiang_button_press_event(GtkWidget *widget, GdkEventButton *event
 static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     if (event->button == 1)   // 判断是否是点击关闭图标
     {
-        log_info("执行到这里了", "dada");
+        GtkWidget *dialog;
+        gchar *filename;
+        dialog = gtk_file_chooser_dialog_new("请选择图片",
+                                             (GtkWindow *) Infowind,
+                                             GTK_FILE_CHOOSER_ACTION_OPEN,
+                                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                             GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                             NULL);
+        if (gtk_dialog_run(GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (dialog));
+            log_info("图片名", filename);
+            /*surfacehead = cairo_image_surface_create_from_png(filename);
+            headicon = gtk_image_new_from_surface(surfacehead);
+            gtk_fixed_put(GTK_FIXED(Infolayout), headicon, 23, 16);*/
+        }
+        gtk_widget_destroy(dialog);
     }
     return 0;
 }

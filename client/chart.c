@@ -534,7 +534,7 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
         GtkWidget *dialog;
         gchar *filename;
-        dialog = gtk_file_chooser_dialog_new("Open Image(s) ...", info->chartwindow,
+        dialog = gtk_file_chooser_dialog_new("Open Image(s) ...", (GtkWindow *) info->chartwindow,
                 GTK_FILE_CHOOSER_ACTION_OPEN,
                 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                 GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
