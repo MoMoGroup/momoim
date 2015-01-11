@@ -289,7 +289,8 @@ int mysockfd()
         }
     }
 
-    if (flag_remember == 0) {
+    if (FlagRemember == 0)
+    {
         unsigned char hash[16];
         MD5((unsigned char *) pwd, strlen(pwd), hash);
         CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
