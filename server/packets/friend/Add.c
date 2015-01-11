@@ -6,7 +6,7 @@
 
 int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAdd *packet)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
     {
         pthread_rwlock_rdlock(user->info->friendsLock);
         UserFriends *friends = user->info->friends;
@@ -25,11 +25,11 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
                     if (group->groupId == UINT8_MAX)//如果好友请求已发出正在等待处理
                     {
                         goto sendNotifyMessage;
-                        CRPFailureSend(user->sockfd, session, EAGAIN, "已有添加好友请求");
+                        CRPFailureSend(user->crp, session, EAGAIN, "已有添加好友请求");
                     }
                     else
                     {
-                        CRPFailureSend(user->sockfd, session, EEXIST, "好友已存在");
+                        CRPFailureSend(user->crp, session, EEXIST, "好友已存在");
                     }
                     pthread_rwlock_unlock(user->info->friendsLock);
                     return 1;
@@ -44,22 +44,22 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
 
         if (!pendingGroup)
         {
-            CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建待处理好友分组");
+            CRPFailureSend(user->crp, session, ENOMEM, "无法创建待处理好友分组");
             pthread_rwlock_unlock(user->info->friendsLock);
             return 1;
         }
 
         if (!UserFriendsUserAdd(pendingGroup, packet->uid))
         {
-            CRPFailureSend(user->sockfd, session, ENOMEM, "无法添加好友");
+            CRPFailureSend(user->crp, session, ENOMEM, "无法添加好友");
             pthread_rwlock_unlock(user->info->friendsLock);
             return 1;
         }
-        CRPFriendNotifySend(user->sockfd, session, FNT_FRIEND_NEW, packet->uid, 0, UGI_PENDING);
+        CRPFriendNotifySend(user->crp, session, FNT_FRIEND_NEW, packet->uid, 0, UGI_PENDING);
 
         sendNotifyMessage:
         pthread_rwlock_unlock(user->info->friendsLock);
-        CRPOKSend(user->sockfd, session);
+        CRPOKSend(user->crp, session);
 
         size_t noteLen = strlen(packet->note);
         UserMessage *message = (UserMessage *) malloc(sizeof(UserMessage) + noteLen);
@@ -74,7 +74,7 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

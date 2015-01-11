@@ -8,11 +8,11 @@ int ProcessPacketStatusCancel(POnlineUser user, uint32_t session, CRPPacketCance
     if (op)
     {
         UserOperationCancel(user, op);
-        CRPOKSend(user->sockfd, session);
+        CRPOKSend(user->crp, session);
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, ENOENT, "无法找到指定操作");
+        CRPFailureSend(user->crp, session, ENOENT, "无法找到指定操作");
     }
     return 0;
 }

@@ -7,7 +7,7 @@
 
 typedef enum
 {
-    UMT_UNKNOW = 0, //未知消息
+    UMT_UNKNOW = 0, //未知消息(数据错误)
     UMT_TEXT = 1,   //文本消息
     UMT_NEW_FRIEND,  //添加好友请求
     UMT_FRIEND_ACCEPT

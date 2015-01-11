@@ -6,17 +6,17 @@
 
 int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRequest *packet)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
     {
         UserInfo *info = UserInfoGet(packet->uid);
         if (info == NULL)
         {
-            CRPFailureSend(user->sockfd, session, ENODATA, "无法读取用户资料");
+            CRPFailureSend(user->crp, session, ENODATA, "无法读取用户资料");
         }
         else
         {
             POnlineUser duser = OnlineUserGet(packet->uid);
-            CRPInfoDataSend(user->sockfd, session, duser != NULL, info);
+            CRPInfoDataSend(user->crp, session, duser != NULL, info);
             if (duser)
             {
                 UserDrop(duser);
@@ -26,7 +26,7 @@ int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRe
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

@@ -8,7 +8,7 @@
 
 int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLoginRegister *packet)
 {
-    if (user->status == OUS_PENDING_LOGIN)
+    if (user->state == OUS_PENDING_LOGIN)
     {
         uint32_t uid;
         uid = AuthRegister(packet->username, packet->password);
@@ -22,16 +22,16 @@ int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLogi
                     packet->nicknameLength > sizeof(info->nickName) ? sizeof(info->nickName) : packet->nicknameLength);
             UserInfoSave(uid, info);
             UserInfoFree(info);
-            CRPOKSend(user->sockfd, session);
+            CRPOKSend(user->crp, session);
         }
         else
         {
-            CRPFailureSend(user->sockfd, session, EEXIST, "用户名已存在");
+            CRPFailureSend(user->crp, session, EEXIST, "用户名已存在");
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

@@ -150,9 +150,15 @@ int MessageFileSeek(MessageFile *file, uint32_t date)
     int ret = 0;
     pthread_mutex_lock(&file->lock);
 
-    if (date < file->fileBeginDate || date > file->lastUpdateDate)
-        goto cleanup;
-    if (date == file->currentDate)
+    if (date < file->fileBeginDate)
+    {
+        ret = file->fileBeginOffset == lseek(file->fd, file->fileBeginOffset, SEEK_SET);
+    }
+    else if (date > file->lastUpdateDate)
+    {
+        ret = lseek(file->fd, 0, SEEK_END) != -1;
+    }
+    else if (date == file->currentDate)
     {
         ret = file->currentBeginOffset == lseek(file->fd, file->currentBeginOffset, SEEK_SET);
     }

@@ -38,6 +38,7 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t
         [CRP_PACKET_INFO__START]          = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_INFO_REQUEST]         = (GeneralPacketProcessor) ProcessPacketInfoRequest,
         [CRP_PACKET_INFO_DATA]            = (GeneralPacketProcessor) ProcessPacketInfoData,
+        [CRP_PACKET_INFO_STATUS_CHANGE]   = (GeneralPacketProcessor) ProcessPacketInfoStatusChange,
 
         [CRP_PACKET_FRIEND__START]        = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_FRIEND_REQUEST]       = (GeneralPacketProcessor) ProcessPacketFriendRequest,
@@ -146,9 +147,9 @@ static void PendingUserTableRemove(PPendingUser user)
 
 int PendingUserDelete(PPendingUser user)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
         return OnlineUserDelete((POnlineUser) user);
-    else if (user->status == OUS_PENDING_CLEAN)
+    else if (user->state == OUS_PENDING_CLEAN)
         return 0;
     UserSetStatus((POnlineUser) user, OUS_PENDING_CLEAN, NULL);
     pthread_rwlock_unlock(user->holdLock);
@@ -241,14 +242,14 @@ PPendingUser PendingUserNew(int fd)
     }
     //简要设置一下socket,状态.初始化用户保持锁
     user->sockfd = CRPOpen(fd);
-    user->status = OUS_PENDING_HELLO;
+    user->state = OUS_PENDING_HELLO;
     user->holdLock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));
     pthread_rwlock_init(user->holdLock, NULL);
     time(&user->lastUpdateTime);
     return user;
 }
 
-static void broadcastNotify(POnlineUser user, FriendNotifyType type)
+void UserBroadcastNotify(POnlineUser user, FriendNotifyType type)
 {
     POnlineUserInfo info = user->info;
     pthread_rwlock_rdlock(info->friendsLock);
@@ -265,9 +266,9 @@ static void broadcastNotify(POnlineUser user, FriendNotifyType type)
             duser = OnlineUserGet(group->friends[j]);
             if (duser)
             {
-                if (duser->status == OUS_ONLINE)
+                if (duser->state == OUS_ONLINE)
                 {
-                    CRPFriendNotifySend(duser->sockfd, 0, type, info->uid, 0, 0);
+                    CRPFriendNotifySend(duser->crp, 0, type, info->uid, 0, 0);
                 }
                 UserDrop(duser);
             }
@@ -278,13 +279,13 @@ static void broadcastNotify(POnlineUser user, FriendNotifyType type)
 
 int OnlineUserDelete(POnlineUser user)
 {
-    if (user->status == OUS_PENDING_HELLO || user->status == OUS_PENDING_LOGIN)
+    if (user->state == OUS_PENDING_HELLO || user->state == OUS_PENDING_LOGIN)
         return PendingUserDelete((PPendingUser) user);
-    if (user->status == OUS_PENDING_CLEAN)
+    if (user->state == OUS_PENDING_CLEAN)
         return 1;
-    if (user->status != OUS_ONLINE)
+    if (user->state != OUS_ONLINE)
     {
-        log_error("UserManager", "Trying to delete online user on illegal user status.\n");
+        log_error("UserManager", "Trying to delete online user on illegal user state.\n");
         return 0;
     }
     if (UserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
@@ -294,7 +295,7 @@ int OnlineUserDelete(POnlineUser user)
     pthread_rwlock_wrlock(user->holdLock);
     UserOperationRemoveAll(user);
     pthread_mutex_destroy(&user->operations.lock);
-    CRPClose(user->sockfd);
+    CRPClose(user->crp);
     if (user->info)
     {
         log_info("UserManager", "User %d offline.\n", user->info->uid);
@@ -329,7 +330,7 @@ int OnlineUserDelete(POnlineUser user)
 
 int UserHold(POnlineUser user)
 {
-    return user->status != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
+    return user->state != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
 }
 
 void UserDrop(POnlineUser user)
@@ -338,16 +339,16 @@ void UserDrop(POnlineUser user)
         pthread_rwlock_unlock(user->holdLock);
 }
 
-POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info)
+POnlineUser UserSetStatus(POnlineUser user, OnlineUserState state, uint32_t uid)
 {
-    if (user->status == OUS_PENDING_CLEAN)
+    if (user->state == OUS_PENDING_CLEAN)
         //正在清理的用户内存区域可能正在释放.此时不应改变状态.
         return NULL;
-    if (user->status == OUS_PENDING_HELLO && status == OUS_PENDING_LOGIN)
+    if (user->state == OUS_PENDING_HELLO && state == OUS_PENDING_LOGIN)
     {//等待Hello到等待登陆只需要设置标识位
-        user->status = OUS_PENDING_LOGIN;
+        user->state = OUS_PENDING_LOGIN;
     }
-    else if (user->status == OUS_PENDING_LOGIN && status == OUS_ONLINE)
+    else if (user->state == OUS_PENDING_LOGIN && state == OUS_ONLINE)
     {   //待登陆状态切换到在线状态
         PPendingUser pendingUser = (PPendingUser) user;
         PendingUserTableRemove(pendingUser);
@@ -360,62 +361,59 @@ POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUser
         JobManagerKick(user);
         user = ret;
         EpollModify(user);
+        char path[30];
+        uint8_t userDirSize;
+        UserGetDir(path, uid, "");
+        userDirSize = (uint8_t) strlen(path);
+        struct stat buf;
+        if (stat(path, &buf) || !S_ISDIR(buf.st_mode))
+        {
+            UserCreateDirectory(uid);
+        }
+        POnlineUserInfo info = (POnlineUserInfo) calloc(1, sizeof(OnlineUser));
+        if (info == NULL)
+        {
+            return 0;
+        }
+        info->uid = uid;
+        info->userDir = (char *) malloc(userDirSize + 1);
+        if (info->userDir == NULL)
+        {
+            free(info);
+            return 0;
+        }
+        memcpy(info->userDir, path, userDirSize);
+        info->userDir[userDirSize] = 0;
+
+        info->friends = UserFriendsGet(uid, &info->friendsLock, -1);
         user->info = info;
         bzero(&user->operations, sizeof(UserOperationTable));
         //初始化用户操作锁
         pthread_mutex_init(&user->operations.lock, NULL);
-        user->status = OUS_ONLINE;
-        broadcastNotify(user, FNT_FRIEND_ONLINE);
+        user->state = OUS_ONLINE;
+        UserBroadcastNotify(user, FNT_FRIEND_ONLINE);
         return OnlineUserTableSet(info->uid, user);
     }
-    else if (user->status == OUS_ONLINE && status == OUS_PENDING_CLEAN)
+    else if (user->state == OUS_ONLINE && state == OUS_PENDING_CLEAN)
     {
         OnlineUserTableSet(user->info->uid, NULL);
         EpollRemove(user);
         JobManagerKick(user);
-        broadcastNotify(user, FNT_FRIEND_OFFLINE);
+        if (user->info->status != UOS_HIDDEN)
+        {
+            UserBroadcastNotify(user, FNT_FRIEND_OFFLINE);
+        }
     }
-    else if (status == OUS_PENDING_CLEAN)
+    else if (state == OUS_PENDING_CLEAN)
     {
-        user->status = OUS_PENDING_CLEAN;
+        user->state = OUS_PENDING_CLEAN;
     }
     else
     {
-        log_warning("UserManager", "Illegal status set. Orginal %d,New %d.\n", user->status, status);
+        log_warning("UserManager", "Illegal state set. Orginal %d,New %d.\n", user->state, state);
         abort();
     }
     return user;
-}
-
-
-POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid)
-{
-    char path[30];
-    uint8_t userDirSize;
-    UserGetDir(path, uid, "");
-    userDirSize = (uint8_t) strlen(path);
-    struct stat buf;
-    if (stat(path, &buf) || !S_ISDIR(buf.st_mode))
-    {
-        UserCreateDirectory(uid);
-    }
-    POnlineUserInfo info = (POnlineUserInfo) calloc(1, sizeof(OnlineUser));
-    if (info == NULL)
-    {
-        return 0;
-    }
-    info->uid = uid;
-    info->userDir = (char *) malloc(userDirSize + 1);
-    if (info->userDir == NULL)
-    {
-        free(info);
-        return 0;
-    }
-    memcpy(info->userDir, path, userDirSize);
-    info->userDir[userDirSize] = 0;
-
-    info->friends = UserFriendsGet(uid, &info->friendsLock, -1);
-    return UserSetStatus((POnlineUser) user, OUS_ONLINE, info);
 }
 
 PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data)
@@ -604,9 +602,15 @@ void PostMessage(UserMessage *message)
     if (toUser != NULL)
     {
         log_info("PostMessager", "Post message from %u to %u\n", message->from, message->to);
-        CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
+        CRPMessageNormalSend(toUser->crp,
+                             0,
+                             (USER_MESSAGE_TYPE) message->messageType,
+                             message->from,
+                             message->messageLen,
+                             message->content);
         UserDrop(toUser);
-    } else
+    }
+    else
     {
         log_info("PostMessager", "Post offline message from %u to %u\n", message->from, message->to);
     }

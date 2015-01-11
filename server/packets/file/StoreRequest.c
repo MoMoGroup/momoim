@@ -24,30 +24,30 @@ int onCancel(POnlineUser user, PUserOperation operation)
 
 int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
     {
         if (packet->type != FST_SHARED)
         {
-            CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的存储类型");
+            CRPFailureSend(user->crp, session, ENOSYS, "不支持的存储类型");
             return 1;
         }
         if (DataFileExist(packet->key))
         {
-            CRPFileDataEndSend(user->sockfd, session, FEC_ALREADY_EXISTS);
+            CRPFileDataEndSend(user->crp, session, FEC_ALREADY_EXISTS);
         }
         else
         {
             PUserOperationFileStore storeOperation = (PUserOperationFileStore) malloc(sizeof(UserOperationFileStore));
             if (storeOperation == NULL)
             {
-                CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建文件存储操作");
+                CRPFailureSend(user->crp, session, ENOMEM, "无法创建文件存储操作");
                 return 1;
             }
             PUserOperation operation = UserOperationRegister(user, session, CUOT_FILE_STORE, storeOperation);
             if (operation == NULL)
             {
                 free(storeOperation);
-                CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建用户操作");
+                CRPFailureSend(user->crp, session, ENOMEM, "无法创建用户操作");
                 return 1;
             }
             operation->onCancel = onCancel;
@@ -63,16 +63,16 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             {
                 free(storeOperation);
                 UserOperationUnregister(user, operation);
-                CRPFailureSend(user->sockfd, session, EIO, "无法创建文件");
+                CRPFailureSend(user->crp, session, EIO, "无法创建文件");
                 return 1;
             }
             UserOperationDrop(user, operation);
-            CRPOKSend(user->sockfd, session);
+            CRPOKSend(user->crp, session);
         }
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }
