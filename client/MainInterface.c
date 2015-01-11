@@ -6,11 +6,6 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
-#include <sys/stat.h>
-#include <cairo-script-interpreter.h>
-#include <protocol/base.h>
-#include <imcommon/friends.h>
-#include "chart.h"
 #include "common.h"
 #include "addfriend.h"
 #include "chartmessage.h"
@@ -261,7 +256,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
     GtkTreeView *treeview = GTK_TREE_VIEW(widget);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
-    gtk_tree_selection_get_selected(selection, &model, &iter);
+    gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
     GtkWidget *menu = GTK_WIDGET(data);
     if (event->type == GDK_BUTTON_PRESS)
     {
@@ -819,8 +814,15 @@ int MainInterFace()
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
             G_CALLBACK(button2_press_event2), (gpointer) menu1);
     //添加分组事件
-    g_signal_connect(G_OBJECT(add), "button_press_event",
-            G_CALLBACK(Add_Group_Button_Press_Event), (gpointer) menu1);
+    g_signal_connect(G_OBJECT(add), "button_release_event",
+                     G_CALLBACK(AddGroupButtonPressEvent), (gpointer) menu1);
+
+    //删除分组事件
+    g_signal_connect(G_OBJECT(delete), "button_press_event",
+                     G_CALLBACK(DeleteGroupButtonPressEvent), treeView);
+    //添加好友
+    g_signal_connect(G_OBJECT(addpeople), "button_release_event",
+                     G_CALLBACK(search_button_release_event), treeView);
 
     //好友菜单
     menu2 = gtk_menu_new();

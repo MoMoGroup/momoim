@@ -156,7 +156,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             return 0;
         };
             //消息
-        case CRP_PACKET_MESSAGE_NORMAL:
+        case CRP_PACKET_MESSAGE_NORMAL://不会丢的
         {
 
             CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
