@@ -9,15 +9,47 @@
 #include <pwd.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
+typedef struct
+{
+    gint(*fn)(GtkWidget *, GdkEventButton *, gpointer);
+
+    gpointer data;
+} click_event_entry;
+static int option_mark = 1;
+
+static gint event_box_press_handler(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    g_object_set_data(G_OBJECT(widget), "_IsPressed", (gpointer) &option_mark);
+    return 0;
+}
+
+static gint event_box_leave_handler(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    g_object_set_data(G_OBJECT(widget), "_IsPressed", 0);
+    return 0;
+}
+
+static gint event_box_release_handler(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gpointer v;
+    v = g_object_get_data(G_OBJECT(widget), "_IsPressed");
+    if (v)
+    {
+        click_event_entry *entry = (click_event_entry *) data;
+        return entry->fn(widget, event, entry->data);
+    }
+    return 0;
+}
+
 
 GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release,
         GCallback click, void *data)
 {
     GtkEventBox *eventBox = GTK_EVENT_BOX(gtk_event_box_new());
     gtk_widget_set_events(GTK_WIDGET(eventBox),  // 设置窗体获取鼠标事件
-            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
     if (press)
         g_signal_connect(G_OBJECT(eventBox), "button_press_event", G_CALLBACK(press), data);       // 加入事件回调
     if (enter)
@@ -27,7 +59,19 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
     if (leave)
         g_signal_connect(G_OBJECT(eventBox), "leave_notify_event", G_CALLBACK(leave), data);
     if (click)
-        g_signal_connect(G_OBJECT(eventBox), "clicked", G_CALLBACK(click), data);
+    {
+        click_event_entry *p = (click_event_entry *) malloc(sizeof(click_event_entry));
+        p->fn = (gint(*)(GtkWidget *, GdkEventButton *, gpointer)) click;
+        p->data = data;
+        g_signal_connect(G_OBJECT(eventBox), "button_press_event", G_CALLBACK(event_box_press_handler), p);
+        g_signal_connect(G_OBJECT(eventBox), "leave_notify_event", G_CALLBACK(event_box_leave_handler), p);
+        g_signal_connect_data(G_OBJECT(eventBox),
+                              "button_release_event",
+                              G_CALLBACK(event_box_release_handler),
+                              p,
+                              free,
+                              0);
+    }
     GdkRGBA rgba = {1, 1, 1, 0};
     gtk_widget_override_background_color(GTK_WIDGET(eventBox), GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
     gtk_container_add((GTK_CONTAINER(eventBox)), warp);
@@ -116,7 +160,8 @@ session_id_t CountSessionId()
 }
 
 
-typedef struct find_image_recv_new {
+typedef struct find_image_recv_new
+{
     gboolean  (*fn)(void *data);
 
     void *data;

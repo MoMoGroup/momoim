@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-pthread_mutex_t logger_output_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t logger_output_lock = PTHREAD_MUTEX_INITIALIZER;
 const char *plainPrefix[] = {
         "[INFO][%s]",
         "[WARN][%s]",

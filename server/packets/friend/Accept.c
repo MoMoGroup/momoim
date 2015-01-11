@@ -6,7 +6,7 @@
 
 int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFriendAccept *packet)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
     {
 
         //添加好友  处理请求者好友列表.
@@ -22,14 +22,14 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         }
         if (!reqDefaultGroup)
         {
-            CRPFailureSend(user->sockfd, session, ENOMEM, "无法获得对方好友分组");
+            CRPFailureSend(user->crp, session, ENOMEM, "无法获得对方好友分组");
             UserFriendsDrop(packet->uid);
             return 1;
         }
 
         if (!UserFriendsUserMove(reqPendingGroup, reqDefaultGroup, user->info->uid))
         {
-            CRPFailureSend(user->sockfd, session, ENOMEM, "无法添加到对方好友列表中");
+            CRPFailureSend(user->crp, session, ENOMEM, "无法添加到对方好友列表中");
             UserFriendsDrop(packet->uid);
             return 1;
         }
@@ -38,7 +38,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         POnlineUser reqUser = OnlineUserGet(packet->uid);
         if (reqUser)
         {
-            CRPFriendNotifySend(reqUser->sockfd, 0, FNT_FRIEND_MOVE, user->info->uid, UGI_PENDING, UGI_DEFAULT);
+            CRPFriendNotifySend(reqUser->crp, 0, FNT_FRIEND_MOVE, user->info->uid, UGI_PENDING, UGI_DEFAULT);
             UserDrop(reqUser);
         }
 
@@ -59,7 +59,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         if (!group)
         {
             group = UserFriendsGroupAdd(myFriends, UGI_DEFAULT, "我的好友");
-            CRPFriendNotifySend(user->sockfd, session, FNT_GROUP_NEW, 0, UGI_DEFAULT, 0);
+            CRPFriendNotifySend(user->crp, session, FNT_GROUP_NEW, 0, UGI_DEFAULT, 0);
         }
         if (!group)
         {
@@ -67,7 +67,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
                         "无法获得用户%u的默认好友分组.\n",
                         user->info->uid
             );
-            CRPFailureSend(user->sockfd, session, ENOENT, "无法找到目标分组");
+            CRPFailureSend(user->crp, session, ENOENT, "无法找到目标分组");
             pthread_rwlock_unlock(user->info->friendsLock);
             return 1;
         }
@@ -78,19 +78,19 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
                         packet->uid,
                         user->info->uid
             );
-            CRPFailureSend(user->sockfd, session, ENOENT, "无法将好友加入到好友列表中");
+            CRPFailureSend(user->crp, session, ENOENT, "无法将好友加入到好友列表中");
             pthread_rwlock_unlock(user->info->friendsLock);
             return 1;
         }
         pthread_rwlock_unlock(user->info->friendsLock);
 
-        CRPOKSend(user->sockfd, session);
-        CRPFriendNotifySend(user->sockfd, 0, FNT_FRIEND_NEW, packet->uid, 0, UGI_DEFAULT);
+        CRPOKSend(user->crp, session);
+        CRPFriendNotifySend(user->crp, 0, FNT_FRIEND_NEW, packet->uid, 0, UGI_DEFAULT);
 
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

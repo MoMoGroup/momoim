@@ -158,9 +158,9 @@ gboolean mythread(gpointer user_data)//合并
 
 gboolean DestroyLayout(gpointer user_data)
 {
+    popup("莫默告诉你：", user_data);
     gtk_widget_hide(pendingLayout);
     gtk_widget_show_all(loginLayout);
-    popup("莫默告诉你：", user_data);
     free(user_data);
     return FALSE;
 }
@@ -426,14 +426,13 @@ static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event
 }
 
 // 鼠标抬起事件
-static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event,
-        gpointer data)
+static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
         gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);  //设置关闭按钮
 
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+        //gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
 
         DeleteEvent();
     }

@@ -9,15 +9,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/message/Normal.h>
-#include <protocol/friend/Notify.h>
-#include <ftlist.h>
-#include <protocol/base.h>
-#include <protocol/info/Data.h>
-#include <imcommon/friends.h>
-#include <protocol/message/Normal.h>
 #include "MainInterface.h"
-#include "PopupWinds.h"
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
@@ -322,6 +314,9 @@ int mysockfd()
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
     {
         log_info("登录成功", "登录成功\n");
+
+        //sleep(1);//登陆动画
+
         //登陆成功之后开始请求资料
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
@@ -412,6 +407,7 @@ int mysockfd()
                             if (node->uid == header->sessionID)
                             {
                                 //node->flag=0;
+
                                 if ((node->fp = fopen(mulu2, "w")) == NULL)
                                 {
                                     perror("openfile2\n");
