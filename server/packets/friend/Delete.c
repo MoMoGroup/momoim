@@ -1,5 +1,6 @@
 #include <protocol/CRPPackets.h>
 #include <asm-generic/errno-base.h>
+#include <datafile/friend.h>
 #include "run/user.h"
 
 int ProcessPacketFriendDelete(POnlineUser user, uint32_t session, CRPPacketFriendDelete *packet)
@@ -15,6 +16,28 @@ int ProcessPacketFriendDelete(POnlineUser user, uint32_t session, CRPPacketFrien
         }
         if (UserFriendsUserDelete(group, packet->uid))
         {
+            UserFriends *peerFriends = UserFriendsGet(packet->uid, NULL, O_RDWR);
+            UserGroup *peerGroup = NULL;
+            for (int i = 0; i < peerFriends->groupCount; ++i)
+            {
+                peerGroup = peerFriends->groups + i;
+                if (UserFriendsUserDelete(peerGroup, packet->uid))
+                {
+                    break;
+                }
+                peerGroup = NULL;
+            }
+            UserFriendsDrop(packet->uid);
+            if (peerGroup)
+            {
+                OnlineUser *peer = OnlineUserGet(packet->uid);
+                if (peer)
+                {
+                    CRPFriendNotifySend(peer->sockfd, session, FNT_FRIEND_DELETE, user->info->uid, peerGroup->groupId, 0);
+                    UserDrop(peer);
+                }
+            }
+            CRPFriendNotifySend(user->sockfd, session, FNT_FRIEND_DELETE, packet->uid, packet->gid, 0);
             CRPOKSend(user->sockfd, session);
         }
         else

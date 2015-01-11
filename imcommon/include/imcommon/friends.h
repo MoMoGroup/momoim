@@ -19,12 +19,13 @@ typedef struct __attribute__ ((packed))
     char birthday[11];
     char constellation;
     char provinces[10];
-    char city[13];
-    char postcode[6];
+    char city[35];
+    char postcode[7];
     char tel[14];
     char school[28];
     char hometown[51];
     uint32_t lastlogin;
+    uint32_t level;
 } UserInfo;
 
 typedef struct __attribute__ ((packed))

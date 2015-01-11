@@ -86,11 +86,12 @@ int MessageLoopFunc()
 
         }
         pthread_rwlock_unlock(&lock);//取消锁
-        if (prev->next)
+
+        if(prev->next)
         {
-            log_info("MSG", "Processing session %u\n", p->sessionid);
             flag = p->fn(header, p->data);
         }
+
         if (flag == 0)
         {
             pthread_rwlock_wrlock(&lock);//写锁定

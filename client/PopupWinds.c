@@ -144,3 +144,4 @@ int popup(const char *title, const char *tell)
     gtk_widget_destroy(popupwindow);
     return 0;
 }
+

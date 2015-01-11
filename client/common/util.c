@@ -3,12 +3,10 @@
 #include <protocol/base.h>
 #include <glib-unix.h>
 #include "common.h"
-#include "ClientSockfd.h"
-#include "MainInterface.h"
+#include "../ClientSockfd.h"
+#include "../MainInterface.h"
 #include <string.h>
 #include <pwd.h>
-#include <protocol/info/Data.h>
-#include <t1tables.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 
@@ -17,9 +15,9 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
 {
     GtkEventBox *eventBox = GTK_EVENT_BOX(gtk_event_box_new());
     gtk_widget_set_events(GTK_WIDGET(eventBox),  // 设置窗体获取鼠标事件
-                          GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
-                          | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                          | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+            GDK_EXPOSURE_MASK | GDK_LEAVE_NOTIFY_MASK
+                    | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                    | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
     if (press)
         g_signal_connect(G_OBJECT(eventBox), "button_press_event", G_CALLBACK(press), data);       // 加入事件回调
     if (enter)
@@ -29,7 +27,7 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
     if (leave)
         g_signal_connect(G_OBJECT(eventBox), "leave_notify_event", G_CALLBACK(leave), data);
     if (click)
-        g_signal_connect(G_OBJECT(eventBox), "click", G_CALLBACK(click), data);
+        g_signal_connect(G_OBJECT(eventBox), "clicked", G_CALLBACK(click), data);
     GdkRGBA rgba = {1, 1, 1, 0};
     gtk_widget_override_background_color(GTK_WIDGET(eventBox), GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
     gtk_container_add((GTK_CONTAINER(eventBox)), warp);
@@ -94,16 +92,14 @@ int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithP
     return 0;
 }
 
-void HexadecimalConversion(char *filename, const char *strdest)
+void HexadecimalConversion(char *filename, unsigned char const *fileKey)
 {
     char sDest[33] = {0};
     short i;
-    char szTmp[3];
 
     for (i = 0; i < MD5_DIGEST_LENGTH; i++)
     {
-        sprintf(szTmp, "%02x", (unsigned char) strdest[i]);
-        memcpy(&sDest[i * 2], szTmp, 2);
+        sprintf(sDest + i * 2, "%02x", (int) fileKey[i]);
     }
     sprintf(filename, "%s/.momo/files/%s", getpwuid(getuid())->pw_dir, sDest);
 }
@@ -122,15 +118,16 @@ session_id_t CountSessionId()
 
 typedef struct find_image_recv_new {
     gboolean  (*fn)(void *data);
+
     void *data;
-    char key[16];
+    unsigned char key[16];
     FILE *fp;
 
 };
 
 int recv_new_friend_image(CRPBaseHeader *header, void *data)
 {
-    struct find_image_recv_new *p=(struct find_image_recv_new *)data;
+    struct find_image_recv_new *p = (struct find_image_recv_new *) data;
 
     switch (header->packetID)
     {
@@ -187,19 +184,18 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 
 int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
 {
-    CRPPacketInfoData *infodata = CRPInfoDataCast(data);
     char filaname[256];
     HexadecimalConversion(filaname, key);//计算一个文件名
     //0存在，1不存在
     if (access(filaname, F_OK))//不存在，先加载图片
     {
-        struct find_image_recv_new *p=malloc(sizeof(struct find_image_recv_new));
+        struct find_image_recv_new *p = malloc(sizeof(struct find_image_recv_new));
         memcpy(p->key, key, 16);
-        p->fn=fn;
-        p->data=data;
+        p->fn = fn;
+        p->data = data;
         //注册一个接收新添加好友头像的会话
         session_id_t sessionid = CountSessionId();
-        AddMessageNode(sessionid, recv_new_friend_image,p);
+        AddMessageNode(sessionid, recv_new_friend_image, p);
         CRPFileRequestSend(sockfd, sessionid, 0, key);//发送用户头像请求
     }
     else

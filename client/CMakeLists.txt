@@ -17,9 +17,13 @@ SET(CLIENT_SOURCE_FILE
     newuser.c
     PopupWinds.c
     MessageLoop.c
-    common.c
+    common/util.c
+    common/draw.c
     Infomation.c
     addfriend.c
+    UpdataFriendList.c
+    onlylookinfo.c
+    Addgroup.c
     chartmessage.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})

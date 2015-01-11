@@ -6,13 +6,14 @@
 
 extern int mysockfd();
 
-typedef struct friendinfo
+typedef struct FriendInfo
 {
-    uint32_t sessionid;
+    uint32_t uid;
     int flag;
     //用来判断是否接受成功
     UserInfo user;
     FILE *fp;
+    int inonline;
     GtkWidget *chartwindow;
     GtkWidget *chartlayout;
     GtkWidget *chartlayout2;
@@ -22,9 +23,16 @@ typedef struct friendinfo
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;
-    struct friendinfo *next;
-} friendinfo;
-extern friendinfo *friendinfohead;
+
+    //查看资料所需控件
+    GtkWidget *Infowind;
+    GtkWidget *Infolayout, *Infolayout1;
+    GtkWidget *Infobackground, *Infocancel, *Infoguanbi, *Infochange;
+
+    struct FriendInfo *next;
+} FriendInfo;
+extern FriendInfo *FriendInfoHead;
 extern CRPContext sockfd;
-extern UserInfo CurrentUserInfo;
+extern UserInfo *CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;
+extern int AddFriendflag;//判断是否打开搜索窗口

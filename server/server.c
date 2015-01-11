@@ -4,6 +4,7 @@
 #include <logger.h>
 #include <signal.h>
 #include <stdio.h>
+#include <unistd.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
@@ -23,7 +24,7 @@ static void sigInterupt(int sig)
 {
     log_info("MAIN", "Server is exiting...\n");
     IsServerRunning = 0;
-
+    ServerListenerShutdown();
     struct sigaction act = {
             .sa_handler=SIG_DFL,
     };
@@ -32,12 +33,13 @@ static void sigInterupt(int sig)
 
 int main(int argc, char **argv)
 {
-    setbuf(stdin, NULL);
+    //setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
     struct sigaction act = {
             .sa_flags=0
     };
+    sigemptyset(&act.sa_mask);
     act.sa_handler = sigInterupt;
     sigaction(SIGINT, &act, NULL);
     act.sa_handler = SIG_IGN;
@@ -58,6 +60,10 @@ int main(int argc, char **argv)
     InitUserManager();
 
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
+    while (IsServerRunning)
+    {
+        sleep(1);
+    }
     pthread_join(ThreadListener, NULL);
     for (i = 0; i < WORKER_COUNT; i++)
     {

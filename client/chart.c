@@ -94,7 +94,7 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
 //鼠标点击事件
 static gint send_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 //    X = event->x;  // 取得鼠标相对于窗口的位置
 //    Y = event->y;
 
@@ -111,7 +111,7 @@ static gint send_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标抬起事件
 static gint send_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
@@ -128,7 +128,7 @@ static gint send_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 //鼠标移动事件
 static gint send_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     //设置发送按钮
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend2); //置换图标
@@ -139,7 +139,7 @@ static gint send_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 //设置离开组件事件
 static gint send_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
 
@@ -166,7 +166,7 @@ gboolean key_value(GtkWidget *widget, GdkEventKey *event, gpointer data)
 //鼠标点击事件
 static gint voice_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)
     {   //设置语音按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -181,7 +181,7 @@ static gint voice_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标抬起事件
 static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
@@ -196,7 +196,7 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint voice_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     //设置语音按钮
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice2); //置换图标
@@ -208,7 +208,7 @@ static gint voice_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //设置离开组件事件
 static gint voice_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     //设置语音按钮
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
@@ -220,7 +220,7 @@ static gint voice_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标点击事件
 static gint video_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)
     {   //设置视频按钮
@@ -235,7 +235,7 @@ static gint video_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标抬起事件
 static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
@@ -250,7 +250,7 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint video_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo2); //置换图标
@@ -261,7 +261,7 @@ static gint video_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标likai事件
 static gint video_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1);
@@ -272,7 +272,7 @@ static gint video_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标点击事件
 static gint close_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)
     {          //设置右下关闭按钮
@@ -286,7 +286,7 @@ static gint close_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标抬起事件
 static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
@@ -301,7 +301,7 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint close_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose2); //置换图标 //置换图标
@@ -312,7 +312,7 @@ static gint close_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标likai事件
 static gint close_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
@@ -324,7 +324,7 @@ static gint close_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标点击事件
 static gint close_but_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)
     {         //设置右上关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -336,7 +336,7 @@ static gint close_but_button_press_event(GtkWidget *widget, GdkEventButton *even
 //鼠标抬起事件
 static gint close_but_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
@@ -352,7 +352,7 @@ static gint close_but_button_release_event(GtkWidget *widget, GdkEventButton *ev
 //鼠标移动事件
 static gint close_but_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut3); //置换图标
     return 0;
@@ -361,7 +361,7 @@ static gint close_but_enter_notify_event(GtkWidget *widget, GdkEventButton *even
 //鼠标likai事件
 static gint close_but_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
     return 0;
 }
@@ -370,7 +370,7 @@ static gint close_but_leave_notify_event(GtkWidget *widget, GdkEventButton *even
 //鼠标点击事件
 static gint look_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)
     {     //设置发送按钮
@@ -383,7 +383,7 @@ static gint look_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标抬起事件
 static gint look_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
@@ -397,7 +397,7 @@ static gint look_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 //鼠标移动事件
 static gint look_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagelook, surfacelook2); //置换图标
@@ -407,7 +407,7 @@ static gint look_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标likai事件
 static gint look_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagelook, surfacelook1);
@@ -428,7 +428,7 @@ static gint jietu_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标抬起事件
 static gint jietu_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
@@ -442,7 +442,7 @@ static gint jietu_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint jietu_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu2); //置换图标
@@ -453,7 +453,7 @@ static gint jietu_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标likai事件
 static gint jietu_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu1);
 
@@ -464,7 +464,7 @@ static gint jietu_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标点击事件
 static gint file_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)
     {     //设置发送按钮
@@ -477,7 +477,7 @@ static gint file_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标抬起事件
 static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
@@ -490,7 +490,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 //鼠标移动事件
 static gint file_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagefile, surfacefile2); //置换图标
@@ -500,7 +500,7 @@ static gint file_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标likai事件
 static gint file_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagefile, surfacefile1);
@@ -512,7 +512,7 @@ static gint file_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标点击事件
 static gint photo_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)
     {     //设置发送按钮
@@ -525,7 +525,7 @@ static gint photo_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标抬起事件
 static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
@@ -571,7 +571,7 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint photo_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage2); //置换图标
@@ -582,7 +582,7 @@ static gint photo_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标likai事件
 static gint photo_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
     return 0;
@@ -609,7 +609,7 @@ void handle_font_color(friendinfo *info)
 //鼠标点击事件
 static gint wordart_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)
     {     //设置发送按钮
@@ -622,7 +622,7 @@ static gint wordart_button_press_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标抬起事件
 static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
@@ -673,7 +673,7 @@ static gint wordart_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart2); //置换图标
     return 0;
@@ -685,7 +685,7 @@ static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart1);
@@ -786,7 +786,6 @@ static gint color_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 int MainChart(friendinfo *friendinfonode)
 {
 
-//    GtkWidget *comboBox;
     GtkEventBox *chartbackground_event_box, *send_event_box, *voice_event_box, *video_event_box;
     GtkEventBox *close_event_box, *close_but_event_box, *look_event_box, *jietu_event_box, *file_event_box;
     GtkEventBox *photo_event_box, *wordart_event_box, *color_event_box;
@@ -821,6 +820,7 @@ int MainChart(friendinfo *friendinfonode)
     friendinfonode->imagephoto = gtk_image_new_from_surface(surfaceimage1);
     friendinfonode->imagewordart = gtk_image_new_from_surface(surfacewordart1);
     friendinfonode->imagecolor = gtk_image_new_from_surface(surfacecolor);
+
 
 // 设置窗体获取鼠标事件 背景
 

@@ -14,7 +14,7 @@
 static GtkWidget *newwindow;
 static GtkWidget *zhuceLayout;
 static GtkWidget *mnickname, *newusername, *passwd1, *passwd2;
-static GtkWidget *background, *mminfo, *endwind;
+static GtkWidget *background1, *mminfo, *endwind;
 static cairo_surface_t *surface1, *surface3, *surface32, *surface33, *surface8, *surface82, *surface83;
 static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
 
@@ -262,11 +262,11 @@ int newface()
     zhuceLayout = gtk_fixed_new();
     create_zhucefaces();
     gtk_container_add(GTK_CONTAINER(newwindow), zhuceLayout);
-    background = gtk_image_new_from_surface(surface1);
+    background1 = gtk_image_new_from_surface(surface1);
     mminfo = gtk_image_new_from_surface(surface3);
     endwind = gtk_image_new_from_surface(surface8);
 
-    newbackground_event_box = BuildEventBox(background,
+    newbackground_event_box = BuildEventBox(background1,
                                             G_CALLBACK(newbackground_button_press_event),
                                             NULL,
                                             NULL,
@@ -290,7 +290,7 @@ int newface()
                                        NULL,
                                        NULL);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), newbackground_event_box, 0, 0);//起始坐标
-    gtk_widget_set_size_request(GTK_WIDGET(background), 500, 500);
+    gtk_widget_set_size_request(GTK_WIDGET(background1), 500, 500);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), zhuce_event_box, 20, 440);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), closebut_event_box, 530, 0);
 
