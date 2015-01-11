@@ -547,7 +547,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                     size_t len = (size_t) statBuf.st_size, cpLen;
                     char *addr = (char *) malloc(len);
                     read(fd, addr, len);
-                    char *p = addr + 56 * i, *pLine = addr + 56 * (i + 2);
+                    char *p = addr + 56 * i, *pLine = addr + 56 * (i + 1);
                     while (pLine < addr + len)
                         *p++ = *pLine++;
                     lseek(fd, 0, SEEK_SET);
@@ -716,8 +716,8 @@ gboolean loadloginLayout(gpointer user_data)
 
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
-    g_signal_connect (G_OBJECT(username), "activate", G_CALLBACK(on_button_clicked), NULL);
-    g_signal_connect (G_OBJECT(passwd), "activate", G_CALLBACK(on_button_clicked), NULL);
+//    g_signal_connect (G_OBJECT(username), "activate", G_CALLBACK(on_button_clicked), NULL);
+//    g_signal_connect (G_OBJECT(passwd), "activate", G_CALLBACK(on_button_clicked), NULL);
 
     g_signal_connect(username, "changed", G_CALLBACK(combo_change_event), NULL);
 
