@@ -610,8 +610,5 @@ void PostMessage(UserMessage *message)
     {
         log_info("PostMessager", "Post offline message from %u to %u\n", message->from, message->to);
     }
-    else
-    {
-        log_info("PostMessager", "Post offline message from %u to %u\n", message->from, message->to);
-    }
+
 }

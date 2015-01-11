@@ -6,15 +6,11 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <imcommon/friends.h>
-#include <sys/mman.h>
-#include <imcommon/friends.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
-#include "chart.h"
-#include "chartmessage.h"
 #include "chart.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
@@ -285,10 +281,6 @@ static gint combo_change_event()
     gtk_test_text_set(passwd, "");
     name = gtk_combo_box_text_get_active_text(username);
     // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
-    //   gtk_test_text_set(passwd, "");
-    if (strcmp(name, "") != 0)
-    {
-        for (i = 0; i < flag_cunchu; ++i) //若账号名本地有则相应取出密码
     //   gtk_test_text_set(passwd, "");
     if (strcmp(name, "") != 0)
     {
