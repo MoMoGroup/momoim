@@ -267,6 +267,9 @@ int infosockfd() {
     memset(weinfo.tel, 0, strlen(weinfo.tel));
     memcpy(weinfo.tel, buf, strlen(buf));
 
+    buf = gtk_entry_get_text(GTK_ENTRY(ipostcode));
+    weinfo.postcode = atoi(buf);
+
     buf = gtk_entry_get_text(GTK_ENTRY(ihometown));
     memset(weinfo.hometown, 0, strlen(weinfo.hometown));
     memcpy(weinfo.hometown, buf, strlen(buf));
