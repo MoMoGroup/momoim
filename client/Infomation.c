@@ -252,30 +252,24 @@ int infosockfd() {
     buf = gtk_entry_get_text(GTK_ENTRY(inickname));
     if (strlen(buf) == 0)
         popup("莫默告诉你", "给自己起个昵称");
-    memset(weinfo.nickName, 0, strlen(weinfo.nickName));
     memcpy(weinfo.nickName, buf, strlen(buf));
 
     buf = gtk_entry_get_text(GTK_ENTRY(iname));
-    memset(weinfo.name, 0, strlen(weinfo.name));
     memcpy(weinfo.name, buf, strlen(buf));
 
-    buf = gtk_entry_get_text(GTK_ENTRY(itel));
-    memset(weinfo.tel, 0, strlen(weinfo.tel));
-    memcpy(weinfo.tel, buf, strlen(buf));
-    log_info("电话", weinfo.tel);
-
     buf = gtk_entry_get_text(GTK_ENTRY(ipostcode));
-    memset(weinfo.postcode, 0, strlen(weinfo.postcode));
     memcpy(weinfo.postcode, buf, strlen(buf));
     log_info("更新资料", weinfo.postcode);
 
     buf = gtk_entry_get_text(GTK_ENTRY(ischool));
-    memset(weinfo.school, 0, strlen(weinfo.school));
     memcpy(weinfo.school, buf, strlen(buf));
     log_info("更新资料", weinfo.school);
 
+    buf = gtk_entry_get_text(GTK_ENTRY(itel));
+    memcpy(weinfo.tel, buf, strlen(buf));
+    log_info("电话2", weinfo.tel);
+
     buf = gtk_entry_get_text(GTK_ENTRY(ihometown));
-    memset(weinfo.hometown, 0, strlen(weinfo.hometown));
     memcpy(weinfo.hometown, buf, strlen(buf));
     log_info("更新资料", weinfo.hometown);
 
@@ -288,7 +282,6 @@ int infosockfd() {
     buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iprovinces);
     for (int i = 0; i < 35; ++i) {
         if (strcmp(provinces[i], buf) == 0) {
-            memset(weinfo.provinces, 0, strlen(weinfo.provinces));
             memcpy(weinfo.provinces, buf, strlen(buf));
             break;
         }
@@ -298,14 +291,12 @@ int infosockfd() {
     for (int i = 0; i < 35; ++i)
         for (int j = 0; allcity[i][j]; j++) {
             if (strcmp(allcity[i][j], buf) == 0) {
-                memset(weinfo.city, 0, strlen(weinfo.city));
                 memcpy(weinfo.city, buf, strlen(buf));
                 break;
             }
         }
 
     gtk_calendar_get_date(GTK_CALENDAR(icalendar), &year, &month, &day);/*取得选择的年月日*/
-    memset(weinfo.birthday, 0, strlen(weinfo.birthday));
 
     int x = month + 1;
     int y = day / 21;
@@ -491,6 +482,11 @@ void infotv() {
     gtk_entry_set_text(iname, CurrentUserInfo->name);
     gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 235);
 
+    itel = gtk_entry_new();//电话
+    gtk_entry_set_max_length(itel, 11);
+    gtk_entry_set_has_frame((GtkEntry *) itel, FALSE);
+    gtk_entry_set_text(itel, CurrentUserInfo->tel);
+    gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 347);
 
     ipostcode = gtk_entry_new();//邮编
     gtk_entry_set_max_length(ipostcode, 6);
@@ -510,13 +506,6 @@ void infotv() {
     gtk_entry_set_has_frame((GtkEntry *) ihometown, FALSE);
     gtk_entry_set_text(ihometown, CurrentUserInfo->hometown);
     gtk_fixed_put(GTK_FIXED(Infolayout), ihometown, 48, 403);
-
-    itel = gtk_entry_new();//电话
-    gtk_entry_set_max_length(itel, 11);
-    gtk_entry_set_has_frame((GtkEntry *) itel, FALSE);
-    log_info("tel", CurrentUserInfo->tel);
-    gtk_entry_set_text(itel, CurrentUserInfo->tel);
-    gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 347);
 
     isex = gtk_combo_box_text_new();//性别
     gtk_combo_box_text_append(isex, "0", "女");
@@ -580,7 +569,7 @@ void infotv() {
 
 }
 
-int info() {
+int ChangeInfo() {
 
     static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
     Infowind = gtk_window_new(GTK_WINDOW_TOPLEVEL);

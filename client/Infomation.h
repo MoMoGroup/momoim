@@ -1,3 +1,3 @@
 #pragma once
 
-extern int info();
+extern int ChangeInfo();
