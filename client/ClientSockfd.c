@@ -265,7 +265,7 @@ int mysockfd()
         }
     }
 
-    if (flag_remember == 0) {
+    if (FlagRemember == 0) {
         unsigned char hash[16];
         MD5((unsigned char *) pwd, strlen(pwd), hash);
         CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
@@ -288,6 +288,20 @@ int mysockfd()
 
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT) {
         log_info("登录成功", "登录成功\n");
+        //将记住的密码保存本地
+        if((FlagRemember == 1)&&(FirstPwd == 1))
+        {
+            FILE *passwdfp;
+            char mulu_benji[80],mulu_username[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            mkdir(mulu_benji, 0700);
+            sprintf(mulu_username, "%s/username", mulu_benji);
+            passwdfp = fopen(mulu_username, "a+");
+            fwrite(name, 1, 40, passwdfp);
+            fwrite(pwd, 1, 16, passwdfp);
+            fclose(passwdfp);
+        }
+
         //登陆成功之后开始请求资料
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
