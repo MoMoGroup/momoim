@@ -88,8 +88,7 @@ CRPContext CRPOpen(int fd)
 
 int CRPClose(CRPContext context)
 {
-    if (!context)
-    {
+    if (!context) {
         return 0;
     }
     CRPEncryptDisableUnlock(context);
@@ -106,21 +105,17 @@ int CRPEncryptTest(const char key[32], const char iv[32])
     int ret = 0;
     char *cpKey = (char *) malloc(32),
             *cpIV = (char *) malloc(32);
-    if (cpKey == NULL || cpIV == NULL)
-    {
+    if (cpKey == NULL || cpIV == NULL) {
         goto cleanup;
     }
     MCRYPT td = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
-    if (td == MCRYPT_FAILED)
-    {
+    if (td == MCRYPT_FAILED) {
         goto cleanup;
     }
-    if (32 != mcrypt_enc_get_key_size(td) || 32 != mcrypt_enc_get_iv_size(td) || 32 != mcrypt_enc_get_block_size(td))
-    {
+    if (32 != mcrypt_enc_get_key_size(td) || 32 != mcrypt_enc_get_iv_size(td) || 32 != mcrypt_enc_get_block_size(td)) {
         goto cleanup;
     }
-    if (0 != mcrypt_enc_self_test(td))
-    {
+    if (0 != mcrypt_enc_self_test(td)) {
         goto cleanup;
     }
     memcpy(cpKey, key, 32);
@@ -147,13 +142,11 @@ int CRPEncryptEnable(CRPContext context, const char sendKey[32], const char recv
     int retcode = 0;
     pthread_mutex_lock(&context->sendLock);
     pthread_mutex_lock(&context->recvLock);
-    if (context->sendTd || context->recvTd)
-    {
+    if (context->sendTd || context->recvTd) {
         CRPEncryptDisableUnlock(context);
     }
     MCRYPT sendTd = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
-    if (sendTd == MCRYPT_FAILED)
-    {
+    if (sendTd == MCRYPT_FAILED) {
         goto cleanup;
     }
     if (mcrypt_enc_get_key_size(sendTd) != 32 || mcrypt_enc_get_iv_size(sendTd) != 32 || mcrypt_enc_get_block_size(sendTd) != 32)
@@ -247,8 +240,7 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
     header->totalLength = (CRP_LENGTH_TYPE) protocolLength;
     header->packetID = packetID;
     header->sessionID = sessionID;
-    if (dataLength)
-    {
+    if (dataLength) {
         memcpy(header->data, data, dataLength);
     }
 
@@ -282,8 +274,7 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
 
     cleanup:
     pthread_mutex_unlock(&context->sendLock);
-    if (packet)
-    {
+    if (packet) {
         free(packet);
     }
     return ret;
@@ -298,8 +289,7 @@ CRPBaseHeader *CRPRecv(CRPContext context)
     {
         CRP_LENGTH_TYPE encryptedLength;
         ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
-        if (ret != sizeof(encryptedLength))
-        {
+        if (ret != sizeof(encryptedLength)) {
             return NULL;
         }
         encryptedLength <<= 5;

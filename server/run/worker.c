@@ -19,8 +19,7 @@ void *WorkerMain(void *arg)
     while (IsServerRunning)
     {
         user = JobManagerPop();
-        if (!user && !IsServerRunning)
-        {
+        if (!user && !IsServerRunning) {
             break;
         }
         header = CRPRecv(user->sockfd);
@@ -31,8 +30,7 @@ void *WorkerMain(void *arg)
         }
         else
         {
-            if (user->status == OUS_ONLINE)
-            {
+            if (user->status == OUS_ONLINE) {
                 time(&user->lastUpdateTime);
             }
             log_info("Packet", "Processing %x\n", header->packetID);

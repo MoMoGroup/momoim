@@ -299,7 +299,8 @@ int deal_with_message(CRPBaseHeader *header, void *data)
                 {
                     session_id_t sessionID = CountSessionId();
                     CRPMessageNormalSend(sockfd, sessionID, UMT_TEXT,
-                                         photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
+                                         photomessage->image_message_data->uid,
+                                         photomessage->image_message_data->charlen,
                                          photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data);

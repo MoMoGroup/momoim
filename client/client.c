@@ -18,8 +18,7 @@ GtkWidget *username, *passwd;
 const gchar *name, *pwd;
 static pthread_t thread1;
 static GtkWidget *window;
-typedef struct cunchu
-{
+typedef struct cunchu {
     char cunchu_name[40];
     char cunchu_pwd[16];
 };
@@ -282,8 +281,7 @@ static gint combo_change_event()
     name = gtk_combo_box_text_get_active_text(username);
     // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
     //   gtk_test_text_set(passwd, "");
-    if (strcmp(name, "") != 0)
-    {
+    if (strcmp(name, "") != 0) {
         for (i = 0; i < flag_cunchu; ++i) //若账号名本地有则相应取出密码
         {
             if (strcmp(name, str_cunchu[i].cunchu_name) == 0) {
@@ -291,12 +289,11 @@ static gint combo_change_event()
                 flag_username = 1;
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//显示记住密码
                 flag_remember = 1;
-            
+
             }
         }
     }
-    else
-    {
+    else {
         gtk_test_text_set(passwd, "");
         flag_remember = 0;
         gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);
@@ -536,8 +533,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
             flag_remember = 0;
 
             //从文件中删除信息
-            for (i = 0; i < flag_cunchu; ++i)
-            {
+            for (i = 0; i < flag_cunchu; ++i) {
                 if (strcmp(name, str_cunchu[i].cunchu_name) == 0)//在数组中查找
                 {
                     int fd = open(mulu_username, O_RDWR);
@@ -566,8 +562,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                     gtk_combo_box_text_remove_all(username);//清空原有下拉框内容
                     if ((passwdfp = fopen(mulu_username, "r")) != NULL) {
                         int i = 0;
-                        while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20))
-                        {
+                        while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20)) {
                             gtk_combo_box_text_append(username, NULL, str_cunchu[i].cunchu_name);
                             ++i;
                         }
@@ -603,8 +598,7 @@ gboolean destoryall(gpointer user_data)
 
     FriendInfo *head = FriendInfoHead;
     FriendInfo *p;
-    while (head->next)
-    {
+    while (head->next) {
         p = head->next;
         head->next = p->next;
         if (p->chartwindow) {
@@ -734,8 +728,7 @@ gboolean loadloginLayout(gpointer user_data)
     // 读取并用结构体数组存储
     if ((passwdfp = fopen(mulu_username, "r")) != NULL) {
         int i = 0;
-        while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20))
-        {
+        while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20)) {
             gtk_combo_box_text_append(username, NULL, str_cunchu[i].cunchu_name);
             ++i;
         }

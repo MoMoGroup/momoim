@@ -99,12 +99,10 @@ static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 {
 
     struct add_friend_info *p = data;
-    if (p->uid == CurrentUserInfo->uid)
-    {
+    if (p->uid == CurrentUserInfo->uid) {
         popup("", "不能添加自己为好友");
     }
-    else
-    {
+    else {
         CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
         AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
         gtk_widget_destroy(addwindow);
