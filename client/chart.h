@@ -1,18 +1,18 @@
 #pragma once
 
-extern void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len);
+#include <gtk/gtk.h>
 
-struct PictureMessageFileUploadingData
+struct UserTextInformation
 {
-    size_t seq;
-    FILE *fp;
-    struct ImageMessageFileData *image_message_data;
+    gchar *font;
+    PangoStyle style;
+    PangoWeight weight;
+    gint size;
+    gchar *coding_font_color;
+    PangoFontDescription *description;
+    guint16 color_red;
+    guint16 color_green;
+    guint16 color_blue;
+    int codinglen;
 };
-
-struct ImageMessageFileData
-{
-    int imagecount;
-    int charlen;
-    char *message_data;
-    uint32_t uid;
-};
+extern struct UserTextInformation UserWordInfo;

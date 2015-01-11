@@ -156,7 +156,7 @@ void *ListenMain(void *listenSocket)
         int n = epoll_wait(ServerIOPool, events, EPOLL_BACKLOG, -1);
         if (n == -1)
         {
-            log_warning("Listener", "epoll_wait failure.\n");
+            log_warning("Listener", "epoll_wait failure.%s\n", strerror(errno));
             break;
         }
         for (int i = 0; i < n; i++)

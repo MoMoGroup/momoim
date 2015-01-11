@@ -6,11 +6,14 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <imcommon/friends.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
+#include "chart.h"
+#include "chartmessage.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
@@ -31,9 +34,120 @@ static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
 
+
+void open_setting_file(FILE *fp)
+{
+    UserWordInfo.coding_font_color = (gchar *) malloc(500);
+    UserWordInfo.codinglen = fread(UserWordInfo.coding_font_color, 1, 500, fp);
+    UserWordInfo.description = pango_font_description_new();
+    gchar *ptext = UserWordInfo.coding_font_color, *ptext_end = UserWordInfo.coding_font_color + UserWordInfo.codinglen;
+    while (ptext < ptext_end)
+    {
+        if (*ptext == '\0')
+        {
+            switch (*(ptext + 1))
+            {
+                case  1:      //字体类型
+                {
+                    int i;
+
+                    for (i = 2; ptext[i]; ++i)
+                    {
+
+                    }
+                    UserWordInfo.font = (gchar *) malloc(50);
+                    pango_font_description_set_family(UserWordInfo.description, ptext + 2);
+                    memcpy(UserWordInfo.font, ptext + 2, i - 2);
+                    ptext = ptext + i + 1;
+                    break;
+
+                };
+
+                case 2: //是否斜体
+                {
+                    ptext = ptext + 2;
+                    int style_value = *ptext;
+                    if (style_value == 1)
+                    {
+                        pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_ITALIC);
+                        UserWordInfo.style = PANGO_STYLE_ITALIC;
+                    } else
+                        UserWordInfo.style = PANGO_STYLE_NORMAL;
+                    ptext++;
+                    break;
+                };
+                case 3:   //宽度
+                {
+                    ptext = ptext + 2;
+                    int weight_value = 0;
+                    memcpy(&weight_value, ptext, 2);
+                    pango_font_description_set_weight(UserWordInfo.description, weight_value);
+                    UserWordInfo.weight = weight_value;
+                    ptext = ptext + 2;
+                    break;
+                };
+                case 4:
+                {
+                    ptext = ptext + 2;
+                    gint size_value;
+                    size_value = *ptext;
+                    pango_font_description_set_size(UserWordInfo.description, size_value * PANGO_SCALE);
+                    UserWordInfo.size = size_value;
+                    ptext++;
+                    break;
+                };
+                case 5:
+                {
+                    ptext = ptext + 2;
+
+                    memcpy(&UserWordInfo.color_red, ptext, 2);
+                    memcpy(&UserWordInfo.color_green, ptext + 2, 2);
+                    memcpy(&UserWordInfo.color_blue, ptext + 4, 2);
+                    g_print("the red is %u\n", UserWordInfo.color_red);
+                    g_print("the green is %u\n", UserWordInfo.color_green);
+                    g_print("the blue is %u\n", UserWordInfo.color_blue);
+
+                    ptext = ptext + 6;
+                    break;
+                }
+                default:
+                {
+                    pango_font_description_free(UserWordInfo.description);
+                    break;
+                }
+            }
+        }
+    }
+}
 gboolean mythread(gpointer user_data)//合并
 {
     gtk_widget_destroy(window);
+    FILE *fp;
+    char wordfile[256];
+    sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
+    if ((fp = fopen(wordfile, "r")) != NULL)
+    {
+        open_setting_file(fp);
+
+    }
+
+    else
+    {
+        UserWordInfo.font = (gchar *) malloc(50);
+        UserWordInfo.description = pango_font_description_new();
+        pango_font_description_set_family(UserWordInfo.description, "Sans");
+        pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_NORMAL);
+        pango_font_description_set_weight(UserWordInfo.description, PANGO_WEIGHT_NORMAL);
+        pango_font_description_set_size(UserWordInfo.description, 14 * PANGO_SCALE);
+        memcpy(UserWordInfo.font, "Sans", strlen("Sans"));
+        UserWordInfo.style = PANGO_STYLE_NORMAL;
+        UserWordInfo.weight = PANGO_WEIGHT_NORMAL;
+        UserWordInfo.size = 14;
+        UserWordInfo.color_red = 0;
+        UserWordInfo.color_green = 0;
+        UserWordInfo.color_blue = 0;
+
+    }
     MainInterFace();
     return 0;
 }//合并
@@ -177,6 +291,7 @@ static gint combo_change_event() {
     return 0;
 }
 
+//背景
 static gint background_button_press_event(GtkWidget *widget,
         GdkEventButton *event, gpointer data) {
     //设置在非按钮区域内移动窗口
@@ -189,6 +304,7 @@ static gint background_button_press_event(GtkWidget *widget,
 
 }
 
+//等待的背景、第二页面
 static gint wait_button_press_event(GtkWidget *widget,   //第二界面的窗体移动
         GdkEventButton *event, gpointer data) {
     //设置在非按钮区域内移动窗口
@@ -200,6 +316,7 @@ static gint wait_button_press_event(GtkWidget *widget,   //第二界面的窗体
     return 0;
 }
 
+//登陆按钮
 static gint landbut_button_press_event(GtkWidget *widget,
         GdkEventButton *event, gpointer data) {
 
@@ -609,6 +726,8 @@ gboolean loadloginLayout(gpointer user_data) {
 
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
+    g_signal_connect (G_OBJECT(username), "activate", G_CALLBACK(on_button_clicked), NULL);
+    g_signal_connect (G_OBJECT(passwd), "activate", G_CALLBACK(on_button_clicked), NULL);
 
     gtk_fixed_put(GTK_FIXED(loginLayout), username, 85, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), passwd, 85, 260);

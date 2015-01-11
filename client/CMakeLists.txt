@@ -24,6 +24,7 @@ SET(CLIENT_SOURCE_FILE
     UpdataFriendList.c
     onlylookinfo.c
     Addgroup.c
+    chartmessage.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)
