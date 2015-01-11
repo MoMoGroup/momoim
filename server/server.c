@@ -5,10 +5,11 @@
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <run/gc.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
-WorkerType worker[WORKER_COUNT];
+WorkerType worker[CONFIG_WORKER_COUNT];
 
 pthread_t ThreadListener;
 
@@ -53,19 +54,21 @@ int main(int argc, char **argv)
     InitJobManger();
 
     int i;
-    for (i = 0; i < WORKER_COUNT; i++)
+    for (i = 0; i < CONFIG_WORKER_COUNT; i++)
     {
         initWorker(i, worker + i);
     }
     InitUserManager();
 
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
+    GarbageCollectorInitialize();
     while (IsServerRunning)
     {
         sleep(1);
     }
     pthread_join(ThreadListener, NULL);
-    for (i = 0; i < WORKER_COUNT; i++)
+    GarbageCollectorFinalize();
+    for (i = 0; i < CONFIG_WORKER_COUNT; i++)
     {
         pthread_join(worker[i].WorkerThread, NULL);
     }

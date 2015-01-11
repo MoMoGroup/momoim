@@ -29,6 +29,8 @@ void *WorkerMain(void *arg)
         }
         else
         {
+            if (user->status == OUS_ONLINE)
+                time(&user->lastUpdateTime);
             EpollAdd(user);
             if (ProcessUser(user, header) == 0)
             {

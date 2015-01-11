@@ -15,7 +15,7 @@ extern int IsServerRunning;
 extern pthread_t ThreadListener;
 
 //事务处理器
-extern WorkerType worker[WORKER_COUNT];
+extern WorkerType worker[CONFIG_WORKER_COUNT];
 
 //将一个用户加入到epoll中
 void EpollAdd(POnlineUser);

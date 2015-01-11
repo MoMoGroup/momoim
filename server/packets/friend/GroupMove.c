@@ -51,4 +51,5 @@ int ProcessPacketFriendGroupMove(POnlineUser user, uint32_t session, CRPPacketFr
     {
         CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
+    return 1;
 }
