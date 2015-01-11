@@ -19,7 +19,7 @@ typedef struct FriendInfo
     GtkWidget *chartlayout2;
     GtkWidget *imageflowerbackgroud, *imagesend, *imagehead3, *imagevoice, *imagevideo;
     GtkWidget *imageclose, *imageclosebut;
-    GtkWidget *imagelook, *imagejietu, *imagefile, *imagephoto, *imagewordart;
+    GtkWidget *imagelook, *imagejietu, *imagefile, *imagephoto, *imagewordart, *imagecolor;
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;

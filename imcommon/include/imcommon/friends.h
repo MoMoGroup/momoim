@@ -16,16 +16,17 @@ typedef struct __attribute__ ((packed))
     char nickName[32];
     unsigned char icon[16];
     char name[13];
-    char birthday[11];
+    char birthday[12];
     char constellation;
+    //星座
     char provinces[10];
     char city[35];
-    char postcode[7];
-    char tel[14];
+    char tel[15];
     char school[28];
     char hometown[51];
     uint32_t lastlogin;
     uint32_t level;
+    int postcode;
 } UserInfo;
 
 typedef struct __attribute__ ((packed))

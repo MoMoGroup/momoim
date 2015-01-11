@@ -3,13 +3,22 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include<stdlib.h>
+#include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/message/Normal.h>
+#include <protocol/friend/Notify.h>
+#include <ftlist.h>
+#include <protocol/base.h>
+#include <protocol/info/Data.h>
+#include <imcommon/friends.h>
+#include <protocol/message/Normal.h>
 #include "MainInterface.h"
+#include "PopupWinds.h"
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
@@ -290,6 +299,7 @@ int mysockfd()
         }
 
 
+       // CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
         CRPFriendRequestSend(sockfd, 1);  //请求用户好友列表
 
         sprintf(mulu, "%s/.momo", getpwuid(getuid())->pw_dir);
