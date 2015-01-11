@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
+#include <openssl/md5.h>
 
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_KEEP_ALIVE]               = (void *(*)(CRPBaseHeader *)) CRPKeepAliveCast,
@@ -147,8 +148,10 @@ int CRPEncryptEnable(CRPContext context, const char sendKey[32], const char recv
         mcrypt_module_close(sendTd);
         goto cleanup;
     }
-    memcpy(&context->sendKey, sendKey, 32);
-    memcpy(&context->recvKey, recvKey, 32);
+    MD5((unsigned char *) sendKey, 32, (unsigned char *) context->sendKey);
+    MD5((unsigned char *) recvKey, 32, (unsigned char *) context->recvKey);
+    //memcpy(context->sendKey, sendKey, 32);
+    //memcpy(context->recvKey, recvKey, 32);
     memcpy(&context->sendIV, iv, 32);
     memcpy(&context->recvIV, iv, 32);
 

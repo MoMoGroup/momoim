@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 
 typedef enum
 {
@@ -24,7 +25,7 @@ typedef struct __attribute__ ((packed))
     char tel[14];
     char school[28];
     char hometown[51];
-    uint32_t lastlogin;
+    time_t lastlogout;
     uint32_t level;
 } UserInfo;
 

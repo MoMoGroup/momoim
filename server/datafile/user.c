@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sqlite3.h>
+#include <imcommon/friends.h>
 
 #include "datafile/user.h"
 
@@ -91,6 +92,7 @@ void UserInfoCreate(uint32_t uid)
                     [15]=1
             }
     };
+    time(&info.lastlogout);
     UserInfoSave(uid, &info);
 }
 

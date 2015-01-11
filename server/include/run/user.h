@@ -83,6 +83,7 @@ struct structOnlineUserInfo
 {
     uint32_t uid;
     char *userDir;
+    time_t loginTime;
     UserFriends *friends;
     pthread_rwlock_t *friendsLock;
 };
@@ -94,6 +95,7 @@ struct structOnlineUser
     CRPContext sockfd;
     volatile OnlineUserStatus status;
     pthread_rwlock_t *holdLock;
+    time_t lastUpdateTime;
 
     //该状态私有数据
     POnlineUserInfo info;
@@ -105,6 +107,7 @@ struct structPendingUser
     CRPContext sockfd;
     volatile OnlineUserStatus status;
     pthread_rwlock_t *holdLock;
+    time_t lastUpdateTime;
 
     //待登陆私有数据Online
     struct structPendingUser *prev, *next;

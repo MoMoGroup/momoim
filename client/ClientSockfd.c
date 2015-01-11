@@ -513,6 +513,7 @@ int mysockfd()
         AddMessageNode(0, servemessage, "");//注册服务器发来的消息
 
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
+        CRPMessageQueryOfflineSend(sockfd, CountSessionId());
         MessageLoopFunc();
     }
     log_error("DEBUG", "Unexception packet id:%hu\n", header->packetID);

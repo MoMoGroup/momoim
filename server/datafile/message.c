@@ -89,7 +89,7 @@ MessageFile *UserMessageFileGet(uint32_t uid)
     UserMessageFileEntry *entry;
     pthread_mutex_lock(&userMessageTableLock);
     entry = UserMessageEntryGetUnlock(uid);
-    if (!entry)
+    if (!entry || !entry->file)
     {
         MessageFile *file = UserMessageFileOpen(uid);
         entry = UserMessageTableSetUnlock(uid, file);

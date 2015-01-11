@@ -12,6 +12,7 @@ SET(SERVER_SOURCE_FILE
     run/user.c
     run/worker.c
     run/natTraversal.c
+    run/gc.c
 
     datafile/init.c
     datafile/auth.c
