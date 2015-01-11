@@ -14,6 +14,8 @@
 #include "common.h"
 #include "addfriend.h"
 #include "Infomation.h"
+#include "chartmessage.h"
+
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
@@ -416,15 +418,58 @@ int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
         }
         else
         {
-            isimageflag = 1;
-            char filename[256] = {0};
-            char strdest[17] = {0};
-            i++;
-            image_message_data->imagecount++;
-            memcpy(strdest, &recv_text[i], 16);
-            HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
-            FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
-            i = i + 16;
+
+            switch (recv_text[i + 1])
+            {
+                case 1:
+                {
+                    i++;
+                    while (recv_text[i] != '\0')
+                    {
+                        i++;
+                    }
+                    i++;
+                    break;
+                };
+                case 2 :
+                {
+                    i += 3;
+                };
+                case 3:   //宽度
+                {
+                    i += 4;
+                    break;
+                };
+                case 4: //字体大小
+                {
+                    i += 3;
+                    break;
+                };
+                case 5: //颜色
+                {
+                    i += 8;
+
+                    break;
+                };
+                case 0 :
+                {
+
+                    isimageflag = 1;
+                    char filename[256] = {0};
+                    char strdest[17] = {0};
+                    i += 2;
+                    image_message_data->imagecount++;
+                    memcpy(strdest, &recv_text[i], 16);
+                    HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
+                    FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
+                    i = i + 16;
+                }
+                default:
+                {
+//                        i += 2;
+                    break;
+                };
+            }
         }
 
     }
@@ -462,6 +507,10 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
         if (userinfo->chartwindow == NULL)
         {
             MainChart(userinfo);
+        }
+        else
+        {
+            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
         image_message_recv(rcvd_text, userinfo, len);
 
@@ -612,7 +661,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
             }
             else
             {
-                gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
+                gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));
             }
         }
     }

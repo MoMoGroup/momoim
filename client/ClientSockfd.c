@@ -239,7 +239,6 @@ int mysockfd()
             free(ac);
         }
 
-
         CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
         CRPFriendRequestSend(sockfd, 1);  //请求用户好友列表
 
