@@ -206,40 +206,6 @@ int calendar_change_birthday() {
     return 0;
 }
 
-/*int bianji_button_press_event() {
-    gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
-    GtkWidget *dialog;
-    gchar *filename;
-    dialog = gtk_file_chooser_dialog_new("Open Image(s) ...", info->chartwindow,
-                                         GTK_FILE_CHOOSER_ACTION_OPEN,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                                         NULL);
-    gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-    if (result == GTK_RESPONSE_ACCEPT) {
-        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-        GtkTextMark *mark;
-        GtkTextIter iter;
-        GtkTextChildAnchor *anchor;
-        GtkWidget *image;
-        size_t filenamelen;
-        mark = gtk_text_buffer_get_insert(info->input_buffer);
-        gtk_text_buffer_get_iter_at_mark(info->input_buffer, &iter, mark);
-        anchor = gtk_text_buffer_create_child_anchor(info->input_buffer, &iter); //添加衍生构件
-        filenamelen = strlen(filename);
-        image = gtk_image_new_from_file(filename);
-        char *pSrc = malloc(filenamelen + 1);
-        memcpy(pSrc, filename, filenamelen);
-        pSrc[filenamelen] = 0;
-        g_object_set_data_full(G_OBJECT(image), "ImageSrc", pSrc, free); //将路径存成为key值在image控件中保存
-        gtk_widget_show_all(image);
-        gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->input_text), image, anchor);
-        gtk_widget_grab_focus(info->input_text);
-    }
-    gtk_widget_destroy(dialog);
-    return 0;
-}*/
-
 static void create_infofaces() {
 
     Surfaceback = cairo_image_surface_create_from_png("资料2.png");
@@ -495,6 +461,36 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
+//头像
+//鼠标点击事件
+static gint touxiang_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    if (event->button == 1) {
+        gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+    }
+    return 0;
+}
+
+//鼠标抬起事件
+static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    if (event->button == 1)   // 判断是否是点击关闭图标
+    {
+        log_info("执行到这里了", "dada");
+    }
+    return 0;
+}
+
+//鼠标移动事件
+static gint touxiang_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+    return 0;
+}
+
+//鼠标离开事件
+static gint touxiang_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+    gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
+    return 0;
+}
+
 void infotv() {
     char idstring[80] = {0};//id
     sprintf(idstring, "%d", CurrentUserInfo->uid);
@@ -611,16 +607,15 @@ void infotv() {
     sprintf(infohead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
     surfacehead = cairo_image_surface_create_from_png(infohead);
     headicon = gtk_image_new_from_surface(surfacehead);
-    gtk_fixed_put(GTK_FIXED(Infolayout), headicon, 23, 16);
-
     BianJi = gtk_label_new("编 辑");
-    gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
-    //g_signal_connect(G_OBJECT(headicon), "button_press_event", G_CALLBACK(bianji_button_press_event), NULL);
+    //gtk_fixed_put(GTK_FIXED(Infolayout), headicon, 23, 16);
+    //gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
 }
 
 int ChangeInfo() {
 
     static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
+    static GtkEventBox *touxiang_event_box;
     Infowind = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_position(GTK_WINDOW(Infowind), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (Infowind), FALSE);//固定窗口大小
@@ -668,5 +663,16 @@ int ChangeInfo() {
     gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
 
     infotv();
+
+    touxiang_event_box = BuildEventBox(headicon,
+                                       G_CALLBACK(touxiang_button_press_event),
+                                       G_CALLBACK(touxiang_enter_notify_event),
+                                       G_CALLBACK(touxiang_leave_notify_event),
+                                       G_CALLBACK(touxiang_button_release_event),
+                                       NULL,
+                                       NULL);
+    gtk_fixed_put(GTK_FIXED(Infolayout), touxiang_event_box, 23, 16);
+    gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
+
     gtk_widget_show_all(Infowind);
 }

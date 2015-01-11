@@ -473,7 +473,6 @@ static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *eve
 //    x = event->x;  // 取得鼠标相对于窗口的位置
 //    y = event->y;
     if (event->button == 1)       // 判断是否是点击关闭图标
-
     {
         gtk_image_set_from_surface((GtkImage *) closebut, surfaceclose51);  //设置关闭按钮
         destroy_surfaces();
@@ -503,7 +502,6 @@ static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 
     if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
     }
     return 0;
 }
@@ -531,7 +529,6 @@ static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //头像
 //鼠标移动事件
 static gint headx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
-
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
     return 0;
 }
@@ -540,7 +537,6 @@ static gint headx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标离开事件
 static gint headx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-    //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave);
     return 0;
 }
 
