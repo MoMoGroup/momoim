@@ -9,15 +9,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/message/Normal.h>
-#include <protocol/friend/Notify.h>
-#include <ftlist.h>
-#include <protocol/base.h>
-#include <protocol/info/Data.h>
-#include <imcommon/friends.h>
-#include <protocol/message/Normal.h>
 #include "MainInterface.h"
-#include "PopupWinds.h"
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
@@ -377,7 +369,6 @@ int mysockfd()
                     {
                         CurrentUserInfo = &node->user;
                         node->inonline=1;
-
                         log_info("user nickname:", "%s\n", infodata->info.nickName);
                     }
 
@@ -389,18 +380,7 @@ int mysockfd()
                 {
                     CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
 
-                    if (header->sessionID < 10000)//用户的资料，准备工作，打开文件等
-                    {
-                        sprintf(mulu, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, uid);
-                        if ((fp = fopen(mulu, "w")) == NULL)
-                        {
-                            perror("openfile1\n");
-                            exit(1);
-                        }
 
-                    }
-
-                    else
                     {
                         sprintf(mulu2, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, header->sessionID);
 
@@ -411,8 +391,9 @@ int mysockfd()
                         {
                             if (node->uid == header->sessionID)
                             {
-                                //node->flag=0;
-                                if ((node->fp = fopen(mulu2, "w")) == NULL)
+                                char fileaname[256];
+                                HexadecimalConversion(fileaname, node->user.icon);//计算一个文件名
+                                if ((node->fp = fopen(fileaname, "w")) == NULL)
                                 {
                                     perror("openfile2\n");
                                     exit(1);
@@ -435,11 +416,8 @@ int mysockfd()
                 {
 
                     CRPPacketFileData *packet = CRPFileDataCast(header);
-                    if (header->sessionID < 10000)
-                    {
-                        fwrite(packet->data, 1, packet->length, fp);
-                    }
-                    else
+
+
                     {
                         FriendInfo *node;
                         //node = (FriendInfo *) malloc(sizeof(FriendInfo));
@@ -471,13 +449,8 @@ int mysockfd()
 
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
 
-                    if (header->sessionID < 10000)
-                    {
-                        fclose(fp);
-                    }
-                    else
-                    {
-                        int friendnum = 0;
+
+                    int friendnum = 0;
                         FriendInfo *node;
                         node = FriendInfoHead;
                         while (node)
@@ -510,7 +483,6 @@ int mysockfd()
                         }
 
 
-                    }
                     if ((void *) packet != header->data) {
                         free(packet);
                     }
