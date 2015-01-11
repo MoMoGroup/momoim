@@ -65,7 +65,7 @@ void Md5Coding(gchar *filename, const unsigned char *coding_text)
 int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithPath)
 {
     FILE *fpR, *fpW;
-    char buffer[256] = "0";
+    char buffer[256] = "\0";
     int lenR, lenW;
     if ((fpR = fopen(sourceFileNameWithPath, "r")) == NULL)
     {

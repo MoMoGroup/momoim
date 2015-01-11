@@ -1,11 +1,9 @@
 #include <protocol/CRPPackets.h>
 #include <logger.h>
 #include <asm-generic/errno-base.h>
-#include <unistd.h>
 
 #include <run/user.h>
 #include "datafile/auth.h"
-#include "datafile/friend.h"
 
 int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet)
 {
@@ -38,6 +36,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                 CRPFailureSend(user->sockfd, session, EFAULT, "服务器内部错误");
                 return 0;
             }
+            time(&onlineUser->info->loginTime);
             user = onlineUser;
             log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
 

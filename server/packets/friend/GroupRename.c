@@ -27,4 +27,5 @@ int ProcessPacketFriendGroupRename(POnlineUser user, uint32_t session, CRPPacket
     {
         CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
+    return 1;
 }

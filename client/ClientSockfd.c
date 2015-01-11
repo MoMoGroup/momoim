@@ -3,6 +3,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include<stdlib.h>
+#include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
@@ -288,9 +289,18 @@ int mysockfd()
             free(packet);
         }
     }
-    unsigned char hash[16];
-    MD5((unsigned char *) pwd, strlen(pwd), hash);
-    CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
+
+    if (flag_remember == 0)
+    {
+        unsigned char hash[16];
+        MD5((unsigned char *) pwd, strlen(pwd), hash);
+        CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
+    }
+    else
+    {
+        CRPLoginLoginSend(sockfd, 0, name, pwd);
+    }
+
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
@@ -321,6 +331,7 @@ int mysockfd()
         }
 
 
+        // CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
         CRPFriendRequestSend(sockfd, 1);  //请求用户好友列表
 
         sprintf(mulu, "%s/.momo", getpwuid(getuid())->pw_dir);
@@ -527,6 +538,7 @@ int mysockfd()
         AddMessageNode(0, servemessage, "");//注册服务器发来的消息
 
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
+        CRPMessageQueryOfflineSend(sockfd, CountSessionId());
         MessageLoopFunc();
     }
     log_error("DEBUG", "Unexception packet id:%hu\n", header->packetID);
