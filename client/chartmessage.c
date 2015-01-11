@@ -5,6 +5,8 @@
 #include <ftadvanc.h>
 #include "chart.h"
 #include "common.h"
+#include <logger.h>
+#include <sys/stat.h>
 #include "Infomation.h"
 #include <pwd.h>
 #include <math.h>
@@ -131,9 +133,9 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
 
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-            "\n", -1, "gray_foreground", NULL);
+                                             "\n", -1, "gray_foreground", NULL);
     gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW (info->show_text),
-            gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
+                                       gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
 }
 
 //将输入的文本框输出在显示的文本框中
@@ -142,7 +144,7 @@ void show_local_text(const gchar *text, FriendInfo *info, char *nicheng_times, i
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
-            nicheng_times, -1, "red_foreground", "size1", NULL);
+                                             nicheng_times, -1, "red_foreground", "size1", NULL);
     DecodingText(text, info, count); //解码
 
 }
@@ -162,7 +164,7 @@ void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
     show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-            nicheng_times, -1, "blue_foreground", "size1", NULL);
+                                             nicheng_times, -1, "blue_foreground", "size1", NULL);
     DecodingText(rcvd_text, info, len); //解码
 
 }
@@ -297,8 +299,8 @@ int deal_with_message(CRPBaseHeader *header, void *data)
                 {
                     session_id_t sessionID = CountSessionId();
                     CRPMessageNormalSend(sockfd, sessionID, UMT_TEXT,
-                            photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
-                            photomessage->image_message_data->message_data);
+                                         photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
+                                         photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data);
                     ret = 0;
@@ -315,8 +317,8 @@ int deal_with_message(CRPBaseHeader *header, void *data)
         if (photomessage->image_message_data->imagecount == 0)
         {
             CRPMessageNormalSend(sockfd, photomessage->image_message_data->uid, UMT_TEXT,
-                    photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
-                    photomessage->image_message_data->message_data);
+                                 photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
+                                 photomessage->image_message_data->message_data);
             free(photomessage->image_message_data->message_data);
             free(photomessage->image_message_data);
         }

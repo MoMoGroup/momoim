@@ -8,6 +8,7 @@
 #include "Infomation.h"
 #include <pwd.h>
 #include <math.h>
+#include "chartmessage.h"
 #include <logger.h>
 #include "chartmessage.h"
 
