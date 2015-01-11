@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-pthread_mutex_t logger_output_lock = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t logger_output_lock = PTHREAD_MUTEX_INITIALIZER;
 const char *plainPrefix[] = {
         "[INFO][%s]",
         "[WARN][%s]",
@@ -35,11 +35,14 @@ void log_info(const char *section, const char *format, ...)
 {
     log_check_color();
     pthread_mutex_lock(&logger_output_lock);
+    fprintf(stderr, "logger locked.\n");
     fprintf(stderr, prefix[0], section);
     va_list ag;
     va_start(ag, format);
     vfprintf(stderr, format, ag);
     va_end(ag);
+    fflush(stderr);
+    fprintf(stderr, "logger unlocked.\n");
     fflush(stderr);
     pthread_mutex_unlock(&logger_output_lock);
 }
@@ -48,11 +51,14 @@ void log_warning(const char *section, const char *format, ...)
 {
     log_check_color();
     pthread_mutex_lock(&logger_output_lock);
+    fprintf(stderr, "logger locked.\n");
     fprintf(stderr, prefix[1], section);
     va_list ag;
     va_start(ag, format);
     vfprintf(stderr, format, ag);
     va_end(ag);
+    fflush(stderr);
+    fprintf(stderr, "logger unlocked.\n");
     fflush(stderr);
     pthread_mutex_unlock(&logger_output_lock);
 }
@@ -61,11 +67,14 @@ void log_error(const char *section, const char *format, ...)
 {
     log_check_color();
     pthread_mutex_lock(&logger_output_lock);
+    fprintf(stderr, "logger locked.\n");
     fprintf(stderr, prefix[2], section);
     va_list ag;
     va_start(ag, format);
     vfprintf(stderr, format, ag);
     va_end(ag);
+    fflush(stderr);
+    fprintf(stderr, "logger unlocked.\n");
     fflush(stderr);
     pthread_mutex_unlock(&logger_output_lock);
 }
