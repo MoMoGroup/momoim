@@ -6,6 +6,7 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <sys/mman.h>
+#include <imcommon/friends.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
@@ -14,7 +15,7 @@
 #include "chart.h"
 #include "chartmessage.h"
 
-static GtkWidget *ssun,*imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
+static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
 const gchar *name, *pwd;
 static pthread_t thread1;
@@ -123,7 +124,7 @@ gboolean mythread(gpointer user_data)//合并
     gtk_widget_destroy(window);
     FILE *fp;
     char wordfile[256];
-    sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo.uid);
+    sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
     if ((fp = fopen(wordfile, "r")) != NULL)
     {
         open_setting_file(fp);

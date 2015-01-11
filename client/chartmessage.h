@@ -1,10 +1,10 @@
 #pragma once
 
-extern void SendText(friendinfo *info);
+extern void SendText(FriendInfo *info);
 
-extern void ShoweRmoteText(const gchar *rcvd_text, friendinfo *info, uint16_t len);
+extern void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len);
 
-extern void CodingWordColor(friendinfo *info, gchar *coding, int *count);
+extern void CodingWordColor(FriendInfo *info, gchar *coding, int *count);
 
 struct PictureMessageFileUploadingData
 {

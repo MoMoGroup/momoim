@@ -11,11 +11,12 @@
 #include <logger.h>
 #include <sys/stat.h>
 #include <cairo-script-interpreter.h>
+#include <imcommon/friends.h>
 
 #include "chartmessage.h"
 
 //解码
-void DecodingText(const gchar *text, friendinfo *info, int count)
+void DecodingText(const gchar *text, FriendInfo *info, int count)
 {
 
     gchar *ptext = text, *ptext_end = text + count;
@@ -136,7 +137,7 @@ void DecodingText(const gchar *text, friendinfo *info, int count)
 }
 
 //将输入的文本框输出在显示的文本框中
-void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times, int count)
+void show_local_text(const gchar *text, FriendInfo *info, char *nicheng_times, int count)
 {
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
@@ -148,7 +149,7 @@ void show_local_text(const gchar *text, friendinfo *info, char *nicheng_times, i
 
 
 //将服务器发过来的的消息显示在文本框上
-void ShoweRmoteText(const gchar *rcvd_text, friendinfo *info, uint16_t len)
+void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
 {
     GtkTextIter start, end;
     GtkTextBuffer *show_buffer;
@@ -157,7 +158,7 @@ void ShoweRmoteText(const gchar *rcvd_text, friendinfo *info, uint16_t len)
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
-    sprintf(nicheng_times, " %s  %d: %d: %d \n", CurrentUserInfo.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    sprintf(nicheng_times, " %s  %d: %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
     show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
@@ -167,7 +168,7 @@ void ShoweRmoteText(const gchar *rcvd_text, friendinfo *info, uint16_t len)
 }
 
 //编码字体和颜色
-void CodingWordColor(friendinfo *info, gchar *coding, int *count)
+void CodingWordColor(FriendInfo *info, gchar *coding, int *count)
 {
     gchar *char_rear = coding;
     //字体类型
@@ -216,7 +217,7 @@ void CodingWordColor(friendinfo *info, gchar *coding, int *count)
 
 
 //编码
-void CodingTextImage(friendinfo *info, gchar *coding, int *count)
+void CodingTextImage(FriendInfo *info, gchar *coding, int *count)
 {
     gchar *char_rear = coding + *count;
     gunichar c;
@@ -327,7 +328,7 @@ int deal_with_message(CRPBaseHeader *header, void *data)
     return ret;
 }
 
-int image_message_send(gchar *char_text, friendinfo *info, int charlen)
+int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
 {
     int i = 0;
     int isimageflag = 0;
@@ -423,7 +424,7 @@ int image_message_send(gchar *char_text, friendinfo *info, int charlen)
 }
 
 //将输入的内容添加到输入文本框的缓冲区去并取出内容传给显示文本框
-void SendText(friendinfo *info)
+void SendText(FriendInfo *info)
 {
     gchar *char_text;
     int count = 0, cmpcount = 0;
@@ -453,7 +454,7 @@ void SendText(friendinfo *info)
         struct tm *p;
         time(&timep);
         p = localtime(&timep);
-        sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo.nickName, p->tm_hour, p->tm_min, p->tm_sec);
+        sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
         gtk_text_buffer_set_text(info->input_buffer, "", 0);//发送消息后本地的文本框清0
         show_local_text(char_text, info, nicheng_times, count);
         image_message_send(char_text, info, count);

@@ -332,7 +332,7 @@ int deal_with_recv_message(void *data)  //图片处理函数
     return FALSE;
 }
 
-int image_message_recv(gchar *recv_text, friendinfo *info, int charlen)
+int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
 {
     int i = 0;
     int isimageflag = 0;

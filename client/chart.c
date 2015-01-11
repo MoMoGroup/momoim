@@ -17,7 +17,7 @@ static cairo_surface_t *surfaceclose1, *surfaceclose2, *surfaceclosebut1, *surfa
 static cairo_surface_t *surfacelook1, *surfacelook2, *surfacejietu1, *surfacejietu2, *surfacefile1, *surfacefile2, *surfaceimage1, *surfaceimage2;
 static cairo_surface_t *surfacewordart1, *surfacewordart2, *surfacecolor;
 
-static void create_surfaces(friendinfo *information)
+static void create_surfaces(FriendInfo *information)
 {
     if (schartbackgroud == NULL)
     {
@@ -78,7 +78,7 @@ static void create_surfaces(friendinfo *information)
 //背景的eventbox
 static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     //设置在非按钮区域内移动窗口
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1)
@@ -151,7 +151,7 @@ static gint send_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 
 gboolean key_value(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     guint keyvalue = event->keyval;
     if (keyvalue == GDK_KEY_Return || ((keyvalue == GDK_KEY_Alt_L || keyvalue == GDK_KEY_Alt_R) && (keyvalue == GDK_KEY_Return)))
     {
@@ -418,7 +418,7 @@ static gint look_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标点击事件
 static gint jietu_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     //设置发送按钮
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu2); //置换图标
@@ -589,14 +589,14 @@ static gint photo_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 }
 
 
-void handle_font_color(friendinfo *info)
+void handle_font_color(FriendInfo *info)
 {
     int num;
     UserWordInfo.coding_font_color = (gchar *) malloc(strlen(UserWordInfo.font) + 30);
     CodingWordColor(info, UserWordInfo.coding_font_color, &UserWordInfo.codinglen);
     FILE *fp;
     char wordfile[256];
-    sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo.uid);
+    sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
     fp = fopen(wordfile, "w");
     num = fwrite(UserWordInfo.coding_font_color, 1, UserWordInfo.codinglen, fp);
     if (num == UserWordInfo.codinglen)
@@ -701,7 +701,7 @@ static gint color_button_press_event(GtkWidget *widget,
 
         GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     if (event->button == 1)
     {     //设置发送按钮
@@ -713,7 +713,7 @@ static gint color_button_press_event(GtkWidget *widget,
 //鼠标抬起事件
 static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
@@ -757,7 +757,7 @@ static gint color_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     return 0;
 }
@@ -768,7 +768,7 @@ static gint color_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 
         gpointer data)
 {
-    friendinfo *info = (friendinfo *) data;
+    FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     return 0;
@@ -783,7 +783,7 @@ static gint color_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 
 
 
-int MainChart(friendinfo *friendinfonode)
+int MainChart(FriendInfo *friendinfonode)
 {
 
     GtkEventBox *chartbackground_event_box, *send_event_box, *voice_event_box, *video_event_box;
@@ -1029,9 +1029,9 @@ int MainChart(friendinfo *friendinfonode)
 
     GdkRGBA rgbacolor;
     rgbacolor.alpha = 1;
-    rgbacolor.red = UserWordInfo.color_red / 255.0;
-    rgbacolor.green = UserWordInfo.color_green / 255.0;
-    rgbacolor.blue = UserWordInfo.color_blue / 255.0;
+    rgbacolor.red = UserWordInfo.color_red / 65535.0;
+    rgbacolor.green = UserWordInfo.color_green / 65535.0;
+    rgbacolor.blue = UserWordInfo.color_blue / 65535.0;
     gtk_widget_override_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgbacolor);
     gtk_widget_show_all(friendinfonode->chartwindow);
 
