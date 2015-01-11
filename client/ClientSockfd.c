@@ -3,14 +3,21 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include<stdlib.h>
-#include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
+#include <protocol/message/Normal.h>
+#include <protocol/friend/Notify.h>
+#include <ftlist.h>
+#include <protocol/base.h>
+#include <protocol/info/Data.h>
+#include <imcommon/friends.h>
+#include <protocol/message/Normal.h>
 #include "MainInterface.h"
+#include "PopupWinds.h"
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
@@ -290,14 +297,12 @@ int mysockfd()
         }
     }
 
-    if (flag_remember == 0)
-    {
+    if (flag_remember == 0) {
         unsigned char hash[16];
         MD5((unsigned char *) pwd, strlen(pwd), hash);
         CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
     }
-    else
-    {
+    else{
         CRPLoginLoginSend(sockfd, 0, name, pwd);
     }
 
@@ -331,7 +336,6 @@ int mysockfd()
         }
 
 
-        // CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
         CRPFriendRequestSend(sockfd, 1);  //请求用户好友列表
 
         sprintf(mulu, "%s/.momo", getpwuid(getuid())->pw_dir);
@@ -357,9 +361,9 @@ int mysockfd()
                 };
                 case CRP_PACKET_INFO_DATA: //用户资料回复
                 {
-                    CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+                        CRPPacketInfoData *infodata = CRPInfoDataCast(header);
 
-                    CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
+                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
 
                     FriendInfo *node;
                     node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
@@ -507,8 +511,7 @@ int mysockfd()
 
 
                     }
-                    if ((void *) packet != header->data)
-                    {
+                    if ((void *) packet != header->data) {
                         free(packet);
                     }
                     break;

@@ -606,6 +606,9 @@ void PostMessage(UserMessage *message)
         log_info("PostMessager", "Post message from %u to %u\n", message->from, message->to);
         CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
         UserDrop(toUser);
+    } else
+    {
+        log_info("PostMessager", "Post offline message from %u to %u\n", message->from, message->to);
     }
     else
     {

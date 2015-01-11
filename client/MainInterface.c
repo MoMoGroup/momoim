@@ -6,6 +6,11 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
+#include <sys/stat.h>
+#include <cairo-script-interpreter.h>
+#include <protocol/base.h>
+#include <imcommon/friends.h>
+#include "chart.h"
 #include "common.h"
 #include "addfriend.h"
 #include "chartmessage.h"
@@ -19,6 +24,7 @@ static GtkWidget *window;
 static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
+
 
 GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;

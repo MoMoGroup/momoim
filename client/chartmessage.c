@@ -7,6 +7,13 @@
 #include "common.h"
 #include <logger.h>
 #include <sys/stat.h>
+#include "Infomation.h"
+#include <pwd.h>
+#include <math.h>
+#include <logger.h>
+#include <sys/stat.h>
+#include <cairo-script-interpreter.h>
+#include <imcommon/friends.h>
 
 #include "chartmessage.h"
 

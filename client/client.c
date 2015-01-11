@@ -6,11 +6,15 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <imcommon/friends.h>
+#include <sys/mman.h>
+#include <imcommon/friends.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
+#include "chart.h"
+#include "chartmessage.h"
 #include "chart.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
@@ -285,13 +289,17 @@ static gint combo_change_event()
     if (strcmp(name, "") != 0)
     {
         for (i = 0; i < flag_cunchu; ++i) //若账号名本地有则相应取出密码
+    //   gtk_test_text_set(passwd, "");
+    if (strcmp(name, "") != 0)
+    {
+        for (i = 0; i < flag_cunchu; ++i) //若账号名本地有则相应取出密码
         {
-            if (strcmp(name, str_cunchu[i].cunchu_name) == 0)
-            {
+            if (strcmp(name, str_cunchu[i].cunchu_name) == 0) {
                 gtk_test_text_set(passwd, str_cunchu[i].cunchu_pwd);
                 flag_username = 1;
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//显示记住密码
                 flag_remember = 1;
+            
             }
         }
     }
@@ -574,6 +582,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                         flag_cunchu = i;
                         fclose(passwdfp);
                     }
+
                 }
             }
             gtk_test_text_set(passwd, "");
@@ -723,8 +732,6 @@ gboolean loadloginLayout(gpointer user_data)
 
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
-//    g_signal_connect (G_OBJECT(username), "activate", G_CALLBACK(on_button_clicked), NULL);
-//    g_signal_connect (G_OBJECT(passwd), "activate", G_CALLBACK(on_button_clicked), NULL);
 
     g_signal_connect(username, "changed", G_CALLBACK(combo_change_event), NULL);
 

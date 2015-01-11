@@ -5,8 +5,11 @@
 #include <ftadvanc.h>
 #include "chart.h"
 #include "common.h"
+#include "Infomation.h"
 #include <pwd.h>
 #include <math.h>
+#include "chartmessage.h"
+#include <logger.h>
 #include "chartmessage.h"
 
 struct UserTextInformation UserWordInfo;
