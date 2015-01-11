@@ -276,6 +276,7 @@ static gint registered_leave_notify_event(GtkWidget *widget, GdkEventButton *eve
     return 0;
 }
 
+
 static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event,
         gpointer data) {
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下

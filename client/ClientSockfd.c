@@ -31,8 +31,6 @@ void add_node(FriendInfo *node)
 {
     FriendInfo *p;
     p = FriendInfoHead;
-    //=(FriendInfo *)malloc(sizeof(struct FriendInfo));
-    //p=head;
 
     while (p->next)
     {
@@ -40,6 +38,23 @@ void add_node(FriendInfo *node)
     }
     p->next = node;
     node->next = NULL;
+}
+
+FriendInfo *FineNode(uint32_t uid)
+{
+    FriendInfo *p;
+    p = FriendInfoHead;
+    while (p->next)
+    {
+        p = p->next;
+
+        if(p->uid==uid)
+        {
+            return p;
+        }
+    }
+    log_info("NO found", "node\n");
+
 }
 
 void *keepalive(void *dada)
@@ -185,7 +200,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     if (data->toGid != UGI_PENDING)//不是添加到pending,说明是有人加你后好友列表需要更新
                     {
                         session_id_t sessionid = CountSessionId();
-
                         AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
                         CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
                     }
@@ -315,7 +329,8 @@ int mysockfd()
         sprintf(mulu, "%s/.momo/%u", getpwuid(getuid())->pw_dir, uid);
         mkdir(mulu, 0700);
         sprintf(mulu, "%s/.momo/friend", getpwuid(getuid())->pw_dir);
-
+        mkdir(mulu, 0700);
+        sprintf(mulu, "%s/.momo/files", getpwuid(getuid())->pw_dir);
         mkdir(mulu, 0700);
         int loop = 1;
         while (loop)
@@ -331,27 +346,26 @@ int mysockfd()
                 };
                 case CRP_PACKET_INFO_DATA: //用户资料回复
                 {
-                        CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+                    CRPPacketInfoData *infodata = CRPInfoDataCast(header);
 
-                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
+                    CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
 
-                        FriendInfo *node;
-                        node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
-                        //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
-                        node->uid = header->sessionID;//添加id到结构提
-                        node->user = infodata->info;
-                        node->inonline = infodata->isOnline;//是否在线
-                        memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
-                        add_node(node);             //添加新节点
-                        if (node->uid == uid)
-                        {
-                            CurrentUserInfo = &node->user;
-                            log_info("user nickname:", "%s\n", infodata->info.nickName);
-                        }
-                        //free(node);
+                    FriendInfo *node;
+                    node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
+                    //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
+                    node->uid = header->sessionID;//添加id到结构提
+                    node->user = infodata->info;
+                    node->inonline = infodata->isOnline;//是否在线
+                    memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
+                    add_node(node);             //添加新节点
+                    if (node->uid == uid)//用户自己
+                    {
+                        CurrentUserInfo = &node->user;
+                        node->inonline=1;
 
-                        // log_info("GROUPDATA", "Nick:%s\n", CurrentUserInfo->nickName);//用户昵称是否获取成功
-                        // log_info("循环1", "循环1%s\n", mulu);
+                        log_info("user nickname:", "%s\n", infodata->info.nickName);
+                    }
+
                     break;
 
 

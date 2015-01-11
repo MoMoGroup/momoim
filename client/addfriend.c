@@ -10,6 +10,7 @@
 #include "common.h"
 #include "ClientSockfd.h"
 #include "MainInterface.h"
+#include "PopupWinds.h"
 
 GtkWidget *addwindow, *addframelayout;
 GtkWidget *addlayout2, *addlayout1, *addlayout31;//layout
@@ -21,7 +22,7 @@ cairo_surface_t *surfacebackground1, *surfacebackground3, *surfacebackground2, *
 cairo_surface_t *surfacehead;
 //资源
 
-GtkWidget *background1, *background2, *background3, *biaoji1,*biaoji2, *next, *addclose;    //引用
+GtkWidget *background1, *background2, *background3, *biaoji1, *biaoji2, *next, *addclose;    //引用
 GtkWidget *smallhead, *done, *done2;
 
 GtkEventBox *next_enent_box, *close_event_box;
@@ -87,7 +88,7 @@ static gint add_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
 //关闭按钮
 static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    AddFriendflag=1;//判断是否打开搜索窗口,置1，可以打开了
+    AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
     return 0;
 }
@@ -98,9 +99,16 @@ static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 {
 
     struct add_friend_info *p = data;
-    CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
-    AddFriendflag=1;//判断是否打开搜索窗口,置1，可以打开了
-    gtk_widget_destroy(addwindow);
+    if (p->uid == CurrentUserInfo->uid)
+    {
+        popup("", "不能添加自己为好友");
+    }
+    else
+    {
+        CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
+        AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
+        gtk_widget_destroy(addwindow);
+    }
 }
 //
 //static gint done2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -331,7 +339,7 @@ static gint next_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 //构造第一个界面的地方
 int AddFriendFun()
 {
-    AddFriendflag=0;//判断是否打开搜索窗口，置0，不能打开
+    AddFriendflag = 0;//判断是否打开搜索窗口，置0，不能打开
     addwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     addframelayout = gtk_layout_new(NULL, NULL);
     addlayout1 = gtk_fixed_new();

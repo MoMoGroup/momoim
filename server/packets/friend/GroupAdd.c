@@ -12,7 +12,7 @@ int ProcessPacketFriendGroupAdd(POnlineUser user, uint32_t session, CRPPacketFri
 
         if (UserFriendsGroupAdd(user->info->friends, packet->gid, packet->groupName))
         {
-            CRPFriendNotifySend(user->sockfd, session, FNT_GROUP_NEW, 0, packet->gid, 0);
+            CRPFriendNotifySend(user->sockfd, 0, FNT_GROUP_NEW, 0, packet->gid, 0);
             CRPOKSend(user->sockfd, session);
         }
         else
