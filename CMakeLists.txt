@@ -4,6 +4,7 @@ add_definitions ("-Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 
+#add_subdirectory(1)
 add_subdirectory(logger)
 add_subdirectory(imcommon)
 add_subdirectory(protocol)

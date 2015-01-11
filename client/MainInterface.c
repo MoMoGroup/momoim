@@ -6,27 +6,30 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
+#include <sys/stat.h>
+#include <cairo-script-interpreter.h>
+#include <protocol/base.h>
 #include <imcommon/friends.h>
 #include "chart.h"
 #include "common.h"
 #include "addfriend.h"
-#include "Infomation.h"
+#include "chartmessage.h"
 #include "onlylookinfo.h"
 #include"Addgroup.h"
 
+
+static GtkWidget *background, *headx, *search, *friend, *closebut;
 static GtkWidget *background1, *headx, *search, *friend, *closebut;
 static GtkWidget *window;
 static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 
-
 GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box;
-
 
 static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data) {
     int64_t priA, priB;
@@ -183,7 +186,8 @@ static void loadinfo() {
 }
 
 static void
-destroy_surfaces() {
+destroy_surfaces()
+{
     g_print("destroying surfaces2");
     cairo_surface_destroy(surfacemainbackgroud);
     cairo_surface_destroy(surfacehead2);
@@ -193,7 +197,8 @@ destroy_surfaces() {
 }
 
 //单击分组显示右键菜单
-gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     GdkEventButton *event_button;
     GtkWidget *menu = GTK_WIDGET(data);
     GtkTreeIter iter;
@@ -202,7 +207,8 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);
 
-    if (event->type == GDK_BUTTON_PRESS) {
+    if (event->type == GDK_BUTTON_PRESS)
+    {
         int i;
         GtkTreePath *path;
         path = gtk_tree_model_get_path(model, &iter);
@@ -210,14 +216,18 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
 
         event_button = (GdkEventButton *) event;
 
-        if (event->button == 0x1) {
+        if (event->button == 0x1)
+        {
             return FALSE;
         }
-        if (event->button == 0x2) {
+        if (event->button == 0x2)
+        {
             return FALSE;
         }
-        if (event->button == 0x3) {
-            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0)) {
+        if (event->button == 0x3)
+        {
+            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
+            {
                 gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
                 return FALSE;
             }
@@ -237,16 +247,20 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);
     GtkWidget *menu = GTK_WIDGET(data);
-    if (event->type == GDK_BUTTON_PRESS) {
+    if (event->type == GDK_BUTTON_PRESS)
+    {
         event_button = (GdkEventButton *) event;
 
-        if (event->button == 0x1) {
+        if (event->button == 0x1)
+        {
             return FALSE;
         }
-        if (event->button == 0x2) {
+        if (event->button == 0x2)
+        {
             return FALSE;
         }
-        if (event->button == 0x3) {
+        if (event->button == 0x3)
+        {
             int i, j;
             GtkTreePath *path;
             path = gtk_tree_model_get_path(model, &iter);
@@ -315,7 +329,8 @@ int deal_with_recv_message(void *data)  //图片处理函数
     return FALSE;
 }
 
-int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen) {
+int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
+{
     int i = 0;
     int isimageflag = 0;
     struct RECVImageMessagedata *image_message_data
@@ -326,26 +341,74 @@ int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen) {
     image_message_data->message_data = message_recv;
     image_message_data->userinfo = info;
     image_message_data->charlen = charlen;
-    while (i < charlen) {
-        if (recv_text[i] != '\0') {
+    while (i < charlen)
+    {
+        if (recv_text[i] != '\0')
+        {
             i++;
         }
-        else {
-            isimageflag = 1;
-            char filename[256] = {0};
-            char strdest[17] = {0};
-            i++;
-            image_message_data->imagecount++;
-            memcpy(strdest, &recv_text[i], 16);
-            HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
-            FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
-            i = i + 16;
+        else
+        {
+
+            switch (recv_text[i + 1])
+            {
+                case 1:
+                {
+                    i++;
+                    while (recv_text[i] != '\0')
+                    {
+                        i++;
+                    }
+                    i++;
+                    break;
+                };
+                case 2 :
+                {
+                    i += 3;
+                };
+                case 3:   //宽度
+                {
+                    i += 4;
+                    break;
+                };
+                case 4: //字体大小
+                {
+                    i += 3;
+                    break;
+                };
+                case 5: //颜色
+                {
+                    i += 8;
+
+                    break;
+                };
+                case 0 :
+                {
+
+                    isimageflag = 1;
+                    char filename[256] = {0};
+                    char strdest[17] = {0};
+                    i += 2;
+                    image_message_data->imagecount++;
+                    memcpy(strdest, &recv_text[i], 16);
+                    HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
+                    FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
+                    i = i + 16;
+                    break;
+                }
+                default:
+                {
+//                        i += 2;
+                    break;
+                };
+            }
         }
 
     }
-    if (isimageflag == 0) {
+    if (isimageflag == 0)
+    {
         ShoweRmoteText(image_message_data->message_data, image_message_data->userinfo,
-                       image_message_data->charlen);
+                image_message_data->charlen);
         free(message_recv);
         return 0;
     }
@@ -353,7 +416,8 @@ int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen) {
     return 1;
 }
 
-void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid) {
+void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
+{
 
     log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
     int uidfindflag = 0;
@@ -370,6 +434,10 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid) {
     if (uidfindflag == 1) {
         if (userinfo->chartwindow == NULL) {
             MainChart(userinfo);
+        }
+        else
+        {
+            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
         image_message_recv(rcvd_text, userinfo, len);
 
@@ -445,7 +513,7 @@ static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event,
         FriendInfo *friendinforear;
         friendinforear = FriendInfoHead;
         while (friendinforear) {
-            if (friendinforear->user.uid == CurrentUserInfo->uid) {
+            if ((friendinforear->user.uid == CurrentUserInfo->uid) && friendinforear->Infowind == NULL) {
                 //查看资料
                 OnlyLookInfo(friendinforear);
                 break;
@@ -474,7 +542,8 @@ static gint headx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 }
 
 //右键菜单发送即时消息
-static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     GtkTreeIter iter;
     GtkTreeView *treeview = GTK_TREE_VIEW(data);
@@ -490,7 +559,8 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     j = gtk_tree_path_get_indices(path)[1];
 
     if (gtk_tree_model_iter_has_child(model,
-                                      &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0)))) {
+                                      &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0))))
+    {
         uint32_t t;
         gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
         friendinforear = FriendInfoHead;
@@ -504,12 +574,15 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
                 friendinforear = friendinforear->next;
             }
         }
-        if (uidfindflag == 1) {
-            if (friendinforear->chartwindow == NULL) {
+        if (uidfindflag == 1) 
+        {
+            if (friendinforear->chartwindow == NULL) 
+            {
                 MainChart(friendinforear);
             }
-            else {
-                gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
+            else
+            {
+                gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));
             }
         }
     }
