@@ -203,8 +203,8 @@ int calendar_change_birthday() {
 static void create_infofaces() {
 
     Surfaceback = cairo_image_surface_create_from_png("资料.png");
-    Surfacesave = cairo_image_surface_create_from_png("更新.png");
-    Surfacesave1 = cairo_image_surface_create_from_png("更新2.png");
+    Surfacesave = cairo_image_surface_create_from_png("保存.png");
+    Surfacesave1 = cairo_image_surface_create_from_png("保存2.png");
     Surfacecancel = cairo_image_surface_create_from_png("资料取消.png");
     Surfacecancel1 = cairo_image_surface_create_from_png("资料取消2.png");
     Surfaceend = cairo_image_surface_create_from_png("关闭按钮1.png");
@@ -252,26 +252,24 @@ int infosockfd() {
     buf = gtk_entry_get_text(GTK_ENTRY(inickname));
     if (strlen(buf) == 0)
         popup("莫默告诉你", "给自己起个昵称");
+    memset(weinfo.nickName, 0, strlen(weinfo.nickName));
     memcpy(weinfo.nickName, buf, strlen(buf));
 
     buf = gtk_entry_get_text(GTK_ENTRY(iname));
+    memset(weinfo.name, 0, strlen(weinfo.name));
     memcpy(weinfo.name, buf, strlen(buf));
 
-    buf = gtk_entry_get_text(GTK_ENTRY(ipostcode));
-    memcpy(weinfo.postcode, buf, strlen(buf));
-    log_info("更新资料", weinfo.postcode);
-
     buf = gtk_entry_get_text(GTK_ENTRY(ischool));
+    memset(weinfo.school, 0, strlen(weinfo.school));
     memcpy(weinfo.school, buf, strlen(buf));
-    log_info("更新资料", weinfo.school);
 
     buf = gtk_entry_get_text(GTK_ENTRY(itel));
+    memset(weinfo.tel, 0, strlen(weinfo.tel));
     memcpy(weinfo.tel, buf, strlen(buf));
-    log_info("电话2", weinfo.tel);
 
     buf = gtk_entry_get_text(GTK_ENTRY(ihometown));
+    memset(weinfo.hometown, 0, strlen(weinfo.hometown));
     memcpy(weinfo.hometown, buf, strlen(buf));
-    log_info("更新资料", weinfo.hometown);
 
     buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) isex);
     if (strcmp(buf, "男") == 0)
@@ -282,6 +280,7 @@ int infosockfd() {
     buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iprovinces);
     for (int i = 0; i < 35; ++i) {
         if (strcmp(provinces[i], buf) == 0) {
+            memset(weinfo.provinces, 0, strlen(weinfo.provinces));
             memcpy(weinfo.provinces, buf, strlen(buf));
             break;
         }
@@ -291,6 +290,7 @@ int infosockfd() {
     for (int i = 0; i < 35; ++i)
         for (int j = 0; allcity[i][j]; j++) {
             if (strcmp(allcity[i][j], buf) == 0) {
+                memset(weinfo.city, 0, strlen(weinfo.city));
                 memcpy(weinfo.city, buf, strlen(buf));
                 break;
             }
@@ -301,6 +301,7 @@ int infosockfd() {
     int x = month + 1;
     int y = day / 21;
     sprintf(buf, "%d-%d-%d", year, x, day);
+    memset(weinfo.birthday, 0, strlen(weinfo.birthday));
     memcpy(weinfo.birthday, buf, strlen(buf));
     //buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iconstellation);
     buf = xingzuo[month][y];
@@ -311,7 +312,6 @@ int infosockfd() {
         }
     }
     //log_info("获取的日期", "Year:%d Month:%d Day:%d DATE:%s", year, month, day, buf);
-
     session_id_t newinfoid = CountSessionId();
     AddMessageNode(newinfoid, infoupdate, NULL);
     CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
@@ -340,7 +340,6 @@ static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     }
     return 0;
 }
-
 //更新
 //鼠标抬起事件
 static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -356,7 +355,6 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     }
     return 0;
 }
-
 //更新
 //鼠标移动事件
 static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -365,7 +363,6 @@ static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
     gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
     return 0;
 }
-
 //更新
 //鼠标离开事件
 static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -392,10 +389,8 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
         destroy_infosurfaces();
         gtk_widget_destroy(Infowind);
     }
-
     return 0;
 }
-
 //取消
 //鼠标移动事件
 static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -404,7 +399,6 @@ static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) Infocancel, Surfacecancel1); //置换图标
     return 0;
 }
-
 //取消
 //鼠标离开事件
 static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -424,7 +418,6 @@ static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, 
     }
     return 0;
 }
-
 //关闭
 //鼠标抬起事件
 static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -435,7 +428,6 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
     }
     return 0;
 }
-
 //关闭
 //鼠标移动事件
 static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -444,7 +436,6 @@ static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend2);
     return 0;
 }
-
 //关闭
 //鼠标离开事件
 static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
@@ -454,19 +445,12 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 }
 
 void infotv() {
-
-    char infohead[80] = {0};
-    sprintf(infohead, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
-    surfacehead = cairo_image_surface_create_from_png(infohead);
-    headicon = gtk_image_new_from_surface(surfacehead);
-    gtk_fixed_put(GTK_FIXED(Infolayout), headicon, 23, 16);
-
     char idstring[80] = {0};//id
     sprintf(idstring, "%d", CurrentUserInfo->uid);
     iid = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), iid, 240, 30);
     memset(idstring, 0, strlen(idstring));
-    sprintf(idstring, "等级：%d", CurrentUserInfo->level);
+    sprintf(idstring, "等级：%d", CurrentUserInfo->level);//等级
     ilevel = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), ilevel, 200, 50);
 
@@ -488,12 +472,12 @@ void infotv() {
     gtk_entry_set_text(itel, CurrentUserInfo->tel);
     gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 347);
 
+    sprintf(idstring, "%d", CurrentUserInfo->postcode);
     ipostcode = gtk_entry_new();//邮编
     gtk_entry_set_max_length(ipostcode, 6);
     gtk_entry_set_has_frame((GtkEntry *) ipostcode, FALSE);
-    gtk_entry_set_text(ipostcode, CurrentUserInfo->postcode);
+    gtk_entry_set_text(ipostcode, idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), ipostcode, 305, 345);
-
 
     ischool = gtk_entry_new();//毕业院校
     gtk_entry_set_max_length(ischool, 10);
@@ -506,6 +490,10 @@ void infotv() {
     gtk_entry_set_has_frame((GtkEntry *) ihometown, FALSE);
     gtk_entry_set_text(ihometown, CurrentUserInfo->hometown);
     gtk_fixed_put(GTK_FIXED(Infolayout), ihometown, 48, 403);
+
+    ibirthday = gtk_button_new_with_label(CurrentUserInfo->birthday);//生日
+    gtk_fixed_put(GTK_FIXED(Infolayout), ibirthday, 48, 263);
+    g_signal_connect(ibirthday, "clicked", G_CALLBACK(calendar_change_birthday), NULL);
 
     isex = gtk_combo_box_text_new();//性别
     gtk_combo_box_text_append(isex, "0", "女");
@@ -563,10 +551,11 @@ void infotv() {
     gtk_widget_show(iprovinces);
     gtk_widget_show(icity);
 
-    ibirthday = gtk_button_new_with_label(CurrentUserInfo->birthday);//生日
-    gtk_fixed_put(GTK_FIXED(Infolayout), ibirthday, 48, 263);
-    g_signal_connect(ibirthday, "clicked", G_CALLBACK(calendar_change_birthday), NULL);
-
+    char infohead[80] = {0};
+    sprintf(infohead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
+    surfacehead = cairo_image_surface_create_from_png(infohead);
+    headicon = gtk_image_new_from_surface(surfacehead);
+    gtk_fixed_put(GTK_FIXED(Infolayout), headicon, 23, 16);
 }
 
 int ChangeInfo() {
@@ -617,6 +606,7 @@ int ChangeInfo() {
                                      NULL,
                                      NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
+
     infotv();
     gtk_widget_show_all(Infowind);
 }
