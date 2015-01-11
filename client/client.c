@@ -12,6 +12,7 @@
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
+#include "chartmessage.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
@@ -24,7 +25,7 @@ typedef struct cunchu {
 };
 struct cunchu str_cunchu[20];
 FILE *passwdfp;
-int flag_username = 0, flag_cunchu = 0;
+int  flag_cunchu = 0;
 int flag_remember = 0;
 char mulu_username[80] = "", mulu_benji[80] = "";
 GtkStyleContext *combostyle;
@@ -168,26 +169,26 @@ gboolean DestroyLayout(gpointer user_data)
 static void
 create_surfaces1()
 {
-    sbackground = cairo_image_surface_create_from_png("背景2.png");
-    ssun = gtk_image_new_from_file("1.gif");
-    sheadimage = cairo_image_surface_create_from_png("头像.png");
-    swhite = cairo_image_surface_create_from_png("白色.png");
-    slandbut1 = cairo_image_surface_create_from_png("登陆按钮.png");
-    slandbut2 = cairo_image_surface_create_from_png("登陆按钮2.png");
-    slandbut3 = cairo_image_surface_create_from_png("登陆按钮3.png");
-    saccount = cairo_image_surface_create_from_png("账号.png");
-    spasswd = cairo_image_surface_create_from_png("密码.png");
-    sregistered1 = cairo_image_surface_create_from_png("注册账号.png");
-    sregistered2 = cairo_image_surface_create_from_png("注册账号2.png");
-    sclosebut1 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    sclosebut2 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    sclosebut3 = cairo_image_surface_create_from_png("关闭按钮3.png");
-    slandimage = cairo_image_surface_create_from_png("登录.png");
-    scancel10_1 = cairo_image_surface_create_from_png("取消1.png");
-    scancel10_2 = cairo_image_surface_create_from_png("取消2.png");
-    scancel10_3 = cairo_image_surface_create_from_png("取消3.png");
-    sremember1 = cairo_image_surface_create_from_png("记住密码1.png");
-    sremember2 = cairo_image_surface_create_from_png("记住密码2.png");
+    ssun = ChangeThem_file("1.gif");
+    sbackground = ChangeThem_png("背景2.png");
+    sheadimage = ChangeThem_png("头像.png");
+    swhite = ChangeThem_png("白色.png");
+    slandbut1 = ChangeThem_png("登陆按钮.png");
+    slandbut2 = ChangeThem_png("登陆按钮2.png");
+    slandbut3 = ChangeThem_png("登陆按钮3.png");
+    saccount = ChangeThem_png("账号.png");
+    spasswd = ChangeThem_png("密码.png");
+    sregistered1 = ChangeThem_png("注册账号.png");
+    sregistered2 = ChangeThem_png("注册账号2.png");
+    sclosebut1 = ChangeThem_png("关闭按钮1.png");
+    sclosebut2 = ChangeThem_png("关闭按钮2.png");
+    sclosebut3 = ChangeThem_png("关闭按钮3.png");
+    slandimage = ChangeThem_png("登录.png");
+    scancel10_1 = ChangeThem_png("取消1.png");
+    scancel10_2 = ChangeThem_png("取消2.png");
+    scancel10_3 = ChangeThem_png("取消3.png");
+    sremember1 = ChangeThem_png("记住密码1.png");
+    sremember2 = ChangeThem_png("记住密码2.png");
 }
 
 static void
@@ -278,6 +279,7 @@ static gint combo_change_event()
     flag_remember = 0;
     gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换不记住图片
     gtk_test_text_set(passwd, "");
+    gtk_widget_set_sensitive(passwd, TRUE);
     name = gtk_combo_box_text_get_active_text(username);
     // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
     //   gtk_test_text_set(passwd, "");
@@ -286,10 +288,9 @@ static gint combo_change_event()
         {
             if (strcmp(name, str_cunchu[i].cunchu_name) == 0) {
                 gtk_test_text_set(passwd, str_cunchu[i].cunchu_pwd);
-                flag_username = 1;
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//显示记住密码
                 flag_remember = 1;
-
+                gtk_widget_set_sensitive(passwd, FALSE);
             }
         }
     }
@@ -410,7 +411,6 @@ static gint registered_leave_notify_event(GtkWidget *widget, GdkEventButton *eve
     return 0;
 }
 
-
 static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event,
         gpointer data)
 {
@@ -518,6 +518,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                 MD5((unsigned char *) pwd, strlen(pwd), hash);//加密存储
                 fwrite(hash, 1, 16, passwdfp);
                 gtk_test_text_set(passwd, hash);//加密后的密码写入密码框
+                gtk_widget_set_sensitive(passwd, FALSE);
                 fclose(passwdfp);
             }
             else {
@@ -569,7 +570,6 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                         flag_cunchu = i;
                         fclose(passwdfp);
                     }
-
                 }
             }
             gtk_test_text_set(passwd, "");
@@ -630,6 +630,7 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);   // 去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(window), 283, 411);
 
+    iwait = ChangeThem_file("等待.gif");
     imagebackground = gtk_image_new_from_surface(sbackground);
     imagehead = gtk_image_new_from_surface(sheadimage);
     imagewhite = gtk_image_new_from_surface(swhite);
@@ -638,7 +639,6 @@ gboolean loadloginLayout(gpointer user_data)
     imagepasswd = gtk_image_new_from_surface(spasswd);
     imageregistered = gtk_image_new_from_surface(sregistered1);
     imageclosebut = gtk_image_new_from_surface(sclosebut1);
-    iwait = gtk_image_new_from_file("等待.gif");
     imainland = gtk_image_new_from_surface(slandimage);
     imagecancel = gtk_image_new_from_surface(scancel10_1);
     imageremember = gtk_image_new_from_surface(sremember1);
@@ -653,7 +653,8 @@ gboolean loadloginLayout(gpointer user_data)
             G_CALLBACK(background_button_press_event),
             NULL, NULL, NULL, NULL, NULL);
 
-    waitevent_box = BuildEventBox(iwait,
+    waitevent_box = BuildEventBox(
+            iwait,
             G_CALLBACK(wait_button_press_event),
             NULL, NULL, NULL, NULL, NULL);
 

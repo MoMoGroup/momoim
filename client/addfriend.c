@@ -46,17 +46,17 @@ typedef struct add_friend_info {
 void create_surface()
 {
     //加载资源，第1个
-    surfacebackground1 = cairo_image_surface_create_from_png("查找背景1.png");
-    surfacebackground2 = cairo_image_surface_create_from_png("查找背景2.png");
-    surfacebackground3 = cairo_image_surface_create_from_png("查找背景3.png");
+    surfacebackground1 = ChangeThem_png("查找背景1.png");
+    surfacebackground2 = ChangeThem_png("查找背景2.png");
+    surfacebackground3 = ChangeThem_png("查找背景3.png");
 
-    surfacebiaoji = cairo_image_surface_create_from_png("标记.png");
-    surfacenext = cairo_image_surface_create_from_png("下一步.png");
-    surfacenext_press = cairo_image_surface_create_from_png("下一步2.png");
-    surfaceclose = cairo_image_surface_create_from_png("关闭按钮1.png");
+    surfacebiaoji = ChangeThem_png("标记.png");
+    surfacenext = ChangeThem_png("下一步.png");
+    surfacenext_press = ChangeThem_png("下一步2.png");
+    surfaceclose = ChangeThem_png("关闭按钮1.png");
 
-    surfacedone = cairo_image_surface_create_from_png("完成.png");
-    surfacedone2 = cairo_image_surface_create_from_png("完成2.png");
+    surfacedone = ChangeThem_png("完成.png");
+    surfacedone2 = ChangeThem_png("完成2.png");
 
     //获得
     background1 = gtk_image_new_from_surface(surfacebackground1);
