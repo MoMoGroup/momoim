@@ -236,7 +236,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), inickname, 58, 180);
 
     iname = gtk_label_new(friendinfonode->user.name);//姓名
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), iname, 48, 243);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), iname, 48, 241);
 
     memset(idstring, 0, strlen(idstring));
     sprintf(idstring, "%d", friendinfonode->user.postcode);
@@ -244,10 +244,10 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ipostcode, 305, 353);
 
     ischool = gtk_label_new(friendinfonode->user.school);//毕业院校
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ischool, 75, 383);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ischool, 75, 381);
 
     ihometown = gtk_label_new(friendinfonode->user.hometown);//故乡
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ihometown, 48, 410);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ihometown, 48, 408);
 
     itel = gtk_label_new(friendinfonode->user.tel);//电话
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), itel, 48, 355);
@@ -273,7 +273,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode) {
             break;
         }
     }
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), iconstellation, 305, 268);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), iconstellation, 305, 266);
 
     char infohead[80] = {0};
     sprintf(infohead, "%s/.momo/friend/%d.png", getpwuid(getuid())->pw_dir, friendinfonode->user.uid);
