@@ -3,7 +3,6 @@
 #include <pwd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <logger.h>
 #include "ClientSockfd.h"
 #include "common.h"
 #include "Infomation.h"
@@ -138,6 +137,7 @@ static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event
     if (event->button == 1) {
         ChangeInfo();
         gtk_widget_destroy(info->Infowind);
+        info->Infowind = NULL;
     }
     return 0;
 }

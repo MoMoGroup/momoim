@@ -28,7 +28,7 @@ typedef struct FriendInfo
     GtkWidget *Infowind;
     GtkWidget *Infolayout, *Infolayout1;
     GtkWidget *Infobackground, *Infocancel, *Infoguanbi, *Infochange;
-
+    int FlagInfo;
     struct FriendInfo *next;
 } FriendInfo;
 extern FriendInfo *FriendInfoHead;

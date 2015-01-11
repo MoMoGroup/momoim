@@ -13,7 +13,6 @@
 #include "chart.h"
 #include "common.h"
 #include "addfriend.h"
-#include "Infomation.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include"Addgroup.h"
@@ -26,13 +25,11 @@ static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 
-
 GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box;
-
 
 static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data) {
     int64_t priA, priB;
@@ -516,7 +513,7 @@ static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event,
         FriendInfo *friendinforear;
         friendinforear = FriendInfoHead;
         while (friendinforear) {
-            if (friendinforear->user.uid == CurrentUserInfo->uid) {
+            if ((friendinforear->user.uid == CurrentUserInfo->uid) && friendinforear->Infowind == NULL) {
                 //查看资料
                 OnlyLookInfo(friendinforear);
                 break;
