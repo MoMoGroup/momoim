@@ -61,8 +61,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
 
 static void CRPEncryptDisableUnlock(CRPContext context)
 {
-    if (context->sendTd || context->recvTd)
-    {
+    if (context->sendTd || context->recvTd) {
         mcrypt_generic_deinit(context->sendTd);
         mcrypt_module_close(context->sendTd);
         context->sendTd = NULL;
@@ -121,15 +120,13 @@ int CRPEncryptTest(const char key[32], const char iv[32])
     memcpy(cpKey, key, 32);
     memcpy(cpIV, iv, 32);
     int r = mcrypt_generic_init(td, cpKey, 32, cpIV);
-    if (r < 0)
-    {
+    if (r < 0) {
         goto cleanup;
     }
     mcrypt_generic_deinit(td);
     ret = 1;
     cleanup:
-    if (td)
-    {
+    if (td) {
         mcrypt_module_close(td);
     }
     free(cpKey);
@@ -149,8 +146,7 @@ int CRPEncryptEnable(CRPContext context, const char sendKey[32], const char recv
     if (sendTd == MCRYPT_FAILED) {
         goto cleanup;
     }
-    if (mcrypt_enc_get_key_size(sendTd) != 32 || mcrypt_enc_get_iv_size(sendTd) != 32 || mcrypt_enc_get_block_size(sendTd) != 32)
-    {
+    if (mcrypt_enc_get_key_size(sendTd) != 32 || mcrypt_enc_get_iv_size(sendTd) != 32 || mcrypt_enc_get_block_size(sendTd) != 32) {
         fprintf(stderr, "CRP Warning: Cannot enable data encrypt!\nKey Size Error\n");
         mcrypt_module_close(sendTd);
         goto cleanup;
@@ -165,23 +161,20 @@ int CRPEncryptEnable(CRPContext context, const char sendKey[32], const char recv
     memcpy(&context->recvIV, iv, 32);
 
     retcode = mcrypt_generic_init(sendTd, context->sendKey, 32, context->sendIV);
-    if (retcode < 0)
-    {
+    if (retcode < 0) {
         fprintf(stderr, "CRP Warning: Cannot enable data encrypt!\nmcrypt_generic_init return:%d\n", retcode);
         mcrypt_module_close(sendTd);
         goto cleanup;
     }
     MCRYPT recvTd = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
-    if (recvTd == MCRYPT_FAILED)
-    {
+    if (recvTd == MCRYPT_FAILED) {
         mcrypt_generic_deinit(sendTd);
         mcrypt_module_close(sendTd);
         goto cleanup;
     }
 
     retcode = mcrypt_generic_init(recvTd, context->recvKey, 32, context->recvIV);
-    if (retcode < 0)
-    {
+    if (retcode < 0) {
         fprintf(stderr, "CRP Warning: Cannot enable data encrypt!\nmcrypt_generic_init return:%d\n", retcode);
         mcrypt_generic_deinit(sendTd);
         mcrypt_module_close(sendTd);
@@ -217,10 +210,8 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
 
     pthread_mutex_lock(&context->sendLock);
 
-    if (context->sendTd != NULL)
-    {
-        if (protocolLength % 32 != 0)
-        {
+    if (context->sendTd != NULL) {
+        if (protocolLength % 32 != 0) {
             encryptedLength += 32 - protocolLength % 32;
         }
         fullLength = (CRP_LENGTH_TYPE) (sizeof(CRP_LENGTH_TYPE) + encryptedLength);
@@ -230,8 +221,7 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
         memcpy(packet, &draw, sizeof(CRP_LENGTH_TYPE));
         bzero((char *) (header) + protocolLength, encryptedLength - protocolLength);
     }
-    else
-    {
+    else {
         fullLength = protocolLength;
         packet = header = malloc(protocolLength);
     }
@@ -244,17 +234,14 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
         memcpy(header->data, data, dataLength);
     }
 
-    if (context->sendTd)
-    {
-        if (0 != mcrypt_generic(context->sendTd, header, (int) encryptedLength))
-        {
+    if (context->sendTd) {
+        if (0 != mcrypt_generic(context->sendTd, header, (int) encryptedLength)) {
             fprintf(stderr, "CRP Fault: Cannot encrypt data using CRPContext.\n");
             abort();
         }
     }
     while (-1 == (ret = send(context->fd, packet, fullLength, 0/*MSG_MORE*/)) &&
-            (errno == EWOULDBLOCK || errno == EAGAIN))
-    {
+            (errno == EWOULDBLOCK || errno == EAGAIN)) {
         //如果系统要求重发则阻塞当前线程,等待重发
         fd_set fdWr, fdEx;
         FD_ZERO(&fdWr);
@@ -285,8 +272,7 @@ CRPBaseHeader *CRPRecv(CRPContext context)
     CRPBaseHeader *packet = NULL;
     ssize_t ret;
     pthread_mutex_lock(&context->recvLock);
-    if (context->recvTd)
-    {
+    if (context->recvTd) {
         CRP_LENGTH_TYPE encryptedLength;
         ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
         if (ret != sizeof(encryptedLength)) {
@@ -295,35 +281,29 @@ CRPBaseHeader *CRPRecv(CRPContext context)
         encryptedLength <<= 5;
         packet = (CRPBaseHeader *) malloc(encryptedLength);
         ret = recv(context->fd, packet, encryptedLength, MSG_WAITALL);
-        if (ret != encryptedLength)
-        {
+        if (ret != encryptedLength) {
             free(packet);
             return NULL;
         }
-        if (0 != mdecrypt_generic(context->recvTd, packet, encryptedLength))
-        {
+        if (0 != mdecrypt_generic(context->recvTd, packet, encryptedLength)) {
             free(packet);
             return NULL;
         }
-        if (packet->magicCode != 0x464F5573)
-        {
+        if (packet->magicCode != 0x464F5573) {
             free(packet);
             return NULL;
         }
     }
-    else
-    {
+    else {
         CRPBaseHeader h;
         ret = recv(context->fd, &h, sizeof(CRPBaseHeader), MSG_PEEK | MSG_WAITALL);
-        if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
-        {
+        if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573) {
             fprintf(stderr, "ret:%d,errno:%d,strerror:%s\n", (int) ret, errno, strerror(errno));
             return NULL;
         }
         packet = (CRPBaseHeader *) malloc(h.totalLength);
         ret = recv(context->fd, packet, h.totalLength, MSG_WAITALL);
-        if (ret != h.totalLength)
-        {
+        if (ret != h.totalLength) {
             fprintf(stderr, "Recv Error 2-%d bytes.%d/%s\n", (int) ret, errno, strerror(errno));
             free(packet);
             return NULL;

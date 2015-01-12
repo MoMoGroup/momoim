@@ -6,12 +6,10 @@
 
 int ProcessPacketFriendSearchByNickname(POnlineUser user, uint32_t session, CRPPacketFriendSearchByNickname *packet)
 {
-    if (user->status != OUS_ONLINE)
-    {
+    if (user->status != OUS_ONLINE) {
         CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
-    else
-    {
+    else {
         size_t textLength = strlen(packet->text);
         char s[textLength + 3];//%<text>%\0
         uint32_t users[packet->size];

@@ -62,21 +62,18 @@ int UserFriendsSave(uint32_t uid, UserFriends *friends)
     UserGetDir(path, uid, "friends");
 
     int fd = open(path, O_CREAT | O_RDWR | O_TRUNC, 0600);
-    if (fd == -1)
-    {
+    if (fd == -1) {
         log_error("User", "Cannot create user friends file %s.\n", path);
         return 1;
     }
     size_t length = UserFriendsSize(friends);
-    if (lseek(fd, length - 1, SEEK_SET) == -1)
-    {
+    if (lseek(fd, length - 1, SEEK_SET) == -1) {
         log_error("User", "Cannot expand user friends file %s.\n", path);
         return 3;
     }
     write(fd, "\0", 1);
     void *addr = mmap(NULL, length, PROT_WRITE, MAP_SHARED, fd, 0);
-    if (addr == MAP_FAILED)
-    {
+    if (addr == MAP_FAILED) {
         log_error("User", "Cannot mmap user friends file %s.%s\n", path, strerror(errno));
         close(fd);
         return 2;
@@ -93,17 +90,14 @@ static UserFriendsEntry *UserFriendsEntryGetUnlock(uint32_t uid)
     uint32_t current = uid;
     int reserve[sizeof(current) * 2];
     int end = 0;
-    while (current)
-    {
+    while (current) {
         reserve[end++] = current & 0xf;
         current >>= 4;
     }
     --end;
     UserFriendsTable *currentTable = &friendsTable;
-    while (end >= 0)
-    {
-        if (currentTable->next[reserve[end]] == NULL)
-        {
+    while (end >= 0) {
+        if (currentTable->next[reserve[end]] == NULL) {
             return NULL;
         }
         currentTable = currentTable->next[reserve[end]];
@@ -117,17 +111,14 @@ static UserFriendsEntry *UserFriendsEntrySetUnlock(uint32_t uid, UserFriends *fr
     uint32_t current = uid;
     int reserve[sizeof(current) * 2];
     int end = 0;
-    while (current)
-    {
+    while (current) {
         reserve[end++] = current & 0xf;
         current >>= 4;
     }
     --end;
     UserFriendsTable *currentTable = &friendsTable;
-    while (end >= 0)
-    {
-        if (currentTable->next[reserve[end]] == NULL)
-        {
+    while (end >= 0) {
+        if (currentTable->next[reserve[end]] == NULL) {
             currentTable->next[reserve[end]] = calloc(1, sizeof(UserFriendsTable));
         }
         currentTable = currentTable->next[reserve[end]];
@@ -167,13 +158,11 @@ UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock, int access)
 
     pthread_rwlock_wrlock(&friendsTableLock);
     UserFriendsEntry *entry = UserFriendsEntryGetUnlock(uid);
-    if (!entry || !entry->friends)
-    {
+    if (!entry || !entry->friends) {
         char path[30];
         UserGetDir(path, uid, "friends");
         fd = open(path, O_RDONLY);
-        if (fd == -1)
-        {
+        if (fd == -1) {
             log_error("User", "Cannot read user friends file %s.\n", path);
             goto cleanup;
         }
@@ -182,8 +171,7 @@ UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock, int access)
             goto cleanup;
         len = (size_t) statBuf.st_size;
         addr = mmap(NULL, len, PROT_READ, MAP_PRIVATE, fd, 0);
-        if (addr == MAP_FAILED)
-        {
+        if (addr == MAP_FAILED) {
             perror("mmap");
             goto cleanup;
         }
@@ -191,13 +179,11 @@ UserFriends *UserFriendsGet(uint32_t uid, pthread_rwlock_t **lock, int access)
         friends = UserFriendsDecode(addr);
         entry = UserFriendsEntrySetUnlock(uid, friends);
     }
-    else
-    {
+    else {
         friends = entry->friends;
     }
     pthread_rwlock_rdlock(&entry->refLock);
-    switch (access)
-    {
+    switch (access) {
         case O_RDONLY:
             pthread_rwlock_rdlock(&entry->lock);
             break;
@@ -227,8 +213,7 @@ void UserFriendsDrop(uint32_t uid)
     pthread_rwlock_unlock(&entry->lock);
     pthread_rwlock_unlock(&entry->refLock);
 
-    if (pthread_rwlock_trywrlock(&entry->refLock) == 0)
-    {
+    if (pthread_rwlock_trywrlock(&entry->refLock) == 0) {
         UserFriendsEntrySetUnlock(uid, NULL);
         pthread_rwlock_unlock(&friendsTableLock);
         UserFriendsSave(uid, friends);

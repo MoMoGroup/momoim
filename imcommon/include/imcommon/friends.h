@@ -4,14 +4,12 @@
 #include <stdint.h>
 #include <time.h>
 
-typedef enum
-{
+typedef enum {
     UGI_BLACKLIST = 0,      //黑名单分组
     UGI_DEFAULT = 1,        //默认好友分组
     UGI_PENDING = UINT8_MAX //等待添加好友分组
 } USER_GROUP_ID;
-typedef struct __attribute__ ((packed))
-{
+typedef struct __attribute__ ((packed)) {
     uint32_t uid;
     char sex;
     char nickName[32];
@@ -30,8 +28,7 @@ typedef struct __attribute__ ((packed))
     int postcode;
 } UserInfo;
 
-typedef struct __attribute__ ((packed))
-{
+typedef struct __attribute__ ((packed)) {
     uint8_t groupId;
     char groupName[64];
     uint16_t friendCount;
@@ -39,8 +36,7 @@ typedef struct __attribute__ ((packed))
     uint32_t *friends;//(Last)
 } UserGroup;
 
-typedef struct __attribute__ ((packed))
-{
+typedef struct __attribute__ ((packed)) {
     uint16_t groupCount;
     UserGroup *groups;
 } UserFriends;

@@ -6,8 +6,7 @@
 
 int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet)
 {
-    if (user->status == OUS_ONLINE)
-    {
+    if (user->status == OUS_ONLINE) {
         UserMessage *msg = (UserMessage *) malloc(sizeof(UserMessage) + packet->messageLen);
         msg->messageType = packet->messageType;
         msg->messageLen = packet->messageLen;
@@ -19,8 +18,7 @@ int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMess
         CRPOKSend(user->sockfd, session);
         free(msg);
     }
-    else
-    {
+    else {
         CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;

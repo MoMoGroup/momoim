@@ -9,22 +9,18 @@
 int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDataEnd *packet)
 {
     PUserOperation op = UserOperationGet(user, session);
-    if (!op)
-    {
+    if (!op) {
         CRPFailureSend(user->sockfd, session, ENOENT, "操作未找到");
     }
-    else
-    {
+    else {
         PUserOperationFileStore fop = (PUserOperationFileStore) op->data;
         close(fop->fd);
         fop->fd = -1;
-        if (fop->remainLength != 0)
-        {
+        if (fop->remainLength != 0) {
             unlink(fop->tmpfile);
             CRPFailureSend(user->sockfd, session, EBADF, "文件未结束");
         }
-        else
-        {
+        else {
             size_t len = DataFilePathLength;
             char *path = (char *) malloc(len);
             DataFilePath(fop->key, path);
@@ -34,8 +30,7 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
                 unlink(fop->tmpfile);
                 CRPFailureSend(user->sockfd, session, EFAULT, "文件移动失败\n");
             }
-            else
-            {
+            else {
                 CRPOKSend(user->sockfd, session);
             }
             free(path);

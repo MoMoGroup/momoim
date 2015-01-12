@@ -5,8 +5,7 @@
 
 int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFriendRequest *packet)
 {
-    if (user->status == OUS_ONLINE)
-    {
+    if (user->status == OUS_ONLINE) {
         pthread_rwlock_rdlock(user->info->friendsLock);
         size_t length = UserFriendsSize(user->info->friends);
         void *data = malloc(length);
@@ -16,8 +15,7 @@ int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFrie
 
         free(data);
     }
-    else
-    {
+    else {
         CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;

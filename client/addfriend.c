@@ -77,8 +77,7 @@ static gint add_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_ARROW));
-    if (event->button == 1)
-    { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+    if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                 event->x_root, event->y_root, event->time);
     }
@@ -270,23 +269,19 @@ gboolean putimage(gpointer user_data)
 static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
 {
     struct add_friend_info *p = (struct add_friend_info *) data;
-    switch (header->packetID)
-    {
-        case CRP_PACKET_OK:
-        {
+    switch (header->packetID) {
+        case CRP_PACKET_OK: {
             log_info("更新成功", "OKBAO\n");
             return 0;
         };
 
 
-        case CRP_PACKET_FAILURE:
-        {
+        case CRP_PACKET_FAILURE: {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURe reason", infodata->reason);
             break;
         };
-        case CRP_PACKET_INFO_DATA:
-        {
+        case CRP_PACKET_INFO_DATA: {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
             memcpy(p->key, infodata->info.icon, 16);
             CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
@@ -300,8 +295,7 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
             mem[strlen(infodata->info.nickName)] = 0;
             p->nickname = mem;
             //free(mem);
-            if ((const char *) infodata != header->data)
-            {
+            if ((const char *) infodata != header->data) {
                 free(infodata);
             }
 
@@ -311,8 +305,7 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
 
 
         };
-        default:
-        {
+        default: {
 
             break;
 
@@ -438,8 +431,7 @@ static gint pop_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
-    if (event->button == 1)
-    { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+    if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                 event->x_root, event->y_root, event->time);
     }
@@ -463,10 +455,10 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
     gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
 
 
-    popupsurfacecancel = cairo_image_surface_create_from_png("忽略1.png");
-    popupsurfacedone = cairo_image_surface_create_from_png("同意1.png");
+    popupsurfacecancel = ChangeThem_png("忽略1.png");
+    popupsurfacedone = ChangeThem_png("同意1.png");
 
-    popupsurfacebackground = cairo_image_surface_create_from_png("提示框.png");
+    popupsurfacebackground = ChangeThem_png("提示框.png");
     //获得
     popupcancel = gtk_image_new_from_surface(popupsurfacecancel);
     popupdone = gtk_image_new_from_surface(popupsurfacedone);

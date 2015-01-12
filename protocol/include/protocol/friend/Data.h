@@ -8,8 +8,7 @@
 * 请求好友列表
 */
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     unsigned char data[0];
 } CRPPacketFriendData;
 

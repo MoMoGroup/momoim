@@ -5,8 +5,7 @@
 /**
 * 通用失败包，表示操作失败
 */
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     uint8_t code;
     char reason[0];
 } CRPPacketFailure;

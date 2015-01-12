@@ -5,8 +5,7 @@
 #include <stdint.h>
 #include <protocol/base.h>
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     uint32_t uid;
 } CRPPacketLoginAccept;
 

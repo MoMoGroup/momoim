@@ -4,14 +4,12 @@
 
 int ProcessPacketStatusHello(POnlineUser user, uint32_t session, CRPPacketHello *packet)
 {
-    if (user->status == OUS_PENDING_HELLO && packet->protocolVersion == 1)
-    {
+    if (user->status == OUS_PENDING_HELLO && packet->protocolVersion == 1) {
         UserSetStatus(user, OUS_PENDING_LOGIN, NULL);
         CRPOKSend(user->sockfd, session);
         return 1;
     }
-    else
-    {
+    else {
         CRPFailureSend(user->sockfd, session, EPROTONOSUPPORT, "不支持的网络协议");
         return 0;
     }

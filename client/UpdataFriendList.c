@@ -25,8 +25,7 @@ int FriendListInsertEntry(void *data)
     uint32_t t;
     gtk_tree_model_get(TreeViewListStore, &iterGroup, FRIENDUID_COL, &t, -1);//第一个分组id
 
-    while (t != UGI_DEFAULT)
-    {
+    while (t != UGI_DEFAULT) {
         if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup))//没有找到分组
         {
             abort();
@@ -46,7 +45,7 @@ int FriendListInsertEntry(void *data)
 
     // return GTK_TREE_MODEL(TreeViewListStore);
 
-free(data);
+    free(data);
     return 0;
 }
 
@@ -65,18 +64,14 @@ int OnLine(void *data)
 
 
 
-    while (1)
-    {
+    while (1) {
 
-        if (gtk_tree_model_iter_children(TreeViewListStore, &iterUser, &iterGroup))
-        {
+        if (gtk_tree_model_iter_children(TreeViewListStore, &iterUser, &iterGroup)) {
 
             gtk_tree_model_get(TreeViewListStore, &iterUser, FRIENDUID_COL, &use, -1);//拿到好友id
 
-            while (use != p->uid)
-            {
-                if (!gtk_tree_model_iter_next(TreeViewListStore, &iterUser))
-                {
+            while (use != p->uid) {
+                if (!gtk_tree_model_iter_next(TreeViewListStore, &iterUser)) {
                     break;
                 }
 
@@ -89,19 +84,16 @@ int OnLine(void *data)
 
         }//应该是拿到第一个分组,第一个好友id
 
-        if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup))
-        {
+        if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup)) {
             return 0;
         }
 
         gtk_tree_model_get(TreeViewListStore, &iterGroup, FRIENDUID_COL, &usg, -1);//拿到id
     }
     FriendInfo *head = FriendInfoHead;
-    while (head->next)
-    {
+    while (head->next) {
         head = head->next;
-        if (p->uid == head->user.uid)
-        {
+        if (p->uid == head->user.uid) {
 
             pixbuf = DrawFriend(&head->user, 1);
             break;
@@ -129,18 +121,14 @@ int OffLine(void *data)
 
 
 
-    while (1)
-    {
+    while (1) {
 
-        if (gtk_tree_model_iter_children(TreeViewListStore, &iterUser, &iterGroup))
-        {
+        if (gtk_tree_model_iter_children(TreeViewListStore, &iterUser, &iterGroup)) {
 
             gtk_tree_model_get(TreeViewListStore, &iterUser, FRIENDUID_COL, &use, -1);//拿到好友id
 
-            while (use != p->uid)
-            {
-                if (!gtk_tree_model_iter_next(TreeViewListStore, &iterUser))
-                {
+            while (use != p->uid) {
+                if (!gtk_tree_model_iter_next(TreeViewListStore, &iterUser)) {
                     break;
                 }
 
@@ -153,19 +141,16 @@ int OffLine(void *data)
 
         }//应该是拿到第一个分组,第一个好友id
 
-        if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup))
-        {
+        if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup)) {
             break;
         }
 
         gtk_tree_model_get(TreeViewListStore, &iterGroup, FRIENDUID_COL, &usg, -1);//拿到id
     }
     FriendInfo *head = FriendInfoHead;
-    while (head->next)
-    {
+    while (head->next) {
         head = head->next;
-        if (p->uid == head->user.uid)
-        {
+        if (p->uid == head->user.uid) {
 
             pixbuf = DrawFriend(&head->user, 0);
             break;

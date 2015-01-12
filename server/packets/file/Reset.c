@@ -9,40 +9,31 @@
 int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileReset *packet)
 {
     PUserOperation op = UserOperationGet(user, session);
-    if (!op)
-    {
+    if (!op) {
         CRPFailureSend(user->sockfd, session, ENOENT, "操作未找到");
     }
-    else
-    {
-        switch (op->type)
-        {
-            case CUOT_FILE_REQUEST:
-            {
+    else {
+        switch (op->type) {
+            case CUOT_FILE_REQUEST: {
                 PUserOperationFileRequest opData = (PUserOperationFileRequest) op->data;
                 aio_cancel(opData->aio.aio_fildes, &opData->aio);
                 opData->aio.aio_offset = packet->seq * opData->aio.aio_nbytes;
-                if (-1 == aio_read(&opData->aio))
-                {
+                if (-1 == aio_read(&opData->aio)) {
                     CRPFailureSend(user->sockfd, session, EFAULT, "无法重定位失败");
                 }
-                else
-                {
+                else {
                     CRPOKSend(user->sockfd, session);
                 }
                 break;
             }
-            case CUOT_FILE_STORE:
-            {
+            case CUOT_FILE_STORE: {
                 PUserOperationFileStore fop = (PUserOperationFileStore) op->data;
                 off_t ret;
                 ret = lseek(fop->fd, packet->seq * PAGE_SIZE, SEEK_SET);
-                if (ret)
-                {
+                if (ret) {
                     CRPFailureSend(user->sockfd, session, EINVAL, "无法重定位文件");
                 }
-                else
-                {
+                else {
                     CRPOKSend(user->sockfd, session);
                 }
                 break;

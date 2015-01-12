@@ -12,7 +12,6 @@
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
-#include "chartmessage.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
@@ -25,9 +24,9 @@ typedef struct cunchu {
 };
 struct cunchu str_cunchu[20];
 FILE *passwdfp;
-int  flag_cunchu = 0;
+int flag_cunchu = 0;
 int FlagRemember = 0;
-int FirstPwd =0;
+int FirstPwd = 0;
 char mulu_username[80] = "", mulu_benji[80] = "";
 GtkStyleContext *combostyle;
 GtkStyleProvider *comboprovider;
@@ -45,18 +44,14 @@ void open_setting_file(FILE *fp)
     UserWordInfo.codinglen = fread(UserWordInfo.coding_font_color, 1, 500, fp);
     UserWordInfo.description = pango_font_description_new();
     gchar *ptext = UserWordInfo.coding_font_color, *ptext_end = UserWordInfo.coding_font_color + UserWordInfo.codinglen;
-    while (ptext < ptext_end)
-    {
-        if (*ptext == '\0')
-        {
-            switch (*(ptext + 1))
-            {
+    while (ptext < ptext_end) {
+        if (*ptext == '\0') {
+            switch (*(ptext + 1)) {
                 case  1:      //字体类型
                 {
                     int i;
 
-                    for (i = 2; ptext[i]; ++i)
-                    {
+                    for (i = 2; ptext[i]; ++i) {
 
                     }
                     UserWordInfo.font = (gchar *) malloc(50);
@@ -71,8 +66,7 @@ void open_setting_file(FILE *fp)
                 {
                     ptext = ptext + 2;
                     int style_value = *ptext;
-                    if (style_value == 1)
-                    {
+                    if (style_value == 1) {
                         pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_ITALIC);
                         UserWordInfo.style = PANGO_STYLE_ITALIC;
                     }
@@ -91,8 +85,7 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 2;
                     break;
                 };
-                case 4:
-                {
+                case 4: {
                     ptext = ptext + 2;
                     gint size_value;
                     size_value = *ptext;
@@ -101,8 +94,7 @@ void open_setting_file(FILE *fp)
                     ptext++;
                     break;
                 };
-                case 5:
-                {
+                case 5: {
                     ptext = ptext + 2;
 
                     memcpy(&UserWordInfo.color_red, ptext, 2);
@@ -115,8 +107,7 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 6;
                     break;
                 }
-                default:
-                {
+                default: {
                     pango_font_description_free(UserWordInfo.description);
                     break;
                 }
@@ -124,20 +115,19 @@ void open_setting_file(FILE *fp)
         }
     }
 }
+
 gboolean mythread(gpointer user_data)//合并
 {
     gtk_widget_destroy(window);
     FILE *fp;
     char wordfile[256];
     sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
-    if ((fp = fopen(wordfile, "r")) != NULL)
-    {
+    if ((fp = fopen(wordfile, "r")) != NULL) {
         open_setting_file(fp);
 
     }
 
-    else
-    {
+    else {
         UserWordInfo.font = (gchar *) malloc(50);
         UserWordInfo.description = pango_font_description_new();
         pango_font_description_set_family(UserWordInfo.description, "Sans");
@@ -233,18 +223,16 @@ void *sendhello(void *M)
 void on_button_clicked()
 {
 //获取登录名和密码
-    if(FirstPwd == 0)
-    {
+    if (FirstPwd == 0) {
         name = gtk_combo_box_text_get_active_text(username);
         pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
     }
-    else
-    {
+    else {
         char hash[16];
         name = gtk_combo_box_text_get_active_text(username);
         pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
         MD5((unsigned char *) pwd, strlen(pwd), hash);//加密存储
-        strncpy(pwd,hash,16);
+        strncpy(pwd, hash, 16);
     }
 
 
@@ -316,7 +304,7 @@ static gint combo_change_event()
 //密码修改触发
 static gint passwd_change_event()
 {
-    if(FlagRemember == 1)//保存过的密码修改
+    if (FlagRemember == 1)//保存过的密码修改
     {
         int i;
         FlagRemember = 0;
@@ -660,6 +648,7 @@ gboolean destoryall(gpointer user_data)
         }
         free(p);
     }
+
     pthread_cancel(ThreadKeepAlive);
     g_idle_add(loadloginLayout, NULL);
     popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");

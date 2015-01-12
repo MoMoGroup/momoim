@@ -11,8 +11,7 @@ int onCancel(POnlineUser user, PUserOperation operation)
 {
     PUserOperationFileStore storeOperation = operation->data;
 
-    if (storeOperation->fd >= 0)
-    {
+    if (storeOperation->fd >= 0) {
         close(storeOperation->fd);
         unlink(storeOperation->tmpfile);
     }
@@ -24,28 +23,22 @@ int onCancel(POnlineUser user, PUserOperation operation)
 
 int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet)
 {
-    if (user->status == OUS_ONLINE)
-    {
-        if (packet->type != FST_SHARED)
-        {
+    if (user->status == OUS_ONLINE) {
+        if (packet->type != FST_SHARED) {
             CRPFailureSend(user->sockfd, session, ENOSYS, "不支持的存储类型");
             return 1;
         }
-        if (DataFileExist(packet->key))
-        {
+        if (DataFileExist(packet->key)) {
             CRPFileDataEndSend(user->sockfd, session, FEC_ALREADY_EXISTS);
         }
-        else
-        {
+        else {
             PUserOperationFileStore storeOperation = (PUserOperationFileStore) malloc(sizeof(UserOperationFileStore));
-            if (storeOperation == NULL)
-            {
+            if (storeOperation == NULL) {
                 CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建文件存储操作");
                 return 1;
             }
             PUserOperation operation = UserOperationRegister(user, session, CUOT_FILE_STORE, storeOperation);
-            if (operation == NULL)
-            {
+            if (operation == NULL) {
                 free(storeOperation);
                 CRPFailureSend(user->sockfd, session, ENOMEM, "无法创建用户操作");
                 return 1;
@@ -59,8 +52,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             memcpy(storeOperation->tmpfile, "temp/m0MoXXXXXX", sizeof("temp/m0MoXXXXXX"));
             mkstemp(storeOperation->tmpfile);
             storeOperation->fd = creat(storeOperation->tmpfile, 0600);
-            if (storeOperation->fd < 0)
-            {
+            if (storeOperation->fd < 0) {
                 free(storeOperation);
                 UserOperationUnregister(user, operation);
                 CRPFailureSend(user->sockfd, session, EIO, "无法创建文件");
@@ -70,8 +62,7 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             CRPOKSend(user->sockfd, session);
         }
     }
-    else
-    {
+    else {
         CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
     }
     return 1;

@@ -2,29 +2,29 @@
 #include <gtk/gtk.h>
 #include"ClientSockfd.h"
 #include "MainInterface.h"
-#include "PopupWinds.h"
 #include<stdlib.h>
 #include <logger.h>
 #include <common.h>
 #include <string.h>
-#include <imcommon/friends.h>
 
 GtkWidget *add_group_window;
 GtkTextView *new_group_name;
 
 //拖拽窗口
-static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(add_group_window), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                                   event->x_root, event->y_root, event->time);
+                event->x_root, event->y_root, event->time);
     }
     return 0;
 }
 
 //添加分组的请求发出后，接收服务器的函数
-int add_group_recv(CRPBaseHeader *header, void *data) {
+int add_group_recv(CRPBaseHeader *header, void *data)
+{
     UserGroup *group = data;
     if (header->packetID == CRP_PACKET_OK)//成功
     {
@@ -43,10 +43,10 @@ int add_group_recv(CRPBaseHeader *header, void *data) {
 
         gtk_tree_store_append(TreeViewListStore, &itergroup, NULL);
         gtk_tree_store_set(TreeViewListStore, &itergroup,
-                           PIXBUF_COL, pixbuf,
-                           FRIENDUID_COL, (uint32_t) group->groupId,
-                           PRIORITY_COL, (int64_t) 0,
-                           -1);
+                PIXBUF_COL, pixbuf,
+                FRIENDUID_COL, (uint32_t) group->groupId,
+                PRIORITY_COL, (int64_t) 0,
+                -1);
         UserFriendsGroupAdd(friends, group->groupId, group->groupName);
         // friends
         g_object_unref(pixbuf);
@@ -61,7 +61,8 @@ int add_group_recv(CRPBaseHeader *header, void *data) {
 }
 
 //完成
-static gint add_group_done(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint add_group_done(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     char *groupname = gtk_entry_get_text(new_group_name);//拿到分组
 
 
@@ -84,7 +85,8 @@ static gint add_group_done(GtkWidget *widget, GdkEventButton *event, gpointer da
     return 0;
 }
 
-int add_group_Interface_fun() {
+int add_group_Interface_fun()
+{
     GtkWidget *add_group_framelayout, *add_group_layout;
     GtkTextView *title;
     GtkEventBox *addgroup_mov_event, *addgroup_done_event;
@@ -100,8 +102,8 @@ int add_group_Interface_fun() {
     gtk_window_set_decorated(GTK_WINDOW(add_group_window), FALSE);//去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(add_group_window), 250, 235);
 //资源
-    surface_back = cairo_image_surface_create_from_png("提示框.png");
-    surfacedone = cairo_image_surface_create_from_png("确定.png");
+    surface_back = ChangeThem_png("提示框.png");
+    surfacedone = ChangeThem_png("确定.png");
 
     done = gtk_image_new_from_surface(surfacedone);
     background = gtk_image_new_from_surface(surface_back);
@@ -145,7 +147,8 @@ int add_group_Interface_fun() {
 
 }
 
-int Add_Group_Button_Press_Event() {
+int Add_Group_Button_Press_Event()
+{
     add_group_Interface_fun();
     //CRPFriendGroupAddSend(sockfd, <#(uint32_t)sessionID#>, <#(uint8_t)gid#>, <#(char const[64])name#>);
     log_info("ADD", "\n");

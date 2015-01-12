@@ -37,17 +37,14 @@ static UserMessageFileEntry *UserMessageEntryGetUnlock(uint32_t uid)
     uint32_t current = uid;
     int reserve[sizeof(current) * 2];
     int end = 0;
-    while (current)
-    {
+    while (current) {
         reserve[end++] = current & 0xf;
         current >>= 4;
     }
     --end;
     UserMessageFileTable *currentTable = &userMessagesTable;
-    while (end >= 0)
-    {
-        if (currentTable->next[reserve[end]] == NULL)
-        {
+    while (end >= 0) {
+        if (currentTable->next[reserve[end]] == NULL) {
             return NULL;
         }
         currentTable = currentTable->next[reserve[end]];
@@ -61,17 +58,14 @@ static UserMessageFileEntry *UserMessageTableSetUnlock(uint32_t uid, MessageFile
     uint32_t current = uid;
     int reserve[sizeof(current) * 2];
     int end = 0;
-    while (current)
-    {
+    while (current) {
         reserve[end++] = current & 0xf;
         current >>= 4;
     }
     --end;
     UserMessageFileTable *currentTable = &userMessagesTable;
-    while (end >= 0)
-    {
-        if (currentTable->next[reserve[end]] == NULL)
-        {
+    while (end >= 0) {
+        if (currentTable->next[reserve[end]] == NULL) {
             currentTable->next[reserve[end]] = calloc(1, sizeof(UserMessageFileTable));
         }
         currentTable = currentTable->next[reserve[end]];
@@ -89,8 +83,7 @@ MessageFile *UserMessageFileGet(uint32_t uid)
     UserMessageFileEntry *entry;
     pthread_mutex_lock(&userMessageTableLock);
     entry = UserMessageEntryGetUnlock(uid);
-    if (!entry || !entry->file)
-    {
+    if (!entry || !entry->file) {
         MessageFile *file = UserMessageFileOpen(uid);
         entry = UserMessageTableSetUnlock(uid, file);
     }
@@ -106,8 +99,7 @@ void UserMessageFileDrop(uint32_t uid)
     entry = UserMessageEntryGetUnlock(uid);
     pthread_rwlock_unlock(&entry->refLock);
 
-    if (pthread_rwlock_trywrlock(&entry->refLock) == 0)
-    {
+    if (pthread_rwlock_trywrlock(&entry->refLock) == 0) {
         UserMessageTableSetUnlock(uid, NULL);
         pthread_mutex_unlock(&userMessageTableLock);
         MessageFileClose(entry->file);

@@ -39,7 +39,8 @@ void add_node(FriendInfo *node)
     node->next = NULL;
 }
 
-FriendInfo *FineNode(uint32_t uid) {
+FriendInfo *FineNode(uint32_t uid)
+{
     FriendInfo *p;
     p = FriendInfoHead;
     while (p->next) {
@@ -270,7 +271,7 @@ int mysockfd()
         MD5((unsigned char *) pwd, strlen(pwd), hash);
         CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
     }
-    else{
+    else {
         CRPLoginLoginSend(sockfd, 0, name, pwd);
     }
 
@@ -289,10 +290,9 @@ int mysockfd()
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT) {
         log_info("登录成功", "登录成功\n");
         //将记住的密码保存本地
-        if((FlagRemember == 1)&&(FirstPwd == 1))
-        {
+        if ((FlagRemember == 1) && (FirstPwd == 1)) {
             FILE *passwdfp;
-            char mulu_benji[80],mulu_username[80];
+            char mulu_benji[80], mulu_username[80];
             sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
             mkdir(mulu_benji, 0700);
             sprintf(mulu_username, "%s/username", mulu_benji);
@@ -428,31 +428,31 @@ int mysockfd()
 
 
                     int friendnum = 0;
-                        FriendInfo *node;
-                        node = FriendInfoHead;
+                    FriendInfo *node;
+                    node = FriendInfoHead;
                     while (node) {
                         if (node->uid == header->sessionID) {
-                                fclose(node->fp);
-                                node->flag = 1;//接受完毕，标志位1;
-                                friendnum++;//接受完毕的个数加1
-                                break;
-                            }
-                            node = node->next;
+                            fclose(node->fp);
+                            node->flag = 1;//接受完毕，标志位1;
+                            friendnum++;//接受完毕的个数加1
+                            break;
                         }
+                        node = node->next;
+                    }
 
 
-                        node = FriendInfoHead;
+                    node = FriendInfoHead;
                     while (node) {
                         if (node->flag == 0) {
-                                break;//没有接收完
-                            }
-                            node = node->next;
+                            break;//没有接收完
                         }
+                        node = node->next;
+                    }
 
                     if (node == NULL) {
-                            g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
-                            loop = 0;
-                        }
+                        g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
+                        loop = 0;
+                    }
 
 
                     if ((void *) packet != header->data) {

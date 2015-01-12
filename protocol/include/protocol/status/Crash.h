@@ -5,8 +5,7 @@
 /**
 * 在任意一方发生无法恢复的错误时，应向对方发送崩溃包
 */
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
 } CRPPacketCrash;
 
 /**

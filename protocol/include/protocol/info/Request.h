@@ -7,8 +7,7 @@
 * 客户端请求用户资料
 */
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     uint32_t uid;
 } CRPPacketInfoRequest;
 
