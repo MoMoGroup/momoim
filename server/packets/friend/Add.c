@@ -64,7 +64,7 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
         size_t noteLen = strlen(packet->note);
         UserMessage *message = (UserMessage *) malloc(sizeof(UserMessage) + noteLen);
         message->messageType = UMT_NEW_FRIEND;
-        message->from = user->info->uid;
+        message->from = user->uid;
         message->to = packet->uid;
         message->messageLen = (uint16_t) noteLen;
         time(&message->time);

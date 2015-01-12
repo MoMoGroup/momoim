@@ -36,6 +36,10 @@ int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMess
 
 int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPacketMessageQueryOffline *packet);
 
+int ProcessPacketMessageRecordSeek(POnlineUser user, uint32_t session, CRPPacketMessageRecordSeek *packet);
+
+int ProcessPacketMessageRecordNext(POnlineUser user, uint32_t session, CRPPacketMessageRecordNext *packet);
+
 //信息处理
 int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRequest *packet);
 

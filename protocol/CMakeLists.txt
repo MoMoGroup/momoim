@@ -44,6 +44,9 @@ SET(LIBPROTOCOL_SRC
 
     packets/message/Normal.c
     packets/message/QueryOffline.c
+    packets/message/RecordNext.c
+    packets/message/RecordSeek.c
+    packets/message/RecordData.c
 
     packets/net/Discover.c
     packets/net/QualityTest.c

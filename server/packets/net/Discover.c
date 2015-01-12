@@ -41,7 +41,7 @@ int ProcessPacketNatDiscover(POnlineUser user, uint32_t session, CRPPacketNATDis
     if (user->state == OUS_ONLINE)
     {
         DiscoverOperation *discoverOperation = (DiscoverOperation *) malloc(sizeof(DiscoverOperation));
-        discoverOperation->uid = user->info->uid;
+        discoverOperation->uid = user->uid;
         discoverOperation->session = session;
         discoverOperation->discoverEntry = NatHostDiscoverRegister(packet->key, DiscoverDetected, discoverOperation);
         PUserOperation operation = UserOperationRegister(user, session, CUOT_NAT_DISCOVER, discoverOperation);

@@ -27,7 +27,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
                 CRPKickSend(duser->crp, 0, "另一用户已经登陆");
                 OnlineUserDelete(duser);
             }
-            onlineUser = UserSetStatus(user, OUS_ONLINE, uid);
+            onlineUser = UserSetState(user, OUS_ONLINE, uid);
             if (!onlineUser)
             {
                 log_warning("Login-Login", "User %s Login failure. Cannot Create Online Info\n", packet->username);

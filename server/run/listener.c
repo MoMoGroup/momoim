@@ -183,7 +183,7 @@ void *ListenMain(void *listenSocket)
                         }
                     }
                     fcntl(fd, F_SETFL, O_NONBLOCK);
-                    PPendingUser user = PendingUserNew(fd);//分配一个用户对象空间(只做简单初始化)
+                    PPendingUser user = UserNew(fd);//分配一个用户对象空间(只做简单初始化)
                     EpollAdd((POnlineUser) user);//将其加入事务池
                 }
             }
