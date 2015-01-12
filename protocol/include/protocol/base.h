@@ -13,8 +13,7 @@ typedef uint16_t packet_id_t;
 typedef uint32_t session_id_t;
 typedef uint32_t user_id_t;
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     uint32_t magicCode;
     /* 0x464F5573 */
     CRP_LENGTH_TYPE totalLength; //协议包总长度，也用于支持不同协议版本
@@ -22,8 +21,7 @@ CRP_STRUCTURE
     session_id_t sessionID;      //消息会话ID
     char data[0];                //包数据部分
 } CRPBaseHeader;
-typedef struct
-{
+typedef struct {
     int fd;
     MCRYPT sendTd, recvTd;
     char sendKey[32], sendIV[32];

@@ -2,8 +2,7 @@
 
 #include <gtk/gtk.h>
 
-struct UserTextInformation
-{
+struct UserTextInformation {
     gchar *font;
     PangoStyle style;
     PangoWeight weight;

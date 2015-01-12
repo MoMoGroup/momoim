@@ -295,7 +295,7 @@ int mysockfd()
         MD5((unsigned char *) pwd, strlen(pwd), hash);
         CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
     }
-    else{
+    else {
         CRPLoginLoginSend(sockfd, 0, name, pwd);
     }
 
@@ -315,6 +315,19 @@ int mysockfd()
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
     {
         log_info("登录成功", "登录成功\n");
+        //将记住的密码保存本地
+        if ((FlagRemember == 1) && (FirstPwd == 1)) {
+            FILE *passwdfp;
+            char mulu_benji[80], mulu_username[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            mkdir(mulu_benji, 0700);
+            sprintf(mulu_username, "%s/username", mulu_benji);
+            passwdfp = fopen(mulu_username, "a+");
+            fwrite(name, 1, 40, passwdfp);
+            fwrite(pwd, 1, 16, passwdfp);
+            fclose(passwdfp);
+        }
+
         //登陆成功之后开始请求资料
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
@@ -452,30 +465,18 @@ int mysockfd()
 
 
                     int friendnum = 0;
-                        FriendInfo *node;
-                        node = FriendInfoHead;
-                        while (node)
-                        {
-                            if (node->uid == header->sessionID)
-                            {
-                                fclose(node->fp);
-                                node->flag = 1;//接受完毕，标志位1;
-                                friendnum++;//接受完毕的个数加1
-                                break;
-                            }
-                            node = node->next;
-                        }
+                    FriendInfo *node;
 
 
-                        node = FriendInfoHead;
-                        while (node)
+                    node = FriendInfoHead;
+                    while (node)
+                    {
+                        if (node->flag == 0)
                         {
-                            if (node->flag == 0)
-                            {
-                                break;//没有接收完
-                            }
-                            node = node->next;
+                            break;//没有接收完
                         }
+                        node = node->next;
+                    }
 
                         if (node == NULL)
                         {

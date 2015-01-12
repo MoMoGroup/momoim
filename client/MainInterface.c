@@ -67,7 +67,7 @@ GtkTreeModel *createModel()
         gtk_tree_store_set(TreeViewListStore, &iter1,
                 PIXBUF_COL, pixbuf,
                 FRIENDUID_COL, (uint32_t) friends->groups[i].groupId,
-                PRIORITY_COL, (int64_t) 0,
+                PRIORITY_COL, (int64_t) -i,
                 -1);
 
         g_object_unref(pixbuf);
@@ -129,13 +129,13 @@ GtkTreeModel *createModel()
 static void create_surfaces()
 {
 
-    surfacemainbackgroud = cairo_image_surface_create_from_png("主背景.png");
+    surfacemainbackgroud = ChangeThem_png("主背景.png");
 
-    surfaceresearch = cairo_image_surface_create_from_png("搜索.png");
-    surfacefriendimage = cairo_image_surface_create_from_png("好友.png");
-    surfaceclose51 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    surfaceclose52 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    surfaceclose53 = cairo_image_surface_create_from_png("关闭按钮3.png");
+    surfaceresearch = ChangeThem_png("搜索.png");
+    surfacefriendimage = ChangeThem_png("好友.png");
+    surfaceclose51 = ChangeThem_png("关闭按钮1.png");
+    surfaceclose52 = ChangeThem_png("关闭按钮2.png");
+    surfaceclose53 = ChangeThem_png("关闭按钮3.png");
 
     background1 = gtk_image_new_from_surface(surfacemainbackgroud);
     search = gtk_image_new_from_surface(surfaceresearch);
@@ -218,8 +218,7 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);
 
-    if (event->type == GDK_BUTTON_PRESS)
-    {
+    if (event->type == GDK_BUTTON_PRESS) {
         int i;
         GtkTreePath *path;
         path = gtk_tree_model_get_path(model, &iter);
@@ -227,18 +226,14 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
 
         event_button = (GdkEventButton *) event;
 
-        if (event->button == 0x1)
-        {
+        if (event->button == 0x1) {
             return FALSE;
         }
-        if (event->button == 0x2)
-        {
+        if (event->button == 0x2) {
             return FALSE;
         }
-        if (event->button == 0x3)
-        {
-            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
-            {
+        if (event->button == 0x3) {
+            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0)) {
                 gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
                 return FALSE;
             }
@@ -259,20 +254,16 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
     GtkWidget *menu = GTK_WIDGET(data);
-    if (event->type == GDK_BUTTON_PRESS)
-    {
+    if (event->type == GDK_BUTTON_PRESS) {
         event_button = (GdkEventButton *) event;
 
-        if (event->button == 0x1)
-        {
+        if (event->button == 0x1) {
             return FALSE;
         }
-        if (event->button == 0x2)
-        {
+        if (event->button == 0x2) {
             return FALSE;
         }
-        if (event->button == 0x3)
-        {
+        if (event->button == 0x3) {
             int i, j;
             GtkTreePath *path;
             path = gtk_tree_model_get_path(model, &iter);
@@ -280,8 +271,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
             j = gtk_tree_path_get_indices(path)[1];
 
             if ((gtk_tree_model_iter_has_child(model,
-                    &iter) == 0) && !((i == 0) && (j == 0)) && (friends->groups[i].friendCount > 0))
-            {
+                                               &iter) == 0) && !((i == 0) && (j == 0)) && (friends->groups[i].friendCount > 0)) {
                 gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
                 return FALSE;
             }
@@ -364,29 +354,22 @@ int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
     image_message_data->message_data = message_recv;
     image_message_data->userinfo = info;
     image_message_data->charlen = charlen;
-    while (i < charlen)
-    {
-        if (recv_text[i] != '\0')
-        {
+    while (i < charlen) {
+        if (recv_text[i] != '\0') {
             i++;
         }
-        else
-        {
+        else {
 
-            switch (recv_text[i + 1])
-            {
-                case 1:
-                {
+            switch (recv_text[i + 1]) {
+                case 1: {
                     i++;
-                    while (recv_text[i] != '\0')
-                    {
+                    while (recv_text[i] != '\0') {
                         i++;
                     }
                     i++;
                     break;
                 };
-                case 2 :
-                {
+                case 2 : {
                     i += 3;
                 };
                 case 3:   //宽度
@@ -405,8 +388,7 @@ int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
 
                     break;
                 };
-                case 0 :
-                {
+                case 0 : {
 
                     isimageflag = 1;
                     char filename[256] = {0};
@@ -419,8 +401,7 @@ int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
                     i = i + 16;
                     break;
                 }
-                default:
-                {
+                default: {
 //                        i += 2;
                     break;
                 };
@@ -428,8 +409,7 @@ int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
         }
 
     }
-    if (isimageflag == 0)
-    {
+    if (isimageflag == 0) {
         ShoweRmoteText(image_message_data->message_data, image_message_data->userinfo,
                        image_message_data->charlen);
         free(message_recv);
@@ -463,8 +443,7 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
         {
             MainChart(userinfo);
         }
-        else
-        {
+        else {
             gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
         image_message_recv(rcvd_text, userinfo, len);
@@ -621,14 +600,11 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
                 friendinforear = friendinforear->next;
             }
         }
-        if (uidfindflag == 1)
-        {
-            if (friendinforear->chartwindow == NULL)
-            {
+        if (uidfindflag == 1) {
+            if (friendinforear->chartwindow == NULL) {
                 MainChart(friendinforear);
             }
-            else
-            {
+            else {
                 gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
             }
         }
@@ -788,6 +764,7 @@ int MainInterFace()
     GtkWidget *menu1, *menu2;
     GtkWidget *add;
     GtkWidget *delete;
+    GtkWidget *rename;
     GtkWidget *addpeople;
     GtkWidget *Refresh;
     GtkWidget *sendmsg;
@@ -803,6 +780,10 @@ int MainInterFace()
     delete = gtk_menu_item_new_with_mnemonic("删除分组");
     gtk_container_add(GTK_CONTAINER(menu1), delete);
     gtk_widget_show(delete);
+    rename = gtk_menu_item_new_with_mnemonic("重命名分组");
+    gtk_container_add(GTK_CONTAINER(menu1), rename);
+    gtk_widget_show(rename);
+
     addpeople = gtk_menu_item_new_with_mnemonic("添加联系人");
     gtk_container_add(GTK_CONTAINER(menu1), addpeople);
     gtk_widget_show(addpeople);
@@ -819,6 +800,9 @@ int MainInterFace()
     //删除分组事件
     g_signal_connect(G_OBJECT(delete), "button_press_event",
                      G_CALLBACK(DeleteGroupButtonPressEvent), treeView);
+    //重命名分组事件
+    g_signal_connect(G_OBJECT(rename), "button_press_event",
+                     G_CALLBACK(RenameGroupButtonPressEvent), treeView);
     //添加好友
     g_signal_connect(G_OBJECT(addpeople), "button_release_event",
                      G_CALLBACK(search_button_release_event), treeView);

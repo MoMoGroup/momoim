@@ -9,8 +9,7 @@
 pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
 
-typedef struct messageloop
-{
+typedef struct messageloop {
     uint32_t sessionid;
     uint16_t packetID;           //包ID，用于区分不同数据包
 
@@ -35,8 +34,7 @@ void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *), void
 
     pthread_rwlock_wrlock(&lock);//写锁定
     p = &messagehead;
-    while (p->next)
-    {
+    while (p->next) {
         p = p->next;
     }
     p->next = entry;
@@ -48,8 +46,7 @@ void DeleteMessageNode(uint32_t sessid)
     messageloop *p, *delete;
     pthread_rwlock_wrlock(&lock);//写锁定
     p = &messagehead;
-    while (p)
-    {
+    while (p) {
         delete = p->next;
         if ((delete->sessionid == sessid))//找到要删除的delete之后,删除
         {
@@ -64,8 +61,7 @@ void DeleteMessageNode(uint32_t sessid)
 int MessageLoopFunc()
 {
     CRPBaseHeader *header;
-    while (1)
-    {
+    while (1) {
 
         log_info("CRPPacket", "Begin CRPRecv\n");
         header = CRPRecv(sockfd);
@@ -73,11 +69,9 @@ int MessageLoopFunc()
         messageloop *prev = &messagehead, *p;
         log_info("CRPPacket", "packet id %hu,session id %u\n", header->packetID, header->sessionID);
         int flag = 1;
-        while (prev->next)
-        {
+        while (prev->next) {
             p = prev->next;
-            if (p->sessionid == header->sessionID)
-            {
+            if (p->sessionid == header->sessionID) {
                 break;
 
             }
@@ -87,13 +81,11 @@ int MessageLoopFunc()
         }
         pthread_rwlock_unlock(&lock);//取消锁
 
-        if(prev->next)
-        {
+        if (prev->next) {
             flag = p->fn(header, p->data);
         }
 
-        if (flag == 0)
-        {
+        if (flag == 0) {
             pthread_rwlock_wrlock(&lock);//写锁定
             prev->next = p->next;
             free(p);

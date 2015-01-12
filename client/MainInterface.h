@@ -25,7 +25,6 @@ extern gboolean DestoryMainInterFace(gpointer user_data);
 gboolean DestroyLayout(gpointer user_data);
 
 extern UserFriends *friends;
-extern UserGroup *group;
 
 extern int MainChart(FriendInfo *friendinfonode);
 
@@ -38,8 +37,7 @@ extern void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *
 extern void DeleteMessageNode(uint32_t sessid);
 //extern UserFriends *friends;
 
-struct RECVImageMessagedata
-{
+struct RECVImageMessagedata {
     int imagecount;
     int charlen;
     char *message_data;

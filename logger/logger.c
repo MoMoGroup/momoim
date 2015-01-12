@@ -18,14 +18,11 @@ const char **prefix = NULL;
 
 static void log_check_color()
 {
-    if (!prefix)
-    {
-        if (isatty(STDERR_FILENO))
-        {
+    if (!prefix) {
+        if (isatty(STDERR_FILENO)) {
             prefix = colorPrefix;
         }
-        else
-        {
+        else {
             prefix = plainPrefix;
         }
     }

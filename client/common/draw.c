@@ -1,7 +1,6 @@
 #include <math.h>
 #include <imcommon/friends.h>
 #include "common.h"
-#include "../MainInterface.h"
 
 GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
 {
@@ -30,12 +29,10 @@ GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
 //把画笔和图片相结合。
     cairo_set_source_surface(cr, new_friend_surface, 0, 0);
 ////把图用画笔画在画布中
-    if (draw_color)
-    {
+    if (draw_color) {
         cairo_paint(cr);//1代表在线
     }
-    else
-    {
+    else {
         cairo_paint_with_alpha(cr, 0.4);//2不在线
     }
 

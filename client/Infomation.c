@@ -150,7 +150,8 @@ static const char *xingzuo[12][2] = {
         {"天秤座", "天蝎座"}, {"天蝎座", "射手座"}, {"射手座", "魔蝎座"}
 };
 
-int sheng_change_city() {
+int sheng_change_city()
+{
     const gchar *buf;
     int shengfen = 0;
     buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iprovinces);
@@ -167,7 +168,8 @@ int sheng_change_city() {
     return 0;
 }
 
-int calendar_change_birthday() {
+int calendar_change_birthday()
+{
     if (RiliFlag == 0) {
         icalendar = gtk_calendar_new();
         if (strlen(CurrentUserInfo->birthday) != 0) {
@@ -206,16 +208,17 @@ int calendar_change_birthday() {
     return 0;
 }
 
-static void create_infofaces() {
+static void create_infofaces()
+{
 
-    Surfaceback = cairo_image_surface_create_from_png("资料2.png");
-    Surfacesave = cairo_image_surface_create_from_png("保存.png");
-    Surfacesave1 = cairo_image_surface_create_from_png("保存2.png");
-    Surfacecancel = cairo_image_surface_create_from_png("资料取消.png");
-    Surfacecancel1 = cairo_image_surface_create_from_png("资料取消2.png");
-    Surfaceend = cairo_image_surface_create_from_png("关闭按钮1.png");
-    Surfaceend1 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    Surfaceend2 = cairo_image_surface_create_from_png("关闭按钮3.png");
+    Surfaceback = ChangeThem_png("资料2.png");
+    Surfacesave = ChangeThem_png("保存.png");
+    Surfacesave1 = ChangeThem_png("保存2.png");
+    Surfacecancel = ChangeThem_png("资料取消.png");
+    Surfacecancel1 = ChangeThem_png("资料取消2.png");
+    Surfaceend = ChangeThem_png("关闭按钮1.png");
+    Surfaceend1 = ChangeThem_png("关闭按钮2.png");
+    Surfaceend2 = ChangeThem_png("关闭按钮3.png");
 
     Infobackground = gtk_image_new_from_surface(Surfaceback);
     Infosave = gtk_image_new_from_surface(Surfacesave);
@@ -224,7 +227,8 @@ static void create_infofaces() {
     gtk_widget_set_size_request(GTK_WIDGET(Infobackground), 550, 488);
 }
 
-static void destroy_infosurfaces() {
+static void destroy_infosurfaces()
+{
     g_print("destroying infoface");
     cairo_surface_destroy(Surfaceback);
     cairo_surface_destroy(Surfacesave);
@@ -252,7 +256,8 @@ int infoupdate(CRPBaseHeader *header, void *data)//资料更新处理函数
     return 0;
 }
 
-int infosockfd() {
+int infosockfd()
+{
     UserInfo weinfo = *CurrentUserInfo;
     const gchar *buf;
     buf = gtk_entry_get_text(GTK_ENTRY(inickname));
@@ -328,12 +333,13 @@ int infosockfd() {
 }
 
 //背景的eventbox拖曳窗口
-static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                                   event->x_root, event->y_root, event->time);
+                event->x_root, event->y_root, event->time);
         gtk_widget_hide(icalendar);
         RiliFlag = 0;
     }
@@ -342,7 +348,8 @@ static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *even
 
 //更新
 //鼠标点击事件
-static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -352,7 +359,8 @@ static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 
 //更新
 //鼠标抬起事件
-static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         infosockfd();
@@ -368,7 +376,8 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 
 //更新
 //鼠标移动事件
-static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
@@ -377,7 +386,8 @@ static gint save_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 
 //更新
 //鼠标离开事件
-static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave);
     return 0;
@@ -385,7 +395,8 @@ static gint save_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 
 //取消
 //鼠标点击事件
-static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -395,7 +406,8 @@ static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, 
 
 //取消
 //鼠标抬起事件
-static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         destroy_infosurfaces();
@@ -406,7 +418,8 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
 
 //取消
 //鼠标移动事件
-static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) Infocancel, Surfacecancel1); //置换图标
@@ -415,7 +428,8 @@ static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
 
 //取消
 //鼠标离开事件
-static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) Infocancel, Surfacecancel);
 
@@ -424,7 +438,8 @@ static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 
 //关闭
 //鼠标点击事件
-static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -435,7 +450,8 @@ static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, 
 
 //关闭
 //鼠标抬起事件
-static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         destroy_infosurfaces();
@@ -446,7 +462,8 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
 
 //关闭
 //鼠标移动事件
-static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend2);
@@ -455,7 +472,8 @@ static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
 
 //关闭
 //鼠标离开事件
-static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend);
     return 0;
@@ -463,7 +481,8 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 
 //头像
 //鼠标点击事件
-static gint touxiang_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint touxiang_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     }
@@ -471,7 +490,8 @@ static gint touxiang_button_press_event(GtkWidget *widget, GdkEventButton *event
 }
 
 //鼠标抬起事件
-static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     if (event->button == 1)   // 判断是否是点击关闭图标
     {
         log_info("执行到这里了", "dada");
@@ -480,18 +500,21 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
 }
 
 //鼠标移动事件
-static gint touxiang_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint touxiang_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     return 0;
 }
 
 //鼠标离开事件
-static gint touxiang_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint touxiang_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     return 0;
 }
 
-void infotv() {
+void infotv()
+{
     char idstring[80] = {0};//id
     sprintf(idstring, "%d", CurrentUserInfo->uid);
     iid = gtk_label_new(idstring);
@@ -612,7 +635,8 @@ void infotv() {
     //gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
 }
 
-int ChangeInfo() {
+int ChangeInfo()
+{
 
     static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
     static GtkEventBox *touxiang_event_box;
@@ -627,50 +651,50 @@ int ChangeInfo() {
     gtk_container_add(GTK_CONTAINER(Infowind), Infolayout);
 
     Infobackg_event_box = BuildEventBox(Infobackground,
-                                        G_CALLBACK(Infobackg_button_press_event),
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL,
-                                        NULL);
+            G_CALLBACK(Infobackg_button_press_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Infobackg_event_box, 0, 0);
 
     Save_event_box = BuildEventBox(Infosave,
-                                   G_CALLBACK(save_button_press_event),
-                                   G_CALLBACK(save_enter_notify_event),
-                                   G_CALLBACK(save_leave_notify_event),
-                                   G_CALLBACK(save_button_release_event),
-                                   NULL,
-                                   NULL);
+            G_CALLBACK(save_button_press_event),
+            G_CALLBACK(save_enter_notify_event),
+            G_CALLBACK(save_leave_notify_event),
+            G_CALLBACK(save_button_release_event),
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Save_event_box, 350, 440);
 
     Cancel_event_box = BuildEventBox(Infocancel,
-                                     G_CALLBACK(cancel_button_press_event),
-                                     G_CALLBACK(cancel_enter_notify_event),
-                                     G_CALLBACK(cancel_leave_notify_event),
-                                     G_CALLBACK(cancel_button_release_event),
-                                     NULL,
-                                     NULL);
+            G_CALLBACK(cancel_button_press_event),
+            G_CALLBACK(cancel_enter_notify_event),
+            G_CALLBACK(cancel_leave_notify_event),
+            G_CALLBACK(cancel_button_release_event),
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Cancel_event_box, 450, 440);
 
     Guanxx_event_box = BuildEventBox(Infoguanbi,
-                                     G_CALLBACK(guanxx_button_press_event),
-                                     G_CALLBACK(guanxx_enter_notify_event),
-                                     G_CALLBACK(guanxx_leave_notify_event),
-                                     G_CALLBACK(guanxx_button_release_event),
-                                     NULL,
-                                     NULL);
+            G_CALLBACK(guanxx_button_press_event),
+            G_CALLBACK(guanxx_enter_notify_event),
+            G_CALLBACK(guanxx_leave_notify_event),
+            G_CALLBACK(guanxx_button_release_event),
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
 
     infotv();
 
     touxiang_event_box = BuildEventBox(headicon,
-                                       G_CALLBACK(touxiang_button_press_event),
-                                       G_CALLBACK(touxiang_enter_notify_event),
-                                       G_CALLBACK(touxiang_leave_notify_event),
-                                       G_CALLBACK(touxiang_button_release_event),
-                                       NULL,
-                                       NULL);
+            G_CALLBACK(touxiang_button_press_event),
+            G_CALLBACK(touxiang_enter_notify_event),
+            G_CALLBACK(touxiang_leave_notify_event),
+            G_CALLBACK(touxiang_button_release_event),
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), touxiang_event_box, 23, 16);
     gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
 

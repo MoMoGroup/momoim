@@ -5,8 +5,7 @@
 #include <stdint.h>
 #include <protocol/base.h>
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     uint8_t usernameLength;
     uint8_t nicknameLength;
     unsigned char password[16];
