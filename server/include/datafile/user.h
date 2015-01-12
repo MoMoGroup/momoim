@@ -1,7 +1,7 @@
 #pragma once
 
 #include <stdint.h>
-#include "imcommon/friends.h"
+#include "imcommon/user.h"
 
 
 int UserInit();

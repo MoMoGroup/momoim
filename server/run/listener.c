@@ -27,7 +27,7 @@ void EpollAdd(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll_add");
     }
@@ -39,7 +39,7 @@ void EpollModify(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll modify");
     }
@@ -47,7 +47,8 @@ void EpollModify(POnlineUser user)
 
 void EpollRemove(POnlineUser user)
 {
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd->fd, NULL)) {
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->crp->fd, NULL))
+    {
         if (errno != ENOENT)//如果fd已经移除,不要报错
             perror("epoll_remove");
     }
@@ -58,7 +59,8 @@ void *ListenMain(void *listenSocket)
     int sockListener, sockIdx;
     sockListener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     sockIdx = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sockListener == -1 || sockIdx == -1) {
+    if (sockListener == -1 || sockIdx == -1)
+    {
         close(sockListener);
         close(sockIdx);
         perror("socket");
@@ -71,35 +73,40 @@ void *ListenMain(void *listenSocket)
     };
 
     int on = 1;
-    if ((setsockopt(sockListener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0) {
+    if ((setsockopt(sockListener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
+    {
         perror("setsockopt reuse address");
         close(sockListener);
         close(sockIdx);
         return NULL;
     }
 
-    if ((setsockopt(sockIdx, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0) {
+    if ((setsockopt(sockIdx, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
+    {
         perror("setsockopt reuse address");
         close(sockListener);
         close(sockIdx);
         return NULL;
     }
 
-    if (-1 == bind(sockListener, (struct sockaddr *) &addr, sizeof addr)) {
+    if (-1 == bind(sockListener, (struct sockaddr *) &addr, sizeof addr))
+    {
         perror("bind");
         close(sockListener);
         close(sockIdx);
         return NULL;
     }
     addr.sin_port = htons(CONFIG_HOST_DISCOVER_PORT);
-    if (-1 == bind(sockIdx, (struct sockaddr *) &addr, sizeof addr)) {
+    if (-1 == bind(sockIdx, (struct sockaddr *) &addr, sizeof addr))
+    {
         perror("bind");
         close(sockListener);
         close(sockIdx);
         return NULL;
     }
 
-    if (-1 == listen(sockListener, CONFIG_LISTENER_BACKLOG)) {
+    if (-1 == listen(sockListener, CONFIG_LISTENER_BACKLOG))
+    {
         perror("listen");
         close(sockListener);
         close(sockIdx);
@@ -107,7 +114,8 @@ void *ListenMain(void *listenSocket)
     }
     {
         int flags = fcntl(sockListener, F_GETFL, 0);
-        if (flags == -1) {
+        if (flags == -1)
+        {
             perror("fcntl");
             close(sockListener);
             close(sockIdx);
@@ -116,7 +124,8 @@ void *ListenMain(void *listenSocket)
 
         flags |= O_NONBLOCK;
         flags = fcntl(sockListener, F_SETFL, flags);
-        if (flags == -1) {
+        if (flags == -1)
+        {
             perror("fcntl");
             close(sockListener);
             close(sockIdx);
@@ -143,26 +152,32 @@ void *ListenMain(void *listenSocket)
     char keyBuffer[32];
     struct sockaddr_in idxSock;
     socklen_t addrLen;
-    while (IsServerRunning) {
+    while (IsServerRunning)
+    {
         int n = epoll_wait(ServerIOPool, events, CONFIG_EPOLL_QUEUE, -1);
-        if (n == -1) {
+        if (n == -1)
+        {
             log_warning("Listener", "epoll_wait failure.\n");
             continue;
         }
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < n; i++)
+        {
             if (events[i].data.ptr == NULL) //TCP客户端连接
             {
                 int fd;
                 socklen_t addr_len = sizeof addr;
-                while (1) {
+                while (1)
+                {
                     fd = accept(sockListener, (struct sockaddr *) &addr, &addr_len);  //尝试接受一个客户端
-                    if (-1 == fd) {
+                    if (-1 == fd)
+                    {
 
                         if (errno == EWOULDBLOCK)   //如果已经没有客户端可Accept了
                         {
                             break;//退出循环,执行下一个事件
                         }
-                        else {
+                        else
+                        {
                             log_error("SERVER-LISTENER", "accept failure:%s\n", strerror(errno));
                             break;
                         }
@@ -175,11 +190,13 @@ void *ListenMain(void *listenSocket)
             else if (events[i].data.ptr == (void *) -1) //P2P发现
             {
                 addrLen = sizeof(idxSock);
-                if (32 == recvfrom(sockIdx, keyBuffer, sizeof(keyBuffer), 0, (struct sockaddr *) &idxSock, &addrLen)) {
+                if (32 == recvfrom(sockIdx, keyBuffer, sizeof(keyBuffer), 0, (struct sockaddr *) &idxSock, &addrLen))
+                {
                     NatHostDiscoverNotify(&idxSock, keyBuffer);
                 }
             }
-            else {
+            else
+            {
                 EpollRemove(events[i].data.ptr); //用户数据到达
                 JobManagerPush((POnlineUser) events[i].data.ptr);//将用户加入到事务管理器(可能会阻塞)
             }

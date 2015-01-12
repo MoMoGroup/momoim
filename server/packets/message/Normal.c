@@ -6,7 +6,8 @@
 
 int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMessageNormal *packet)
 {
-    if (user->status == OUS_ONLINE) {
+    if (user->state == OUS_ONLINE)
+    {
         UserMessage *msg = (UserMessage *) malloc(sizeof(UserMessage) + packet->messageLen);
         msg->messageType = packet->messageType;
         msg->messageLen = packet->messageLen;
@@ -15,11 +16,12 @@ int ProcessPacketMessageNormal(POnlineUser user, uint32_t session, CRPPacketMess
         time(&msg->time);
         memcpy(msg->content, packet->message, packet->messageLen);
         PostMessage(msg);
-        CRPOKSend(user->sockfd, session);
+        CRPOKSend(user->crp, session);
         free(msg);
     }
-    else {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+    else
+    {
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

@@ -16,23 +16,28 @@ void *WorkerMain(void *arg)
     WorkerType *worker = (WorkerType *) arg;
 
     sprintf(workerName, "WORKER-%d", worker->workerId);
-    while (IsServerRunning) {
+    while (IsServerRunning)
+    {
         user = JobManagerPop();
         if (!user && !IsServerRunning) {
             break;
         }
-        header = CRPRecv(user->sockfd);
-        if (header == NULL) {
+        header = CRPRecv(user->crp);
+        if (header == NULL)
+        {
             OnlineUserDelete(user);
             continue;
         }
-        else {
-            if (user->status == OUS_ONLINE) {
+        else
+        {
+            if (user->state == OUS_ONLINE)
+            {
                 time(&user->lastUpdateTime);
             }
             log_info("Packet", "Processing %x\n", header->packetID);
             EpollAdd(user);
-            if (ProcessUser(user, header) == 0) {
+            if (ProcessUser(user, header) == 0)
+            {
                 OnlineUserDelete(user);
                 free(header);
                 continue;

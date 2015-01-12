@@ -8,23 +8,25 @@
 int ProcessPacketFileData(POnlineUser user, uint32_t session, CRPPacketFileData *packet)
 {
     PUserOperation op = UserOperationGet(user, session);
-    if (!op) {
-        CRPFailureSend(user->sockfd, session, ENOENT, "操作未找到");
+    if (!op)
+    {
+        CRPFailureSend(user->crp, session, ENOENT, "操作未找到");
     }
     else {
         PUserOperationFileStore fop = (PUserOperationFileStore) op->data;
         if (packet->seq != fop->seq)//数据包序号与期待的序号不一致.要求客户端重置
         {
-            CRPFileResetSend(user->sockfd, session, fop->seq);
+            CRPFileResetSend(user->crp, session, fop->seq);
         }
-        else if (packet->length > fop->remainLength) {
-            CRPFailureSend(user->sockfd, session, EFBIG, "文件长度与预期不一致");
+        else if (packet->length > fop->remainLength)
+        {
+            CRPFailureSend(user->crp, session, EFBIG, "文件长度与预期不一致");
         }
         else {
             write(fop->fd, packet->data, packet->length);
             fop->remainLength -= packet->length;
             ++fop->seq;
-            CRPOKSend(user->sockfd, session);
+            CRPOKSend(user->crp, session);
         }
         UserOperationDrop(user, op);
     }

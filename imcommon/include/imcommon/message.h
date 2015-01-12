@@ -5,11 +5,14 @@
 #include <fcntl.h>
 //Message Post
 
-typedef enum {
-    UMT_UNKNOW = 0, //未知消息
+typedef enum
+{
+    UMT_UNKNOW = 0, //未知消息(数据错误)
     UMT_TEXT = 1,   //文本消息
     UMT_NEW_FRIEND,  //添加好友请求
-    UMT_FRIEND_ACCEPT
+    UMT_FRIEND_ACCEPT,
+    UMT_FILE_OFFLINE,
+    UMT_FILE_ONLINE,
 } USER_MESSAGE_TYPE;
 typedef struct __attribute__ ((packed)) strucUserMessage {
     uint32_t from, to;

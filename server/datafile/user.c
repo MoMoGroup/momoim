@@ -51,8 +51,9 @@ void UserCreateDirectory(uint32_t uid)
         return;
     }
 
-    sprintf(userDir, "user/%02d/%d", uid % 100, uid / 100);
-    if (mkdir(userDir, 0700) != 0 && errno != EEXIST) {
+    sprintf(userDir + 7, "/%d", uid / 100);
+    if (mkdir(userDir, 0700) != 0 && errno != EEXIST)
+    {
         log_error("User", "Cannot create directory %s\n", userDir);
         return;
     }

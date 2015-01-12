@@ -9,7 +9,7 @@ extern GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback en
 
 extern session_id_t CountSessionId();//保护唯一的session不会冲突
 
-extern void Md5Coding(gchar *filename, const unsigned char *coding_text);
+extern void Md5Coding(const gchar *filename, unsigned char *coding_text);
 
 extern int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithPath);
 

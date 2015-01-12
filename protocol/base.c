@@ -27,6 +27,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_INFO__START]              = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_INFO_REQUEST]             = (void *(*)(CRPBaseHeader *)) CRPInfoRequestCast,
         [CRP_PACKET_INFO_DATA]                = (void *(*)(CRPBaseHeader *)) CRPInfoDataCast,
+        [CRP_PACKET_INFO_STATUS_CHANGE]       = (void *(*)(CRPBaseHeader *)) CRPInfoStatusChangeCast,
 
         [CRP_PACKET_FRIEND__START]            = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_FRIEND_REQUEST]           = (void *(*)(CRPBaseHeader *)) CRPFriendRequestCast,

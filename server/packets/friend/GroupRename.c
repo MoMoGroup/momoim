@@ -6,22 +6,26 @@
 
 int ProcessPacketFriendGroupRename(POnlineUser user, uint32_t session, CRPPacketFriendGroupRename *packet)
 {
-    if (user->status == OUS_ONLINE) {
+    if (user->state == OUS_ONLINE)
+    {
         pthread_rwlock_wrlock(user->info->friendsLock);
         UserGroup *group = UserFriendsGroupGet(user->info->friends, packet->gid);
 
-        if (!group) {
-            CRPFailureSend(user->sockfd, session, ENOENT, "分组不存在");
+        if (!group)
+        {
+            CRPFailureSend(user->crp, session, ENOENT, "分组不存在");
         }
-        else {
+        else
+        {
             memcpy(group->groupName, packet->groupName, sizeof(group->groupName));
-            CRPOKSend(user->sockfd, session);
+            CRPOKSend(user->crp, session);
         }
 
         pthread_rwlock_unlock(user->info->friendsLock);
     }
-    else {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+    else
+    {
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

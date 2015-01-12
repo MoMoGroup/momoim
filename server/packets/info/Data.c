@@ -5,19 +5,27 @@
 
 int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData *packet)
 {
-    if (user->status == OUS_ONLINE) {
-        if (packet->info.uid != user->info->uid) {
-            CRPFailureSend(user->sockfd, session, EINVAL, "无效UID");
+    if (user->state == OUS_ONLINE)
+    {
+        if (packet->info.uid != user->info->uid)
+        {
+            CRPFailureSend(user->crp, session, EINVAL, "无效UID");
         }
-        else {
+        else
+        {
             if (!UserInfoSave(user->info->uid, &packet->info))
-                CRPFailureSend(user->sockfd, session, EFAULT, "无法保存用户资料");
+            {
+                CRPFailureSend(user->crp, session, EFAULT, "无法保存用户资料");
+            }
             else
-                CRPOKSend(user->sockfd, session);
+            {
+                CRPOKSend(user->crp, session);
+            }
         }
     }
-    else {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+    else
+    {
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

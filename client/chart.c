@@ -8,6 +8,10 @@
 #include <pwd.h>
 #include <math.h>
 #include "chartmessage.h"
+#include <logger.h>
+#include <cairo-script-interpreter.h>
+#include <sys/stat.h>
+#include "chartmessage.h"
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
@@ -449,7 +453,7 @@ static gint jietu_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
     return 0;
 }
 
-//wenjian
+//文件
 //鼠标点击事件
 static gint file_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -470,6 +474,40 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagefile, surfacefile1);
+        GtkWidget *dialog;
+        gchar *filename;
+        dialog = gtk_file_chooser_dialog_new("Open File(s) ...", GTK_WINDOW(info->chartwindow),
+                GTK_FILE_CHOOSER_ACTION_OPEN,
+                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                NULL);
+        gint result = gtk_dialog_run(GTK_DIALOG(dialog));
+        if (result == GTK_RESPONSE_ACCEPT)
+        {
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            struct stat buf;
+            stat(filename, &buf);
+            if ((buf.st_size / 1048576.0) < 150)
+            {
+                gtk_widget_destroy(dialog);
+                UploadingFile(filename, info);
+            }
+            else
+            {
+                GtkWidget *cue_dialog;
+                cue_dialog = gtk_dialog_new();
+                cue_dialog = gtk_message_dialog_new(dialog, GTK_DIALOG_MODAL,
+                        GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+                        "文件大小不应超过150M，请选择其他文件");
+                gtk_window_set_title(GTK_WINDOW (cue_dialog), "Information");
+                gtk_dialog_run(GTK_DIALOG (cue_dialog));
+                gtk_widget_destroy(cue_dialog);
+            }
+        }
+        if (result == GTK_RESPONSE_CANCEL)
+        {
+            gtk_widget_destroy(dialog);
+        }
     }
     return 0;
 
@@ -520,7 +558,7 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
         GtkWidget *dialog;
         gchar *filename;
-        dialog = gtk_file_chooser_dialog_new("Open Image(s) ...", info->chartwindow,
+        dialog = gtk_file_chooser_dialog_new("Open Image(s) ...", GTK_WINDOW(info->chartwindow),
                 GTK_FILE_CHOOSER_ACTION_OPEN,
                 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                 GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -528,17 +566,20 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
         if (result == GTK_RESPONSE_ACCEPT) {
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            GtkWidget *image;
+            image = gtk_image_new_from_file(filename);
+
             // GtkTextBuffer *buffer;
             GtkTextMark *mark;
             GtkTextIter iter;
             GtkTextChildAnchor *anchor;
-            GtkWidget *image;
+
             size_t filenamelen;
             mark = gtk_text_buffer_get_insert(info->input_buffer);
             gtk_text_buffer_get_iter_at_mark(info->input_buffer, &iter, mark);
             anchor = gtk_text_buffer_create_child_anchor(info->input_buffer, &iter); //添加衍生构件
             filenamelen = strlen(filename);
-            image = gtk_image_new_from_file(filename);
+
             char *pSrc = malloc(filenamelen + 1);
             memcpy(pSrc, filename, filenamelen);
             pSrc[filenamelen] = 0;
@@ -574,7 +615,7 @@ static gint photo_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
     return 0;
 }
 
-
+//将字体和颜色写入文件保存
 void handle_font_color(FriendInfo *info)
 {
     int num;
