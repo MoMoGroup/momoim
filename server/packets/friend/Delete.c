@@ -33,7 +33,7 @@ int ProcessPacketFriendDelete(POnlineUser user, uint32_t session, CRPPacketFrien
                 OnlineUser *peer = OnlineUserGet(packet->uid);
                 if (peer)
                 {
-                    CRPFriendNotifySend(peer->crp, session, FNT_FRIEND_DELETE, user->info->uid, peerGroup->groupId, 0);
+                    CRPFriendNotifySend(peer->crp, session, FNT_FRIEND_DELETE, user->uid, peerGroup->groupId, 0);
                     UserDrop(peer);
                 }
             }

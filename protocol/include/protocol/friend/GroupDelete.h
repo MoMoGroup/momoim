@@ -7,7 +7,8 @@
 * 分组删除请求
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint8_t gid;
 } CRPPacketFriendGroupDelete;
 

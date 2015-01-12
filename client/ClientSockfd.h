@@ -6,7 +6,8 @@
 
 extern int mysockfd();
 
-typedef struct FriendInfo {
+typedef struct FriendInfo
+{
     uint32_t uid;
     int flag;
     //用来判断是否接受成功

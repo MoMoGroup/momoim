@@ -1,5 +1,7 @@
 #pragma once
 
+#include<stdint.h>
+#include<protocol.h>
 typedef struct structOnlineUsersTableType OnlineUsersTableType;
 typedef OnlineUsersTableType *POnlineUsersTableType;
 typedef struct structOnlineUser OnlineUser;

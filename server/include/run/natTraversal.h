@@ -1,6 +1,7 @@
 #pragma once
 
-typedef struct structHostDiscoverEntry {
+typedef struct structHostDiscoverEntry
+{
     char key[32];
 
     void(*fn)(struct sockaddr_in *addr, void *data);
@@ -9,7 +10,8 @@ typedef struct structHostDiscoverEntry {
 
     struct structHostDiscoverEntry *prev, *next;
 } HostDiscoverEntry;
-typedef struct structHostDiscoverTable {
+typedef struct structHostDiscoverTable
+{
     HostDiscoverEntry *first, *last;
 } HostDiscoverTable;
 

@@ -156,7 +156,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             return 0;
         };
             //消息
-        case CRP_PACKET_MESSAGE_NORMAL:
+        case CRP_PACKET_MESSAGE_NORMAL://不会丢的
         {
 
             CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
@@ -316,6 +316,21 @@ int mysockfd()
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
     {
         log_info("登录成功", "登录成功\n");
+        sleep(1);//登录动画
+        //将记住的密码保存本地
+        if ((FlagRemember == 1) && (FirstPwd == 1))
+        {
+            FILE *passwdfp;
+            char mulu_benji[80], mulu_username[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            mkdir(mulu_benji, 0700);
+            sprintf(mulu_username, "%s/username", mulu_benji);
+            passwdfp = fopen(mulu_username, "a+");
+            fwrite(name, 1, 40, passwdfp);
+            fwrite(pwd, 1, 16, passwdfp);
+            fclose(passwdfp);
+        }
+
         //登陆成功之后开始请求资料
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
@@ -381,7 +396,6 @@ int mysockfd()
                 case CRP_PACKET_FILE_DATA_START://服务器准备发送头像
                 {
                     CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
-
 
                     {
                         sprintf(mulu2, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, header->sessionID);
@@ -450,6 +464,7 @@ int mysockfd()
                 {
 
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
+                    log_info("FileDataEnd", "Session:%u\n", header->sessionID);
 
 
                     int friendnum = 0;
@@ -476,13 +491,12 @@ int mysockfd()
                             break;//没有接收完
                         }
                         node = node->next;
-                        }
-
+                    }
                     if (node == NULL)
                     {
-                            g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
-                            loop = 0;
-                        }
+                        g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
+                        loop = 0;
+                    }
 
 
                     if ((void *) packet != header->data) {

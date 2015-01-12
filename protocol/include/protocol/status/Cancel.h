@@ -4,7 +4,8 @@
 /**
 * 取消操作
 */
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
 } CRPPacketCancel;
 
 __attribute_malloc__

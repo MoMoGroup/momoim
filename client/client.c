@@ -44,14 +44,18 @@ void open_setting_file(FILE *fp)
     UserWordInfo.codinglen = fread(UserWordInfo.coding_font_color, 1, 500, fp);
     UserWordInfo.description = pango_font_description_new();
     gchar *ptext = UserWordInfo.coding_font_color, *ptext_end = UserWordInfo.coding_font_color + UserWordInfo.codinglen;
-    while (ptext < ptext_end) {
-        if (*ptext == '\0') {
-            switch (*(ptext + 1)) {
+    while (ptext < ptext_end)
+    {
+        if (*ptext == '\0')
+        {
+            switch (*(ptext + 1))
+            {
                 case  1:      //字体类型
                 {
                     int i;
 
-                    for (i = 2; ptext[i]; ++i) {
+                    for (i = 2; ptext[i]; ++i)
+                    {
 
                     }
                     UserWordInfo.font = (gchar *) malloc(50);
@@ -66,7 +70,8 @@ void open_setting_file(FILE *fp)
                 {
                     ptext = ptext + 2;
                     int style_value = *ptext;
-                    if (style_value == 1) {
+                    if (style_value == 1)
+                    {
                         pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_ITALIC);
                         UserWordInfo.style = PANGO_STYLE_ITALIC;
                     }
@@ -85,7 +90,8 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 2;
                     break;
                 };
-                case 4: {
+                case 4:
+                {
                     ptext = ptext + 2;
                     gint size_value;
                     size_value = *ptext;
@@ -94,7 +100,8 @@ void open_setting_file(FILE *fp)
                     ptext++;
                     break;
                 };
-                case 5: {
+                case 5:
+                {
                     ptext = ptext + 2;
 
                     memcpy(&UserWordInfo.color_red, ptext, 2);
@@ -107,7 +114,8 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 6;
                     break;
                 }
-                default: {
+                default:
+                {
                     pango_font_description_free(UserWordInfo.description);
                     break;
                 }
@@ -122,12 +130,14 @@ gboolean mythread(gpointer user_data)//合并
     FILE *fp;
     char wordfile[256];
     sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
-    if ((fp = fopen(wordfile, "r")) != NULL) {
+    if ((fp = fopen(wordfile, "r")) != NULL)
+    {
         open_setting_file(fp);
 
     }
 
-    else {
+    else
+    {
         UserWordInfo.font = (gchar *) malloc(50);
         UserWordInfo.description = pango_font_description_new();
         pango_font_description_set_family(UserWordInfo.description, "Sans");
@@ -223,11 +233,13 @@ void *sendhello(void *M)
 void on_button_clicked()
 {
 //获取登录名和密码
-    if (FirstPwd == 0) {
+    if (FirstPwd == 0)
+    {
         name = gtk_combo_box_text_get_active_text(username);
         pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
     }
-    else {
+    else
+    {
         char hash[16];
         name = gtk_combo_box_text_get_active_text(username);
         pwd = gtk_entry_get_text(GTK_ENTRY(passwd));

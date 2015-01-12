@@ -13,7 +13,8 @@ void JobManagerKick(POnlineUser user)
     pthread_mutex_lock(&jobLock);
     POnlineUser *p = pJobQueueHead;
     while (!(p + 1 == pJobQueueTail ||
-            p + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue)))) {
+            p + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
+    {
         p = jobQueue + (p - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;
         if (*p == user)
             *p = NULL;
@@ -28,7 +29,8 @@ POnlineUser JobManagerPop(void)
     pthread_mutex_lock(&jobLock);
     redo:
     while ((pJobQueueHead + 1 == pJobQueueTail) ||
-            (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue)))) {
+            (pJobQueueHead + 1 == pJobQueueTail + (sizeof(jobQueue) / sizeof(*jobQueue))))
+    {
         pthread_cond_wait(&cond, &jobLock);     //等待队列非空
     }
 
@@ -38,7 +40,8 @@ POnlineUser JobManagerPop(void)
     user = *pJobQueueHead;
     *pJobQueueHead = NULL;
 
-    if (queueFull) {
+    if (queueFull)
+    {
         pthread_cond_broadcast(&cond);          //如果Pop之前队列是满的,现在已经不满了,通知Push操作.
     }
 
@@ -55,7 +58,8 @@ void JobManagerPush(POnlineUser v)
     pthread_mutex_lock(&jobLock);
 
     clock_gettime(CLOCK_MONOTONIC, &lastPushBegin);
-    while (pJobQueueHead == pJobQueueTail) {
+    while (pJobQueueHead == pJobQueueTail)
+    {
         pthread_cond_wait(&cond, &jobLock);     //等待队列非满
     }
     int isEmpty = (pJobQueueHead + 1 == pJobQueueTail) ||
@@ -64,7 +68,8 @@ void JobManagerPush(POnlineUser v)
     *pJobQueueTail = v;
     pJobQueueTail = jobQueue + (pJobQueueTail - jobQueue + 1) % CONFIG_JOB_QUEUE_SIZE;//移除节点
 
-    if (isEmpty) {
+    if (isEmpty)
+    {
         pthread_cond_broadcast(&cond);          //如果Push之前队列是空的,现在已经非空了,通知Pop操作
     }
     clock_gettime(CLOCK_MONOTONIC, &lastPushEnd);

@@ -15,7 +15,7 @@ int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendM
             return 1;
         }
 
-        if (!UserFriendsUserAdd(groupTo, packet->uid))
+        if (!UserFriendsUserAdd(groupTo, packet->uid))//现加后删,一旦删除操作奇葩的失败了.这次失败也有办法还原
         {
             CRPFailureSend(user->crp, session, ENOMEM, "无法添加用户到目标分组");
             return 1;

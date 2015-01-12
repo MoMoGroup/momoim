@@ -7,18 +7,21 @@
 
 int TestPacketMessage()
 {
-    if (!CRPMessageNormalSend(cs, 0, UMT_TEXT, 0x21, 8, "JDKAJDKA")) {
+    if (!CRPMessageNormalSend(cs, 0, UMT_TEXT, 0x21, 8, "JDKAJDKA"))
+    {
         log_error("message", "Send返回失败\n");
         perror("");
         return 0;
     }
 
     CRPBaseHeader *packet = CRPRecv(cr);
-    if (packet == NULL) {
+    if (packet == NULL)
+    {
         log_error("message", "Recv返回失败\n");
         return 0;
     }
-    if (packet->packetID != CRP_PACKET_MESSAGE_NORMAL) {
+    if (packet->packetID != CRP_PACKET_MESSAGE_NORMAL)
+    {
         log_error("message", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
@@ -28,7 +31,8 @@ int TestPacketMessage()
             msgHello->messageType != UMT_TEXT ||
             msgHello->messageLen != 8 ||
             memcmp(msgHello->message, "JDKAJDKA", 8)
-            ) {
+            )
+    {
 
         log_error("message", "包数据错误\n");
         return 0;

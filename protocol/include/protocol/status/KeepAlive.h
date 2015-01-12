@@ -4,7 +4,8 @@
 /**
 * 用于确认客户端在线
 */
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
 } CRPPacketKeepAlive;
 
 __attribute_malloc__

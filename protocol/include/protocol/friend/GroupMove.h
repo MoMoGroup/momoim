@@ -7,7 +7,8 @@
 * 分组移动
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint8_t gid, nextGid;
 } CRPPacketFriendGroupMove;
 

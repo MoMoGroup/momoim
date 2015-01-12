@@ -118,12 +118,12 @@ int popup(const char *title, const char *tell)
     gtk_fixed_put(GTK_FIXED(popupLayout), Popback_event_box, 0, 0);
 
     Anniu_event_box = BuildEventBox(popanniu,
-            G_CALLBACK(ok_button_press_event),
-            G_CALLBACK(ok_enter_notify_event),
-            G_CALLBACK(ok_leave_notify_event),
-            G_CALLBACK(ok_button_release_event),
-            NULL,
-            NULL);
+                                    G_CALLBACK(ok_button_press_event),
+                                    G_CALLBACK(ok_enter_notify_event),
+                                    G_CALLBACK(ok_leave_notify_event),
+                                    G_CALLBACK(ok_button_release_event),
+                                    NULL,
+                                    NULL);
     gtk_fixed_put(GTK_FIXED(popupLayout), Anniu_event_box, 52, 170);
 
     gtk_fixed_put(GTK_FIXED(popupLayout), telltitle, 14, 10);

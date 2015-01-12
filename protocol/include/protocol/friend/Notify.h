@@ -7,7 +7,8 @@
 /**
 * 请求好友列表
 */
-typedef enum {
+typedef enum
+{
     FNT_FRIEND_ONLINE = 0,
     FNT_FRIEND_OFFLINE,
     FNT_FRIEND_NEW,
@@ -17,7 +18,8 @@ typedef enum {
     FNT_GROUP_DELETE,
     FNT_GROUP_RENAME
 } FriendNotifyType;
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint32_t uid;
     uint8_t type;
     uint8_t fromGid, toGid;

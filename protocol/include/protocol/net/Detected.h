@@ -5,7 +5,8 @@
 #include <netinet/in.h>
 #include "imcommon/message.h"
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     struct sockaddr_in addr;
 } CRPPacketNATDetected;
 
