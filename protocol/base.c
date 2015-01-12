@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
+#include <openssl/md5.h>
 
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_KEEP_ALIVE]               = (void *(*)(CRPBaseHeader *)) CRPKeepAliveCast,
@@ -26,6 +27,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_INFO__START]              = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_INFO_REQUEST]             = (void *(*)(CRPBaseHeader *)) CRPInfoRequestCast,
         [CRP_PACKET_INFO_DATA]                = (void *(*)(CRPBaseHeader *)) CRPInfoDataCast,
+        [CRP_PACKET_INFO_STATUS_CHANGE]       = (void *(*)(CRPBaseHeader *)) CRPInfoStatusChangeCast,
 
         [CRP_PACKET_FRIEND__START]            = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_FRIEND_REQUEST]           = (void *(*)(CRPBaseHeader *)) CRPFriendRequestCast,
@@ -87,8 +89,9 @@ CRPContext CRPOpen(int fd)
 
 int CRPClose(CRPContext context)
 {
-    if (!context)
+    if (!context) {
         return 0;
+    }
     CRPEncryptDisableUnlock(context);
     shutdown(context->fd, SHUT_RDWR);
     close(context->fd);
@@ -103,15 +106,19 @@ int CRPEncryptTest(const char key[32], const char iv[32])
     int ret = 0;
     char *cpKey = (char *) malloc(32),
             *cpIV = (char *) malloc(32);
-    if (cpKey == NULL || cpIV == NULL)
+    if (cpKey == NULL || cpIV == NULL) {
         goto cleanup;
+    }
     MCRYPT td = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
-    if (td == MCRYPT_FAILED)
+    if (td == MCRYPT_FAILED) {
         goto cleanup;
-    if (32 != mcrypt_enc_get_key_size(td) || 32 != mcrypt_enc_get_iv_size(td) || 32 != mcrypt_enc_get_block_size(td))
+    }
+    if (32 != mcrypt_enc_get_key_size(td) || 32 != mcrypt_enc_get_iv_size(td) || 32 != mcrypt_enc_get_block_size(td)) {
         goto cleanup;
-    if (0 != mcrypt_enc_self_test(td))
+    }
+    if (0 != mcrypt_enc_self_test(td)) {
         goto cleanup;
+    }
     memcpy(cpKey, key, 32);
     memcpy(cpIV, iv, 32);
     int r = mcrypt_generic_init(td, cpKey, 32, cpIV);
@@ -136,19 +143,25 @@ int CRPEncryptEnable(CRPContext context, const char sendKey[32], const char recv
     int retcode = 0;
     pthread_mutex_lock(&context->sendLock);
     pthread_mutex_lock(&context->recvLock);
-    if (context->sendTd || context->recvTd)
+    if (context->sendTd || context->recvTd) {
         CRPEncryptDisableUnlock(context);
+    }
     MCRYPT sendTd = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
-    if (sendTd == MCRYPT_FAILED)
+    if (sendTd == MCRYPT_FAILED) {
         goto cleanup;
+    }
     if (mcrypt_enc_get_key_size(sendTd) != 32 || mcrypt_enc_get_iv_size(sendTd) != 32 || mcrypt_enc_get_block_size(sendTd) != 32)
     {
         fprintf(stderr, "CRP Warning: Cannot enable data encrypt!\nKey Size Error\n");
         mcrypt_module_close(sendTd);
         goto cleanup;
     }
-    memcpy(&context->sendKey, sendKey, 32);
-    memcpy(&context->recvKey, recvKey, 32);
+    MD5((unsigned char *) sendKey, 32, (unsigned char *) context->sendKey);
+    MD5((unsigned char *) context->sendKey, 16, (unsigned char *) context->sendKey + 16);
+    MD5((unsigned char *) recvKey, 32, (unsigned char *) context->recvKey);
+    MD5((unsigned char *) context->recvKey, 16, (unsigned char *) context->recvKey + 16);
+    //memcpy(context->sendKey, sendKey, 32);
+    //memcpy(context->recvKey, recvKey, 32);
     memcpy(&context->sendIV, iv, 32);
     memcpy(&context->recvIV, iv, 32);
 
@@ -228,8 +241,9 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
     header->totalLength = (CRP_LENGTH_TYPE) protocolLength;
     header->packetID = packetID;
     header->sessionID = sessionID;
-    if (dataLength)
+    if (dataLength) {
         memcpy(header->data, data, dataLength);
+    }
 
     if (context->sendTd)
     {
@@ -240,7 +254,7 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
         }
     }
     while (-1 == (ret = send(context->fd, packet, fullLength, 0/*MSG_MORE*/)) &&
-           (errno == EWOULDBLOCK || errno == EAGAIN))
+            (errno == EWOULDBLOCK || errno == EAGAIN))
     {
         //如果系统要求重发则阻塞当前线程,等待重发
         fd_set fdWr, fdEx;
@@ -261,8 +275,9 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
 
     cleanup:
     pthread_mutex_unlock(&context->sendLock);
-    if (packet)
+    if (packet) {
         free(packet);
+    }
     return ret;
 }
 
@@ -275,8 +290,9 @@ CRPBaseHeader *CRPRecv(CRPContext context)
     {
         CRP_LENGTH_TYPE encryptedLength;
         ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
-        if (ret != sizeof(encryptedLength))
+        if (ret != sizeof(encryptedLength)) {
             return NULL;
+        }
         encryptedLength <<= 5;
         packet = (CRPBaseHeader *) malloc(encryptedLength);
         ret = recv(context->fd, packet, encryptedLength, MSG_WAITALL);

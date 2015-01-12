@@ -8,6 +8,7 @@
 #include "Infomation.h"
 #include <pwd.h>
 #include <math.h>
+#include "chartmessage.h"
 #include <logger.h>
 #include <cairo-script-interpreter.h>
 #include <sys/stat.h>
@@ -23,32 +24,32 @@ static void create_surfaces(FriendInfo *information)
 {
     if (schartbackgroud == NULL)
     {
-        schartbackgroud = cairo_image_surface_create_from_png("聊天背景.png");
-        surfacesend1 = cairo_image_surface_create_from_png("发送1.png");
-        surfacesend2 = cairo_image_surface_create_from_png("发送2.png");
+        schartbackgroud = ChangeThem_png("聊天背景.png");
+        surfacesend1 = ChangeThem_png("发送1.png");
+        surfacesend2 = ChangeThem_png("发送2.png");
 
-        surfacevoice1 = cairo_image_surface_create_from_png("语音1.png");
-        surfacevoice2 = cairo_image_surface_create_from_png("语音2.png");
-        surfacevideo1 = cairo_image_surface_create_from_png("视频1.png");
-        surfacevideo2 = cairo_image_surface_create_from_png("视频2.png");
+        surfacevoice1 = ChangeThem_png("语音1.png");
+        surfacevoice2 = ChangeThem_png("语音2.png");
+        surfacevideo1 = ChangeThem_png("视频1.png");
+        surfacevideo2 = ChangeThem_png("视频2.png");
 
-        surfacelook1 = cairo_image_surface_create_from_png("表情.png");
-        surfacelook2 = cairo_image_surface_create_from_png("表情2.png");
-        surfacejietu1 = cairo_image_surface_create_from_png("截图.png");
-        surfacejietu2 = cairo_image_surface_create_from_png("截图2.png");
-        surfacefile1 = cairo_image_surface_create_from_png("文件.png");
-        surfacefile2 = cairo_image_surface_create_from_png("文件2.png");
-        surfaceimage1 = cairo_image_surface_create_from_png("图片.png");
-        surfaceimage2 = cairo_image_surface_create_from_png("图片2.png");
-        surfacewordart1 = cairo_image_surface_create_from_png("字体.png");
-        surfacewordart2 = cairo_image_surface_create_from_png("字体2.png");
+        surfacelook1 = ChangeThem_png("表情.png");
+        surfacelook2 = ChangeThem_png("表情2.png");
+        surfacejietu1 = ChangeThem_png("截图.png");
+        surfacejietu2 = ChangeThem_png("截图2.png");
+        surfacefile1 = ChangeThem_png("文件.png");
+        surfacefile2 = ChangeThem_png("文件2.png");
+        surfaceimage1 = ChangeThem_png("图片.png");
+        surfaceimage2 = ChangeThem_png("图片2.png");
+        surfacewordart1 = ChangeThem_png("字体.png");
+        surfacewordart2 = ChangeThem_png("字体2.png");
 
-        surfaceclose1 = cairo_image_surface_create_from_png("关闭1.png");
-        surfaceclose2 = cairo_image_surface_create_from_png("关闭2.png");
-        surfaceclosebut1 = cairo_image_surface_create_from_png("关闭按钮1.png");
-        surfaceclosebut2 = cairo_image_surface_create_from_png("关闭按钮2.png");
-        surfaceclosebut3 = cairo_image_surface_create_from_png("关闭按钮3.png");
-        surfacecolor = cairo_image_surface_create_from_png("颜色.png");
+        surfaceclose1 = ChangeThem_png("关闭1.png");
+        surfaceclose2 = ChangeThem_png("关闭2.png");
+        surfaceclosebut1 = ChangeThem_png("关闭按钮1.png");
+        surfaceclosebut2 = ChangeThem_png("关闭按钮2.png");
+        surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
+        surfacecolor = ChangeThem_png("颜色.png");
     }
 
     static cairo_t *cr;

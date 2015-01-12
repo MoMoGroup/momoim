@@ -3,22 +3,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include<stdlib.h>
-#include <protocol/status/Hello.h>
 #include <logger.h>
 #include <protocol/CRPPackets.h>
 #include<openssl/md5.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/message/Normal.h>
-#include <protocol/friend/Notify.h>
-#include <ftlist.h>
-#include <protocol/base.h>
-#include <protocol/info/Data.h>
-#include <imcommon/friends.h>
-#include <protocol/message/Normal.h>
 #include "MainInterface.h"
-#include "PopupWinds.h"
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
@@ -40,8 +31,6 @@ void add_node(FriendInfo *node)
 {
     FriendInfo *p;
     p = FriendInfoHead;
-    //=(FriendInfo *)malloc(sizeof(struct FriendInfo));
-    //p=head;
 
     while (p->next)
     {
@@ -49,6 +38,23 @@ void add_node(FriendInfo *node)
     }
     p->next = node;
     node->next = NULL;
+}
+
+FriendInfo *FineNode(uint32_t uid)
+{
+    FriendInfo *p;
+    p = FriendInfoHead;
+    while (p->next)
+    {
+        p = p->next;
+
+        if(p->uid==uid)
+        {
+            return p;
+        }
+    }
+    log_info("NO found", "node\n");
+
 }
 
 void *keepalive(void *dada)
@@ -150,7 +156,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             return 0;
         };
             //消息
-        case CRP_PACKET_MESSAGE_NORMAL:
+        case CRP_PACKET_MESSAGE_NORMAL://不会丢的
         {
 
             CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
@@ -194,7 +200,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     if (data->toGid != UGI_PENDING)//不是添加到pending,说明是有人加你后好友列表需要更新
                     {
                         session_id_t sessionid = CountSessionId();
-
                         AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
                         CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
                     }
@@ -283,9 +288,17 @@ int mysockfd()
             free(packet);
         }
     }
-    unsigned char hash[16];
-    MD5((unsigned char *) pwd, strlen(pwd), hash);
-    CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
+
+    if (FlagRemember == 0)
+    {
+        unsigned char hash[16];
+        MD5((unsigned char *) pwd, strlen(pwd), hash);
+        CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
+    }
+    else{
+        CRPLoginLoginSend(sockfd, 0, name, pwd);
+    }
+
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
@@ -316,7 +329,6 @@ int mysockfd()
         }
 
 
-       // CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
         CRPFriendRequestSend(sockfd, 1);  //请求用户好友列表
 
         sprintf(mulu, "%s/.momo", getpwuid(getuid())->pw_dir);
@@ -325,7 +337,8 @@ int mysockfd()
         sprintf(mulu, "%s/.momo/%u", getpwuid(getuid())->pw_dir, uid);
         mkdir(mulu, 0700);
         sprintf(mulu, "%s/.momo/friend", getpwuid(getuid())->pw_dir);
-
+        mkdir(mulu, 0700);
+        sprintf(mulu, "%s/.momo/files", getpwuid(getuid())->pw_dir);
         mkdir(mulu, 0700);
         int loop = 1;
         while (loop)
@@ -345,23 +358,21 @@ int mysockfd()
 
                         CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
 
-                        FriendInfo *node;
-                        node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
-                        //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
-                        node->uid = header->sessionID;//添加id到结构提
-                        node->user = infodata->info;
-                        node->inonline = infodata->isOnline;//是否在线
-                        memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
-                        add_node(node);             //添加新节点
-                        if (node->uid == uid)
-                        {
-                            CurrentUserInfo = &node->user;
-                            log_info("user nickname:", "%s\n", infodata->info.nickName);
-                        }
-                        //free(node);
+                    FriendInfo *node;
+                    node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
+                    //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
+                    node->uid = header->sessionID;//添加id到结构提
+                    node->user = infodata->info;
+                    node->inonline = infodata->isOnline;//是否在线
+                    memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
+                    add_node(node);             //添加新节点
+                    if (node->uid == uid)//用户自己
+                    {
+                        CurrentUserInfo = &node->user;
+                        node->inonline=1;
+                        log_info("user nickname:", "%s\n", infodata->info.nickName);
+                    }
 
-                        // log_info("GROUPDATA", "Nick:%s\n", CurrentUserInfo->nickName);//用户昵称是否获取成功
-                        // log_info("循环1", "循环1%s\n", mulu);
                     break;
 
 
@@ -370,18 +381,7 @@ int mysockfd()
                 {
                     CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
 
-                    if (header->sessionID < 10000)//用户的资料，准备工作，打开文件等
-                    {
-                        sprintf(mulu, "%s/.momo/%u/head.png", getpwuid(getuid())->pw_dir, uid);
-                        if ((fp = fopen(mulu, "w")) == NULL)
-                        {
-                            perror("openfile1\n");
-                            exit(1);
-                        }
 
-                    }
-
-                    else
                     {
                         sprintf(mulu2, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, header->sessionID);
 
@@ -392,8 +392,9 @@ int mysockfd()
                         {
                             if (node->uid == header->sessionID)
                             {
-                                //node->flag=0;
-                                if ((node->fp = fopen(mulu2, "w")) == NULL)
+                                char fileaname[256];
+                                HexadecimalConversion(fileaname, node->user.icon);//计算一个文件名
+                                if ((node->fp = fopen(fileaname, "w")) == NULL)
                                 {
                                     perror("openfile2\n");
                                     exit(1);
@@ -416,11 +417,8 @@ int mysockfd()
                 {
 
                     CRPPacketFileData *packet = CRPFileDataCast(header);
-                    if (header->sessionID < 10000)
-                    {
-                        fwrite(packet->data, 1, packet->length, fp);
-                    }
-                    else
+
+
                     {
                         FriendInfo *node;
                         //node = (FriendInfo *) malloc(sizeof(FriendInfo));
@@ -452,13 +450,8 @@ int mysockfd()
 
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
 
-                    if (header->sessionID < 10000)
-                    {
-                        fclose(fp);
-                    }
-                    else
-                    {
-                        int friendnum = 0;
+
+                    int friendnum = 0;
                         FriendInfo *node;
                         node = FriendInfoHead;
                         while (node)
@@ -491,9 +484,7 @@ int mysockfd()
                         }
 
 
-                    }
-                    if ((void *) packet != header->data)
-                    {
+                    if ((void *) packet != header->data) {
                         free(packet);
                     }
                     break;
@@ -523,6 +514,7 @@ int mysockfd()
         AddMessageNode(0, servemessage, "");//注册服务器发来的消息
 
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
+        CRPMessageQueryOfflineSend(sockfd, CountSessionId());
         MessageLoopFunc();
     }
     log_error("DEBUG", "Unexception packet id:%hu\n", header->packetID);

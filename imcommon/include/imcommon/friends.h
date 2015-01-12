@@ -2,6 +2,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <time.h>
 
 typedef enum
 {
@@ -9,24 +10,6 @@ typedef enum
     UGI_DEFAULT = 1,        //默认好友分组
     UGI_PENDING = UINT8_MAX //等待添加好友分组
 } USER_GROUP_ID;
-typedef struct __attribute__ ((packed))
-{
-    uint32_t uid;
-    char sex;
-    char nickName[32];
-    unsigned char icon[16];
-    char name[13];
-    char birthday[11];
-    char constellation;
-    char provinces[10];
-    char city[35];
-    char postcode[7];
-    char tel[14];
-    char school[28];
-    char hometown[51];
-    uint32_t lastlogin;
-    uint32_t level;
-} UserInfo;
 
 typedef struct __attribute__ ((packed))
 {

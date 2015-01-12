@@ -10,6 +10,7 @@
 #include "common.h"
 #include "ClientSockfd.h"
 #include "MainInterface.h"
+#include "PopupWinds.h"
 
 GtkWidget *addwindow, *addframelayout;
 GtkWidget *addlayout2, *addlayout1, *addlayout31;//layout
@@ -21,7 +22,7 @@ cairo_surface_t *surfacebackground1, *surfacebackground3, *surfacebackground2, *
 cairo_surface_t *surfacehead;
 //资源
 
-GtkWidget *background1, *background2, *background3, *biaoji1,*biaoji2, *next, *addclose;    //引用
+GtkWidget *background1, *background2, *background3, *biaoji1, *biaoji2, *next, *addclose;    //引用
 GtkWidget *smallhead, *done, *done2;
 
 GtkEventBox *next_enent_box, *close_event_box;
@@ -45,17 +46,17 @@ typedef struct add_friend_info {
 void create_surface()
 {
     //加载资源，第1个
-    surfacebackground1 = cairo_image_surface_create_from_png("查找背景1.png");
-    surfacebackground2 = cairo_image_surface_create_from_png("查找背景2.png");
-    surfacebackground3 = cairo_image_surface_create_from_png("查找背景3.png");
+    surfacebackground1 = ChangeThem_png("查找背景1.png");
+    surfacebackground2 = ChangeThem_png("查找背景2.png");
+    surfacebackground3 = ChangeThem_png("查找背景3.png");
 
-    surfacebiaoji = cairo_image_surface_create_from_png("标记.png");
-    surfacenext = cairo_image_surface_create_from_png("下一步.png");
-    surfacenext_press = cairo_image_surface_create_from_png("下一步2.png");
-    surfaceclose = cairo_image_surface_create_from_png("关闭按钮1.png");
+    surfacebiaoji = ChangeThem_png("标记.png");
+    surfacenext = ChangeThem_png("下一步.png");
+    surfacenext_press = ChangeThem_png("下一步2.png");
+    surfaceclose = ChangeThem_png("关闭按钮1.png");
 
-    surfacedone = cairo_image_surface_create_from_png("完成.png");
-    surfacedone2 = cairo_image_surface_create_from_png("完成2.png");
+    surfacedone = ChangeThem_png("完成.png");
+    surfacedone2 = ChangeThem_png("完成2.png");
 
     //获得
     background1 = gtk_image_new_from_surface(surfacebackground1);
@@ -87,7 +88,7 @@ static gint add_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
 //关闭按钮
 static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    AddFriendflag=1;//判断是否打开搜索窗口,置1，可以打开了
+    AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
     return 0;
 }
@@ -98,9 +99,14 @@ static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 {
 
     struct add_friend_info *p = data;
-    CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
-    AddFriendflag=1;//判断是否打开搜索窗口,置1，可以打开了
-    gtk_widget_destroy(addwindow);
+    if (p->uid == CurrentUserInfo->uid) {
+        popup("", "不能添加自己为好友");
+    }
+    else {
+        CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
+        AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
+        gtk_widget_destroy(addwindow);
+    }
 }
 //
 //static gint done2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -126,12 +132,6 @@ static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event,
             NULL,
             p);
 
-//
-//    gtk_fixed_put(GTK_FIXED(addlayout2), done_event_box, 400, 200);
-//  //  gtk_container_add(GTK_CONTAINER(addframelayout), addlayout3);
-//    gtk_widget_show_all(addlayout2);
-    //gtk_widget_destroy(addlayout2);
-    //gtk_widget_hide(addlayout2);
 
     background3 = gtk_image_new_from_surface(surfacebackground3);
     addclose = gtk_image_new_from_surface(surfaceclose);
@@ -331,7 +331,7 @@ static gint next_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 //构造第一个界面的地方
 int AddFriendFun()
 {
-    AddFriendflag=0;//判断是否打开搜索窗口，置0，不能打开
+    AddFriendflag = 0;//判断是否打开搜索窗口，置0，不能打开
     addwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     addframelayout = gtk_layout_new(NULL, NULL);
     addlayout1 = gtk_fixed_new();

@@ -18,3 +18,7 @@ extern void HexadecimalConversion(char *filename, unsigned char const *fileKey);
 extern int FindImage(const char *key, const void *data, gboolean (*fn)(void *data));
 
 GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color);
+
+extern cairo_surface_t * ChangeThem_png(char *picname);
+
+extern GtkWidget *ChangeThem_file(char *picname);

@@ -91,7 +91,7 @@ int OnLine(void *data)
 
         if (!gtk_tree_model_iter_next(TreeViewListStore, &iterGroup))
         {
-            abort();
+            return 0;
         }
 
         gtk_tree_model_get(TreeViewListStore, &iterGroup, FRIENDUID_COL, &usg, -1);//拿到id

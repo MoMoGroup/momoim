@@ -23,7 +23,7 @@ SET(CLIENT_SOURCE_FILE
     addfriend.c
     UpdataFriendList.c
     onlylookinfo.c
-    Addgroup.c
+    Managegroup.c
     chartmessage.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})

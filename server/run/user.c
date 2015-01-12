@@ -22,49 +22,51 @@ pthread_rwlock_t OnlineUserTableLock, PendingUserTableLock;
 
 //消息处理器映射表
 static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user, uint32_t session, void *packet, CRPBaseHeader *header) = {
-        [CRP_PACKET_KEEP_ALIVE]         = (GeneralPacketProcessor) ProcessPacketStatusKeepAlive,
-        [CRP_PACKET_HELLO]              = (GeneralPacketProcessor) ProcessPacketStatusHello,
-        [CRP_PACKET_OK]                 = (GeneralPacketProcessor) ProcessPacketStatusOK,
-        [CRP_PACKET_FAILURE]            = (GeneralPacketProcessor) ProcessPacketStatusFailure,
-        [CRP_PACKET_CRASH]              = (GeneralPacketProcessor) ProcessPacketStatusCrash,
-        [CRP_PACKET_CANCEL]             = (GeneralPacketProcessor) ProcessPacketStatusCancel,
-        [CRP_PACKET_SWITCH_PROTOCOL]    = (GeneralPacketProcessor) ProcessPacketStatusSwitchProtocol,
+        [CRP_PACKET_KEEP_ALIVE]           = (GeneralPacketProcessor) ProcessPacketStatusKeepAlive,
+        [CRP_PACKET_HELLO]                = (GeneralPacketProcessor) ProcessPacketStatusHello,
+        [CRP_PACKET_OK]                   = (GeneralPacketProcessor) ProcessPacketStatusOK,
+        [CRP_PACKET_FAILURE]              = (GeneralPacketProcessor) ProcessPacketStatusFailure,
+        [CRP_PACKET_CRASH]                = (GeneralPacketProcessor) ProcessPacketStatusCrash,
+        [CRP_PACKET_CANCEL]               = (GeneralPacketProcessor) ProcessPacketStatusCancel,
+        [CRP_PACKET_SWITCH_PROTOCOL]      = (GeneralPacketProcessor) ProcessPacketStatusSwitchProtocol,
 
-        [CRP_PACKET_LOGIN__START]       = (GeneralPacketProcessor) NULL,
-        [CRP_PACKET_LOGIN_LOGIN]        = (GeneralPacketProcessor) ProcessPacketLoginLogin,
-        [CRP_PACKET_LOGIN_LOGOUT]       = (GeneralPacketProcessor) ProcessPacketLoginLogout,
-        [CRP_PACKET_LOGIN_REGISTER]     = (GeneralPacketProcessor) ProcessPacketLoginRegister,
+        [CRP_PACKET_LOGIN__START]         = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_LOGIN_LOGIN]          = (GeneralPacketProcessor) ProcessPacketLoginLogin,
+        [CRP_PACKET_LOGIN_LOGOUT]         = (GeneralPacketProcessor) ProcessPacketLoginLogout,
+        [CRP_PACKET_LOGIN_REGISTER]       = (GeneralPacketProcessor) ProcessPacketLoginRegister,
 
-        [CRP_PACKET_INFO__START]        = (GeneralPacketProcessor) NULL,
-        [CRP_PACKET_INFO_REQUEST]       = (GeneralPacketProcessor) ProcessPacketInfoRequest,
-        [CRP_PACKET_INFO_DATA]          = (GeneralPacketProcessor) ProcessPacketInfoData,
+        [CRP_PACKET_INFO__START]          = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_INFO_REQUEST]         = (GeneralPacketProcessor) ProcessPacketInfoRequest,
+        [CRP_PACKET_INFO_DATA]            = (GeneralPacketProcessor) ProcessPacketInfoData,
+        [CRP_PACKET_INFO_STATUS_CHANGE]   = (GeneralPacketProcessor) ProcessPacketInfoStatusChange,
 
-        [CRP_PACKET_FRIEND__START]      = (GeneralPacketProcessor) NULL,
-        [CRP_PACKET_FRIEND_REQUEST]     = (GeneralPacketProcessor) ProcessPacketFriendRequest,
-        [CRP_PACKET_FRIEND_ADD]         = (GeneralPacketProcessor) ProcessPacketFriendAdd,
+        [CRP_PACKET_FRIEND__START]        = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_FRIEND_REQUEST]       = (GeneralPacketProcessor) ProcessPacketFriendRequest,
+        [CRP_PACKET_FRIEND_ADD]           = (GeneralPacketProcessor) ProcessPacketFriendAdd,
         [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]=(GeneralPacketProcessor) ProcessPacketFriendSearchByNickname,
-        [CRP_PACKET_FRIEND_ACCEPT]      =  (GeneralPacketProcessor) ProcessPacketFriendAccept,
-        [CRP_PACKET_FRIEND_DELETE]      = (GeneralPacketProcessor) ProcessPacketFriendDelete,
-        [CRP_PACKET_FRIEND_MOVE]        = (GeneralPacketProcessor) ProcessPacketFriendMove,
-        [CRP_PACKET_FRIEND_GROUP_ADD]   = (GeneralPacketProcessor) ProcessPacketFriendGroupAdd,
-        [CRP_PACKET_FRIEND_GROUP_DELETE]= (GeneralPacketProcessor) ProcessPacketFriendGroupDelete,
-        [CRP_PACKET_FRIEND_GROUP_RENAME]= (GeneralPacketProcessor) ProcessPacketFriendGroupRename,
-        [CRP_PACKET_FRIEND_GROUP_MOVE]  = (GeneralPacketProcessor) ProcessPacketFriendGroupMove,
+        [CRP_PACKET_FRIEND_ACCEPT]        =  (GeneralPacketProcessor) ProcessPacketFriendAccept,
+        [CRP_PACKET_FRIEND_DELETE]        = (GeneralPacketProcessor) ProcessPacketFriendDelete,
+        [CRP_PACKET_FRIEND_MOVE]          = (GeneralPacketProcessor) ProcessPacketFriendMove,
+        [CRP_PACKET_FRIEND_GROUP_ADD]     = (GeneralPacketProcessor) ProcessPacketFriendGroupAdd,
+        [CRP_PACKET_FRIEND_GROUP_DELETE]  = (GeneralPacketProcessor) ProcessPacketFriendGroupDelete,
+        [CRP_PACKET_FRIEND_GROUP_RENAME]  = (GeneralPacketProcessor) ProcessPacketFriendGroupRename,
+        [CRP_PACKET_FRIEND_GROUP_MOVE]    = (GeneralPacketProcessor) ProcessPacketFriendGroupMove,
 
 
-        [CRP_PACKET_FILE__START]        = (GeneralPacketProcessor) NULL,
-        [CRP_PACKET_FILE_REQUEST]       = (GeneralPacketProcessor) ProcessPacketFileRequest,
-        [CRP_PACKET_FILE_DATA]          = (GeneralPacketProcessor) ProcessPacketFileData,
-        [CRP_PACKET_FILE_RESET]         = (GeneralPacketProcessor) ProcessPacketFileReset,
-        [CRP_PACKET_FILE_DATA_END]      = (GeneralPacketProcessor) ProcessPacketFileDataEnd,
-        [CRP_PACKET_FILE_STORE_REQUEST] = (GeneralPacketProcessor) ProcessPacketFileStoreRequest,
+        [CRP_PACKET_FILE__START]          = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_FILE_REQUEST]         = (GeneralPacketProcessor) ProcessPacketFileRequest,
+        [CRP_PACKET_FILE_DATA]            = (GeneralPacketProcessor) ProcessPacketFileData,
+        [CRP_PACKET_FILE_RESET]           = (GeneralPacketProcessor) ProcessPacketFileReset,
+        [CRP_PACKET_FILE_DATA_END]        = (GeneralPacketProcessor) ProcessPacketFileDataEnd,
+        [CRP_PACKET_FILE_STORE_REQUEST]   = (GeneralPacketProcessor) ProcessPacketFileStoreRequest,
 
 
-        [CRP_PACKET_MESSAGE__START]     = (GeneralPacketProcessor) NULL,
-        [CRP_PACKET_MESSAGE_NORMAL]     = (GeneralPacketProcessor) ProcessPacketMessageNormal,
+        [CRP_PACKET_MESSAGE__START]       = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_MESSAGE_NORMAL]       = (GeneralPacketProcessor) ProcessPacketMessageNormal,
+        [CRP_PACKET_MESSAGE_QUERY_OFFLINE]= (GeneralPacketProcessor) ProcessPacketMessageQueryOffline,
 
-        [CRP_PACKET_NET__START]         = (GeneralPacketProcessor) NULL,
-        [CRP_PACKET_NAT_DISCOVER]       = (GeneralPacketProcessor) ProcessPacketNatDiscover,
+        [CRP_PACKET_NET__START]           = (GeneralPacketProcessor) NULL,
+        [CRP_PACKET_NAT_DISCOVER]         = (GeneralPacketProcessor) ProcessPacketNatDiscover,
 };
 
 void InitUserManager()
@@ -117,7 +119,7 @@ int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
     return ret;
 }
 
-static void PendingUserRemove(PPendingUser user)
+static void PendingUserTableRemove(PPendingUser user)
 {
     pthread_rwlock_wrlock(&PendingUserTableLock);
     if (user->prev != NULL || user->next != NULL || PendingUserTable.first == user)
@@ -145,14 +147,17 @@ static void PendingUserRemove(PPendingUser user)
 
 int PendingUserDelete(PPendingUser user)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
         return OnlineUserDelete((POnlineUser) user);
-    else if (user->status == OUS_PENDING_CLEAN)
+    else if (user->state == OUS_PENDING_CLEAN)
         return 0;
     UserSetStatus((POnlineUser) user, OUS_PENDING_CLEAN, NULL);
     pthread_rwlock_unlock(user->holdLock);
     pthread_rwlock_wrlock(user->holdLock);
-    PendingUserRemove(user);
+    PendingUserTableRemove(user);
+    pthread_rwlock_unlock(user->holdLock);
+    pthread_rwlock_destroy(user->holdLock);
+    free(user->holdLock);
     free(user);
     return 1;
 }
@@ -237,14 +242,14 @@ PPendingUser PendingUserNew(int fd)
     }
     //简要设置一下socket,状态.初始化用户保持锁
     user->sockfd = CRPOpen(fd);
-    user->status = OUS_PENDING_HELLO;
+    user->state = OUS_PENDING_HELLO;
     user->holdLock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));
     pthread_rwlock_init(user->holdLock, NULL);
-
+    time(&user->lastUpdateTime);
     return user;
 }
 
-static void broadcastNotify(POnlineUser user, FriendNotifyType type)
+void UserBroadcastNotify(POnlineUser user, FriendNotifyType type)
 {
     POnlineUserInfo info = user->info;
     pthread_rwlock_rdlock(info->friendsLock);
@@ -261,9 +266,9 @@ static void broadcastNotify(POnlineUser user, FriendNotifyType type)
             duser = OnlineUserGet(group->friends[j]);
             if (duser)
             {
-                if (duser->status == OUS_ONLINE)
+                if (duser->state == OUS_ONLINE)
                 {
-                    CRPFriendNotifySend(duser->sockfd, 0, type, info->uid, 0, 0);
+                    CRPFriendNotifySend(duser->crp, 0, type, info->uid, 0, 0);
                 }
                 UserDrop(duser);
             }
@@ -274,13 +279,13 @@ static void broadcastNotify(POnlineUser user, FriendNotifyType type)
 
 int OnlineUserDelete(POnlineUser user)
 {
-    if (user->status == OUS_PENDING_HELLO || user->status == OUS_PENDING_LOGIN)
+    if (user->state == OUS_PENDING_HELLO || user->state == OUS_PENDING_LOGIN)
         return PendingUserDelete((PPendingUser) user);
-    if (user->status == OUS_PENDING_CLEAN)
+    if (user->state == OUS_PENDING_CLEAN)
         return 1;
-    if (user->status != OUS_ONLINE)
+    if (user->state != OUS_ONLINE)
     {
-        log_error("UserManager", "Trying to delete online user on illegal user status.\n");
+        log_error("UserManager", "Trying to delete online user on illegal user state.\n");
         return 0;
     }
     if (UserSetStatus(user, OUS_PENDING_CLEAN, NULL) == NULL)
@@ -290,14 +295,17 @@ int OnlineUserDelete(POnlineUser user)
     pthread_rwlock_wrlock(user->holdLock);
     UserOperationRemoveAll(user);
     pthread_mutex_destroy(&user->operations.lock);
-    CRPClose(user->sockfd);
+    CRPClose(user->crp);
     if (user->info)
     {
         log_info("UserManager", "User %d offline.\n", user->info->uid);
         UserInfo *info = UserInfoGet(user->info->uid);
         if (info)
         {
-            info->lastlogin = (uint32_t) (time(NULL) / (24 * 60 * 60));
+            time_t now;
+            time(&now);
+            info->lastlogout = now;
+            info->level += (now - user->info->loginTime) / 60;
             UserInfoSave(info->uid, info);
             UserInfoFree(info);
         }
@@ -322,7 +330,7 @@ int OnlineUserDelete(POnlineUser user)
 
 int UserHold(POnlineUser user)
 {
-    return user->status != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
+    return user->state != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
 }
 
 void UserDrop(POnlineUser user)
@@ -331,19 +339,19 @@ void UserDrop(POnlineUser user)
         pthread_rwlock_unlock(user->holdLock);
 }
 
-POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info)
+POnlineUser UserSetStatus(POnlineUser user, OnlineUserState state, uint32_t uid)
 {
-    if (user->status == OUS_PENDING_CLEAN)
+    if (user->state == OUS_PENDING_CLEAN)
         //正在清理的用户内存区域可能正在释放.此时不应改变状态.
         return NULL;
-    if (user->status == OUS_PENDING_HELLO && status == OUS_PENDING_LOGIN)
+    if (user->state == OUS_PENDING_HELLO && state == OUS_PENDING_LOGIN)
     {//等待Hello到等待登陆只需要设置标识位
-        user->status = OUS_PENDING_LOGIN;
+        user->state = OUS_PENDING_LOGIN;
     }
-    else if (user->status == OUS_PENDING_LOGIN && status == OUS_ONLINE)
+    else if (user->state == OUS_PENDING_LOGIN && state == OUS_ONLINE)
     {   //待登陆状态切换到在线状态
         PPendingUser pendingUser = (PPendingUser) user;
-        PendingUserRemove(pendingUser);
+        PendingUserTableRemove(pendingUser);
         void *ret = realloc(user, sizeof(OnlineUser));
         if (!ret)//无法重新分配内存,状态切换失败
         {   //为保护服务器,直接删除状态错误的用户
@@ -353,62 +361,59 @@ POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUser
         JobManagerKick(user);
         user = ret;
         EpollModify(user);
+        char path[30];
+        uint8_t userDirSize;
+        UserGetDir(path, uid, "");
+        userDirSize = (uint8_t) strlen(path);
+        struct stat buf;
+        if (stat(path, &buf) || !S_ISDIR(buf.st_mode))
+        {
+            UserCreateDirectory(uid);
+        }
+        POnlineUserInfo info = (POnlineUserInfo) calloc(1, sizeof(OnlineUser));
+        if (info == NULL)
+        {
+            return 0;
+        }
+        info->uid = uid;
+        info->userDir = (char *) malloc(userDirSize + 1);
+        if (info->userDir == NULL)
+        {
+            free(info);
+            return 0;
+        }
+        memcpy(info->userDir, path, userDirSize);
+        info->userDir[userDirSize] = 0;
+
+        info->friends = UserFriendsGet(uid, &info->friendsLock, -1);
         user->info = info;
         bzero(&user->operations, sizeof(UserOperationTable));
         //初始化用户操作锁
         pthread_mutex_init(&user->operations.lock, NULL);
-        user->status = OUS_ONLINE;
-        broadcastNotify(user, FNT_FRIEND_ONLINE);
+        user->state = OUS_ONLINE;
+        UserBroadcastNotify(user, FNT_FRIEND_ONLINE);
         return OnlineUserTableSet(info->uid, user);
     }
-    else if (user->status == OUS_ONLINE && status == OUS_PENDING_CLEAN)
+    else if (user->state == OUS_ONLINE && state == OUS_PENDING_CLEAN)
     {
         OnlineUserTableSet(user->info->uid, NULL);
         EpollRemove(user);
         JobManagerKick(user);
-        broadcastNotify(user, FNT_FRIEND_OFFLINE);
+        if (user->info->status != UOS_HIDDEN)
+        {
+            UserBroadcastNotify(user, FNT_FRIEND_OFFLINE);
+        }
     }
-    else if (status == OUS_PENDING_CLEAN)
+    else if (state == OUS_PENDING_CLEAN)
     {
-        user->status = OUS_PENDING_CLEAN;
+        user->state = OUS_PENDING_CLEAN;
     }
     else
     {
-        log_warning("UserManager", "Illegal status set. Orginal %d,New %d.\n", user->status, status);
+        log_warning("UserManager", "Illegal state set. Orginal %d,New %d.\n", user->state, state);
         abort();
     }
     return user;
-}
-
-
-POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid)
-{
-    char path[30];
-    uint8_t userDirSize;
-    UserGetDir(path, uid, "");
-    userDirSize = (uint8_t) strlen(path);
-    struct stat buf;
-    if (stat(path, &buf) || !S_ISDIR(buf.st_mode))
-    {
-        UserCreateDirectory(uid);
-    }
-    POnlineUserInfo info = (POnlineUserInfo) calloc(1, sizeof(OnlineUser));
-    if (info == NULL)
-    {
-        return 0;
-    }
-    info->uid = uid;
-    info->userDir = (char *) malloc(userDirSize + 1);
-    if (info->userDir == NULL)
-    {
-        free(info);
-        return 0;
-    }
-    memcpy(info->userDir, path, userDirSize);
-    info->userDir[userDirSize] = 0;
-
-    info->friends = UserFriendsGet(uid, &info->friendsLock, -1);
-    return UserSetStatus((POnlineUser) user, OUS_ONLINE, info);
 }
 
 PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data)
@@ -597,10 +602,17 @@ void PostMessage(UserMessage *message)
     if (toUser != NULL)
     {
         log_info("PostMessager", "Post message from %u to %u\n", message->from, message->to);
-        CRPMessageNormalSend(toUser->sockfd, 0, (USER_MESSAGE_TYPE) message->messageType, message->from, message->messageLen, message->content);
+        CRPMessageNormalSend(toUser->crp,
+                             0,
+                             (USER_MESSAGE_TYPE) message->messageType,
+                             message->from,
+                             message->messageLen,
+                             message->content);
         UserDrop(toUser);
-    } else
+    }
+    else
     {
         log_info("PostMessager", "Post offline message from %u to %u\n", message->from, message->to);
     }
+
 }

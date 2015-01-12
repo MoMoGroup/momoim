@@ -12,6 +12,7 @@ SET(SERVER_SOURCE_FILE
     run/user.c
     run/worker.c
     run/natTraversal.c
+    run/gc.c
 
     datafile/init.c
     datafile/auth.c
@@ -36,6 +37,7 @@ SET(SERVER_SOURCE_FILE
 
     packets/info/Request.c
     packets/info/Data.c
+    packets/info/StatusChange.c
 
     packets/friend/Request.c
     packets/friend/SearchByNickname.c

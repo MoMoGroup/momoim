@@ -27,7 +27,7 @@ void EpollAdd(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll_add");
     }
@@ -39,7 +39,7 @@ void EpollModify(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll modify");
     }
@@ -47,7 +47,7 @@ void EpollModify(POnlineUser user)
 
 void EpollRemove(POnlineUser user)
 {
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd->fd, NULL))
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->crp->fd, NULL))
     {
         if (errno != ENOENT)//如果fd已经移除,不要报错
             perror("epoll_remove");
@@ -68,7 +68,7 @@ void *ListenMain(void *listenSocket)
     }
     struct sockaddr_in addr = {
             .sin_family = AF_INET,
-            .sin_port = htons(LISTEN_PORT),
+            .sin_port = htons(CONFIG_LISTEN_PORT),
             .sin_addr.s_addr = htons(INADDR_ANY)
     };
 
@@ -96,6 +96,7 @@ void *ListenMain(void *listenSocket)
         close(sockIdx);
         return NULL;
     }
+    addr.sin_port = htons(CONFIG_HOST_DISCOVER_PORT);
     if (-1 == bind(sockIdx, (struct sockaddr *) &addr, sizeof addr))
     {
         perror("bind");
@@ -104,7 +105,7 @@ void *ListenMain(void *listenSocket)
         return NULL;
     }
 
-    if (-1 == listen(sockListener, LISTENER_BACKLOG))
+    if (-1 == listen(sockListener, CONFIG_LISTENER_BACKLOG))
     {
         perror("listen");
         close(sockListener);
@@ -131,8 +132,8 @@ void *ListenMain(void *listenSocket)
             return NULL;
         }
     }
-    log_info("Listener", "Listenning on TCP %d\n", LISTEN_PORT);
-    log_info("Listener", "NAT Traversal Server Recving on UDP %d\n", LISTEN_PORT);
+    log_info("Listener", "Main Listenning on TCP %d\n", CONFIG_LISTEN_PORT);
+    log_info("Listener", "Host Discover on UDP %d\n", CONFIG_HOST_DISCOVER_PORT);
 
     ServerIOPool = epoll_create1(EPOLL_CLOEXEC);    //创建epoll,在服务端fork时关闭
     {
@@ -147,16 +148,16 @@ void *ListenMain(void *listenSocket)
         epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);//P2P索引SOCKET
     }
 
-    struct epoll_event *events = calloc(EPOLL_BACKLOG, sizeof(struct epoll_event));
+    struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
     char keyBuffer[32];
     struct sockaddr_in idxSock;
     socklen_t addrLen;
     while (IsServerRunning)
     {
-        int n = epoll_wait(ServerIOPool, events, EPOLL_BACKLOG, -1);
+        int n = epoll_wait(ServerIOPool, events, CONFIG_EPOLL_QUEUE, -1);
         if (n == -1)
         {
-            log_warning("Listener", "epoll_wait failure.%s\n", strerror(errno));
+            log_warning("Listener", "epoll_wait failure.\n");
             continue;
         }
         for (int i = 0; i < n; i++)
@@ -170,7 +171,8 @@ void *ListenMain(void *listenSocket)
                     fd = accept(sockListener, (struct sockaddr *) &addr, &addr_len);  //尝试接受一个客户端
                     if (-1 == fd)
                     {
-                        if (errno == EWOULDBLOCK)   //如果已经没有客户端可接受了
+
+                        if (errno == EWOULDBLOCK)   //如果已经没有客户端可Accept了
                         {
                             break;//退出循环,执行下一个事件
                         }

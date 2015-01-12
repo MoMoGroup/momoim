@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sqlite3.h>
+#include <imcommon/friends.h>
 
 #include "datafile/user.h"
 
@@ -53,7 +54,7 @@ void UserCreateDirectory(uint32_t uid)
         return;
     }
 
-    sprintf(userDir, "user/%02d/%d", uid % 100, uid / 100);
+    sprintf(userDir + 7, "/%d", uid / 100);
     if (mkdir(userDir, 0700) != 0 && errno != EEXIST)
     {
         log_error("User", "Cannot create directory %s\n", userDir);
@@ -91,6 +92,7 @@ void UserInfoCreate(uint32_t uid)
                     [15]=1
             }
     };
+    time(&info.lastlogout);
     UserInfoSave(uid, &info);
 }
 

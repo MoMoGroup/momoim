@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <aio.h>
 #include <protocol.h>
+#include <imcommon/user.h>
 
 #include "Structures.h"
 #include "run/worker.h"
@@ -18,7 +19,7 @@ typedef enum
 
     OUS_ONLINE = 0x10,
     OUS_PENDING_CLEAN
-} OnlineUserStatus;
+} OnlineUserState;
 typedef enum
 {
     CUOT_FILE_REQUEST,
@@ -83,6 +84,8 @@ struct structOnlineUserInfo
 {
     uint32_t uid;
     char *userDir;
+    time_t loginTime;
+    UserOnlineStatus status;
     UserFriends *friends;
     pthread_rwlock_t *friendsLock;
 };
@@ -91,9 +94,10 @@ struct structOnlineUserInfo
 struct structOnlineUser
 {
     //与待登陆用户数据保持一致
-    CRPContext sockfd;
-    volatile OnlineUserStatus status;
+    CRPContext crp;
+    volatile OnlineUserState state;
     pthread_rwlock_t *holdLock;
+    time_t lastUpdateTime;
 
     //该状态私有数据
     POnlineUserInfo info;
@@ -103,8 +107,9 @@ struct structOnlineUser
 struct structPendingUser
 {
     CRPContext sockfd;
-    volatile OnlineUserStatus status;
+    volatile OnlineUserState state;
     pthread_rwlock_t *holdLock;
+    time_t lastUpdateTime;
 
     //待登陆私有数据Online
     struct structPendingUser *prev, *next;
@@ -129,6 +134,8 @@ int ProcessUser(POnlineUser user, CRPBaseHeader *packet);
 //投递消息
 void PostMessage(UserMessage *message);
 
+void UserBroadcastNotify(POnlineUser user, FriendNotifyType type);
+
 //保持用户.
 int UserHold(POnlineUser user);
 
@@ -144,14 +151,11 @@ int PendingUserDelete(PPendingUser);
 int OnlineUserDelete(POnlineUser user);
 
 //设置用户状态
-POnlineUser UserSetStatus(POnlineUser user, OnlineUserStatus status, POnlineUserInfo info);
+//该函数作用包括切换用户状态,更改存储位置,初始化状态参数.删除状态参数,状态更变通知
+POnlineUser UserSetStatus(POnlineUser user, OnlineUserState state, uint32_t uid);
 
 //通过uid查找用户
 POnlineUser OnlineUserGet(uint32_t uid);
-
-//通过创建一个用户在线信息字段.
-//该字段用于加速对在线用户数据的操作.
-POnlineUser UserSwitchToOnline(PPendingUser user, uint32_t uid);
 
 //注册一个可取消用户操作
 PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data) __attribute_malloc__;

@@ -36,7 +36,6 @@ extern int MessageLoopFunc();
 extern void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *), void *data);
 
 extern void DeleteMessageNode(uint32_t sessid);
-
 //extern UserFriends *friends;
 
 struct RECVImageMessagedata
