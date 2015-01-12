@@ -67,7 +67,7 @@ GtkTreeModel *createModel()
         gtk_tree_store_set(TreeViewListStore, &iter1,
                 PIXBUF_COL, pixbuf,
                 FRIENDUID_COL, (uint32_t) friends->groups[i].groupId,
-                PRIORITY_COL, (int64_t) 0,
+                PRIORITY_COL, (int64_t) -i,
                 -1);
 
         g_object_unref(pixbuf);
@@ -114,7 +114,7 @@ GtkTreeModel *createModel()
             gtk_tree_store_set(TreeViewListStore, &iter2,
                     PIXBUF_COL, pixbuf,
                     FRIENDUID_COL, friends->groups[i].friends[j],
-                    PRIORITY_COL, priority
+                    PRIORITY_COL, priority,
                             - 1);
             g_object_unref(pixbuf);
 
@@ -789,6 +789,7 @@ int MainInterFace()
     GtkWidget *menu1, *menu2;
     GtkWidget *add;
     GtkWidget *delete;
+    GtkWidget *rename;
     GtkWidget *addpeople;
     GtkWidget *Refresh;
     GtkWidget *sendmsg;
@@ -804,6 +805,10 @@ int MainInterFace()
     delete = gtk_menu_item_new_with_mnemonic("删除分组");
     gtk_container_add(GTK_CONTAINER(menu1), delete);
     gtk_widget_show(delete);
+    rename = gtk_menu_item_new_with_mnemonic("重命名分组");
+    gtk_container_add(GTK_CONTAINER(menu1), rename);
+    gtk_widget_show(rename);
+
     addpeople = gtk_menu_item_new_with_mnemonic("添加联系人");
     gtk_container_add(GTK_CONTAINER(menu1), addpeople);
     gtk_widget_show(addpeople);
@@ -820,6 +825,9 @@ int MainInterFace()
     //删除分组事件
     g_signal_connect(G_OBJECT(delete), "button_press_event",
                      G_CALLBACK(DeleteGroupButtonPressEvent), treeView);
+    //重命名分组事件
+    g_signal_connect(G_OBJECT(rename), "button_press_event",
+                     G_CALLBACK(RenameGroupButtonPressEvent), treeView);
     //添加好友
     g_signal_connect(G_OBJECT(addpeople), "button_release_event",
                      G_CALLBACK(search_button_release_event), treeView);
