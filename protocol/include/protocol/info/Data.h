@@ -2,14 +2,13 @@
 
 #include <protocol/base.h>
 #include <stdint.h>
-#include <imcommon/friends.h>
+#include <imcommon/user.h>
 
 /**
 * 服务端回复用户资料
 */
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     UserInfo info;
     int isOnline;
 } CRPPacketInfoData;

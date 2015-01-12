@@ -11,20 +11,17 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
     PUserOperation op = UserOperationGet(user, session);
     if (!op)
     {
-        CRPFailureSend(user->sockfd, session, ENOENT, "操作未找到");
+        CRPFailureSend(user->crp, session, ENOENT, "操作未找到");
     }
-    else
-    {
+    else {
         PUserOperationFileStore fop = (PUserOperationFileStore) op->data;
         close(fop->fd);
         fop->fd = -1;
-        if (fop->remainLength != 0)
-        {
+        if (fop->remainLength != 0) {
             unlink(fop->tmpfile);
-            CRPFailureSend(user->sockfd, session, EBADF, "文件未结束");
+            CRPFailureSend(user->crp, session, EBADF, "文件未结束");
         }
-        else
-        {
+        else {
             size_t len = DataFilePathLength;
             char *path = (char *) malloc(len);
             DataFilePath(fop->key, path);
@@ -32,11 +29,11 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
             if (rename(fop->tmpfile, path) != 0)//FEATURE 文件移动失败,可能目标不在同一文件系统.需要进行复制.
             {
                 unlink(fop->tmpfile);
-                CRPFailureSend(user->sockfd, session, EFAULT, "文件移动失败\n");
+                CRPFailureSend(user->crp, session, EFAULT, "文件移动失败\n");
             }
             else
             {
-                CRPOKSend(user->sockfd, session);
+                CRPOKSend(user->crp, session);
             }
             free(path);
         }

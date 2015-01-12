@@ -4,8 +4,7 @@
 #include <stdint.h>
 #include "imcommon/message.h"
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
 } CRPPacketMessageQueryOffline;
 
 __attribute_malloc__

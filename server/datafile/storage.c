@@ -15,12 +15,10 @@ int DataFilePath(unsigned char *key, char *buf)
     memcpy(buf, DATA_FILE_ROOT_PATH, sizeof(DATA_FILE_ROOT_PATH) - 1);
     char *p = buf + sizeof(DATA_FILE_ROOT_PATH) - 1;
     int i;
-    for (i = 0; i < 16; ++i)
-    {
+    for (i = 0; i < 16; ++i) {
         *p++ = (char) ((key[i] >> 4) > 9 ? 'a' + ((key[i] >> 4) - 10) : '0' + (key[i] >> 4));
         *p++ = (char) ((key[i] & 0xf) > 9 ? 'a' + ((key[i] & 0xf) - 10) : '0' + (key[i] & 0xf));
-        if (i < DATAFILE_DEPTH_LEVEL)
-        {
+        if (i < DATAFILE_DEPTH_LEVEL) {
             *p++ = '/';
             *p = 0;
             mkdir(buf, 0700);

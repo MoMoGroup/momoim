@@ -7,8 +7,7 @@
 * 请求服务器数据
 */
 
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     size_t seq;
 } CRPPacketFileReset;
 

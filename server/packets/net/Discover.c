@@ -28,7 +28,7 @@ static void DiscoverDetected(struct sockaddr_in *addr, void *data)
     POnlineUser user = OnlineUserGet(discoverOperation->uid);
     if (user)
     {
-        CRPNATDetectedSend(user->sockfd, discoverOperation->session, addr);
+        CRPNATDetectedSend(user->crp, discoverOperation->session, addr);
         UserDrop(user);
     }
     free(discoverOperation);
@@ -38,7 +38,7 @@ static void DiscoverDetected(struct sockaddr_in *addr, void *data)
 
 int ProcessPacketNatDiscover(POnlineUser user, uint32_t session, CRPPacketNATDiscover *packet)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
     {
         DiscoverOperation *discoverOperation = (DiscoverOperation *) malloc(sizeof(DiscoverOperation));
         discoverOperation->uid = user->info->uid;
@@ -47,11 +47,11 @@ int ProcessPacketNatDiscover(POnlineUser user, uint32_t session, CRPPacketNATDis
         PUserOperation operation = UserOperationRegister(user, session, CUOT_NAT_DISCOVER, discoverOperation);
         operation->onCancel = DiscoverCancelHandler;
         UserOperationDrop(user, operation);
-        CRPOKSend(user->sockfd, session);
+        CRPOKSend(user->crp, session);
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

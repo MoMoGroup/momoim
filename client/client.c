@@ -24,8 +24,9 @@ typedef struct cunchu {
 };
 struct cunchu str_cunchu[20];
 FILE *passwdfp;
-int flag_username = 0, flag_cunchu = 0;
-int flag_remember = 0;
+int flag_cunchu = 0;
+int FlagRemember = 0;
+int FirstPwd = 0;
 char mulu_username[80] = "", mulu_benji[80] = "";
 GtkStyleContext *combostyle;
 GtkStyleProvider *comboprovider;
@@ -43,18 +44,14 @@ void open_setting_file(FILE *fp)
     UserWordInfo.codinglen = fread(UserWordInfo.coding_font_color, 1, 500, fp);
     UserWordInfo.description = pango_font_description_new();
     gchar *ptext = UserWordInfo.coding_font_color, *ptext_end = UserWordInfo.coding_font_color + UserWordInfo.codinglen;
-    while (ptext < ptext_end)
-    {
-        if (*ptext == '\0')
-        {
-            switch (*(ptext + 1))
-            {
+    while (ptext < ptext_end) {
+        if (*ptext == '\0') {
+            switch (*(ptext + 1)) {
                 case  1:      //字体类型
                 {
                     int i;
 
-                    for (i = 2; ptext[i]; ++i)
-                    {
+                    for (i = 2; ptext[i]; ++i) {
 
                     }
                     UserWordInfo.font = (gchar *) malloc(50);
@@ -69,8 +66,7 @@ void open_setting_file(FILE *fp)
                 {
                     ptext = ptext + 2;
                     int style_value = *ptext;
-                    if (style_value == 1)
-                    {
+                    if (style_value == 1) {
                         pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_ITALIC);
                         UserWordInfo.style = PANGO_STYLE_ITALIC;
                     }
@@ -89,8 +85,7 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 2;
                     break;
                 };
-                case 4:
-                {
+                case 4: {
                     ptext = ptext + 2;
                     gint size_value;
                     size_value = *ptext;
@@ -99,8 +94,7 @@ void open_setting_file(FILE *fp)
                     ptext++;
                     break;
                 };
-                case 5:
-                {
+                case 5: {
                     ptext = ptext + 2;
 
                     memcpy(&UserWordInfo.color_red, ptext, 2);
@@ -113,8 +107,7 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 6;
                     break;
                 }
-                default:
-                {
+                default: {
                     pango_font_description_free(UserWordInfo.description);
                     break;
                 }
@@ -122,20 +115,19 @@ void open_setting_file(FILE *fp)
         }
     }
 }
+
 gboolean mythread(gpointer user_data)//合并
 {
     gtk_widget_destroy(window);
     FILE *fp;
     char wordfile[256];
     sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
-    if ((fp = fopen(wordfile, "r")) != NULL)
-    {
+    if ((fp = fopen(wordfile, "r")) != NULL) {
         open_setting_file(fp);
 
     }
 
-    else
-    {
+    else {
         UserWordInfo.font = (gchar *) malloc(50);
         UserWordInfo.description = pango_font_description_new();
         pango_font_description_set_family(UserWordInfo.description, "Sans");
@@ -157,9 +149,9 @@ gboolean mythread(gpointer user_data)//合并
 
 gboolean DestroyLayout(gpointer user_data)
 {
+    popup("莫默告诉你：", user_data);
     gtk_widget_hide(pendingLayout);
     gtk_widget_show_all(loginLayout);
-    popup("莫默告诉你：", user_data);
     free(user_data);
     return FALSE;
 }
@@ -168,26 +160,26 @@ gboolean DestroyLayout(gpointer user_data)
 static void
 create_surfaces1()
 {
-    sbackground = cairo_image_surface_create_from_png("背景2.png");
-    ssun = gtk_image_new_from_file("1.gif");
-    sheadimage = cairo_image_surface_create_from_png("头像.png");
-    swhite = cairo_image_surface_create_from_png("白色.png");
-    slandbut1 = cairo_image_surface_create_from_png("登陆按钮.png");
-    slandbut2 = cairo_image_surface_create_from_png("登陆按钮2.png");
-    slandbut3 = cairo_image_surface_create_from_png("登陆按钮3.png");
-    saccount = cairo_image_surface_create_from_png("账号.png");
-    spasswd = cairo_image_surface_create_from_png("密码.png");
-    sregistered1 = cairo_image_surface_create_from_png("注册账号.png");
-    sregistered2 = cairo_image_surface_create_from_png("注册账号2.png");
-    sclosebut1 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    sclosebut2 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    sclosebut3 = cairo_image_surface_create_from_png("关闭按钮3.png");
-    slandimage = cairo_image_surface_create_from_png("登录.png");
-    scancel10_1 = cairo_image_surface_create_from_png("取消1.png");
-    scancel10_2 = cairo_image_surface_create_from_png("取消2.png");
-    scancel10_3 = cairo_image_surface_create_from_png("取消3.png");
-    sremember1 = cairo_image_surface_create_from_png("记住密码1.png");
-    sremember2 = cairo_image_surface_create_from_png("记住密码2.png");
+    ssun = ChangeThem_file("1.gif");
+    sbackground = ChangeThem_png("背景2.png");
+    sheadimage = ChangeThem_png("头像.png");
+    swhite = ChangeThem_png("白色.png");
+    slandbut1 = ChangeThem_png("登陆按钮.png");
+    slandbut2 = ChangeThem_png("登陆按钮2.png");
+    slandbut3 = ChangeThem_png("登陆按钮3.png");
+    saccount = ChangeThem_png("账号.png");
+    spasswd = ChangeThem_png("密码.png");
+    sregistered1 = ChangeThem_png("注册账号.png");
+    sregistered2 = ChangeThem_png("注册账号2.png");
+    sclosebut1 = ChangeThem_png("关闭按钮1.png");
+    sclosebut2 = ChangeThem_png("关闭按钮2.png");
+    sclosebut3 = ChangeThem_png("关闭按钮3.png");
+    slandimage = ChangeThem_png("登录.png");
+    scancel10_1 = ChangeThem_png("取消1.png");
+    scancel10_2 = ChangeThem_png("取消2.png");
+    scancel10_3 = ChangeThem_png("取消3.png");
+    sremember1 = ChangeThem_png("记住密码1.png");
+    sremember2 = ChangeThem_png("记住密码2.png");
 }
 
 static void
@@ -231,8 +223,18 @@ void *sendhello(void *M)
 void on_button_clicked()
 {
 //获取登录名和密码
-    name = gtk_combo_box_text_get_active_text(username);
-    pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
+    if (FirstPwd == 0) {
+        name = gtk_combo_box_text_get_active_text(username);
+        pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
+    }
+    else {
+        char hash[16];
+        name = gtk_combo_box_text_get_active_text(username);
+        pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
+        MD5((unsigned char *) pwd, strlen(pwd), hash);//加密存储
+        strncpy(pwd, hash, 16);
+    }
+
 
 //判断输入
     if ((strlen(name) != 0) && (strlen(pwd) != 0)) {
@@ -275,31 +277,79 @@ void on_button_clicked()
 static gint combo_change_event()
 {
     int i;
-    flag_remember = 0;
+    FlagRemember = 0;
     gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换不记住图片
     gtk_test_text_set(passwd, "");
     name = gtk_combo_box_text_get_active_text(username);
-    // pwd= gtk_entry_get_text(GTK_ENTRY(passwd));
-    //   gtk_test_text_set(passwd, "");
+
     if (strcmp(name, "") != 0) {
         for (i = 0; i < flag_cunchu; ++i) //若账号名本地有则相应取出密码
         {
             if (strcmp(name, str_cunchu[i].cunchu_name) == 0) {
                 gtk_test_text_set(passwd, str_cunchu[i].cunchu_pwd);
-                flag_username = 1;
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//显示记住密码
-                flag_remember = 1;
-
+                FlagRemember = 1;
             }
         }
     }
     else {
         gtk_test_text_set(passwd, "");
-        flag_remember = 0;
+        FlagRemember = 0;
         gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);
     }
 
     return 0;
+}
+
+//密码修改触发
+static gint passwd_change_event()
+{
+    if (FlagRemember == 1)//保存过的密码修改
+    {
+        int i;
+        FlagRemember = 0;
+        gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);
+
+        //删除原有账号信息
+        for (i = 0; i < flag_cunchu; ++i) {
+            if (strcmp(name, str_cunchu[i].cunchu_name) == 0)//在数组中查找
+            {
+                int fd = open(mulu_username, O_RDWR);
+                if (fd == -1) {
+                    log_error("User", "Cannot read user friends file %s.\n", mulu_username);
+                    break;
+                }
+                lseek(fd, 0, SEEK_SET);
+                struct stat statBuf;
+                if (fstat(fd, &statBuf))
+                    break;
+                size_t len = (size_t) statBuf.st_size, cpLen;
+                char *addr = (char *) malloc(len);
+                read(fd, addr, len);
+                char *p = addr + 56 * i, *pLine = addr + 56 * (i + 1);
+                while (pLine < addr + len)
+                    *p++ = *pLine++;
+                lseek(fd, 0, SEEK_SET);
+                write(fd, addr, p - addr);
+                ftruncate(fd, p - addr);
+                close(fd);
+                free(addr);
+
+                //重新加载下拉框
+                memcpy(str_cunchu, "", sizeof(str_cunchu));
+                gtk_combo_box_text_remove_all(username);//清空原有下拉框内容
+                if ((passwdfp = fopen(mulu_username, "r")) != NULL) {
+                    int i = 0;
+                    while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20)) {
+                        gtk_combo_box_text_append(username, NULL, str_cunchu[i].cunchu_name);
+                        ++i;
+                    }
+                    flag_cunchu = i;
+                    fclose(passwdfp);
+                }
+            }
+        }
+    }
 }
 
 //背景
@@ -410,7 +460,6 @@ static gint registered_leave_notify_event(GtkWidget *widget, GdkEventButton *eve
     return 0;
 }
 
-
 static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event,
         gpointer data)
 {
@@ -423,14 +472,13 @@ static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event
 }
 
 // 鼠标抬起事件
-static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event,
-        gpointer data)
+static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
         gtk_image_set_from_surface((GtkImage *) imageclosebut, sclosebut1);  //设置关闭按钮
 
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+        //gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
 
         DeleteEvent();
     }
@@ -503,34 +551,28 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
 {
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
-        char hash[16];
-        if (flag_remember == 0) {
+        if (FlagRemember == 0) {
             name = gtk_combo_box_text_get_active_text(username);
             pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
-            gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//置换记住图标
-            flag_remember = 1;//置换标志
-
-            if ((strcmp(name, "") != 0) && (strcmp(pwd, "") != 0)) //不为空则写入
+            if ((strcmp(name, "") != 0) && (strcmp(pwd, "") != 0)) //不为空
             {
-
-                passwdfp = fopen(mulu_username, "a+");
-                fwrite(name, 1, 40, passwdfp);
-                MD5((unsigned char *) pwd, strlen(pwd), hash);//加密存储
-                fwrite(hash, 1, 16, passwdfp);
-                gtk_test_text_set(passwd, hash);//加密后的密码写入密码框
-                fclose(passwdfp);
+//                MD5((unsigned char *) pwd, strlen(pwd), hash);//加密存储
+//                gtk_test_text_set(passwd, hash);//加密后的密码写入密码框
+                FirstPwd = 1;
+                gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//置换记住图标
+                FlagRemember = 1;//置换标志
             }
             else {
-                popup("莫默告诉你", "请输入完整账号信息");
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换取消记住图标
-                flag_remember = 0;
+                FlagRemember = 0;
+                popup("莫默告诉你", "请输入完整账号信息");
             }
         }
         else {
             //删除账号
             int i;
             gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换取消记住图标
-            flag_remember = 0;
+            FlagRemember = 0;
 
             //从文件中删除信息
             for (i = 0; i < flag_cunchu; ++i) {
@@ -569,7 +611,6 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                         flag_cunchu = i;
                         fclose(passwdfp);
                     }
-
                 }
             }
             gtk_test_text_set(passwd, "");
@@ -606,6 +647,7 @@ gboolean destoryall(gpointer user_data)
         }
         free(p);
     }
+
     pthread_cancel(ThreadKeepAlive);
     g_idle_add(loadloginLayout, NULL);
     popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
@@ -630,6 +672,7 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);   // 去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(window), 283, 411);
 
+    iwait = ChangeThem_file("等待.gif");
     imagebackground = gtk_image_new_from_surface(sbackground);
     imagehead = gtk_image_new_from_surface(sheadimage);
     imagewhite = gtk_image_new_from_surface(swhite);
@@ -638,7 +681,6 @@ gboolean loadloginLayout(gpointer user_data)
     imagepasswd = gtk_image_new_from_surface(spasswd);
     imageregistered = gtk_image_new_from_surface(sregistered1);
     imageclosebut = gtk_image_new_from_surface(sclosebut1);
-    iwait = gtk_image_new_from_file("等待.gif");
     imainland = gtk_image_new_from_surface(slandimage);
     imagecancel = gtk_image_new_from_surface(scancel10_1);
     imageremember = gtk_image_new_from_surface(sremember1);
@@ -653,7 +695,8 @@ gboolean loadloginLayout(gpointer user_data)
             G_CALLBACK(background_button_press_event),
             NULL, NULL, NULL, NULL, NULL);
 
-    waitevent_box = BuildEventBox(iwait,
+    waitevent_box = BuildEventBox(
+            iwait,
             G_CALLBACK(wait_button_press_event),
             NULL, NULL, NULL, NULL, NULL);
 
@@ -719,7 +762,8 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_entry_set_visibility(GTK_ENTRY(passwd), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd), '*');
 
-    g_signal_connect(username, "changed", G_CALLBACK(combo_change_event), NULL);
+    g_signal_connect(username, "changed", G_CALLBACK(combo_change_event), NULL);//账号修改触发
+    g_signal_connect(passwd, "changed", G_CALLBACK(passwd_change_event), NULL);//密码修改触发
 
 //从本地读取账号记录
     sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录

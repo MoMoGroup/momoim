@@ -4,8 +4,7 @@
 /**
 * 客户端会话被取消
 */
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
     char reason[0];
 } CRPPacketKick;
 

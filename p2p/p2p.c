@@ -11,8 +11,7 @@ void P2PFinal()
 
 void *listenerStart(void *data)
 {
-    while (sockThread)
-    {
+    while (sockThread) {
 
     }
     pthread_exit(NULL);

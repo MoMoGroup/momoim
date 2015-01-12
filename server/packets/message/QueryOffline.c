@@ -7,17 +7,17 @@
 
 int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPacketMessageQueryOffline *packet)
 {
-    if (user->status == OUS_ONLINE)
+    if (user->state == OUS_ONLINE)
     {
         MessageFile *file = UserMessageFileGet(user->info->uid);
         UserInfo *info = UserInfoGet(user->info->uid);
         if (MessageFileSeek(file, (uint32_t) (info->lastlogout / (24 * 60 * 60))))
         {
-            CRPOKSend(user->sockfd, session);
+            CRPOKSend(user->crp, session);
         }
         else
         {
-            CRPFailureSend(user->sockfd, session, EFAULT, "无法找到下线时间.");
+            CRPFailureSend(user->crp, session, EFAULT, "无法找到下线时间.");
         }
         UserInfoFree(info);
         UserMessage *msg;
@@ -25,7 +25,7 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
         {
             if (msg->time >= info->lastlogout)
             {
-                if (!CRPMessageNormalSend(user->sockfd, 0, msg->messageType, msg->from, msg->messageLen, msg->content))
+                if (!CRPMessageNormalSend(user->crp, 0, msg->messageType, msg->from, msg->messageLen, msg->content))
                 {
                     break;
                 }
@@ -37,7 +37,7 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
     }
     else
     {
-        CRPFailureSend(user->sockfd, session, EACCES, "状态错误");
+        CRPFailureSend(user->crp, session, EACCES, "状态错误");
     }
     return 1;
 }

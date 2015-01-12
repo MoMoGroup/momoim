@@ -14,7 +14,6 @@
 #include <sys/stat.h>
 #include <cairo-script-interpreter.h>
 #include <imcommon/friends.h>
-
 #include "chartmessage.h"
 
 //解码
@@ -28,18 +27,14 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
     show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     wordtag = gtk_text_buffer_create_tag(show_buffer, NULL, NULL, NULL);
-    while (ptext < ptext_end)
-    {
-        if (*ptext == '\0')
-        {
-            switch (*(ptext + 1))
-            {
+    while (ptext < ptext_end) {
+        if (*ptext == '\0') {
+            switch (*(ptext + 1)) {
                 case  1:      //字体类型
                 {
                     int i;
 
-                    for (i = 2; ptext[i]; ++i)
-                    {
+                    for (i = 2; ptext[i]; ++i) {
 
                     }
                     g_object_set(wordtag, "font", ptext + 2, NULL);
@@ -52,8 +47,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
                 {
                     ptext = ptext + 2;
                     int style_value = *ptext;
-                    if (style_value == 1)
-                    {
+                    if (style_value == 1) {
                         g_object_set(wordtag, "style", PANGO_STYLE_ITALIC, NULL);
                     }
                     ptext++;
@@ -78,8 +72,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
                     ptext++;
                     break;
                 };
-                case 5:
-                {
+                case 5: {
                     ptext = ptext + 2;
                     guint16 colorred;
                     guint16 colorgreen;
@@ -102,8 +95,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
                     ptext = ptext + 6;
                     break;
                 }
-                case 0:
-                {
+                case 0: {
                     GtkTextChildAnchor *anchor;
                     GtkWidget *image;
                     char filename[256] = {0};
@@ -124,8 +116,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
 
 
         }
-        else
-        {
+        else {
             gchar *next_char = g_utf8_next_char(ptext);
             gtk_text_buffer_insert_with_tags(show_buffer, &end, ptext, next_char - ptext, wordtag, NULL);
             ptext = next_char;
@@ -133,9 +124,9 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
 
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-                                             "\n", -1, "gray_foreground", NULL);
+            "\n", -1, "gray_foreground", NULL);
     gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW (info->show_text),
-                                       gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
+            gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
 }
 
 //将输入的文本框输出在显示的文本框中
@@ -144,7 +135,7 @@ void show_local_text(const gchar *text, FriendInfo *info, char *nicheng_times, i
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
-                                             nicheng_times, -1, "red_foreground", "size1", NULL);
+            nicheng_times, -1, "red_foreground", "size1", NULL);
     DecodingText(text, info, count); //解码
 
 }
@@ -160,11 +151,11 @@ void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
-    sprintf(nicheng_times, " %s  %d: %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
+    sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
-                                             nicheng_times, -1, "blue_foreground", "size1", NULL);
+            nicheng_times, -1, "blue_foreground", "size1", NULL);
     DecodingText(rcvd_text, info, len); //解码
 
 }
@@ -218,7 +209,120 @@ void CodingWordColor(FriendInfo *info, gchar *coding, int *count)
 }
 
 
-//编码
+gboolean progress_bar_crcle(void *data)
+{
+    struct PictureMessageFileUploadingData *bar_crcle = (struct PictureMessageFileUploadingData *) data;
+
+    if (bar_crcle->file_loading_end == 0)
+    {
+        gdouble pvalue;
+        pvalue = (gdouble) bar_crcle->file_count / (gdouble) bar_crcle->file_size;
+        log_info("Progress", "%lf\n", pvalue);
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar_crcle->progressbar), pvalue);
+        return 1;
+    }
+    else
+    {
+        gtk_widget_destroy(bar_crcle->file);
+        gtk_widget_destroy(bar_crcle->progressbar);
+        free(bar_crcle);
+        return 0;
+    }
+
+}
+
+int deal_with_file(CRPBaseHeader *header, void *data)
+{
+    struct PictureMessageFileUploadingData *file_message = (struct PictureMessageFileUploadingData *) data;
+
+    size_t num;
+    int ret = 1;
+    if (header->packetID == CRP_PACKET_FAILURE)
+    {
+        CRPPacketFailure *infodata = CRPFailureCast(header);
+        log_info("FAILURE reason", infodata->reason);
+        fclose(file_message->fp);
+        free(file_message);
+        return 0;
+    }
+    log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
+
+    if (header->packetID == CRP_PACKET_OK)
+    {
+        if (file_message->file_loading_end == 0)
+        {
+            char *filedata = (char *) malloc(4096);
+            num = fread(filedata, sizeof(char), 4096, file_message->fp);
+            if (num > 0)
+            {
+                CRPFileDataSend(sockfd, header->sessionID, num, file_message->seq, filedata);
+                file_message->file_count = file_message->file_count + num;
+                file_message->seq++;
+            }
+            else
+            {
+                fclose(file_message->fp);
+                file_message->file_loading_end = 1;
+                CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
+                ret = 0;
+
+            }
+            free(filedata);
+
+        }
+        else
+        {
+            return 0;
+        }
+    }
+    else if (header->packetID == CRP_PACKET_FILE_DATA_END)
+    {
+        fclose(file_message->fp);
+        file_message->file_loading_end = 1;
+        ret = 0;
+    }
+
+    return ret;
+}
+
+
+//上传文件
+void UploadingFile(gchar *filename, FriendInfo *info)
+{
+
+    struct PictureMessageFileUploadingData *imagemessge
+            = (struct PictureMessageFileUploadingData *) malloc(sizeof(struct PictureMessageFileUploadingData));
+    gchar sendfile_size[100];
+    struct stat stat_buf;
+    PangoFontDescription *font;
+    char strdest[17] = {0};
+    session_id_t session_id;
+    Md5Coding(filename, strdest);  //获得MD5值存在strdest
+
+    imagemessge->seq = 0;
+    imagemessge->file_loading_end = 0;
+    imagemessge->fp = (fopen(filename, "r"));
+    imagemessge->file_count = 0;
+    stat(filename, &stat_buf);
+    imagemessge->file_size = stat_buf.st_size;
+    sprintf(sendfile_size, "%s \n \t大小为：%.2f M", filename, stat_buf.st_size / 1048576.0);
+    imagemessge->file = gtk_label_new(sendfile_size);
+    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
+    gtk_widget_override_font(imagemessge->file, font);
+    gtk_fixed_put(GTK_FIXED(info->chartlayout), imagemessge->file, 140, 5);
+    gtk_widget_show(imagemessge->file);                   //文件名和大小
+
+    imagemessge->progressbar = gtk_progress_bar_new();        //进度条
+    gtk_fixed_put(GTK_FIXED(info->chartlayout), imagemessge->progressbar, 170, 50);
+    gtk_widget_show(imagemessge->progressbar);
+    g_idle_add(progress_bar_crcle, imagemessge);  //用来更新进度条
+    session_id = CountSessionId();
+    AddMessageNode(session_id, deal_with_file, imagemessge);
+    CRPFileStoreRequestSend(sockfd, session_id, (size_t) stat_buf.st_size, 0, strdest);
+}
+
+//编码图片和文字
 void CodingTextImage(FriendInfo *info, gchar *coding, int *count)
 {
     gchar *char_rear = coding + *count;
@@ -231,18 +335,15 @@ void CodingTextImage(FriendInfo *info, gchar *coding, int *count)
     gtk_text_buffer_get_start_iter(info->input_buffer, &iter);
 
     //编码字符串和图片
-    while (!gtk_text_iter_is_end(&iter))
-    {
+    while (!gtk_text_iter_is_end(&iter)) {
         anchor = gtk_text_iter_get_child_anchor(&iter);
-        if (anchor == NULL)
-        {
+        if (anchor == NULL) {
 
             c = gtk_text_iter_get_char(&iter);
             num = g_unichar_to_utf8(c, char_rear);
             char_rear = char_rear + num;
         }
-        else
-        {
+        else {
             char_rear[0] = 0;
             char_rear[1] = 0;
             char_rear = char_rear + 2;
@@ -268,8 +369,7 @@ int deal_with_message(CRPBaseHeader *header, void *data)
     char *imagedata = (char *) malloc(4096);
     size_t num;
     int ret = 1;
-    if (header->packetID == CRP_PACKET_FAILURE)
-    {
+    if (header->packetID == CRP_PACKET_FAILURE) {
         CRPPacketFailure *infodata = CRPFailureCast(header);
         log_info("FAILURE reason", infodata->reason);
         fclose(photomessage->fp);
@@ -279,29 +379,24 @@ int deal_with_message(CRPBaseHeader *header, void *data)
     }
     log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
 
-    if (header->packetID == CRP_PACKET_OK)
-    {
-        if (photomessage->fp != NULL)
-        {
+    if (header->packetID == CRP_PACKET_OK) {
+        if (photomessage->fp != NULL) {
 
             num = fread(imagedata, sizeof(char), 4096, photomessage->fp);
-            if (num > 0)
-            {
+            if (num > 0) {
                 CRPFileDataSend(sockfd, header->sessionID, num, photomessage->seq, imagedata);
                 photomessage->seq++;
             }
-            else
-            {
+            else {
                 fclose(photomessage->fp);
                 CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
                 photomessage->image_message_data->imagecount--;
-                if (photomessage->image_message_data->imagecount == 0)
-                {
+                if (photomessage->image_message_data->imagecount == 0) {
                     session_id_t sessionID = CountSessionId();
                     CRPMessageNormalSend(sockfd, sessionID, UMT_TEXT,
-                                         photomessage->image_message_data->uid,
-                                         photomessage->image_message_data->charlen,
-                                         photomessage->image_message_data->message_data);
+                            photomessage->image_message_data->uid,
+                            photomessage->image_message_data->charlen,
+                            photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data);
                     ret = 0;
@@ -311,15 +406,13 @@ int deal_with_message(CRPBaseHeader *header, void *data)
 
         }
     }
-    else if (header->packetID == CRP_PACKET_FILE_DATA_END)
-    {
+    else if (header->packetID == CRP_PACKET_FILE_DATA_END) {
         fclose(photomessage->fp);
         photomessage->image_message_data->imagecount--;
-        if (photomessage->image_message_data->imagecount == 0)
-        {
+        if (photomessage->image_message_data->imagecount == 0) {
             CRPMessageNormalSend(sockfd, photomessage->image_message_data->uid, UMT_TEXT,
-                                 photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
-                                 photomessage->image_message_data->message_data);
+                    photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
+                    photomessage->image_message_data->message_data);
             free(photomessage->image_message_data->message_data);
             free(photomessage->image_message_data);
         }
@@ -342,29 +435,22 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
     image_message_data_state->message_data = char_text;
     image_message_data_state->uid = info->user.uid;
     image_message_data_state->charlen = charlen;
-    while (i < charlen)
-    {
-        if (char_text[i] != '\0')
-        {
+    while (i < charlen) {
+        if (char_text[i] != '\0') {
             i++;
         }
-        else
-        {
+        else {
 
-            switch (char_text[i + 1])
-            {
-                case 1:
-                {
+            switch (char_text[i + 1]) {
+                case 1: {
                     i++;
-                    while (char_text[i] != '\0')
-                    {
+                    while (char_text[i] != '\0') {
                         i++;
                     }
                     i++;
                     break;
                 };
-                case 2 :
-                {
+                case 2 : {
                     i += 3;
                 };
                 case 3:   //宽度
@@ -383,7 +469,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
 
                     break;
                 };
-                case 0 :
+                case 0 : //上传图片
                 {
                     isimageflag = 1;
                     char filename[256] = {0};
@@ -405,8 +491,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                     imagemessge->image_message_data->imagecount++;
                     i = i + 16;
                 };
-                default:
-                {
+                default: {
 //                        i += 2;
                     break;
                 };
@@ -416,8 +501,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
 
     }
 
-    if (isimageflag == 0)
-    {
+    if (isimageflag == 0) {
         CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, charlen, char_text);
         free(char_text);
         free(image_message_data_state);
@@ -433,19 +517,16 @@ void SendText(FriendInfo *info)
     int count = 0, cmpcount = 0;
     char_text = (gchar *) malloc(100000);
 
-    if (char_text == NULL)
-    {
+    if (char_text == NULL) {
         printf("Malloc error!\n");
         exit(1);
     }
     // CodingWordColor(info, char_text, &count); //字体编码
-    if (UserWordInfo.coding_font_color != NULL)
-    {
+    if (UserWordInfo.coding_font_color != NULL) {
         memcpy(char_text, UserWordInfo.coding_font_color, UserWordInfo.codinglen);
         count = UserWordInfo.codinglen;
     }
-    else
-    {
+    else {
         CodingWordColor(info, char_text, &count); //字体编码
     }
     cmpcount = count;

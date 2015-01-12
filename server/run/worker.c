@@ -22,7 +22,7 @@ void *WorkerMain(void *arg)
         if (!user && !IsServerRunning) {
             break;
         }
-        header = CRPRecv(user->sockfd);
+        header = CRPRecv(user->crp);
         if (header == NULL)
         {
             OnlineUserDelete(user);
@@ -30,7 +30,8 @@ void *WorkerMain(void *arg)
         }
         else
         {
-            if (user->status == OUS_ONLINE) {
+            if (user->state == OUS_ONLINE)
+            {
                 time(&user->lastUpdateTime);
             }
             log_info("Packet", "Processing %x\n", header->packetID);

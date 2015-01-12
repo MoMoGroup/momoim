@@ -11,7 +11,7 @@ int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileRese
     PUserOperation op = UserOperationGet(user, session);
     if (!op)
     {
-        CRPFailureSend(user->sockfd, session, ENOENT, "操作未找到");
+        CRPFailureSend(user->crp, session, ENOENT, "操作未找到");
     }
     else
     {
@@ -24,11 +24,11 @@ int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileRese
                 opData->aio.aio_offset = packet->seq * opData->aio.aio_nbytes;
                 if (-1 == aio_read(&opData->aio))
                 {
-                    CRPFailureSend(user->sockfd, session, EFAULT, "无法重定位失败");
+                    CRPFailureSend(user->crp, session, EFAULT, "无法重定位失败");
                 }
                 else
                 {
-                    CRPOKSend(user->sockfd, session);
+                    CRPOKSend(user->crp, session);
                 }
                 break;
             }
@@ -39,16 +39,16 @@ int ProcessPacketFileReset(POnlineUser user, uint32_t session, CRPPacketFileRese
                 ret = lseek(fop->fd, packet->seq * PAGE_SIZE, SEEK_SET);
                 if (ret)
                 {
-                    CRPFailureSend(user->sockfd, session, EINVAL, "无法重定位文件");
+                    CRPFailureSend(user->crp, session, EINVAL, "无法重定位文件");
                 }
                 else
                 {
-                    CRPOKSend(user->sockfd, session);
+                    CRPOKSend(user->crp, session);
                 }
                 break;
             }
             default:
-                CRPFailureSend(user->sockfd, session, ENOSYS, "该操作类型不支持重置");
+                CRPFailureSend(user->crp, session, ENOSYS, "该操作类型不支持重置");
         }
         UserOperationDrop(user, op);
     }

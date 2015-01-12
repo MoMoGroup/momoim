@@ -9,19 +9,16 @@ int DataModuleInit()
     mkdir("temp", 0700);
     if (!AuthInit())
         return 0;
-    if (!UserInit())
-    {
+    if (!UserInit()) {
         AuthFinalize();
         return 0;
     }
-    if (!UserFriendsInit())
-    {
+    if (!UserFriendsInit()) {
         UserFinalize();
         AuthFinalize();
         return 0;
     }
-    if (!UserMessagesInit())
-    {
+    if (!UserMessagesInit()) {
         UserFriendsFinalize();
         UserFinalize();
         AuthFinalize();

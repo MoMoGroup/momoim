@@ -2,14 +2,12 @@
 
 #include <glob.h>
 
-typedef enum
-{
+typedef enum {
     IOT_READ,
     IOT_WRITE,
 
 } IOOperationType;
-struct structIOOperation
-{
+struct structIOOperation {
     IOOperationType type;
     volatile void *buf;
     size_t nbytes;

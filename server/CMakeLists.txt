@@ -37,6 +37,7 @@ SET(SERVER_SOURCE_FILE
 
     packets/info/Request.c
     packets/info/Data.c
+    packets/info/StatusChange.c
 
     packets/friend/Request.c
     packets/friend/SearchByNickname.c

@@ -27,7 +27,7 @@ void EpollAdd(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll_add");
     }
@@ -39,7 +39,7 @@ void EpollModify(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->sockfd->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll modify");
     }
@@ -47,7 +47,7 @@ void EpollModify(POnlineUser user)
 
 void EpollRemove(POnlineUser user)
 {
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->sockfd->fd, NULL))
+    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->crp->fd, NULL))
     {
         if (errno != ENOENT)//如果fd已经移除,不要报错
             perror("epoll_remove");

@@ -5,13 +5,11 @@
 int ProcessPacketStatusOK(POnlineUser user, uint32_t session, CRPPacketOK *packet)
 {
     PUserOperation op = UserOperationGet(user, session);
-    if (op)
-    {
+    if (op) {
         if (op->onResponseOK(user, op))
             UserOperationDrop(user, op);
     }
-    else
-    {
+    else {
         log_info("DEBUG", "Operation Not Found.%u\n", session);
     }
     return 1;
