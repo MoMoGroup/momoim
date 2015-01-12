@@ -49,7 +49,8 @@
 #include "protocol/net/Detected.h"
 #include "protocol/net/InetAddress.h"
 
-typedef enum {
+typedef enum
+{
     CRP_PACKET_KEEP_ALIVE = 0,      //心跳包
     CRP_PACKET_HELLO,               //Hello包
     CRP_PACKET_FAILURE,             //通用失败包

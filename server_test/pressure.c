@@ -5,16 +5,19 @@ unsigned char hash[16];
 
 void processFailure(const char *name, const char *process, CRPBaseHeader *header)
 {
-    if (header == NULL) {
+    if (header == NULL)
+    {
         log_info(name, "%s Recv Failure.\n", process);
     }
-    else if (header->packetID == CRP_PACKET_FAILURE) {
+    else if (header->packetID == CRP_PACKET_FAILURE)
+    {
         CRPPacketFailure *packet = CRPFailureCast(header);
         log_info(name, "%s\n", packet->reason);
         if ((void *) packet != header->data)
             free(packet);
     }
-    else {
+    else
+    {
         log_info(name, "%s %hu\n", process, header->packetID);
 
     }
@@ -35,7 +38,8 @@ void *threadRoutine(void *p)
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
+    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+    {
         perror("Connect");
         return 0;
     }
@@ -43,14 +47,16 @@ void *threadRoutine(void *p)
     CRPBaseHeader *header;
 
     header = CRPRecv(sockfd);
-    if (header == NULL || header->packetID != CRP_PACKET_OK) {
+    if (header == NULL || header->packetID != CRP_PACKET_OK)
+    {
         processFailure(name, "Hello", header);
         return 0;
     }
     free(header);
     CRPLoginRegisterSend(sockfd, 0, name, hash, name);
     header = CRPRecv(sockfd);
-    if (header == NULL || header->packetID != CRP_PACKET_OK) {
+    if (header == NULL || header->packetID != CRP_PACKET_OK)
+    {
         processFailure(name, "Register", header);
         return 0;
     }
@@ -58,7 +64,8 @@ void *threadRoutine(void *p)
     CRPLoginLoginSend(sockfd, 0, name, hash);
 
     header = CRPRecv(sockfd);
-    if (header == NULL || header->packetID != CRP_PACKET_LOGIN_ACCEPT) {
+    if (header == NULL || header->packetID != CRP_PACKET_LOGIN_ACCEPT)
+    {
         processFailure(name, "Login", header);
         return 0;
     }
@@ -70,14 +77,18 @@ void *threadRoutine(void *p)
     CRPInfoRequestSend(sockfd, 0, uid); //请求用户资料
     //CRPFriendRequestSend(sockfd, 0);    //请求用户好友列表
     int count = 0;
-    while (1) {
+    while (1)
+    {
         header = CRPRecv(sockfd);
-        if (header == NULL) {
+        if (header == NULL)
+        {
             processFailure(name, "General", header);
             return 0;
         }
-        switch (header->packetID) {
-            case CRP_PACKET_INFO_DATA: {
+        switch (header->packetID)
+        {
+            case CRP_PACKET_INFO_DATA:
+            {
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
                 count++;
                 CRPFileRequestSend(sockfd, 10, FST_SHARED, infoData->info.icon);
@@ -91,25 +102,31 @@ void *threadRoutine(void *p)
             case CRP_PACKET_FILE_DATA:
                 CRPOKSend(sockfd, header->sessionID);
                 break;
-            case CRP_PACKET_FILE_DATA_END: {
+            case CRP_PACKET_FILE_DATA_END:
+            {
                 CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
-                if (packet->code != 0) {
+                if (packet->code != 0)
+                {
                     log_info(name, "Icon Failure\n");
                     goto cleanup;
                 }
                 if ((const char *) packet != header->data)
                     free(packet);
                 count--;
-                if (count == 0) {
+                if (count == 0)
+                {
                     goto cleanup;
                 }
                 break;
             }
-            case CRP_PACKET_FRIEND_DATA: {
+            case CRP_PACKET_FRIEND_DATA:
+            {
                 UserFriends *friends = UserFriendsDecode((unsigned char *) header->data);
-                for (int i = 0; i < friends->groupCount; ++i) {
+                for (int i = 0; i < friends->groupCount; ++i)
+                {
                     UserGroup *group = friends->groups + i;
-                    for (int j = 0; j < group->friendCount; ++j) {
+                    for (int j = 0; j < group->friendCount; ++j)
+                    {
                         CRPInfoRequestSend(sockfd, 1, group->friends[j]); //请求用户资料
                     }
                 }
@@ -130,10 +147,12 @@ void *threadRoutine(void *p)
 int main()
 {
     MD5((unsigned char *) "s", 1, hash);
-    for (int i = 0; i < CLIENT_COUNT; ++i) {
+    for (int i = 0; i < CLIENT_COUNT; ++i)
+    {
         pthread_create(child + i, NULL, threadRoutine, child + i);
     }
-    for (int i = 0; i < CLIENT_COUNT; ++i) {
+    for (int i = 0; i < CLIENT_COUNT; ++i)
+    {
         pthread_join(child[i], NULL);
     }
     log_info("All", "Done\n");

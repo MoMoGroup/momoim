@@ -8,10 +8,7 @@
 #include <pwd.h>
 #include <math.h>
 #include "chartmessage.h"
-#include <logger.h>
-#include <cairo-script-interpreter.h>
 #include <sys/stat.h>
-#include "chartmessage.h"
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
@@ -21,7 +18,8 @@ static cairo_surface_t *surfacewordart1, *surfacewordart2, *surfacecolor;
 
 static void create_surfaces(FriendInfo *information)
 {
-    if (schartbackgroud == NULL) {
+    if (schartbackgroud == NULL)
+    {
         schartbackgroud = ChangeThem_png("聊天背景.png");
         surfacesend1 = ChangeThem_png("发送1.png");
         surfacesend2 = ChangeThem_png("发送2.png");
@@ -82,7 +80,8 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
     FriendInfo *info = (FriendInfo *) data;
     //设置在非按钮区域内移动窗口
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                 event->x_root, event->y_root, event->time);
     }
@@ -98,7 +97,8 @@ static gint send_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 //    X = event->x;  // 取得鼠标相对于窗口的位置
 //    Y = event->y;
 
-    if (event->button == 1) {     //设置发送按钮
+    if (event->button == 1)
+    {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend2); //置换图标
     }
@@ -152,7 +152,8 @@ gboolean key_value(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
     guint keyvalue = event->keyval;
-    if (keyvalue == GDK_KEY_Return || ((keyvalue == GDK_KEY_Alt_L || keyvalue == GDK_KEY_Alt_R) && (keyvalue == GDK_KEY_Return))) {
+    if (keyvalue == GDK_KEY_Return || ((keyvalue == GDK_KEY_Alt_L || keyvalue == GDK_KEY_Alt_R) && (keyvalue == GDK_KEY_Return)))
+    {
         SendText(info);
         return 1;
     }
@@ -165,7 +166,8 @@ gboolean key_value(GtkWidget *widget, GdkEventKey *event, gpointer data)
 static gint voice_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {   //设置语音按钮
+    if (event->button == 1)
+    {   //设置语音按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice2); //置换图标
     }
@@ -219,7 +221,8 @@ static gint video_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    if (event->button == 1) {   //设置视频按钮
+    if (event->button == 1)
+    {   //设置视频按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo2); //置换图标
     }
@@ -270,7 +273,8 @@ static gint close_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    if (event->button == 1) {          //设置右下关闭按钮
+    if (event->button == 1)
+    {          //设置右下关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose2); //置换图标
     }
@@ -320,7 +324,8 @@ static gint close_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 static gint close_but_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {         //设置右上关闭按钮
+    if (event->button == 1)
+    {         //设置右上关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut2); //置换图标
     }
@@ -366,7 +371,8 @@ static gint look_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    if (event->button == 1) {     //设置发送按钮
+    if (event->button == 1)
+    {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagelook, surfacelook2); //置换图标
     }
@@ -459,7 +465,8 @@ static gint file_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    if (event->button == 1) {     //设置发送按钮
+    if (event->button == 1)
+    {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagefile, surfacefile2); //置换图标
     }
@@ -540,7 +547,8 @@ static gint photo_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    if (event->button == 1) {     //设置发送按钮
+    if (event->button == 1)
+    {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage2); //置换图标
     }
@@ -564,7 +572,8 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
                 GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                 NULL);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-        if (result == GTK_RESPONSE_ACCEPT) {
+        if (result == GTK_RESPONSE_ACCEPT)
+        {
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
             GtkWidget *image;
             image = gtk_image_new_from_file(filename);
@@ -626,7 +635,8 @@ void handle_font_color(FriendInfo *info)
     sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
     fp = fopen(wordfile, "w");
     num = fwrite(UserWordInfo.coding_font_color, 1, UserWordInfo.codinglen, fp);
-    if (num == UserWordInfo.codinglen) {
+    if (num == UserWordInfo.codinglen)
+    {
         g_print("the wordtype write success");
     }
     fclose(fp);
@@ -638,7 +648,8 @@ static gint wordart_button_press_event(GtkWidget *widget, GdkEventButton *event,
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    if (event->button == 1) {     //设置发送按钮
+    if (event->button == 1)
+    {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart2); //置换图标
     }
@@ -659,14 +670,17 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
     GtkWidget *dialog;
     dialog = gtk_font_chooser_dialog_new("choose a font", event->window);
 
-    if (UserWordInfo.description != NULL) {
+    if (UserWordInfo.description != NULL)
+    {
         gtk_font_chooser_set_font_desc(GTK_FONT_CHOOSER(dialog), UserWordInfo.description);
     }
     gtk_widget_show_all(dialog);
     gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-    switch (response) {
+    switch (response)
+    {
         case (GTK_RESPONSE_APPLY):
-        case (GTK_RESPONSE_OK): {
+        case (GTK_RESPONSE_OK):
+        {
             PangoFontFamily *fontFamily;
             int num;
             UserWordInfo.codinglen = 0;
@@ -726,7 +740,8 @@ static gint color_button_press_event(GtkWidget *widget,
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    if (event->button == 1) {     //设置发送按钮
+    if (event->button == 1)
+    {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     }
     return 0;
@@ -752,7 +767,8 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_color_selection_set_has_palette(colorsel, TRUE);
         gtk_color_selection_set_previous_color(colorsel, &color);
         gtk_color_selection_set_current_color(colorsel, &color);
-        if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
+        if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
+        {
             gtk_color_selection_get_current_color(colorsel, &color);
             UserWordInfo.color_red = color.red;
             UserWordInfo.color_blue = color.blue;

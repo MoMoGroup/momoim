@@ -9,22 +9,26 @@
 int TestPacketInfoData()
 {
     UserInfo info;
-    if (!CRPInfoDataSend(cs, 0, 1, &info)) {
+    if (!CRPInfoDataSend(cs, 0, 1, &info))
+    {
         log_error("infodata", "Send返回失败\n");
         perror("");
         return 0;
     }
     CRPBaseHeader *packet = CRPRecv(cr);
-    if (packet == NULL) {
+    if (packet == NULL)
+    {
         log_error("infodata", "Recv返回失败\n");
         return 0;
     }
-    if (packet->packetID != CRP_PACKET_INFO_DATA) {
+    if (packet->packetID != CRP_PACKET_INFO_DATA)
+    {
         log_error("infodata", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }
     CRPPacketInfoData *datainfo = CRPInfoDataCast(packet);
-    if (memcmp(&datainfo->info, &info, sizeof(info))) {
+    if (memcmp(&datainfo->info, &info, sizeof(info)))
+    {
         log_error("infodata", "包数据错误\n");
         return 0;
     }

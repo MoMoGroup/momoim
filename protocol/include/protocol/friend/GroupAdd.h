@@ -7,7 +7,8 @@
 * 添加分组
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint8_t gid;
     char groupName[64];
 } CRPPacketFriendGroupAdd;

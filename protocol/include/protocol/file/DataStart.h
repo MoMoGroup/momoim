@@ -7,7 +7,8 @@
 * 数据开始
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint64_t dataLength;
 } CRPPacketFileDataStart;
 

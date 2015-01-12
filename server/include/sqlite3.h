@@ -633,7 +633,8 @@ SQLITE_API int sqlite3_exec(
 ** I/O operations on the open file.
 */
 typedef struct sqlite3_file sqlite3_file;
-struct sqlite3_file {
+struct sqlite3_file
+{
     const struct sqlite3_io_methods *pMethods;  /* Methods for an open file */
 };
 
@@ -729,7 +730,8 @@ struct sqlite3_file {
 */
 typedef struct sqlite3_io_methods sqlite3_io_methods;
 
-struct sqlite3_io_methods {
+struct sqlite3_io_methods
+{
     int iVersion;
 
     int (*xClose)(sqlite3_file *);
@@ -1169,7 +1171,8 @@ typedef struct sqlite3_vfs sqlite3_vfs;
 
 typedef void (*sqlite3_syscall_ptr)(void);
 
-struct sqlite3_vfs {
+struct sqlite3_vfs
+{
     int iVersion;
     /* Structure version number (currently 3) */
     int szOsFile;
@@ -1489,7 +1492,8 @@ SQLITE_API int sqlite3_db_config(sqlite3 *, int op, ...);
 */
 typedef struct sqlite3_mem_methods sqlite3_mem_methods;
 
-struct sqlite3_mem_methods {
+struct sqlite3_mem_methods
+{
     void *(*xMalloc)(int);
 
     /* Memory allocation function */
@@ -5507,7 +5511,8 @@ typedef struct sqlite3_module sqlite3_module;
 ** of this structure must not change while it is registered with
 ** any database connection.
 */
-struct sqlite3_module {
+struct sqlite3_module
+{
     int iVersion;
 
     int (*xCreate)(sqlite3 *, void *pAux,
@@ -5629,11 +5634,13 @@ struct sqlite3_module {
 ** therefore only be used if [sqlite3_libversion_number()] returns a
 ** value greater than or equal to 3008002.
 */
-struct sqlite3_index_info {
+struct sqlite3_index_info
+{
     /* Inputs */
     int nConstraint;
     /* Number of entries in aConstraint */
-    struct sqlite3_index_constraint {
+    struct sqlite3_index_constraint
+    {
         int iColumn;
         /* Column on left-hand side of constraint */
         unsigned char op;
@@ -5645,13 +5652,15 @@ struct sqlite3_index_info {
     /* Table of WHERE clause constraints */
     int nOrderBy;
     /* Number of terms in the ORDER BY clause */
-    struct sqlite3_index_orderby {
+    struct sqlite3_index_orderby
+    {
         int iColumn;
         /* Column number */
         unsigned char desc;       /* True for DESC.  False for ASC. */
     } *aOrderBy;               /* The ORDER BY clause */
     /* Outputs */
-    struct sqlite3_index_constraint_usage {
+    struct sqlite3_index_constraint_usage
+    {
         int argvIndex;
         /* if >0, constraint is part of argv to xFilter */
         unsigned char omit;      /* Do not code a test for this constraint */
@@ -5742,7 +5751,8 @@ SQLITE_API int sqlite3_create_module_v2(
 ** is delivered up to the client application, the string will be automatically
 ** freed by sqlite3_free() and the zErrMsg field will be zeroed.
 */
-struct sqlite3_vtab {
+struct sqlite3_vtab
+{
     const sqlite3_module *pModule;
     /* The module for this virtual table */
     int nRef;
@@ -5768,7 +5778,8 @@ struct sqlite3_vtab {
 ** This superclass exists in order to define fields of the cursor that
 ** are common to all implementations.
 */
-struct sqlite3_vtab_cursor {
+struct sqlite3_vtab_cursor
+{
     sqlite3_vtab *pVtab;      /* Virtual table of this cursor */
     /* Virtual table implementations will typically add additional fields */
 };
@@ -6250,7 +6261,8 @@ SQLITE_API void sqlite3_mutex_leave(sqlite3_mutex *);
 */
 typedef struct sqlite3_mutex_methods sqlite3_mutex_methods;
 
-struct sqlite3_mutex_methods {
+struct sqlite3_mutex_methods
+{
     int (*xMutexInit)(void);
 
     int (*xMutexEnd)(void);
@@ -6772,7 +6784,8 @@ typedef struct sqlite3_pcache sqlite3_pcache;
 ** See [sqlite3_pcache_methods2] for additional information.
 */
 typedef struct sqlite3_pcache_page sqlite3_pcache_page;
-struct sqlite3_pcache_page {
+struct sqlite3_pcache_page
+{
     void *pBuf;
     /* The content of the page */
     void *pExtra;      /* Extra information associated with the page */
@@ -6939,7 +6952,8 @@ struct sqlite3_pcache_page {
 */
 typedef struct sqlite3_pcache_methods2 sqlite3_pcache_methods2;
 
-struct sqlite3_pcache_methods2 {
+struct sqlite3_pcache_methods2
+{
     int iVersion;
     void *pArg;
 
@@ -6974,7 +6988,8 @@ struct sqlite3_pcache_methods2 {
 */
 typedef struct sqlite3_pcache_methods sqlite3_pcache_methods;
 
-struct sqlite3_pcache_methods {
+struct sqlite3_pcache_methods
+{
     void *pArg;
 
     int (*xInit)(void *);
@@ -7718,7 +7733,8 @@ SQLITE_API int sqlite3_rtree_geometry_callback(
 ** A pointer to a structure of the following type is passed as the first
 ** argument to callbacks registered using rtree_geometry_callback().
 */
-struct sqlite3_rtree_geometry {
+struct sqlite3_rtree_geometry
+{
     void *pContext;
     /* Copy of pContext passed to s_r_g_c() */
     int nParam;
@@ -7755,7 +7771,8 @@ SQLITE_API int sqlite3_rtree_query_callback(
 ** sqlite3_rtree_geometry.  This structure is a subclass of
 ** sqlite3_rtree_geometry.
 */
-struct sqlite3_rtree_query_info {
+struct sqlite3_rtree_query_info
+{
     void *pContext;
     /* pContext from when function registered */
     int nParam;

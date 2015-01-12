@@ -10,7 +10,8 @@ size_t UserFriendsSize(UserFriends *friends)
                     sizeof(*friends->groups) -
                             sizeof(friends->groups->friends)
             );
-    for (int i = 0; i < friends->groupCount; ++i) {
+    for (int i = 0; i < friends->groupCount; ++i)
+    {
         length += friends->groups[i].friendCount * sizeof(*(friends->groups[i].friends));
     }
     return length;
@@ -20,11 +21,13 @@ int UserFriendsEncode(UserFriends *friends, unsigned char *p)
 {
     memcpy(p, &friends->groupCount, sizeof(friends->groupCount));   //1.Write Group Count
     p += sizeof(friends->groupCount);
-    for (int j = 0; j < friends->groupCount; ++j) {
+    for (int j = 0; j < friends->groupCount; ++j)
+    {
         UserGroup *group = friends->groups + j;
         memcpy(p, group, sizeof(UserGroup) - sizeof(group->friends));//2.Write Group Info (WITHOUT FRIENDS)
         p += sizeof(UserGroup) - sizeof(group->friends);
-        for (int i = 0; i < group->friendCount; ++i) {
+        for (int i = 0; i < group->friendCount; ++i)
+        {
             memcpy(p, group->friends + i, sizeof(*group->friends));  //3.Write Friends
             p += sizeof(*group->friends);
         }
@@ -38,7 +41,8 @@ UserFriends *UserFriendsDecode(unsigned char *p)
 
     //I.Alloc Object
     friends = (UserFriends *) malloc(sizeof(UserFriends));
-    if (friends == NULL) {
+    if (friends == NULL)
+    {
         return NULL;
     }
     memcpy(&friends->groupCount, p, sizeof(friends->groupCount));   //1.Read group count
@@ -46,19 +50,22 @@ UserFriends *UserFriendsDecode(unsigned char *p)
 
     //II.Alloc Group
     friends->groups = (UserGroup *) calloc(friends->groupCount, sizeof(UserGroup));
-    if (friends->groups == NULL) {
+    if (friends->groups == NULL)
+    {
         UserFriendsFree(friends);
         friends = NULL;
         goto fail;
     }
-    for (int i = 0; i < friends->groupCount; ++i) {
+    for (int i = 0; i < friends->groupCount; ++i)
+    {
         UserGroup *group = friends->groups + i;
         memcpy(group, p, sizeof(UserGroup) - sizeof(((UserGroup *) 0)->friends));   //2. Read Group Info (WITHOUT FRIENDS)
         p += sizeof(UserGroup) - sizeof(((UserGroup *) 0)->friends);
 
         //III.Alloc Friends
         group->friends = (uint32_t *) malloc(sizeof(*group->friends) * friends->groups[i].friendCount);
-        if (group->friends == NULL) {
+        if (group->friends == NULL)
+        {
             goto fail;
         }
 
@@ -74,10 +81,14 @@ UserFriends *UserFriendsDecode(unsigned char *p)
 void UserFriendsFree(UserFriends *friends)
 {
 
-    if (friends) {
-        if (friends->groups) {
-            for (int i = 0; i < friends->groupCount; ++i) {
-                if (friends->groups[i].friends) {
+    if (friends)
+    {
+        if (friends->groups)
+        {
+            for (int i = 0; i < friends->groupCount; ++i)
+            {
+                if (friends->groups[i].friends)
+                {
                     free(friends->groups[i].friends);
                 }//III.Free Friends
             }
@@ -91,8 +102,10 @@ void UserFriendsFree(UserFriends *friends)
 int UserFriendsGroupDelete(UserFriends *friends, uint8_t groupID)
 {
     UserGroup *group = UserFriendsGroupGet(friends, groupID);
-    if (group) {
-        for (int j = (int) (group - friends->groups) + 1; j < friends->groupCount; ++j) {
+    if (group)
+    {
+        for (int j = (int) (group - friends->groups) + 1; j < friends->groupCount; ++j)
+        {
             friends->groups[j - 1] = friends->groups[j];
         }
         --friends->groupCount;
@@ -109,9 +122,11 @@ int UserFriendsGroupDelete(UserFriends *friends, uint8_t groupID)
 UserGroup *UserFriendsGroupGet(UserFriends *friends, uint8_t groupID)
 {
 
-    for (int i = 0; i < friends->groupCount; ++i) {
+    for (int i = 0; i < friends->groupCount; ++i)
+    {
         UserGroup *group = friends->groups + i;
-        if (group->groupId == groupID) {
+        if (group->groupId == groupID)
+        {
             return group;
         }
     }
@@ -121,7 +136,8 @@ UserGroup *UserFriendsGroupGet(UserFriends *friends, uint8_t groupID)
 UserGroup *UserFriendsGroupAdd(UserFriends *friends, uint8_t groupId, const char *name)
 {
     void *ptr;
-    if (UserFriendsGroupGet(friends, groupId)) {
+    if (UserFriendsGroupGet(friends, groupId))
+    {
         errno = EEXIST;
         return 0;
     }
@@ -139,7 +155,8 @@ UserGroup *UserFriendsGroupAdd(UserFriends *friends, uint8_t groupId, const char
     group->friends = NULL;
     group->groupId = groupId;
     size_t nameLen = strlen(name);
-    if (nameLen > 63) {
+    if (nameLen > 63)
+    {
         nameLen = 63;
     }
     memcpy(group->groupName, name, nameLen);
@@ -151,7 +168,8 @@ UserGroup *UserFriendsGroupAdd(UserFriends *friends, uint8_t groupId, const char
 int UserFriendsUserAdd(UserGroup *group, uint32_t user)
 {
     void *ptr;
-    for (int i = 0; i < group->friendCount; ++i) {
+    for (int i = 0; i < group->friendCount; ++i)
+    {
         if (group->friends[i] == user)//好友ID已存在,失败返回.
         {
             errno = EEXIST;
@@ -173,17 +191,22 @@ int UserFriendsUserAdd(UserGroup *group, uint32_t user)
 int UserFriendsUserDelete(UserGroup *group, uint32_t user)
 {
     void *ptr;
-    for (int i = 0; i < group->friendCount; ++i) {
-        if (group->friends[i] == user) {
-            for (int j = i + 1; j < group->friendCount; ++j) {
+    for (int i = 0; i < group->friendCount; ++i)
+    {
+        if (group->friends[i] == user)
+        {
+            for (int j = i + 1; j < group->friendCount; ++j)
+            {
                 group->friends[j - 1] = group->friends[j];
             }
             --group->friendCount;
-            if (group->friendCount == 0) {
+            if (group->friendCount == 0)
+            {
                 free(group->friends);
                 group->friends = NULL;
             }
-            else {
+            else
+            {
                 ptr = realloc(group->friends, sizeof(uint32_t) * group->friendCount);
                 if (ptr != NULL)//如果内存重分配成功,则重设用户组指针.
                 {
@@ -199,7 +222,8 @@ int UserFriendsUserDelete(UserGroup *group, uint32_t user)
 int UserFriendsJoin(UserFriends *friends, uint8_t groupId, uint32_t uid)
 {
     UserGroup *group = UserFriendsGroupGet(friends, groupId);
-    if (!group) {
+    if (!group)
+    {
         return 0;
     }
     return UserFriendsUserAdd(group, uid);
@@ -207,10 +231,12 @@ int UserFriendsJoin(UserFriends *friends, uint8_t groupId, uint32_t uid)
 
 int UserFriendsUserMove(UserGroup *src, UserGroup *dst, uint32_t uid)
 {
-    if (!UserFriendsUserDelete(src, uid)) {
+    if (!UserFriendsUserDelete(src, uid))
+    {
         return 0;
     }
-    if (!UserFriendsUserAdd(dst, uid)) {
+    if (!UserFriendsUserAdd(dst, uid))
+    {
         UserFriendsUserAdd(src, uid);//尝试再给它搞回去..
         return 0;
     }

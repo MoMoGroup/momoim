@@ -7,11 +7,13 @@
 /**
 * 请求服务器数据
 */
-typedef enum {
+typedef enum
+{
     FST_SHARED = 0,   //共享的
     FST_PRIVATE = 1   //私有的
 } CRP_PACKET_FILE_STORE_TYPE;
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     size_t length;
     uint8_t type;
     //CRP_PACKET_FILE_STORE_TYPE

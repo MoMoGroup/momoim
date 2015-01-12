@@ -2,11 +2,13 @@
 
 #include "imcommon/message.h"
 
-typedef struct structUserMessageFileEntry {
+typedef struct structUserMessageFileEntry
+{
     MessageFile *file;
     pthread_rwlock_t refLock;
 } UserMessageFileEntry;
-typedef struct structUserMessageFileTable {
+typedef struct structUserMessageFileTable
+{
     UserMessageFileEntry *entry;
     struct structUserMessageFileTable *next[0x10];
 } UserMessageFileTable;

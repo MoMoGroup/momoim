@@ -8,7 +8,8 @@
 * 请求好友列表
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint32_t uid;
     uint8_t gid;
 } CRPPacketFriendDelete;
