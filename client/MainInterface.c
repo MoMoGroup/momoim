@@ -118,7 +118,7 @@ GtkTreeModel *createModel()
                                PIXBUF_COL, pixbuf,
                                FRIENDUID_COL, friends->groups[i].friends[j],
                                PRIORITY_COL, priority,
-                                       - 1);
+                               -1);
             g_object_unref(pixbuf);
 
         }

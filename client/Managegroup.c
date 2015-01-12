@@ -299,6 +299,7 @@ int rename_group(void *data)
     g_object_unref(pixbuf);
     return 0;
 }
+
 int rename_group_recv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID = CRP_PACKET_OK)
