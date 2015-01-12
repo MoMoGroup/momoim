@@ -506,7 +506,6 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             else
             {
                 GtkWidget *cue_dialog;
-                cue_dialog = gtk_dialog_new();
                 cue_dialog = gtk_message_dialog_new(dialog, GTK_DIALOG_MODAL,
                         GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
                         "文件大小不应超过150M，请选择其他文件");
@@ -515,7 +514,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
                 gtk_widget_destroy(cue_dialog);
             }
         }
-        if (result == GTK_RESPONSE_CANCEL)
+        else if (result == GTK_RESPONSE_CANCEL)
         {
             gtk_widget_destroy(dialog);
         }

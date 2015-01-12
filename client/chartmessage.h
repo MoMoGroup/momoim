@@ -17,12 +17,12 @@ struct PictureMessageFileUploadingData
     int file_size;
     GtkWidget *file;
     GtkWidget *progressbar;
+    FriendInfo *info;
     struct ImageMessageFileData *image_message_data;
 };
 
 struct ImageMessageFileData
 {
-    int filecount;
     int imagecount;
     int charlen;
     char *message_data;

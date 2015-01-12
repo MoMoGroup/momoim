@@ -48,7 +48,7 @@ FriendInfo *FineNode(uint32_t uid)
     {
         p = p->next;
 
-        if(p->uid==uid)
+        if (p->uid == uid)
         {
             return p;
         }
@@ -72,31 +72,53 @@ gboolean postMessage(gpointer user_data)
 {
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
     CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
-
-    if (packet->messageType == UMT_TEXT)
+    switch (packet->messageType)
     {
-        char *message = (char *) malloc(packet->messageLen);
-        memcpy(message, packet->message, packet->messageLen);
-        //fun();
-        RecdServerMsg(message, packet->messageLen, packet->uid);
-        free(message);
-        if ((void *) packet != header->data)
+        case UMT_FILE_OFFLINE:
         {
-            free(packet);
-        }
+            char *message = (char *) malloc(packet->messageLen);
+            memcpy(message, packet->message, packet->messageLen);
+            //fun();
+            RecdServerFileMsg(message, packet->messageLen, packet->uid);
+            free(message);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+        };
+        case UMT_FILE_ONLINE:
+        {
+            break;
+        };
+        case UMT_TEXT:
+        {
+            char *message = (char *) malloc(packet->messageLen);
+            memcpy(message, packet->message, packet->messageLen);
+            //fun();
+            RecdServerMsg(message, packet->messageLen, packet->uid);
+            free(message);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+
+        };
+        case UMT_NEW_FRIEND:
+        {
+            char *mes = calloc(1, 100);
+            memcpy(mes, packet->message, packet->messageLen);
+            Friend_Fequest_Popup(packet->uid, mes);
+
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+        };
     }
 
-    if (packet->messageType == UMT_NEW_FRIEND)
-    {
-        char *mes = calloc(1, 100);
-        memcpy(mes, packet->message, packet->messageLen);
-        Friend_Fequest_Popup(packet->uid, mes);
-
-        if ((void *) packet != header->data)
-        {
-            free(packet);
-        }
-    }
     return 0;
 }
 
@@ -295,7 +317,8 @@ int mysockfd()
         MD5((unsigned char *) pwd, strlen(pwd), hash);
         CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
     }
-    else{
+    else
+    {
         CRPLoginLoginSend(sockfd, 0, name, pwd);
     }
 
@@ -354,9 +377,9 @@ int mysockfd()
                 };
                 case CRP_PACKET_INFO_DATA: //用户资料回复
                 {
-                        CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+                    CRPPacketInfoData *infodata = CRPInfoDataCast(header);
 
-                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
+                    CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
 
                     FriendInfo *node;
                     node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
@@ -369,7 +392,7 @@ int mysockfd()
                     if (node->uid == uid)//用户自己
                     {
                         CurrentUserInfo = &node->user;
-                        node->inonline=1;
+                        node->inonline = 1;
                         log_info("user nickname:", "%s\n", infodata->info.nickName);
                     }
 
@@ -452,39 +475,40 @@ int mysockfd()
 
 
                     int friendnum = 0;
-                        FriendInfo *node;
-                        node = FriendInfoHead;
-                        while (node)
+                    FriendInfo *node;
+                    node = FriendInfoHead;
+                    while (node)
+                    {
+                        if (node->uid == header->sessionID)
                         {
-                            if (node->uid == header->sessionID)
-                            {
-                                fclose(node->fp);
-                                node->flag = 1;//接受完毕，标志位1;
-                                friendnum++;//接受完毕的个数加1
-                                break;
-                            }
-                            node = node->next;
+                            fclose(node->fp);
+                            node->flag = 1;//接受完毕，标志位1;
+                            friendnum++;//接受完毕的个数加1
+                            break;
                         }
+                        node = node->next;
+                    }
 
 
-                        node = FriendInfoHead;
-                        while (node)
+                    node = FriendInfoHead;
+                    while (node)
+                    {
+                        if (node->flag == 0)
                         {
-                            if (node->flag == 0)
-                            {
-                                break;//没有接收完
-                            }
-                            node = node->next;
+                            break;//没有接收完
                         }
+                        node = node->next;
+                    }
 
-                        if (node == NULL)
-                        {
-                            g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
-                            loop = 0;
-                        }
+                    if (node == NULL)
+                    {
+                        g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
+                        loop = 0;
+                    }
 
 
-                    if ((void *) packet != header->data) {
+                    if ((void *) packet != header->data)
+                    {
                         free(packet);
                     }
                     break;
