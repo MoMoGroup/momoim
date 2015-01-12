@@ -211,14 +211,14 @@ int calendar_change_birthday()
 static void create_infofaces()
 {
 
-    Surfaceback = ChangeThem_png("资料2.png");
-    Surfacesave = ChangeThem_png("保存.png");
-    Surfacesave1 = ChangeThem_png("保存2.png");
-    Surfacecancel = ChangeThem_png("资料取消.png");
-    Surfacecancel1 = ChangeThem_png("资料取消2.png");
-    Surfaceend = ChangeThem_png("关闭按钮1.png");
-    Surfaceend1 = ChangeThem_png("关闭按钮2.png");
-    Surfaceend2 = ChangeThem_png("关闭按钮3.png");
+    Surfaceback = cairo_image_surface_create_from_png("资料2.png");
+    Surfacesave = cairo_image_surface_create_from_png("保存.png");
+    Surfacesave1 = cairo_image_surface_create_from_png("保存2.png");
+    Surfacecancel = cairo_image_surface_create_from_png("资料取消.png");
+    Surfacecancel1 = cairo_image_surface_create_from_png("资料取消2.png");
+    Surfaceend = cairo_image_surface_create_from_png("关闭按钮1.png");
+    Surfaceend1 = cairo_image_surface_create_from_png("关闭按钮2.png");
+    Surfaceend2 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
     Infobackground = gtk_image_new_from_surface(Surfaceback);
     Infosave = gtk_image_new_from_surface(Surfacesave);
