@@ -14,18 +14,18 @@
 
 
 static GtkWidget *background, *headx, *search, *friend, *closebut;
-static GtkWidget *background1, *headx, *search, *friend, *closebut;
+static GtkWidget *background1, *headx, *search, *friend, *change,*closebut;
 static GtkWidget *window;
 static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
-static cairo_surface_t *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
+static cairo_surface_t *surfacechangetheme,*surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 
 
 GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
-static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box;
+static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box,*change_event_box;
 
 
 static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
@@ -129,15 +129,16 @@ static void create_surfaces()
 {
 
     surfacemainbackgroud = ChangeThem_png("主背景.png");
-
     surfaceresearch = ChangeThem_png("搜索.png");
     surfacefriendimage = ChangeThem_png("好友.png");
+    surfacechangetheme = ChangeThem_png("换肤.png");
     surfaceclose51 = ChangeThem_png("关闭按钮1.png");
     surfaceclose52 = ChangeThem_png("关闭按钮2.png");
     surfaceclose53 = ChangeThem_png("关闭按钮3.png");
 
     background1 = gtk_image_new_from_surface(surfacemainbackgroud);
     search = gtk_image_new_from_surface(surfaceresearch);
+    change = gtk_image_new_from_surface(surfacechangetheme);
     friend = gtk_image_new_from_surface(surfacefriendimage);
     closebut = gtk_image_new_from_surface(surfaceclose51);
 
@@ -203,6 +204,7 @@ destroy_surfaces()
     cairo_surface_destroy(surfacehead2);
     cairo_surface_destroy(surfaceresearch);
     cairo_surface_destroy(surfacefriendimage);
+    cairo_surface_destroy(surfacechangetheme);
 
 }
 
@@ -675,6 +677,15 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+
+static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event,
+
+        gpointer data)
+{
+
+}
+
+
 int MainInterFace()
 {
     GtkCellRenderer *renderer;
@@ -708,11 +719,19 @@ int MainInterFace()
             NULL,
             NULL);
 
+    change_event_box = BuildEventBox(
+            G_CALLBACK(change_button_release_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
+
     search = gtk_image_new_from_surface(surfaceresearch);
     search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
 
-
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
+    gtk_fixed_put(GTK_FIXED(MainLayout), change_event_box, 80, 178);
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
     gtk_fixed_put(GTK_FIXED(MainLayout), search_event_box, 0, 140);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);
