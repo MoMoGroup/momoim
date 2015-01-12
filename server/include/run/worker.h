@@ -4,8 +4,7 @@
 #include <pthread.h>
 
 //事务处理器
-typedef struct
-{
+typedef struct {
     int workerId;
 
     pthread_t WorkerThread;

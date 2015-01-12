@@ -37,8 +37,7 @@ extern void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *
 extern void DeleteMessageNode(uint32_t sessid);
 //extern UserFriends *friends;
 
-struct RECVImageMessagedata
-{
+struct RECVImageMessagedata {
     int imagecount;
     int charlen;
     char *message_data;

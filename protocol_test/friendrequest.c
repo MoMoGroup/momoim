@@ -7,20 +7,17 @@
 
 int TestPacketFriRequest()
 {
-    if (!CRPFriendRequestSend(cs, 0))
-    {
+    if (!CRPFriendRequestSend(cs, 0)) {
         log_error("frirequest", "Send返回失败\n");
         perror("");
         return 0;
     }
     CRPBaseHeader *packet = CRPRecv(cr);
-    if (packet == NULL)
-    {
+    if (packet == NULL) {
         log_error("frirequest", "Recv返回失败\n");
         return 0;
     }
-    if (packet->packetID != CRP_PACKET_FRIEND_REQUEST)
-    {
+    if (packet->packetID != CRP_PACKET_FRIEND_REQUEST) {
         log_error("frirequest", "packetID错误。(预期的ID:%d，收到的ID:%d)\n", CRP_PACKET_HELLO, packet->packetID);
         return 0;
     }

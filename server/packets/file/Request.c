@@ -9,8 +9,7 @@
 
 static int onRequestCancel(POnlineUser user, PUserOperation op)
 {
-    if (op->type == CUOT_FILE_REQUEST)
-    {
+    if (op->type == CUOT_FILE_REQUEST) {
         PUserOperationFileRequest opData = (PUserOperationFileRequest) op->data;
         aio_cancel(opData->aio.aio_fildes, NULL);//Cancel all
         close(opData->aio.aio_fildes);
@@ -26,8 +25,7 @@ static int onRequestCancel(POnlineUser user, PUserOperation op)
 
 static int RequestContinue(POnlineUser user, PUserOperation op)
 {
-    if (op->type == CUOT_FILE_REQUEST)
-    {
+    if (op->type == CUOT_FILE_REQUEST) {
         PUserOperationFileRequest opData = (PUserOperationFileRequest) op->data;
         const struct aiocb *const p = &opData->aio;
         struct timespec timeout = {
@@ -39,8 +37,7 @@ static int RequestContinue(POnlineUser user, PUserOperation op)
         {
             CRPFailureSend(user->crp, op->session, ETIMEDOUT, "操作超时");
         }
-        switch (aio_error(p))
-        {
+        switch (aio_error(p)) {
             case EINPROGRESS:
                 CRPFailureSend(user->crp, op->session, ETIMEDOUT, "操作超时");
                 break;
@@ -78,10 +75,8 @@ static int RequestContinue(POnlineUser user, PUserOperation op)
 
 int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRequest *packet)
 {
-    if (packet->type == FST_SHARED)
-    {
-        if (DataFileExist(packet->key))
-        {
+    if (packet->type == FST_SHARED) {
+        if (DataFileExist(packet->key)) {
             PUserOperation op = NULL;
             PUserOperationFileRequest opData = NULL;
             int fd = DataFileOpen(packet->key, O_RDONLY);
@@ -126,14 +121,12 @@ int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRe
             CRPFileDataStartSend(user->crp, session, (uint64_t) fileInfo.st_size);
             return 1;
             fail:
-            if (op)
-            {
+            if (op) {
                 UserOperationUnregister(user, op);
             }
             if (fd >= 0)
                 close(fd);
-            if (opData)
-            {
+            if (opData) {
                 free((void *) opData->aio.aio_buf);
                 free(opData);
             }

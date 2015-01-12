@@ -45,8 +45,7 @@ int main(int argc, char **argv)
     sigaction(SIGINT, &act, NULL);
     act.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &act, NULL);
-    if (!DataModuleInit())
-    {
+    if (!DataModuleInit()) {
         log_error("MAIN", "Fail to initliaze data module.\n");
         return EXIT_FAILURE;
     }
@@ -54,22 +53,19 @@ int main(int argc, char **argv)
     InitJobManger();
 
     int i;
-    for (i = 0; i < CONFIG_WORKER_COUNT; i++)
-    {
+    for (i = 0; i < CONFIG_WORKER_COUNT; i++) {
         initWorker(i, worker + i);
     }
     InitUserManager();
 
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
     GarbageCollectorInitialize();
-    while (IsServerRunning)
-    {
+    while (IsServerRunning) {
         sleep(1);
     }
     pthread_join(ThreadListener, NULL);
     GarbageCollectorFinalize();
-    for (i = 0; i < CONFIG_WORKER_COUNT; i++)
-    {
+    for (i = 0; i < CONFIG_WORKER_COUNT; i++) {
         pthread_join(worker[i].WorkerThread, NULL);
     }
     FinalizeUserManager();

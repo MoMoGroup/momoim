@@ -11,8 +11,7 @@
 #include "packets.h"
 
 //在线用户状态
-typedef enum
-{
+typedef enum {
     OUS_PENDING_HELLO = 0,
     OUS_PENDING_LOGIN,
 
@@ -28,8 +27,7 @@ typedef enum
 } UserOperationType;
 
 //消息句柄
-struct structUserMessageProcessor
-{
+struct structUserMessageProcessor {
     packet_id_t packetID;
 
     PacketHandler handler;
@@ -40,23 +38,20 @@ struct structUserMessageProcessor
 };
 
 //存储文件操作
-struct structUserOperationFileStore
-{
+struct structUserOperationFileStore {
     size_t totalLength, remainLength, seq;
     unsigned char key[16];
     char tmpfile[30];
     int fd;
 };
 //请求文件操作
-struct structUserOperationFileRequest
-{
+struct structUserOperationFileRequest {
     struct aiocb aio;
     off_t size;
     size_t seq;
 };
 //用户操作
-struct structUserOperation
-{
+struct structUserOperation {
     uint32_t session;
     int type;
     int cancel;
@@ -70,8 +65,7 @@ struct structUserOperation
 };
 
 //用户操作表
-struct structUserOperationTable
-{
+struct structUserOperationTable {
     PUserOperation first;
     PUserOperation last;
     pthread_mutex_t lock;
@@ -80,8 +74,7 @@ struct structUserOperationTable
 };
 
 //用户在线信息
-struct structOnlineUserInfo
-{
+struct structOnlineUserInfo {
     uint32_t uid;
     char *userDir;
     time_t loginTime;
@@ -91,8 +84,7 @@ struct structOnlineUserInfo
 };
 
 //在线用户数据
-struct structOnlineUser
-{
+struct structOnlineUser {
     //与待登陆用户数据保持一致
     CRPContext crp;
     volatile OnlineUserState state;
@@ -104,8 +96,7 @@ struct structOnlineUser
     UserOperationTable operations;
 };
 //等待登陆用户数据
-struct structPendingUser
-{
+struct structPendingUser {
     CRPContext sockfd;
     volatile OnlineUserState state;
     pthread_rwlock_t *holdLock;
@@ -116,14 +107,12 @@ struct structPendingUser
 };
 
 //在线用户表
-struct structOnlineUsersTableType
-{
+struct structOnlineUsersTableType {
     OnlineUser *user;
     struct structOnlineUsersTableType *prev, *next[0x10];
 };
 //待登陆用户表
-struct structPendingUsersTableType
-{
+struct structPendingUsersTableType {
     PendingUser *first, *last;
 };
 

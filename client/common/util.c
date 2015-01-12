@@ -7,7 +7,6 @@
 #include "../MainInterface.h"
 #include <string.h>
 #include <pwd.h>
-#include <logger.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 typedef struct
@@ -43,19 +42,19 @@ static gint event_box_release_handler(GtkWidget *widget, GdkEventButton *event, 
 }
 
 
-cairo_surface_t * ChangeThem_png(char *picname)
+cairo_surface_t *ChangeThem_png(char *picname)
 {
-    char path_theme[80]="",path_pic[80]="";
+    char path_theme[80] = "", path_pic[80] = "";
     sprintf(path_theme, "%s/.momo/current_theme", getpwuid(getuid())->pw_dir);//获取本机主题目录
-    sprintf(path_pic, "%s/%s",path_theme,picname);
+    sprintf(path_pic, "%s/%s", path_theme, picname);
     return cairo_image_surface_create_from_png(path_pic);
 }
 
 GtkWidget *ChangeThem_file(char *picname)
 {
-    char path_theme[80]="",path_pic[80]="";
+    char path_theme[80] = "", path_pic[80] = "";
     sprintf(path_theme, "%s/.momo/current_theme", getpwuid(getuid())->pw_dir);//获取本机主题目录
-    sprintf(path_pic, "%s/%s",path_theme,picname);
+    sprintf(path_pic, "%s/%s", path_theme, picname);
     return gtk_image_new_from_file(path_pic);
 }
 
@@ -104,16 +103,13 @@ void Md5Coding(const gchar *filename, unsigned char *coding_text)
     int fd;
     MD5_Init(&c);
 
-    if ((fd = open(filename, O_RDONLY)) < -1)
-    {
+    if ((fd = open(filename, O_RDONLY)) < -1) {
         printf("can not open filename");
 
     }
-    else
-    {
+    else {
         bytes = read(fd, buf, 512);
-        while (bytes > 0)
-        {
+        while (bytes > 0) {
             MD5_Update(&c, buf, bytes);
             bytes = read(fd, buf, 512);
         }
@@ -128,21 +124,17 @@ int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNameWithP
     FILE *fpR, *fpW;
     char buffer[256] = "\0";
     int lenR, lenW;
-    if ((fpR = fopen(sourceFileNameWithPath, "r")) == NULL)
-    {
+    if ((fpR = fopen(sourceFileNameWithPath, "r")) == NULL) {
         return 0;
     }
 
-    if ((fpW = fopen(targetFileNameWithPath, "w")) == NULL)
-    {
+    if ((fpW = fopen(targetFileNameWithPath, "w")) == NULL) {
         fclose(fpR);
         return 0;
     }
     memset(buffer, 0, 256);
-    while ((lenR = fread(buffer, 1, 256, fpR)) > 0)
-    {
-        if ((lenW = fwrite(buffer, 1, lenR, fpW)) != lenR)
-        {
+    while ((lenR = fread(buffer, 1, 256, fpR)) > 0) {
+        if ((lenW = fwrite(buffer, 1, lenR, fpW)) != lenR) {
             fclose(fpR);
             fclose(fpW);
             return 1;
@@ -158,8 +150,7 @@ void HexadecimalConversion(char *filename, unsigned char const *fileKey)
     char sDest[33] = {0};
     short i;
 
-    for (i = 0; i < MD5_DIGEST_LENGTH; i++)
-    {
+    for (i = 0; i < MD5_DIGEST_LENGTH; i++) {
         sprintf(sDest + i * 2, "%02x", (int) fileKey[i]);
     }
     sprintf(filename, "%s/.momo/files/%s", getpwuid(getuid())->pw_dir, sDest);
@@ -191,16 +182,13 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 {
     struct find_image_recv_new *p = (struct find_image_recv_new *) data;
 
-    switch (header->packetID)
-    {
-        case CRP_PACKET_FAILURE:
-        {
+    switch (header->packetID) {
+        case CRP_PACKET_FAILURE: {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             break;
         };
 
-        case CRP_PACKET_FILE_DATA_START:
-        {
+        case CRP_PACKET_FILE_DATA_START: {
             CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
 
             char filename[256];
@@ -208,8 +196,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
             p->fp = fopen(filename, "w");
 
             CRPOKSend(sockfd, header->sessionID);
-            if ((void *) packet != header->data)
-            {
+            if ((void *) packet != header->data) {
                 free(packet);
             }
             break;
@@ -221,8 +208,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 
             fwrite(packet->data, 1, packet->length, p->fp);
             CRPOKSend(sockfd, header->sessionID);
-            if ((void *) packet != header->data)
-            {
+            if ((void *) packet != header->data) {
                 free(packet);
             }
             break;
@@ -232,8 +218,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 
             CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
             fclose(p->fp);
-            if ((void *) packet != header->data)
-            {
+            if ((void *) packet != header->data) {
                 free(packet);
             }
             g_idle_add(p->fn, p->data);
@@ -260,8 +245,7 @@ int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
         AddMessageNode(sessionid, recv_new_friend_image, p);
         CRPFileRequestSend(sockfd, sessionid, 0, key);//发送用户头像请求
     }
-    else
-    {
+    else {
         g_idle_add(fn, data);//执行更新函数
     }
 

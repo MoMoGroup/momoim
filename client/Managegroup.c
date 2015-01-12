@@ -1,11 +1,11 @@
 #include "Managegroup.h"
 #include"ClientSockfd.h"
 #include "MainInterface.h"
-#include "PopupWinds.h"
 #include<stdlib.h>
 #include <logger.h>
 #include <common.h>
 #include <string.h>
+#include "PopupWinds.h"
 
 GtkWidget *add_group_window;
 GtkTextView *new_group_name;
@@ -25,7 +25,7 @@ static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer dat
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                                   event->x_root, event->y_root, event->time);
+                event->x_root, event->y_root, event->time);
     }
     return 0;
 }

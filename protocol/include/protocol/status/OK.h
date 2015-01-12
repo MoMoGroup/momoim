@@ -4,8 +4,7 @@
 /**
 * 通用接受包，表示上一个操作已接受
 */
-CRP_STRUCTURE
-{
+CRP_STRUCTURE {
 } CRPPacketOK;
 
 __attribute_malloc__

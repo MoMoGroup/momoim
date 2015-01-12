@@ -19,8 +19,7 @@ int main()
             .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_port=htons(8014)
     };
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
-    {
+    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
         perror("Connect");
         return 1;
     }
@@ -31,8 +30,7 @@ int main()
     CRPBaseHeader *header;
     log_info("Hello", "Waiting OK\n");
     header = CRPRecv(NetContext);
-    if (header->packetID != CRP_PACKET_OK)
-    {
+    if (header->packetID != CRP_PACKET_OK) {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 1;
     }
@@ -40,8 +38,7 @@ int main()
     char sendKey[32], iv[32];
     CRPSwitchProtocolSend(NetContext, 1, sendKey, iv);
     header = CRPRecv(NetContext);
-    if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL)
-    {
+    if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL) {
         log_error("SwitchProtocol", "Recv Packet:%d\n", header->packetID);
         return 1;
     }
@@ -62,13 +59,11 @@ int main()
 
     log_info("Login", "Waiting OK\n");
     header = CRPRecv(NetContext);
-    switch (header->packetID)
-    {
+    switch (header->packetID) {
         case CRP_PACKET_LOGIN_ACCEPT:
             log_info("Login", "Successful\n");
             break;
-        case CRP_PACKET_FAILURE:
-        {
+        case CRP_PACKET_FAILURE: {
             CRPPacketFailure *failure = CRPFailureCast(header);
             char *s = (char *) malloc(header->totalLength - sizeof(CRPBaseHeader) + 1);
             memcpy(s, failure->reason, header->totalLength - sizeof(CRPBaseHeader));
@@ -88,16 +83,12 @@ int main()
         free(ac);
     CRPInfoRequestSend(NetContext, 0, uid); //请求用户资料
     CRPFriendRequestSend(NetContext, 0);    //请求用户好友列表
-    while (!errno)
-    {
+    while (!errno) {
         header = CRPRecv(NetContext);
-        switch (header->packetID)
-        {
-            case CRP_PACKET_INFO_DATA:
-            {
+        switch (header->packetID) {
+            case CRP_PACKET_INFO_DATA: {
                 CRPPacketInfoData *infoData = CRPInfoDataCast(header);
-                if (infoData->info.uid == uid)
-                {
+                if (infoData->info.uid == uid) {
                     infoData->info.icon[15] = 2;
                     CRPInfoDataSend(NetContext, 0, 0, &infoData->info);
                     log_info("User", "Nick:%s\n", infoData->info.nickName);
@@ -107,8 +98,7 @@ int main()
                     free(infoData);
                 break;
             }
-            case CRP_PACKET_FILE_DATA_START:
-            {
+            case CRP_PACKET_FILE_DATA_START: {
                 CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
                 log_info("Icon", "%lu bytes will be received\n", packet->dataLength);
                 CRPOKSend(NetContext, header->sessionID);
@@ -120,34 +110,27 @@ int main()
                 CRPOKSend(NetContext, header->sessionID);
                 log_info("Icon", "Recv data %lu bytes.\n", header->totalLength - sizeof(CRPBaseHeader));
                 break;
-            case CRP_PACKET_FILE_DATA_END:
-            {
+            case CRP_PACKET_FILE_DATA_END: {
                 CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
-                if (packet->code == 0)
-                {
+                if (packet->code == 0) {
                     log_info("Icon", "Recv Successful\n");
                 }
-                else
-                {
+                else {
                     log_info("Icon", "Recv Fail with code %d", (int) packet->code);
                 }
                 if ((const char *) packet != header->data)
                     free(packet);
                 break;
             }
-            case CRP_PACKET_FRIEND_DATA:
-            {
+            case CRP_PACKET_FRIEND_DATA: {
                 UserFriends *friends = UserFriendsDecode((unsigned char *) header->data);
                 log_info("Friends", "Group Count:%d\n", friends->groupCount);
-                for (int i = 0; i < friends->groupCount; ++i)
-                {
+                for (int i = 0; i < friends->groupCount; ++i) {
                     UserGroup *group = friends->groups + i;
                     log_info(group->groupName, "GroupID:%d\n", group->groupId);
                     log_info(group->groupName, "FriendCount:%d\n", group->friendCount);
-                    for (int j = 0; j < group->friendCount; ++j)
-                    {
-                        if (group->friends[j] != uid)
-                        {
+                    for (int j = 0; j < group->friendCount; ++j) {
+                        if (group->friends[j] != uid) {
                             CRPInfoRequestSend(NetContext, 1, group->friends[j]); //请求用户资料
                         }
                         log_info(group->groupName, "Friend:%u\n", group->friends[j]);
@@ -156,8 +139,7 @@ int main()
                 UserFriendsFree(friends);
                 break;
             }
-            case CRP_PACKET_FAILURE:
-            {
+            case CRP_PACKET_FAILURE: {
                 CRPPacketFailure *failure = CRPFailureCast(header);
                 log_error("g", "Error %d - %s. %s.\n", failure->code, strerror(failure->code), failure->reason);
                 break;

@@ -27,37 +27,29 @@ int newsockfd()
     newpwd2 = gtk_entry_get_text(GTK_ENTRY(passwd2));
     newnick = gtk_entry_get_text(GTK_ENTRY(mnickname));
 
-    if ((strlen(newname) != 0) && (strlen(newpwd) != 0) && (strlen(newpwd2) != 0) && (strlen(newnick) != 0))
-    {
+    if ((strlen(newname) != 0) && (strlen(newpwd) != 0) && (strlen(newpwd2) != 0) && (strlen(newnick) != 0)) {
         int charnum, number = 0;
-        for (charnum = 0; newname[charnum];)
-        {
+        for (charnum = 0; newname[charnum];) {
 
             if ((isalnum(newname[charnum]) != 0) || (newname[charnum] == '@')
-                                                    || (newname[charnum] == '.') || (newname[charnum] == '-') || (newname[charnum] == '_'))
-            {
-                if (isdigit(newname[charnum]) != 0)
-                {
+                    || (newname[charnum] == '.') || (newname[charnum] == '-') || (newname[charnum] == '_')) {
+                if (isdigit(newname[charnum]) != 0) {
                     number++;
                 }
                 charnum++;
             }
-            else
-            {
+            else {
                 break;
             }
         }
-        if (charnum == strlen(newname))
-        {
+        if (charnum == strlen(newname)) {
             int fd = socket(AF_INET, SOCK_STREAM, 0);
-            if (number == charnum)
-            {
+            if (number == charnum) {
                 log_info("登录名全为数字", "登录名全为数字\n");
                 popup("莫默告诉你：", "登录名全为数字");
                 return 1;
             }
-            if (g_strcmp0(newpwd, newpwd2) != 0)
-            {
+            if (g_strcmp0(newpwd, newpwd2) != 0) {
                 log_info("密码不一致", "密码不一致\n");
                 popup("莫默告诉你：", "两次密码不一致");
                 return 1;
@@ -67,8 +59,7 @@ int newsockfd()
                     .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
                     .sin_port=htons(8014)
             };
-            if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
-            {
+            if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr))) {
                 perror("Connect");
                 return 0;
             }
@@ -78,8 +69,7 @@ int newsockfd()
             CRPBaseHeader *header;
             log_info("Hello", "Waiting OK\n");
             header = CRPRecv(sockfd);
-            if (header->packetID != CRP_PACKET_OK)
-            {
+            if (header->packetID != CRP_PACKET_OK) {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
                 return 1;
             }
@@ -89,8 +79,7 @@ int newsockfd()
             log_info("注册ing", "momo\n");
             header = CRPRecv(sockfd);
 
-            if (header->packetID != CRP_PACKET_OK)
-            {
+            if (header->packetID != CRP_PACKET_OK) {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
                 popup("莫默告诉你：", "登录名已经存在");
                 return 1;
@@ -102,15 +91,13 @@ int newsockfd()
             gtk_widget_destroy(newwindow);
             CRPClose(sockfd);
         }
-        else
-        {
+        else {
             log_info("不合格字符", "momo\n");
             popup("莫默告诉你：", "包含不合格字符");
             return 1;
         }
     }
-    else
-    {
+    else {
         log_info("注册信息不完整", "momo\n");
         popup("莫默告诉你：", "请完善注册信息");
         return 1;
@@ -119,15 +106,15 @@ int newsockfd()
 
 static void create_zhucefaces()
 {
-    surface1 = cairo_image_surface_create_from_png("注册背景.png");
+    surface1 = ChangeThem_png("注册背景.png");
 
-    surface3 = cairo_image_surface_create_from_png("注册按钮.png");
-    surface32 = cairo_image_surface_create_from_png("注册按钮3.png");
-    surface33 = cairo_image_surface_create_from_png("注册按钮2.png");
+    surface3 = ChangeThem_png("注册按钮.png");
+    surface32 = ChangeThem_png("注册按钮3.png");
+    surface33 = ChangeThem_png("注册按钮2.png");
 
-    surface8 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    surface82 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    surface83 = cairo_image_surface_create_from_png("关闭按钮3.png");
+    surface8 = ChangeThem_png("关闭按钮1.png");
+    surface82 = ChangeThem_png("关闭按钮2.png");
+    surface83 = ChangeThem_png("关闭按钮3.png");
 }
 
 static void
@@ -149,8 +136,7 @@ static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *
 {
 
     gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_ARROW));
-    if (event->button == 1)
-    { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+    if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                 event->x_root, event->y_root, event->time);
     }
@@ -163,8 +149,7 @@ static gint zhuce_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 {
 
 
-    if (event->button == 1)
-    {        //设置注册按钮
+    if (event->button == 1) {        //设置注册按钮
         gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) mminfo, surface32); //置换图标
     }
@@ -176,8 +161,7 @@ static gint zhuce_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 static gint zhuce_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
-    if (event->button == 1)
-    {
+    if (event->button == 1) {
         newsockfd();
     }
 
@@ -207,8 +191,7 @@ static gint zhuce_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标点击事件
 static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    if (event->button == 1)
-    {              //设置关闭按钮
+    if (event->button == 1) {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) endwind, surface82); //置换图标
     }
@@ -267,28 +250,28 @@ int newface()
     endwind = gtk_image_new_from_surface(surface8);
 
     newbackground_event_box = BuildEventBox(background1,
-                                            G_CALLBACK(newbackground_button_press_event),
-                                            NULL,
-                                            NULL,
-                                            NULL,
-                                            NULL,
-                                            NULL);
+            G_CALLBACK(newbackground_button_press_event),
+            NULL,
+            NULL,
+            NULL,
+            NULL,
+            NULL);
 
     zhuce_event_box = BuildEventBox(mminfo,
-                                    G_CALLBACK(zhuce_button_press_event),
-                                    G_CALLBACK(zhuce_enter_notify_event),
-                                    G_CALLBACK(zhuce_leave_notify_event),
-                                    G_CALLBACK(zhuce_button_release_event),
-                                    NULL,
-                                    NULL);
+            G_CALLBACK(zhuce_button_press_event),
+            G_CALLBACK(zhuce_enter_notify_event),
+            G_CALLBACK(zhuce_leave_notify_event),
+            G_CALLBACK(zhuce_button_release_event),
+            NULL,
+            NULL);
 
     closebut_event_box = BuildEventBox(endwind,
-                                       G_CALLBACK(closebut_button_press_event),
-                                       G_CALLBACK(closebut_enter_notify_event),
-                                       G_CALLBACK(closebut_leave_notify_event),
-                                       G_CALLBACK(closebut_button_release_event),
-                                       NULL,
-                                       NULL);
+            G_CALLBACK(closebut_button_press_event),
+            G_CALLBACK(closebut_enter_notify_event),
+            G_CALLBACK(closebut_leave_notify_event),
+            G_CALLBACK(closebut_button_release_event),
+            NULL,
+            NULL);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), newbackground_event_box, 0, 0);//起始坐标
     gtk_widget_set_size_request(GTK_WIDGET(background1), 500, 500);
     gtk_fixed_put(GTK_FIXED(zhuceLayout), zhuce_event_box, 20, 440);
