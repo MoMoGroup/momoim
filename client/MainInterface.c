@@ -64,6 +64,7 @@ GtkTreeModel *createModel()
         cairo_show_text(cr, friends->groups[i].groupName);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
         gtk_tree_store_append(TreeViewListStore, &iter1, NULL);
+
         gtk_tree_store_set(TreeViewListStore, &iter1,
                 PIXBUF_COL, pixbuf,
                 FRIENDUID_COL, (uint32_t) friends->groups[i].groupId,
@@ -787,6 +788,8 @@ int MainInterFace()
 //
     //    //右键菜单
     GtkWidget *menu1, *menu2;
+    GtkWidget *up;
+    GtkWidget *down;
     GtkWidget *add;
     GtkWidget *delete;
     GtkWidget *rename;
@@ -796,12 +799,22 @@ int MainInterFace()
     GtkWidget *deletefriend;
     GtkWidget *remark;
     GtkWidget *sendfile;
-    GtkWidget *lookinfo;
+    GtkWidget *lookinfo, *mov;
     //分组菜单
     menu1 = gtk_menu_new();
+
+    up = gtk_menu_item_new_with_mnemonic("分组上移");
+    gtk_container_add(GTK_CONTAINER(menu1), up);
+    gtk_widget_show(up);
+
+    down = gtk_menu_item_new_with_mnemonic("分组下移");
+    gtk_container_add(GTK_CONTAINER(menu1), down);
+    gtk_widget_show(down);
+
     add = gtk_menu_item_new_with_mnemonic("添加分组");
     gtk_container_add(GTK_CONTAINER(menu1), add);
     gtk_widget_show(add);
+
     delete = gtk_menu_item_new_with_mnemonic("删除分组");
     gtk_container_add(GTK_CONTAINER(menu1), delete);
     gtk_widget_show(delete);
@@ -818,6 +831,14 @@ int MainInterFace()
 
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
             G_CALLBACK(button2_press_event2), (gpointer) menu1);
+    //分组上移事件
+    g_signal_connect(G_OBJECT(up), "button_release_event",
+                     G_CALLBACK(UpGroupButtonPressEvent), treeView);
+
+    //分组下移事件
+    g_signal_connect(G_OBJECT(down), "button_press_event",
+                     G_CALLBACK(DownGroupButtonPressEvent), treeView);
+
     //添加分组事件
     g_signal_connect(G_OBJECT(add), "button_release_event",
                      G_CALLBACK(AddGroupButtonPressEvent), (gpointer) menu1);
@@ -849,6 +870,9 @@ int MainInterFace()
     lookinfo = gtk_menu_item_new_with_mnemonic("查看资料");
     gtk_container_add(GTK_CONTAINER(menu2), lookinfo);
     gtk_widget_show(lookinfo);
+    mov = gtk_menu_item_new_with_mnemonic("移动分组");
+    gtk_container_add(GTK_CONTAINER(menu2), mov);
+    gtk_widget_show(mov);
 
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
             G_CALLBACK(button2_press_event), (gpointer) menu2);
