@@ -6,6 +6,7 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
+#include <imcommon/user.h>
 #include "common.h"
 #include "addfriend.h"
 #include "chartmessage.h"
@@ -173,8 +174,7 @@ static void loadinfo()
         char userhead[80] = {0};
         static cairo_t *cr;
         cairo_surface_t *surface;
-
-        sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
+        HexadecimalConversion(userhead, CurrentUserInfo->icon);
         //加载一个图片
         surface = cairo_image_surface_create_from_png(userhead);
         int w = cairo_image_surface_get_width(surface);

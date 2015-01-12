@@ -21,9 +21,8 @@ typedef struct __attribute__ ((packed))
     char provinces[10];
     char city[35];
     char tel[15];
-    char school[28];
-    char hometown[51];
+    char mail[32];
+    char motto[256];
     time_t lastlogout;
     uint32_t level;
-    int postcode;
 } UserInfo;
