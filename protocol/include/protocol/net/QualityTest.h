@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include "imcommon/message.h"
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint16_t seq;
     char pad[1024 - sizeof(uint16_t)];
 } CRPPacketNETQualityTest;

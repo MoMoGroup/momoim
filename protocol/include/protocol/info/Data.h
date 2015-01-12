@@ -8,7 +8,8 @@
 * 服务端回复用户资料
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     UserInfo info;
     int isOnline;
 } CRPPacketInfoData;

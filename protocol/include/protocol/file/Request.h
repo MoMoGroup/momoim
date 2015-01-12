@@ -7,7 +7,8 @@
 * 请求服务器数据
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint8_t type;
     //0为请求共享区数据,1为请求用户私有数据
     unsigned char key[16];//数据密钥

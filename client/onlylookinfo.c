@@ -38,7 +38,7 @@ static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *even
     gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1) {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   event->x_root, event->y_root, event->time);
     }
     return 0;
 }
@@ -205,40 +205,40 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     friendinfonode->Infochange = gtk_image_new_from_surface(Surfacechange);
 
     Infobackg_event_box = BuildEventBox(friendinfonode->Infobackground,
-            G_CALLBACK(Infobackg_button_press_event),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            friendinfonode);
+                                        G_CALLBACK(Infobackg_button_press_event),
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        friendinfonode);
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Infobackg_event_box, 0, 0);
 
     Cancel_event_box = BuildEventBox(friendinfonode->Infocancel,
-            G_CALLBACK(cancel_button_press_event),
-            G_CALLBACK(cancel_enter_notify_event),
-            G_CALLBACK(cancel_leave_notify_event),
-            G_CALLBACK(cancel_button_release_event),
-            NULL,
-            friendinfonode);
+                                     G_CALLBACK(cancel_button_press_event),
+                                     G_CALLBACK(cancel_enter_notify_event),
+                                     G_CALLBACK(cancel_leave_notify_event),
+                                     G_CALLBACK(cancel_button_release_event),
+                                     NULL,
+                                     friendinfonode);
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Cancel_event_box, 450, 440);
 
     Guanxx_event_box = BuildEventBox(friendinfonode->Infoguanbi,
-            G_CALLBACK(guanxx_button_press_event),
-            G_CALLBACK(guanxx_enter_notify_event),
-            G_CALLBACK(guanxx_leave_notify_event),
-            G_CALLBACK(guanxx_button_release_event),
-            NULL,
-            friendinfonode);
+                                     G_CALLBACK(guanxx_button_press_event),
+                                     G_CALLBACK(guanxx_enter_notify_event),
+                                     G_CALLBACK(guanxx_leave_notify_event),
+                                     G_CALLBACK(guanxx_button_release_event),
+                                     NULL,
+                                     friendinfonode);
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Guanxx_event_box, 509, 0);
 
     if (CurrentUserInfo->uid == friendinfonode->user.uid) {
         Change_event_box = BuildEventBox(friendinfonode->Infochange,
-                G_CALLBACK(change_button_press_event),
-                G_CALLBACK(change_enter_notify_event),
-                G_CALLBACK(change_leave_notify_event),
-                G_CALLBACK(change_button_release_event),
-                NULL,
-                friendinfonode);
+                                         G_CALLBACK(change_button_press_event),
+                                         G_CALLBACK(change_enter_notify_event),
+                                         G_CALLBACK(change_leave_notify_event),
+                                         G_CALLBACK(change_button_release_event),
+                                         NULL,
+                                         friendinfonode);
         gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Change_event_box, 350, 440);
     }
 

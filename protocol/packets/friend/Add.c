@@ -18,7 +18,11 @@ int CRPFriendAddSend(CRPContext context, uint32_t sessionID, uint32_t uid, const
     CRPPacketFriendAdd *packet = (CRPPacketFriendAdd *) malloc(sizeof(CRPPacketFriendAdd) + lenNote);
     packet->uid = uid;
     memcpy(packet->note, note, lenNote);
-    ret = CRPSend(context, CRP_PACKET_FRIEND_ADD, sessionID, packet, (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendAdd) + lenNote)) != -1;
+    ret = CRPSend(context,
+                  CRP_PACKET_FRIEND_ADD,
+                  sessionID,
+                  packet,
+                  (CRP_LENGTH_TYPE) (sizeof(CRPPacketFriendAdd) + lenNote)) != -1;
     free(packet);
     return ret;
 }

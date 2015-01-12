@@ -48,7 +48,7 @@ FriendInfo *FineNode(uint32_t uid)
     {
         p = p->next;
 
-        if(p->uid==uid)
+        if (p->uid == uid)
         {
             return p;
         }
@@ -295,7 +295,8 @@ int mysockfd()
         MD5((unsigned char *) pwd, strlen(pwd), hash);
         CRPLoginLoginSend(sockfd, 0, name, hash);//发送用户名密码
     }
-    else {
+    else
+    {
         CRPLoginLoginSend(sockfd, 0, name, pwd);
     }
 
@@ -315,8 +316,10 @@ int mysockfd()
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
     {
         log_info("登录成功", "登录成功\n");
+        sleep(1);//登录动画
         //将记住的密码保存本地
-        if ((FlagRemember == 1) && (FirstPwd == 1)) {
+        if ((FlagRemember == 1) && (FirstPwd == 1))
+        {
             FILE *passwdfp;
             char mulu_benji[80], mulu_username[80];
             sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
@@ -367,9 +370,9 @@ int mysockfd()
                 };
                 case CRP_PACKET_INFO_DATA: //用户资料回复
                 {
-                        CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+                    CRPPacketInfoData *infodata = CRPInfoDataCast(header);
 
-                        CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
+                    CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//请求用户资料,通过ssionID区别
 
                     FriendInfo *node;
                     node = (FriendInfo *) calloc(1, sizeof(FriendInfo));
@@ -382,7 +385,7 @@ int mysockfd()
                     if (node->uid == uid)//用户自己
                     {
                         CurrentUserInfo = &node->user;
-                        node->inonline=1;
+                        node->inonline = 1;
                         log_info("user nickname:", "%s\n", infodata->info.nickName);
                     }
 
@@ -393,7 +396,6 @@ int mysockfd()
                 case CRP_PACKET_FILE_DATA_START://服务器准备发送头像
                 {
                     CRPPacketFileDataStart *packet = CRPFileDataStartCast(header);
-
 
                     {
                         sprintf(mulu2, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, header->sessionID);
@@ -462,10 +464,23 @@ int mysockfd()
                 {
 
                     CRPPacketFileDataEnd *packet = CRPFileDataEndCast(header);
+                    log_info("FileDataEnd", "Session:%u\n", header->sessionID);
 
 
                     int friendnum = 0;
                     FriendInfo *node;
+                    node = FriendInfoHead;
+                    while (node)
+                    {
+                        if (node->uid == header->sessionID)
+                        {
+                            fclose(node->fp);
+                            node->flag = 1;//接受完毕，标志位1;
+                            friendnum++;//接受完毕的个数加1
+                            break;
+                        }
+                        node = node->next;
+                    }
 
 
                     node = FriendInfoHead;
@@ -477,12 +492,11 @@ int mysockfd()
                         }
                         node = node->next;
                     }
-
-                        if (node == NULL)
-                        {
-                            g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
-                            loop = 0;
-                        }
+                    if (node == NULL)
+                    {
+                        g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
+                        loop = 0;
+                    }
 
 
                     if ((void *) packet != header->data) {

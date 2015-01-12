@@ -13,5 +13,12 @@ extern int DeleteGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event,
 //重命名
 extern int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
+//上移
+extern int UpGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data);
+
+//上移
+extern int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data);
+
+
 
 

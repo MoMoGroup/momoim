@@ -9,6 +9,13 @@
 
 GtkWidget *add_group_window;
 GtkTextView *new_group_name;
+//pop……………………………………………………………………………………………………
+
+int pop(void *data)
+{
+    popup("系统消息", data);
+    return 0;
+}
 
 //拖拽窗口
 static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -18,7 +25,7 @@ static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer dat
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   event->x_root, event->y_root, event->time);
     }
     return 0;
 }
@@ -51,10 +58,10 @@ int add_group_recv(CRPBaseHeader *header, void *data)
 
         gtk_tree_store_append(TreeViewListStore, &itergroup, NULL);
         gtk_tree_store_set(TreeViewListStore, &itergroup,
-                PIXBUF_COL, pixbuf,
-                FRIENDUID_COL, (uint32_t) group->groupId,
-                PRIORITY_COL, (int64_t) 0,
-                -1);
+                           PIXBUF_COL, pixbuf,
+                           FRIENDUID_COL, (uint32_t) group->groupId,
+                           PRIORITY_COL, (int64_t) -group->groupId,
+                           -1);
         UserFriendsGroupAdd(friends, group->groupId, group->groupName);
         // friends
         g_object_unref(pixbuf);
@@ -175,14 +182,21 @@ int AddGroupButtonPressEvent()
 //删除分组………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 //……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 
-uint32_t usg;
+uint32_t del_usg;
 GtkTreeIter del_iterGroup;
 
-int delete_group_recv()
+int delete_group_recv(CRPBaseHeader *header, void *data)
 {
-    gtk_tree_store_remove(TreeViewListStore, &del_iterGroup);
-    UserFriendsGroupDelete(friends, usg);
-    return 0;
+    if (header->packetID = CRP_PACKET_OK)
+    {
+        gtk_tree_store_remove(TreeViewListStore, &del_iterGroup);
+        UserFriendsGroupDelete(friends, del_usg);
+        return 0;
+    }
+    else
+    {
+        g_idle_add(pop, "删除失败");
+    }
 }
 
 
@@ -198,11 +212,11 @@ int DeleteGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
     {
 
 
-        gtk_tree_model_get(model, &del_iterGroup, FRIENDUID_COL, &usg, -1);//第一个分组id
-        log_info("Group id", "%u\n", usg);
+        gtk_tree_model_get(model, &del_iterGroup, FRIENDUID_COL, &del_usg, -1);//分组id
+        log_info("Group id", "%u\n", del_usg);
 
 
-        if (usg == 0 || usg == 1)
+        if (del_usg == 0 || del_usg == 1)
         {
             popup("系统消息", "不能删除默认分组");
         }
@@ -210,7 +224,7 @@ int DeleteGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
         {
             session_id_t sessionid = CountSessionId();//注册会话接受服务器
             AddMessageNode(sessionid, delete_group_recv, NULL);
-            CRPFriendGroupDeleteSend(sockfd, sessionid, usg);//删除分组请求
+            CRPFriendGroupDeleteSend(sockfd, sessionid, del_usg);//删除分组请求
 
         }
 
@@ -230,9 +244,8 @@ int DeleteGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
 uint8_t rename_group_id;
 GtkWidget *new_group_text;
 
-int rename_group_recv(CRPBaseHeader *header, void *data)
+int rename_group(void *data)
 {
-
     UserGroup *fakeGroup = data;
 
     UserGroup *realGroup = UserFriendsGroupGet(friends, rename_group_id);//更新friends对象
@@ -243,7 +256,11 @@ int rename_group_recv(CRPBaseHeader *header, void *data)
     GtkTreeIter rename_itergroup;
 
     gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &rename_itergroup);
-    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &rename_itergroup, FRIENDUID_COL, &rename_usg, -1);//第一个分组id
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore),
+                       &rename_itergroup,
+                       FRIENDUID_COL,
+                       &rename_usg,
+                       -1);//第一个分组id
 
     while (1)
     {
@@ -252,7 +269,11 @@ int rename_group_recv(CRPBaseHeader *header, void *data)
             break;
         }
 
-        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &rename_itergroup, FRIENDUID_COL, &rename_usg, -1);//拿到id
+        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore),
+                           &rename_itergroup,
+                           FRIENDUID_COL,
+                           &rename_usg,
+                           -1);//拿到id
         if (rename_usg == fakeGroup->groupId)
         {
             //说明找到了，结束循环
@@ -276,7 +297,21 @@ int rename_group_recv(CRPBaseHeader *header, void *data)
                        PIXBUF_COL, pixbuf,
                        -1);
     g_object_unref(pixbuf);
+    return 0;
+}
+int rename_group_recv(CRPBaseHeader *header, void *data)
+{
+    if (header->packetID = CRP_PACKET_OK)
+    {
 
+        g_idle_add(rename_group, data);
+
+    }
+    else
+    {
+        g_idle_add(pop, "重命名失败");
+
+    }
     return 0;
 }
 
@@ -286,8 +321,6 @@ static gint done_rename_event(GtkWidget *widget, GdkEventButton *event, gpointer
     char *rename_group_name;//分组名称
     rename_group_name = gtk_entry_get_text(new_group_text);
 
-    log_info("Rename Group Name", "%s\n", rename_group_name);
-    log_info("rename group Id", "%u\n", rename_group_id);
     if (rename_group_id == 1 || rename_group_id == 0)//黑名单或者我的好友
     {
         popup("系统消息", "不能修改默认分组");
@@ -318,6 +351,7 @@ static gint close_rename_event(GtkWidget *widget, GdkEventButton *event, gpointe
     gtk_widget_destroy(GTK_WIDGET(data));
     return 0;
 }
+
 
 int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -379,18 +413,251 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
     return 0;
 }
 
+//分组上移……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+//………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 
-//拿到分组ID的函数……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+int up_group(void *data)
+{
+
+//遍历iter
+    uint32_t gid = data;
+    uint32_t usg;
+    int64_t priority;
+    int64_t next_priority;
+    GtkTreeIter up_itergroup;
+    log_info("选中的之前组ID2", "%u\n", gid);
+
+
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup, FRIENDUID_COL, &usg, -1);//第一个分组id
+
+    while (1)
+    {
+        if (usg == gid)//第一个就是要改变的
+        {
+            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore),
+                               &up_itergroup,
+                               PRIORITY_COL,
+                               &priority,
+                               -1);//拿到第1个PRIORITY_COL
+            gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);//后移
+            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore),
+                               &up_itergroup,
+                               PRIORITY_COL,
+                               &next_priority,
+                               -1);//拿到第2个PRIORITY_COL
+            break;
+        }
+
+        if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup))//没有找到的华结束循环
+        {
+            break;
+        }
+        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup, FRIENDUID_COL, &usg, -1);//分组id
+
+    }
+
+    log_info("PRIORITY_COL", "%d\n", priority);
+    log_info("PRIORITY_next COL", "%d\n", next_priority);
+
+
+    gtk_tree_store_set(TreeViewListStore, &up_itergroup,
+                       PRIORITY_COL, priority,
+                       -1);
+    gtk_tree_model_iter_previous(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);//前移
+
+    gtk_tree_store_set(TreeViewListStore, &up_itergroup,
+                       PRIORITY_COL, next_priority,
+                       -1);
+    return 0;
+}
+
+int up_group_recv(CRPBaseHeader *header, void *data)
+{
+    if (header->packetID == CRP_PACKET_OK)
+    {
+        g_idle_add(up_group, data);
+    }
+    else
+    {
+        log_info("上移失败\n", "");
+    }
+}
+
+
+int UpGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    int64_t up_priority;
+    int64_t previous_priority;
+    uint32_t up_gid;
+    uint32_t pre_gid;
+    GtkTreeIter up_iter_group;
+    GtkTextIter tem_iter;
+
+
+    GtkTreeView *treeview = GTK_TREE_VIEW(data);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+    gtk_tree_selection_get_selected(selection, &model, &up_iter_group);//拿到选中的分组
+
+    gtk_tree_model_get(model, &up_iter_group, FRIENDUID_COL, &up_gid, -1);//拿到选中的组id
+    gtk_tree_model_get(model, &up_iter_group, PRIORITY_COL, &up_priority, -1);//拿到选中的权值
+
+
+
+    // memcpy(&tem_iter, &up_iter_group, sizeof(up_iter_group));
+    if (gtk_tree_model_iter_previous(GTK_TREE_MODEL(TreeViewListStore), &up_iter_group) != 0)
+    {
+        gtk_tree_model_get(model, &up_iter_group, FRIENDUID_COL, &pre_gid, -1);//拿到选中的前一个组id
+
+
+        log_info("选中的之前组ID1", "%u\n", pre_gid);
+
+
+        session_id_t sessionid = CountSessionId();
+        AddMessageNode(sessionid, up_group_recv, pre_gid);
+        CRPFriendGroupMoveSend(sockfd, sessionid, up_gid, pre_gid);
+
+
+//    log_info("选中的上一个权值", "%d\n",up_iter_group);
+    }
+    else
+    {
+        g_idle_add(pop, "已经是第一个分组");
+    }
+
+    return 0;
+}
+
+
+//分组下移……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+//…………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+
+
+int down_grou(void *data)
+{
+    uint32_t gid = data;
+    uint32_t usg;
+    int64_t priority;
+    int64_t next_priority;
+    GtkTreeIter up_itergroup;
+
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup, FRIENDUID_COL, &usg, -1);//第一个分组id
+
+    while (1)
+    {
+        if (usg == gid)//第一个就是要改变的
+        {
+            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore),
+                               &up_itergroup,
+                               PRIORITY_COL,
+                               &priority,
+                               -1);//拿到第1个PRIORITY_COL
+            gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);//后移
+            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore),
+                               &up_itergroup,
+                               PRIORITY_COL,
+                               &next_priority,
+                               -1);//拿到第2个PRIORITY_COL
+            break;
+        }
+
+        if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup))//没有找到的华结束循环
+        {
+            break;
+        }
+        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup, FRIENDUID_COL, &usg, -1);//分组id
+
+    }
+
+    log_info("PRIORITY_COL", "%d\n", priority);
+    log_info("PRIORITY_next COL", "%d\n", next_priority);
+
+
+    gtk_tree_store_set(TreeViewListStore, &up_itergroup,
+                       PRIORITY_COL, priority,
+                       -1);
+    gtk_tree_model_iter_previous(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);//前移
+
+    gtk_tree_store_set(TreeViewListStore, &up_itergroup,
+                       PRIORITY_COL, next_priority,
+                       -1);
+    return 0;
+}
+
+int down_group_recv(CRPBaseHeader *header, void *data)
+{
+
+    if (header->packetID == CRP_PACKET_OK)
+    {
+//遍历iter
+        g_idle_add(down_grou, data);
+
+    }
+    else
+    {
+    }
+}
+
+int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    int64_t up_priority;
+    int64_t next_priority;
+
+    uint32_t current_gid;
+    uint32_t next_gid;
+    GtkTreeIter up_iter_group;
+    GtkTextIter tem_iter;
+
+
+    GtkTreeView *treeview = GTK_TREE_VIEW(data);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+    gtk_tree_selection_get_selected(selection, &model, &up_iter_group);//拿到选中的分组
+
+    gtk_tree_model_get(model, &up_iter_group, FRIENDUID_COL, &current_gid, -1);//拿到选中的组id
+    gtk_tree_model_get(model, &up_iter_group, PRIORITY_COL, &up_priority, -1);//拿到选中的权值
+
+
+
+
+    //memcpy(&tem_iter, &up_iter_group, sizeof(up_iter_group));
+    if (gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &up_iter_group) != 0)
+    {
+        gtk_tree_model_get(model, &up_iter_group, FRIENDUID_COL, &next_gid, -1);//拿到选中的后一个权值
+
+
+
+        session_id_t sessionid = CountSessionId();
+        AddMessageNode(sessionid, down_group_recv, current_gid);
+        CRPFriendGroupMoveSend(sockfd, sessionid, next_gid, current_gid);
+
+    }
+    else
+    {
+        g_idle_add(pop, "已经是最后一个分组");
+
+    }
+
+    return 0;
+}
+
+
+
+
+//拿到分组ID的函数……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+//…………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+
 int get_group_id(gpointer data)
 {
     GtkTreeIter iterGroup;
+    uint8_t usg;
 
     GtkTreeView *treeview = GTK_TREE_VIEW(data);
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iterGroup);
-
-    gtk_tree_model_iter_has_child(model, &iterGroup);
 
     gtk_tree_model_get(model, &iterGroup, FRIENDUID_COL, &usg, -1);//第一个分组id
     log_info("Group id", "%u\n", usg);
@@ -398,4 +665,5 @@ int get_group_id(gpointer data)
 
     log_info("删除分组", "\n");
     return usg;
+
 }

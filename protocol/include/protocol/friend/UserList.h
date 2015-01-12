@@ -7,7 +7,8 @@
 * 请求好友列表
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint16_t count;
     uint32_t users[0];
 } CRPPacketFriendUserList;

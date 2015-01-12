@@ -7,7 +7,8 @@
 * 请求好友列表
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint8_t page;
     uint8_t size;
     char text[0];

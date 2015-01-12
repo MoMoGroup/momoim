@@ -27,10 +27,12 @@ HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], void(*fn)(struct 
     memcpy(entry->key, key, 32);
     entry->prev = table.last;
     entry->next = NULL;
-    if (table.last) {
+    if (table.last)
+    {
         table.first = table.last = entry;
     }
-    else {
+    else
+    {
         table.last->next = entry;
     }
     pthread_rwlock_unlock(&lock);
@@ -40,10 +42,12 @@ HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], void(*fn)(struct 
 int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
 {
     pthread_rwlock_wrlock(&lock);
-    if (entry->prev) {
+    if (entry->prev)
+    {
         entry->prev->next = entry->next;
     }
-    else if (entry == table.first) {
+    else if (entry == table.first)
+    {
         table.first = entry->next;
     }
     if (table.last == entry)
@@ -57,13 +61,16 @@ void NatHostDiscoverNotify(struct sockaddr_in *address, const char key[32])
 {
     HostDiscoverEntry *entry = NULL;
     pthread_rwlock_rdlock(&lock);
-    for (entry = table.first; entry != NULL; entry = entry->next) {
-        if (memcmp(key, entry->key, 32) == 0) {
+    for (entry = table.first; entry != NULL; entry = entry->next)
+    {
+        if (memcmp(key, entry->key, 32) == 0)
+        {
             break;
         }
     }
     pthread_rwlock_unlock(&lock);
-    if (entry) {
+    if (entry)
+    {
         entry->fn(address, entry->data);
         NatHostDiscoverUnregister(entry);
     }

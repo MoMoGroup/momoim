@@ -7,7 +7,8 @@
 * 分组重命名
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint8_t gid;
     char groupName[64];
 } CRPPacketFriendGroupRename;

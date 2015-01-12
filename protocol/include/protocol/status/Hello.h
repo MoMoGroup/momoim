@@ -7,7 +7,8 @@
 #include "../base.h"
 #include <stdint.h>
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint8_t protocolVersion;
     uint32_t clientVersion;
     uint32_t sessionState;

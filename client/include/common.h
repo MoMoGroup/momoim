@@ -5,7 +5,7 @@
 #include "protocol.h"
 
 extern GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release,
-        GCallback click, void *data);
+                                  GCallback click, void *data);
 
 extern session_id_t CountSessionId();//保护唯一的session不会冲突
 

@@ -3,12 +3,14 @@
 #include<pthread.h>
 #include "imcommon/friends.h"
 
-typedef struct {
+typedef struct
+{
     UserFriends *friends;
     pthread_rwlock_t lock, refLock;
 
 } UserFriendsEntry;
-typedef struct structUserFriendsTable {
+typedef struct structUserFriendsTable
+{
     UserFriendsEntry *entry;
     struct structUserFriendsTable *next[0x10];
 } UserFriendsTable;

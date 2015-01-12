@@ -8,7 +8,8 @@
 * 文件数据
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     size_t seq;
     CRP_LENGTH_TYPE length;
     char data[0];

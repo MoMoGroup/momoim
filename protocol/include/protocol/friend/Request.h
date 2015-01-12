@@ -7,7 +7,8 @@
 * 请求好友列表
 */
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
 } CRPPacketFriendRequest;
 
 __attribute_malloc__

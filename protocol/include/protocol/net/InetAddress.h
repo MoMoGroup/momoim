@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include "imcommon/message.h"
 
-CRP_STRUCTURE {
+CRP_STRUCTURE
+{
     uint32_t ipv4;
 } CRPPacketNETInetAddress;
 

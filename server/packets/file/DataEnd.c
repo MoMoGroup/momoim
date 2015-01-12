@@ -13,15 +13,18 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
     {
         CRPFailureSend(user->crp, session, ENOENT, "操作未找到");
     }
-    else {
+    else
+    {
         PUserOperationFileStore fop = (PUserOperationFileStore) op->data;
         close(fop->fd);
         fop->fd = -1;
-        if (fop->remainLength != 0) {
+        if (fop->remainLength != 0)
+        {
             unlink(fop->tmpfile);
             CRPFailureSend(user->crp, session, EBADF, "文件未结束");
         }
-        else {
+        else
+        {
             size_t len = DataFilePathLength;
             char *path = (char *) malloc(len);
             DataFilePath(fop->key, path);

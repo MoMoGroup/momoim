@@ -211,14 +211,14 @@ int calendar_change_birthday()
 static void create_infofaces()
 {
 
-    Surfaceback = ChangeThem_png("资料2.png");
-    Surfacesave = ChangeThem_png("保存.png");
-    Surfacesave1 = ChangeThem_png("保存2.png");
-    Surfacecancel = ChangeThem_png("资料取消.png");
-    Surfacecancel1 = ChangeThem_png("资料取消2.png");
-    Surfaceend = ChangeThem_png("关闭按钮1.png");
-    Surfaceend1 = ChangeThem_png("关闭按钮2.png");
-    Surfaceend2 = ChangeThem_png("关闭按钮3.png");
+    Surfaceback = cairo_image_surface_create_from_png("资料2.png");
+    Surfacesave = cairo_image_surface_create_from_png("保存.png");
+    Surfacesave1 = cairo_image_surface_create_from_png("保存2.png");
+    Surfacecancel = cairo_image_surface_create_from_png("资料取消.png");
+    Surfacecancel1 = cairo_image_surface_create_from_png("资料取消2.png");
+    Surfaceend = cairo_image_surface_create_from_png("关闭按钮1.png");
+    Surfaceend1 = cairo_image_surface_create_from_png("关闭按钮2.png");
+    Surfaceend2 = cairo_image_surface_create_from_png("关闭按钮3.png");
 
     Infobackground = gtk_image_new_from_surface(Surfaceback);
     Infosave = gtk_image_new_from_surface(Surfacesave);
@@ -339,7 +339,7 @@ static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *even
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   event->x_root, event->y_root, event->time);
         gtk_widget_hide(icalendar);
         RiliFlag = 0;
     }
@@ -651,50 +651,50 @@ int ChangeInfo()
     gtk_container_add(GTK_CONTAINER(Infowind), Infolayout);
 
     Infobackg_event_box = BuildEventBox(Infobackground,
-            G_CALLBACK(Infobackg_button_press_event),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL);
+                                        G_CALLBACK(Infobackg_button_press_event),
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL,
+                                        NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Infobackg_event_box, 0, 0);
 
     Save_event_box = BuildEventBox(Infosave,
-            G_CALLBACK(save_button_press_event),
-            G_CALLBACK(save_enter_notify_event),
-            G_CALLBACK(save_leave_notify_event),
-            G_CALLBACK(save_button_release_event),
-            NULL,
-            NULL);
+                                   G_CALLBACK(save_button_press_event),
+                                   G_CALLBACK(save_enter_notify_event),
+                                   G_CALLBACK(save_leave_notify_event),
+                                   G_CALLBACK(save_button_release_event),
+                                   NULL,
+                                   NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Save_event_box, 350, 440);
 
     Cancel_event_box = BuildEventBox(Infocancel,
-            G_CALLBACK(cancel_button_press_event),
-            G_CALLBACK(cancel_enter_notify_event),
-            G_CALLBACK(cancel_leave_notify_event),
-            G_CALLBACK(cancel_button_release_event),
-            NULL,
-            NULL);
+                                     G_CALLBACK(cancel_button_press_event),
+                                     G_CALLBACK(cancel_enter_notify_event),
+                                     G_CALLBACK(cancel_leave_notify_event),
+                                     G_CALLBACK(cancel_button_release_event),
+                                     NULL,
+                                     NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Cancel_event_box, 450, 440);
 
     Guanxx_event_box = BuildEventBox(Infoguanbi,
-            G_CALLBACK(guanxx_button_press_event),
-            G_CALLBACK(guanxx_enter_notify_event),
-            G_CALLBACK(guanxx_leave_notify_event),
-            G_CALLBACK(guanxx_button_release_event),
-            NULL,
-            NULL);
+                                     G_CALLBACK(guanxx_button_press_event),
+                                     G_CALLBACK(guanxx_enter_notify_event),
+                                     G_CALLBACK(guanxx_leave_notify_event),
+                                     G_CALLBACK(guanxx_button_release_event),
+                                     NULL,
+                                     NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
 
     infotv();
 
     touxiang_event_box = BuildEventBox(headicon,
-            G_CALLBACK(touxiang_button_press_event),
-            G_CALLBACK(touxiang_enter_notify_event),
-            G_CALLBACK(touxiang_leave_notify_event),
-            G_CALLBACK(touxiang_button_release_event),
-            NULL,
-            NULL);
+                                       G_CALLBACK(touxiang_button_press_event),
+                                       G_CALLBACK(touxiang_enter_notify_event),
+                                       G_CALLBACK(touxiang_leave_notify_event),
+                                       G_CALLBACK(touxiang_button_release_event),
+                                       NULL,
+                                       NULL);
     gtk_fixed_put(GTK_FIXED(Infolayout), touxiang_event_box, 23, 16);
     gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
 
