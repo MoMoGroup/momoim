@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 /**
-* 请求服务器数据
+* 数据结束
 */
 typedef enum {
     FEC_OK = 0,     //文件正常结束

@@ -68,6 +68,8 @@ int ProcessPacketFriendGroupMove(POnlineUser user, uint32_t session, CRPPacketFr
 
 int ProcessPacketFriendGroupRename(POnlineUser user, uint32_t session, CRPPacketFriendGroupRename *packet);
 
+int ProcessPacketFriendDiscover(POnlineUser user, uint32_t session, CRPPacketFriendDiscover *packet);
+
 //文件处理
 int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRequest *packet);
 

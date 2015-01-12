@@ -17,6 +17,10 @@ int ProcessPacketMessageRecordNext(POnlineUser user, uint32_t session, CRPPacket
                                          remain,
                                          message);
             }
+            else
+            {
+                break;
+            }
         }
         CRPOKSend(user->crp, session);
     }

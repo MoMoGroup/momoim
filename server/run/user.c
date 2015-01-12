@@ -20,10 +20,7 @@ PendingUsersTableType PendingUserTable = {
 pthread_rwlock_t OnlineUserTableLock, PendingUserTableLock;
 
 //消息处理器映射表
-static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user,
-                                                      uint32_t session,
-                                                      void *packet,
-                                                      CRPBaseHeader *header) = {
+static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, void *, CRPBaseHeader *) = {
         [CRP_PACKET_KEEP_ALIVE]           = (GeneralPacketProcessor) ProcessPacketStatusKeepAlive,
         [CRP_PACKET_HELLO]                = (GeneralPacketProcessor) ProcessPacketStatusHello,
         [CRP_PACKET_OK]                   = (GeneralPacketProcessor) ProcessPacketStatusOK,
@@ -46,13 +43,14 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser user,
         [CRP_PACKET_FRIEND_REQUEST]       = (GeneralPacketProcessor) ProcessPacketFriendRequest,
         [CRP_PACKET_FRIEND_ADD]           = (GeneralPacketProcessor) ProcessPacketFriendAdd,
         [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]=(GeneralPacketProcessor) ProcessPacketFriendSearchByNickname,
-        [CRP_PACKET_FRIEND_ACCEPT]        =  (GeneralPacketProcessor) ProcessPacketFriendAccept,
+        [CRP_PACKET_FRIEND_ACCEPT]        = (GeneralPacketProcessor) ProcessPacketFriendAccept,
         [CRP_PACKET_FRIEND_DELETE]        = (GeneralPacketProcessor) ProcessPacketFriendDelete,
         [CRP_PACKET_FRIEND_MOVE]          = (GeneralPacketProcessor) ProcessPacketFriendMove,
         [CRP_PACKET_FRIEND_GROUP_ADD]     = (GeneralPacketProcessor) ProcessPacketFriendGroupAdd,
         [CRP_PACKET_FRIEND_GROUP_DELETE]  = (GeneralPacketProcessor) ProcessPacketFriendGroupDelete,
         [CRP_PACKET_FRIEND_GROUP_RENAME]  = (GeneralPacketProcessor) ProcessPacketFriendGroupRename,
         [CRP_PACKET_FRIEND_GROUP_MOVE]    = (GeneralPacketProcessor) ProcessPacketFriendGroupMove,
+        [CRP_PACKET_FRIEND_DISCOVER]      = (GeneralPacketProcessor) ProcessPacketFriendDiscover,
 
 
         [CRP_PACKET_FILE__START]          = (GeneralPacketProcessor) NULL,
@@ -315,7 +313,7 @@ int OnlineUserDelete(POnlineUser user)
         log_error("UserManager", "Trying to delete online user on illegal user state.\n");
         return 0;
     }
-    if (UserSetState(user, OUS_PENDING_CLEAN, NULL) == NULL)
+    if (UserSetState(user, OUS_PENDING_CLEAN, 0) == NULL)
     {
         return 0;
     }

@@ -50,6 +50,7 @@ SET(SERVER_SOURCE_FILE
     packets/friend/GroupRename.c
     packets/friend/GroupMove.c
     packets/friend/GroupDelete.c
+    packets/friend/Discover.c
 
     packets/login/Login.c
     packets/login/Logout.c

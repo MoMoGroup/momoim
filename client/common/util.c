@@ -41,7 +41,6 @@ static gint event_box_release_handler(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
-
 cairo_surface_t *ChangeThem_png(char *picname)
 {
     char path_theme[80] = "", path_pic[80] = "";
