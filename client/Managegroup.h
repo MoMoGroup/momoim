@@ -1,3 +1,10 @@
 #pragma once
 
-extern int Add_Group_Button_Press_Event();
+#include <gdk/gdk.h>
+#include <gtk/gtk.h>
+
+extern int AddGroupButtonPressEvent();
+
+extern int DeleteGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data);
+
+

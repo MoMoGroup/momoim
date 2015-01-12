@@ -132,12 +132,6 @@ static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event,
             NULL,
             p);
 
-//
-//    gtk_fixed_put(GTK_FIXED(addlayout2), done_event_box, 400, 200);
-//  //  gtk_container_add(GTK_CONTAINER(addframelayout), addlayout3);
-//    gtk_widget_show_all(addlayout2);
-    //gtk_widget_destroy(addlayout2);
-    //gtk_widget_hide(addlayout2);
 
     background3 = gtk_image_new_from_surface(surfacebackground3);
     addclose = gtk_image_new_from_surface(surfaceclose);
