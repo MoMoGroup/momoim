@@ -457,10 +457,10 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
     gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
 
 
-    popupsurfacecancel = cairo_image_surface_create_from_png("忽略1.png");
-    popupsurfacedone = cairo_image_surface_create_from_png("同意1.png");
+    popupsurfacecancel = ChangeThem_png("忽略1.png");
+    popupsurfacedone = ChangeThem_png("同意1.png");
 
-    popupsurfacebackground = cairo_image_surface_create_from_png("提示框.png");
+    popupsurfacebackground = ChangeThem_png("提示框.png");
     //获得
     popupcancel = gtk_image_new_from_surface(popupsurfacecancel);
     popupdone = gtk_image_new_from_surface(popupsurfacedone);

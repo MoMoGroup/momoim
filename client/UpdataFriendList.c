@@ -46,7 +46,7 @@ int FriendListInsertEntry(void *data)
 
     // return GTK_TREE_MODEL(TreeViewListStore);
 
-free(data);
+    free(data);
     return 0;
 }
 

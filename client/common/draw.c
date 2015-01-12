@@ -1,7 +1,5 @@
 #include <math.h>
-#include <imcommon/friends.h>
 #include "common.h"
-#include "../MainInterface.h"
 
 GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
 {

@@ -119,15 +119,15 @@ int newsockfd()
 
 static void create_zhucefaces()
 {
-    surface1 = cairo_image_surface_create_from_png("注册背景.png");
+    surface1 = ChangeThem_png("注册背景.png");
 
-    surface3 = cairo_image_surface_create_from_png("注册按钮.png");
-    surface32 = cairo_image_surface_create_from_png("注册按钮3.png");
-    surface33 = cairo_image_surface_create_from_png("注册按钮2.png");
+    surface3 = ChangeThem_png("注册按钮.png");
+    surface32 = ChangeThem_png("注册按钮3.png");
+    surface33 = ChangeThem_png("注册按钮2.png");
 
-    surface8 = cairo_image_surface_create_from_png("关闭按钮1.png");
-    surface82 = cairo_image_surface_create_from_png("关闭按钮2.png");
-    surface83 = cairo_image_surface_create_from_png("关闭按钮3.png");
+    surface8 = ChangeThem_png("关闭按钮1.png");
+    surface82 = ChangeThem_png("关闭按钮2.png");
+    surface83 = ChangeThem_png("关闭按钮3.png");
 }
 
 static void

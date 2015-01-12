@@ -2,7 +2,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stdio.h>
 #include "datafile/file.h"
 
 const uint8_t DataFilePathLength = sizeof(DATA_FILE_ROOT_PATH) +    //"files/"

@@ -7,9 +7,9 @@
 CRP_STRUCTURE
 {
     uint32_t date;
-} CRPPacketMessageRecordNext;
+} CRPPacketMessageRecordSeek;
 
 __attribute_malloc__
-CRPPacketMessageRecordNext *CRPMessageRecordNextCast(CRPBaseHeader *base);
+CRPPacketMessageRecordSeek *CRPMessageRecordSeekCast(CRPBaseHeader *base);
 
-int CRPMessageRecordNextSend(CRPContext context, uint32_t sessionID, uint32_t uid, uint8_t size);
+int CRPMessageRecordSeekSend(CRPContext context, uint32_t sessionID, uint32_t date);

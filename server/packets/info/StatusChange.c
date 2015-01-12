@@ -6,7 +6,7 @@ int ProcessPacketInfoStatusChange(POnlineUser user, uint32_t session, CRPPacketI
 {
     if (user->state == OUS_ONLINE)
     {
-        user->info->status = packet->hidden ? UOS_HIDDEN : UOS_ONLINE;
+        user->status = packet->hidden ? UOS_HIDDEN : UOS_ONLINE;
         if (packet->hidden)
         {
             UserBroadcastNotify(user, FNT_FRIEND_OFFLINE);

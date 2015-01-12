@@ -86,8 +86,8 @@ int MessageFileAppend(MessageFile *file, UserMessage *message)
     if (file->lastUpdateDate != messageDate)
     {
         lseek(file->fd, sizeof(file->fileBeginDate) +
-                        sizeof(file->lastUpdateDate) +
-                        sizeof(off_t) * (messageDate - file->lastUpdateDate + 1),
+                sizeof(file->lastUpdateDate) +
+                sizeof(off_t) * (messageDate - file->lastUpdateDate + 1),
               SEEK_SET);
         for (int i = file->lastUpdateDate + 1; i <= messageDate; ++i)
         {
@@ -165,8 +165,8 @@ int MessageFileSeek(MessageFile *file, uint32_t date)
     else
     {
         lseek(file->fd, sizeof(file->fileBeginDate) +
-                        sizeof(file->lastUpdateDate) +
-                        sizeof(off_t) * (date - file->fileBeginDate), SEEK_SET);
+                sizeof(file->lastUpdateDate) +
+                sizeof(off_t) * (date - file->fileBeginDate), SEEK_SET);
         off_t dateSet;
         if (sizeof(dateSet) != read(file->fd, &dateSet, sizeof(dateSet)))
         {

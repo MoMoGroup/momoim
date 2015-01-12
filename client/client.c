@@ -12,7 +12,6 @@
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
-#include "chartmessage.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
@@ -25,9 +24,9 @@ typedef struct cunchu {
 };
 struct cunchu str_cunchu[20];
 FILE *passwdfp;
-int  flag_cunchu = 0;
+int flag_cunchu = 0;
 int FlagRemember = 0;
-int FirstPwd =0;
+int FirstPwd = 0;
 char mulu_username[80] = "", mulu_benji[80] = "";
 GtkStyleContext *combostyle;
 GtkStyleProvider *comboprovider;
@@ -124,6 +123,7 @@ void open_setting_file(FILE *fp)
         }
     }
 }
+
 gboolean mythread(gpointer user_data)//合并
 {
     gtk_widget_destroy(window);
@@ -233,7 +233,7 @@ void *sendhello(void *M)
 void on_button_clicked()
 {
 //获取登录名和密码
-    if(FirstPwd == 0)
+    if (FirstPwd == 0)
     {
         name = gtk_combo_box_text_get_active_text(username);
         pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
@@ -244,7 +244,7 @@ void on_button_clicked()
         name = gtk_combo_box_text_get_active_text(username);
         pwd = gtk_entry_get_text(GTK_ENTRY(passwd));
         MD5((unsigned char *) pwd, strlen(pwd), hash);//加密存储
-        strncpy(pwd,hash,16);
+        strncpy(pwd, hash, 16);
     }
 
 
@@ -316,7 +316,7 @@ static gint combo_change_event()
 //密码修改触发
 static gint passwd_change_event()
 {
-    if(FlagRemember == 1)//保存过的密码修改
+    if (FlagRemember == 1)//保存过的密码修改
     {
         int i;
         FlagRemember = 0;
@@ -659,6 +659,7 @@ gboolean destoryall(gpointer user_data)
         }
         free(p);
     }
+
     pthread_cancel(ThreadKeepAlive);
     g_idle_add(loadloginLayout, NULL);
     popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");

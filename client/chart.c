@@ -5,14 +5,10 @@
 #include <ftadvanc.h>
 #include "chart.h"
 #include "common.h"
-#include "Infomation.h"
 #include <pwd.h>
 #include <math.h>
 #include "chartmessage.h"
-#include <logger.h>
-#include <cairo-script-interpreter.h>
 #include <sys/stat.h>
-#include "chartmessage.h"
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
@@ -644,6 +640,7 @@ void handle_font_color(FriendInfo *info)
     }
     fclose(fp);
 }
+
 //ziti
 //鼠标点击事件
 static gint wordart_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)

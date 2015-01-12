@@ -7,7 +7,6 @@
 #include "../MainInterface.h"
 #include <string.h>
 #include <pwd.h>
-#include <logger.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 typedef struct
@@ -42,20 +41,19 @@ static gint event_box_release_handler(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
-
-cairo_surface_t * ChangeThem_png(char *picname)
+cairo_surface_t *ChangeThem_png(char *picname)
 {
-    char path_theme[80]="",path_pic[80]="";
+    char path_theme[80] = "", path_pic[80] = "";
     sprintf(path_theme, "%s/.momo/current_theme", getpwuid(getuid())->pw_dir);//获取本机主题目录
-    sprintf(path_pic, "%s/%s",path_theme,picname);
+    sprintf(path_pic, "%s/%s", path_theme, picname);
     return cairo_image_surface_create_from_png(path_pic);
 }
 
 GtkWidget *ChangeThem_file(char *picname)
 {
-    char path_theme[80]="",path_pic[80]="";
+    char path_theme[80] = "", path_pic[80] = "";
     sprintf(path_theme, "%s/.momo/current_theme", getpwuid(getuid())->pw_dir);//获取本机主题目录
-    sprintf(path_pic, "%s/%s",path_theme,picname);
+    sprintf(path_pic, "%s/%s", path_theme, picname);
     return gtk_image_new_from_file(path_pic);
 }
 

@@ -6,7 +6,7 @@ int ProcessPacketStatusHello(POnlineUser user, uint32_t session, CRPPacketHello 
 {
     if (user->state == OUS_PENDING_HELLO && packet->protocolVersion == 1)
     {
-        UserSetStatus(user, OUS_PENDING_LOGIN, NULL);
+        UserSetState(user, OUS_PENDING_LOGIN, 0);
         CRPOKSend(user->crp, session);
         return 1;
     }

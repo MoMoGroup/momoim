@@ -87,7 +87,7 @@ int MessageLoopFunc()
         }
         pthread_rwlock_unlock(&lock);//取消锁
 
-        if(prev->next)
+        if (prev->next)
         {
             flag = p->fn(header, p->data);
         }

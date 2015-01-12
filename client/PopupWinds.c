@@ -12,9 +12,9 @@ static GtkEventBox *Popback_event_box, *Anniu_event_box;
 
 static void create_popupfaces()
 {
-    backface = cairo_image_surface_create_from_png("提示框.png");
-    anniuface = cairo_image_surface_create_from_png("提示框按钮1.png");
-    anniuface1 = cairo_image_surface_create_from_png("提示框按钮2.png");
+    backface = ChangeThem_png("提示框.png");
+    anniuface = ChangeThem_png("提示框按钮1.png");
+    anniuface1 = ChangeThem_png("提示框按钮2.png");
 
     popback = gtk_image_new_from_surface(backface);
     popanniu = gtk_image_new_from_surface(anniuface);
@@ -30,7 +30,8 @@ destroy_popfaces()
 }
 
 //背景的eventbox拖曳窗口
-static gint popback_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint popback_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
@@ -42,7 +43,8 @@ static gint popback_button_press_event(GtkWidget *widget, GdkEventButton *event,
 
 //确定
 //鼠标点击事件
-static gint ok_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint ok_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -53,7 +55,8 @@ static gint ok_button_press_event(GtkWidget *widget, GdkEventButton *event, gpoi
 
 //确定
 //鼠标抬起事件
-static gint ok_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint ok_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
 
     if (event->button == 1) {
         gtk_dialog_response((GtkDialog *) popupwindow, 1);
@@ -63,7 +66,8 @@ static gint ok_button_release_event(GtkWidget *widget, GdkEventButton *event, gp
 
 //确定
 //鼠标移动事件
-static gint ok_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint ok_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) popanniu, anniuface1);
     return 0;
@@ -71,7 +75,8 @@ static gint ok_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpoi
 
 //确定
 //鼠标离开事件
-static gint ok_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data) {
+static gint ok_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
     gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
     gtk_image_set_from_surface((GtkImage *) popanniu, anniuface);
     return 0;

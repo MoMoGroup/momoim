@@ -27,7 +27,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
             return 1;
         }
 
-        if (!UserFriendsUserMove(reqPendingGroup, reqDefaultGroup, user->info->uid))
+        if (!UserFriendsUserMove(reqPendingGroup, reqDefaultGroup, user->uid))
         {
             CRPFailureSend(user->crp, session, ENOMEM, "无法添加到对方好友列表中");
             UserFriendsDrop(packet->uid);
@@ -38,14 +38,14 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         POnlineUser reqUser = OnlineUserGet(packet->uid);
         if (reqUser)
         {
-            CRPFriendNotifySend(reqUser->crp, 0, FNT_FRIEND_MOVE, user->info->uid, UGI_PENDING, UGI_DEFAULT);
+            CRPFriendNotifySend(reqUser->crp, 0, FNT_FRIEND_MOVE, user->uid, UGI_PENDING, UGI_DEFAULT);
             UserDrop(reqUser);
         }
 
         UserMessage message = {
                 .messageType=UMT_FRIEND_ACCEPT,
                 .messageLen=0,
-                .from=user->info->uid,
+                .from=user->uid,
                 .to=packet->uid,
                 .time=time(NULL)
         };
@@ -65,7 +65,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
         {
             log_warning("FriendAccept",
                         "无法获得用户%u的默认好友分组.\n",
-                        user->info->uid
+                        user->uid
             );
             CRPFailureSend(user->crp, session, ENOENT, "无法找到目标分组");
             pthread_rwlock_unlock(user->info->friendsLock);
@@ -76,7 +76,7 @@ int ProcessPacketFriendAccept(POnlineUser user, uint32_t session, CRPPacketFrien
             log_warning("FriendAccept",
                         "无法将用户%u加入到%u的好友列表中\n",
                         packet->uid,
-                        user->info->uid
+                        user->uid
             );
             CRPFailureSend(user->crp, session, ENOENT, "无法将好友加入到好友列表中");
             pthread_rwlock_unlock(user->info->friendsLock);
