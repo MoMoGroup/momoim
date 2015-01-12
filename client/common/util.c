@@ -35,7 +35,7 @@ GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GC
 }
 
 
-void Md5Coding(gchar *filename, const unsigned char *coding_text)
+void Md5Coding(const gchar *filename, unsigned char *coding_text)
 {
     MD5_CTX c;
     char buf[512];

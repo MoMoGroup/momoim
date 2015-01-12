@@ -5,7 +5,7 @@
 //epoll最大事件个数
 #define EPOLL_BACKLOG 32
 //事务处理线程数
-#define WORKER_COUNT 16
+#define WORKER_COUNT 2
 //事务池大小
 #define CONFIG_JOB_QUEUE_SIZE (MAX_CLIENTS / 4)
 //监听端口号
