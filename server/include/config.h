@@ -6,7 +6,7 @@
 //epoll最大事件个数
 #define CONFIG_EPOLL_QUEUE 32
 //事务处理线程数
-#define WORKER_COUNT 2
+#define CONFIG_WORKER_COUNT 2
 //事务池大小
 #define CONFIG_JOB_QUEUE_SIZE (CONFIG_MAX_CLIENTS / 4)
 //IM功能监听端口号

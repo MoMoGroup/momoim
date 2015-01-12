@@ -515,7 +515,10 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
                 gtk_widget_destroy(cue_dialog);
             }
         }
-        gtk_widget_destroy(dialog);
+        if (result == GTK_RESPONSE_CANCEL)
+        {
+            gtk_widget_destroy(dialog);
+        }
     }
     return 0;
 
