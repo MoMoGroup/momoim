@@ -790,8 +790,6 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
             cairo_paint(cr);
             gtk_image_set_from_surface((GtkImage *) headicon, surfacehead);
             cairo_destroy(cr);
-
-            //gtk_label_set_label((GtkLabel *)BianJi, "编 辑");
         }
         gtk_widget_destroy(dialog);
     }
@@ -830,7 +828,7 @@ void infotv()
     gtk_fixed_put(GTK_FIXED(Infolayout), inickname, 58, 165);
 
     iname = gtk_entry_new();//姓名
-    gtk_entry_set_max_length(iname, 4);
+    gtk_entry_set_max_length(iname, 8);
     gtk_entry_set_has_frame((GtkEntry *) iname, FALSE);
     gtk_entry_set_text(iname, CurrentUserInfo->name);
     gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 225);

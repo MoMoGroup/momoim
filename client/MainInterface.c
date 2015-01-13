@@ -18,7 +18,7 @@
 static GtkWidget *background1, *search, *friend, *change, *closebut;
 static GtkWidget *window;
 static GtkWidget *frameLayout, *MainLayout;
-static cairo_surface_t *surfacechangetheme, *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
+static cairo_surface_t *surfacechangetheme, *surfacechangetheme2,*surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 GtkWidget *userid, *headx;
 //全局变量用以实时更新昵称和头像
 GtkTreeView *treeView;
@@ -29,6 +29,234 @@ static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box, *change_event_box;
 static GtkWidget *friend_mov_group;
+
+//换肤变量
+static GtkWidget *huanfuwindow;
+static GtkWidget *huanfuLayout;
+static GtkWidget *iback,*isure, *icancel,*ipic1,*ipic2,*ipic3;
+static cairo_surface_t *sbackground, *ssure1, *ssure2, *scancel1, *scancel2,*spic11,*spic12,*spic21,*spic22,*spic31,*spic32;
+static GtkEventBox *sure_event_box, *cancel_event_box,*ipic1_event_box,*ipic2_event_box,*ipic3_event_box;
+int FlagChange = 1;
+
+/**********换肤窗口********/
+
+//按下确定
+static gint sure_button_press_event(GtkWidget *widget, GdkEventButton *event,
+                                    gpointer data)
+{
+    if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
+    {
+        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));//设置光标
+        gtk_image_set_from_surface((GtkImage *) isure, ssure2);//置换图片
+    }
+
+    return 0;
+}
+
+//离开确定按钮
+static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
+                                      gpointer data)
+{
+    if (event->button == 1)
+    {
+        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));//设置光标
+        gtk_image_set_from_surface((GtkImage *) isure, ssure2);//置换图片
+
+        if (FlagChange == 1)
+        {
+            //换肤成cartoon
+            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80], string1[80], string2[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            sprintf(mulu_thempath, "%s/current_theme", mulu_benji);
+            unlink(mulu_thempath);
+            sprintf(mulu_themnewpath, "theme/cartoon/");
+            symlink(mulu_themnewpath, mulu_thempath);
+        }
+
+        if (FlagChange == 2)
+        {
+            //换肤成flower
+            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80], string1[80], string2[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            sprintf(mulu_thempath, "%s/current_theme", mulu_benji);
+            unlink(mulu_thempath);
+            sprintf(mulu_themnewpath, "theme/flower/");
+            symlink(mulu_themnewpath, mulu_thempath);
+        }
+
+        if(FlagChange == 3)
+        {
+            //换肤成lol
+            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80], string1[80], string2[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            sprintf(mulu_thempath, "%s/current_theme", mulu_benji);
+            unlink(mulu_thempath);
+            sprintf(mulu_themnewpath, "theme/lol/");
+            symlink(mulu_themnewpath, mulu_thempath);
+        }
+
+        gtk_widget_destroy(huanfuwindow);
+    }
+
+    return 0;
+}
+
+
+//按下取消按钮
+static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event,
+                                      gpointer data)
+{
+    if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
+    {
+        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));//设置光标
+        gtk_image_set_from_surface((GtkImage *) icancel, scancel2);//置换图片
+    }
+
+    return 0;
+}
+
+//离开取消按钮
+static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event,
+                                        gpointer data)
+{
+    if (event->button == 1)
+    {
+        //  gtk_image_set_from_surface((GtkImage *) icancel, scancel2);
+        gtk_widget_destroy(huanfuwindow);
+    }
+
+    return 0;
+}
+
+//抬起 皮肤1
+static gint ipic1_button_release_event(GtkWidget *widget, GdkEventButton *event,
+                                       gpointer data)
+{
+    if (event->button == 1)
+    {
+        gtk_image_set_from_surface((GtkImage *) ipic1, spic12);
+        FlagChange = 1;
+    }
+
+    return 0;
+}
+
+//抬起 皮肤2
+static gint ipic2_button_release_event(GtkWidget *widget, GdkEventButton *event,
+                                       gpointer data)
+{
+    if (event->button == 1)
+    {
+        gtk_image_set_from_surface((GtkImage *) ipic2, spic22);
+        FlagChange = 2;
+    }
+
+    return 0;
+}
+
+//抬起 皮肤3
+static gint ipic3_button_release_event(GtkWidget *widget, GdkEventButton *event,
+                                       gpointer data)
+{
+    if (event->button == 1)
+    {
+        gtk_image_set_from_surface((GtkImage *) ipic3, spic32);
+        FlagChange = 3;
+    }
+
+    return 0;
+}
+
+//主函数
+int changethemeface()
+{
+    //初始化窗口
+    huanfuwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_position(GTK_WINDOW(huanfuwindow), GTK_WIN_POS_CENTER);//窗口位置
+    gtk_window_set_resizable(GTK_WINDOW (huanfuwindow), FALSE);//固定窗口大小
+    gtk_window_set_decorated(GTK_WINDOW(huanfuwindow), FALSE);//去掉边框
+    gtk_widget_set_size_request(GTK_WIDGET(huanfuwindow), 432, 238);
+    huanfuLayout = gtk_fixed_new();
+    gtk_container_add(GTK_CONTAINER (huanfuwindow), huanfuLayout);
+
+
+    //取图片
+    sbackground = ChangeThem_png("换肤背景.png");
+    ssure1 = ChangeThem_png("确定.png");
+    ssure2 = ChangeThem_png("确定2.png");
+    scancel1 = ChangeThem_png("资料取消.png");
+    scancel2 = ChangeThem_png("资料取消2.png");
+    spic11 = ChangeThem_png("卡通.png");
+    spic12 = ChangeThem_png("图片2.png");
+    spic21 = ChangeThem_png("小清新.png");
+    spic22 = ChangeThem_png("文件2.png");
+    spic31 = ChangeThem_png("LOL.png");
+    spic32 = ChangeThem_png("图片2.png");
+
+
+    iback = gtk_image_new_from_surface(sbackground);
+    isure = gtk_image_new_from_surface(ssure1);
+    icancel = gtk_image_new_from_surface(scancel1);
+    ipic1 = gtk_image_new_from_surface(spic11);
+    ipic2 = gtk_image_new_from_surface(spic21);
+    ipic3 = gtk_image_new_from_surface(spic31);
+
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), iback, 0, 0);//起始坐标
+
+    //事件盒子
+    ipic1_event_box = BuildEventBox(ipic1,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    G_CALLBACK(ipic1_button_release_event),
+                                    NULL,
+                                    NULL);
+
+    ipic2_event_box = BuildEventBox(ipic2,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    G_CALLBACK(ipic2_button_release_event),
+                                    NULL,
+                                    NULL);
+
+    ipic3_event_box = BuildEventBox(ipic3,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    G_CALLBACK(ipic3_button_release_event),
+                                    NULL,
+                                    NULL);
+
+    sure_event_box = BuildEventBox(isure,
+                                   G_CALLBACK(sure_button_press_event),
+                                   NULL,
+                                   NULL,
+                                   G_CALLBACK(sure_button_release_event),
+                                   NULL,
+                                   NULL);
+
+    cancel_event_box = BuildEventBox(icancel,
+                                     G_CALLBACK(cancel_button_press_event),
+                                     NULL,
+                                     NULL,
+                                     G_CALLBACK(cancel_button_release_event),
+                                     NULL,
+                                     NULL);
+
+    //布局
+    gtk_widget_set_size_request(GTK_WIDGET(iback), 432,238);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic1_event_box, 20, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic2_event_box, 155, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic3_event_box, 290, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), sure_event_box, 240, 205);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), cancel_event_box, 340, 205);
+
+
+    gtk_widget_show_all(huanfuwindow);
+}
+
+/***********换肤END*************/
 
 static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
 {
@@ -136,6 +364,7 @@ static void create_surfaces()
     surfaceresearch = ChangeThem_png("搜索.png");
     surfacefriendimage = ChangeThem_png("好友.png");
     surfacechangetheme = ChangeThem_png("换肤.png");
+    surfacechangetheme2 = ChangeThem_png("换肤.png");
     surfaceclose51 = ChangeThem_png("关闭按钮1.png");
     surfaceclose52 = ChangeThem_png("关闭按钮2.png");
     surfaceclose53 = ChangeThem_png("关闭按钮3.png");
@@ -207,6 +436,7 @@ destroy_surfaces()
     cairo_surface_destroy(surfaceresearch);
     cairo_surface_destroy(surfacefriendimage);
     cairo_surface_destroy(surfacechangetheme);
+    cairo_surface_destroy(surfacechangetheme2);
 
 }
 
@@ -872,10 +1102,14 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
 
 
 static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event,
-
                                         gpointer data)
 {
-
+    if (event->button == 1)       // 判断是否是点击关闭图标
+    {
+        gtk_image_set_from_surface((GtkImage *) change, surfacechangetheme2); //置换图标
+        changethemeface();
+    }
+    return 0;
 }
 
 
@@ -924,7 +1158,7 @@ int MainInterFace()
     search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
 
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
-    gtk_fixed_put(GTK_FIXED(MainLayout), change_event_box, 80, 178);
+    gtk_fixed_put(GTK_FIXED(MainLayout), change_event_box, 240, 185);
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
     gtk_fixed_put(GTK_FIXED(MainLayout), search_event_box, 0, 140);
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);

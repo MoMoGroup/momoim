@@ -799,19 +799,12 @@ gboolean loadloginLayout(gpointer user_data)
     //设置两个输入框
     LoginWindowUserNameBox = gtk_combo_box_text_new_with_entry();
     GtkEntry *nameEntry = GTK_ENTRY(gtk_bin_get_child(LoginWindowUserNameBox));
-    gtk_entry_set_width_chars(nameEntry, 7);
-
-
-//    combostring="combo.style{width:40;height:20}";
-//    combostyle = gtk_widget_get_style_context(username);
-//    comboprovider= gtk_css_provider_new();
-//    gtk_css_provider_load_from_data(comboprovider, combostring, 40, NULL);
-//    gtk_style_context_add_provider(combostyle, comboprovider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+    gtk_entry_set_width_chars(nameEntry, 19);
 
     LoginWindowPassWordBox = gtk_entry_new();
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度
-    gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
-    gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
+ //   gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
+ //   gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
 
     gtk_entry_set_visibility(GTK_ENTRY(LoginWindowPassWordBox), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(LoginWindowPassWordBox), '*');
@@ -841,8 +834,8 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
     gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 75, 300);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 35, 220);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 35, 260);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 33, 220);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 33, 260);
     gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
     gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
     gtk_fixed_put(GTK_FIXED(loginLayout), sunevent_box, 3, 3);
@@ -850,8 +843,8 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 0, 0);
     gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 55, 110);
     gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 75, 350);
-    gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowUserNameBox, 85, 220);
-    gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowPassWordBox, 85, 260);
+    gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowUserNameBox, 82, 215);
+    gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowPassWordBox, 82, 256);
 
 
     gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window

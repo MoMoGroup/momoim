@@ -21,14 +21,14 @@ static const char *constellations[] = {
 static void create_infofaces(FriendInfo *information)
 {
     if (Surfaceback == NULL) {
-        Surfaceback = cairo_image_surface_create_from_png("资料.png");
-        Surfacecancel = cairo_image_surface_create_from_png("关闭1.png");
-        Surfacecancel1 = cairo_image_surface_create_from_png("关闭2.png");
-        Surfaceend = cairo_image_surface_create_from_png("关闭按钮1.png");
-        Surfaceend1 = cairo_image_surface_create_from_png("关闭按钮2.png");
-        Surfaceend2 = cairo_image_surface_create_from_png("关闭按钮3.png");
-        Surfacechange = cairo_image_surface_create_from_png("更新.png");
-        Surfacechange1 = cairo_image_surface_create_from_png("更新2.png");
+        Surfaceback = ChangeThem_png("资料.png");
+        Surfacecancel = ChangeThem_png("关闭1.png");
+        Surfacecancel1 = ChangeThem_png("关闭2.png");
+        Surfaceend = ChangeThem_png("关闭按钮1.png");
+        Surfaceend1 = ChangeThem_png("关闭按钮2.png");
+        Surfaceend2 = ChangeThem_png("关闭按钮3.png");
+        Surfacechange = ChangeThem_png("更新.png");
+        Surfacechange1 = ChangeThem_png("更新2.png");
     }
 }
 
