@@ -15,10 +15,10 @@
 
 static cairo_surface_t *Surfaceback, *Surfacesave, *Surfacesave1, *Surfacecancel, *Surfacecancel1, *Surfaceend, *Surfaceend1, *Surfaceend2;
 static cairo_surface_t *surfacehead;
-int RiliFlag = 0;
-guint year = 2011;
-guint month = 10;
-guint day = 11;
+static int RiliFlag = 0;
+static guint year = 2011;
+static guint month = 10;
+static guint day = 11;
 
 static GtkWidget *Infowind;
 static GtkWidget *Infolayout;
@@ -28,13 +28,13 @@ static GtkWidget *itel, *imail, *imotto, *icalendar;
 static GtkWidget *headicon, *BianJi;
 
 
-static const char *constellations[] = {
+static const char *constellations[12] = {
         "水瓶座", "双鱼座", "白羊座", "金牛座",
         "双子座", "巨蟹座", "狮子座", "处女座",
-        "天秤座", "天蝎座", "射手座", "摩羯座"
+        "天秤座", "天蝎座", "射手座", "魔蝎座"
 };
 
-static const char *provinces[] = {
+static const char *provinces[35] = {
         "北京", "上海", "天津", "重庆", "河北", "山西", "辽宁", "吉林",
         "河南", "江苏", "浙江", "安徽", "福建", "江西", "山东",
         "湖北", "湖南", "广东", "海南", "四川", "贵州", "云南",
@@ -44,9 +44,8 @@ static const char *provinces[] = {
 static const char *allcity[35][41] = {
 //北京市辖区名称
         {
-                "东城区",  "西城区",  "崇文区",   "宣武区",   "朝阳区",  "海淀区",
-                                                                   "丰台区", "石景山区", "房山区",               "通州区", "顺义区", "门头沟区",
-                                                                                                                                           "昌平区",  "大兴区",   "怀柔区", "平谷区", "密云县",  "延庆县"
+                "东城区", "西城区", "崇文区", "宣武区", "朝阳区", "海淀区", "丰台区", "石景山区", "房山区", "通州区", "顺义区", "门头沟区",
+                "昌平区", "大兴区", "怀柔区", "平谷区", "密云县", "延庆县"
         },
 //上海市辖区名称
         {
@@ -244,11 +243,37 @@ int sheng_change_city()
             break;
         }
     }
-    gtk_combo_box_text_remove_all(icity);
+    gtk_combo_box_text_remove_all(icity);//清除所有城市
     for (int j = 0; j < 41; ++j)
     {
         gtk_combo_box_text_append(icity, NULL, allcity[shengfen][j]);
     }
+    gtk_combo_box_set_active(GTK_COMBO_BOX(icity), 0);//设置默认城市
+    return 0;
+}
+
+int calendar_event()
+{
+
+    gtk_calendar_get_date(GTK_CALENDAR(icalendar), &year, &month, &day);/*取得选择的年月日*/
+    char *buf = (char *) malloc(12);
+    int x = month + 1;//日历获取月份是0～11
+    sprintf(buf, "%d-%d-%d", year, x, day);
+    gtk_button_set_label((GtkButton *) ibirthday, buf);//双击选择日期后更换按钮显示
+    free(buf);
+
+    int y = day / 21;
+    for (int i = 0; i < 12; ++i)
+    {
+        if (strcmp(constellations[i], xingzuo[month][y]) == 0)
+        {
+            gtk_combo_box_set_active(GTK_COMBO_BOX(iconstellation), i);
+            break;
+        }
+    }
+
+    gtk_widget_destroy(icalendar);
+    RiliFlag = 0;
     return 0;
 }
 
@@ -256,7 +281,7 @@ int calendar_change_birthday()
 {
     if (RiliFlag == 0)
     {
-        icalendar = gtk_calendar_new();
+        icalendar = gtk_calendar_new();//创建日历并显示未修改前的生日日期
         if (strlen(CurrentUserInfo->birthday) != 0)
         {
             char nian[4] = {0}, yue[2] = {0}, ri[2] = {0};
@@ -288,16 +313,18 @@ int calendar_change_birthday()
         }
         else
         {
+            //没有生日信息则显示2011-11-11
             gtk_calendar_select_month(GTK_CALENDAR(icalendar), 10, 2011);
             gtk_calendar_select_day(GTK_CALENDAR(icalendar), 11);
         }
         gtk_fixed_put(GTK_FIXED(Infolayout), icalendar, 140, 263);
         gtk_widget_show(icalendar);
+        g_signal_connect(icalendar, "day-selected-double-click", G_CALLBACK(calendar_event), NULL);
         RiliFlag = 1;
     }
     else
     {
-        gtk_widget_hide(icalendar);
+        gtk_widget_destroy(icalendar);
         RiliFlag = 0;
     }
     return 0;
@@ -424,6 +451,7 @@ static void destroy_infosurfaces()
     cairo_surface_destroy(Surfaceend2);
 }
 
+//保存按钮后
 int infosockfd()
 {
     UserInfo weinfo = *CurrentUserInfo;
@@ -464,47 +492,48 @@ int infosockfd()
     }
 
     buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iprovinces);
+    int weizhi = 0;
     for (int i = 0; i < 35; ++i)
     {
         if (strcmp(provinces[i], buf) == 0)
         {
             memset(weinfo.provinces, 0, strlen(weinfo.provinces));
             memcpy(weinfo.provinces, buf, strlen(buf));
+            weizhi = i;
             break;
         }
     }
 
     buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) icity);
-    for (int i = 0; i < 35; ++i)
+    memset(weinfo.city, 0, strlen(weinfo.city));
+    memcpy(weinfo.city, allcity[weizhi][0], strlen(allcity[weizhi][0]));
+    for (int j = 0; allcity[weizhi][j]; j++)
     {
-        for (int j = 0; allcity[i][j]; j++)
+        if (strcmp(allcity[weizhi][j], buf) == 0)
         {
-            if (strcmp(allcity[i][j], buf) == 0)
-            {
-                memset(weinfo.city, 0, strlen(weinfo.city));
-                memcpy(weinfo.city, buf, strlen(buf));
-                break;
-            }
+            memset(weinfo.city, 0, strlen(weinfo.city));
+            memcpy(weinfo.city, buf, strlen(buf));
+            break;
         }
     }
 
     gtk_calendar_get_date(GTK_CALENDAR(icalendar), &year, &month, &day);/*取得选择的年月日*/
-
+    gtk_button_get_label((GtkButton *) ibirthday);
     int x = month + 1;
     int y = day / 21;
     sprintf(buf, "%d-%d-%d", year, x, day);
     memset(weinfo.birthday, 0, strlen(weinfo.birthday));
     memcpy(weinfo.birthday, buf, strlen(buf));
     //buf = gtk_combo_box_text_get_active_text((GtkComboBoxText *) iconstellation);
-    buf = xingzuo[month][y];
     for (int i = 0; i < 12; ++i)
     {
-        if (strcmp(constellations[i], buf) == 0)
+        if (strcmp(constellations[i], xingzuo[month][y]) == 0)
         {
             weinfo.constellation = i;
             break;
         }
     }
+    log_info("获取的日期", "%c", weinfo.constellation);
     //log_info("获取的日期", "Year:%d Month:%d Day:%d DATE:%s", year, month, day, buf);
     session_id_t newinfoid = CountSessionId();
     AddMessageNode(newinfoid, infoupdate, NULL);
@@ -522,7 +551,7 @@ static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *even
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                                    event->x_root, event->y_root, event->time);
-        gtk_widget_hide(icalendar);
+        gtk_widget_destroy(icalendar);
         RiliFlag = 0;
     }
     return 0;
@@ -692,9 +721,9 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
                                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                                              NULL);
-        if (gtk_dialog_run(GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+        if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
         {
-            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (dialog));
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
             new_head(filename);
         }
         gtk_widget_destroy(dialog);
@@ -790,7 +819,7 @@ void infotv()
     }
     for (int i = 0; i < 12; ++i)
     {
-        if (CurrentUserInfo->constellation == i)
+        if (i == CurrentUserInfo->constellation)
         {
             gtk_combo_box_set_active(GTK_COMBO_BOX(iconstellation), i);
             break;
@@ -871,7 +900,7 @@ int ChangeInfo()
     static GtkEventBox *touxiang_event_box;
     Infowind = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_position(GTK_WINDOW(Infowind), GTK_WIN_POS_CENTER);//窗口位置
-    gtk_window_set_resizable(GTK_WINDOW (Infowind), FALSE);//固定窗口大小
+    gtk_window_set_resizable(GTK_WINDOW(Infowind), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(Infowind), FALSE);//去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(Infowind), 550, 488);
 
