@@ -30,6 +30,7 @@ extern int MainChart(FriendInfo *friendinfonode);
 
 extern void RecdServerMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid);
 
+extern void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid);
 extern int MessageLoopFunc();
 
 extern void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *), void *data);
@@ -44,6 +45,19 @@ struct RECVImageMessagedata
     char *message_data;
     FriendInfo *userinfo;
 };
+struct RECVFileMessagedata
+{
+    GtkWidget *file;
+    GtkWidget *progressbar;
+    int file_loading_end;
+    int file_count;
+    int file_size;
+    int charlen;
+    char *filename;
+    FILE *Wfp;
+    FriendInfo *userinfo;
+};
+
 extern GtkTreeStore *TreeViewListStore;
 extern enum {
     PIXBUF_COL = 0,

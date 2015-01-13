@@ -19,6 +19,9 @@ extern int UpGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpo
 //上移
 extern int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
+//移动好友
+extern GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview);
+
 
 
 

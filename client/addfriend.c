@@ -413,13 +413,7 @@ gint popup_cancel(GtkWidget *widget, GdkEventButton *event, gpointer data)
 
 gint popup_done(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-//    char *packet = malloc(sizeof(CRPPacketMessageNormal));
-//    CRPFriendAcceptSend(sockfd, 1, packet->uid);//同意的话发送Accept
-//    cairo_surface_t *popupsurfacedone2;
-//    GtkWidget *popupdone2;
-//    popupsurfacedone2 = cairo_image_surface_create_from_png("同意2.png");
-//    popupdone2 = gtk_image_new_from_surface(popupsurfacedone2);
-//    gtk_fixed_put(GTK_FIXED(popuplayout), popupdone2, 150, 170);
+
 
     uint32_t uid = data;
     CRPFriendAcceptSend(sockfd, 1, uid);//同意的话发送Accept
@@ -507,16 +501,18 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
 
     GtkTextView *text, *yanzheng;
     // GtkWidget *text,*yanzheng;
-    text = gtk_text_view_new();
+    // text = gtk_text_view_new();
     yanzheng = gtk_text_view_new();
     char mes[80];
     sprintf(mes, "用户%d请求添加你为好友", uid);
-    gtk_test_text_set(text, mes);
+    // gtk_test_text_set(text, mes);
+    text = gtk_label_new(mes);
+    yanzheng = gtk_label_new(verification_message);
 //    sprintf(mes, "系统消息");
-    gtk_test_text_set(yanzheng, verification_message);
+    //   gtk_test_text_set(yanzheng, verification_message);
 
-    GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
-    gtk_widget_override_background_color(text, GTK_STATE_NORMAL, &rgba);//设置透明
+//    GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
+//    gtk_widget_override_background_color(text, GTK_STATE_NORMAL, &rgba);//设置透明
     //gtk_widget_override_background_color(title, GTK_STATE_NORMAL, &rgba);//设置透明
 
     gtk_fixed_put(GTK_FIXED(popuplayout), text, 30, 70);

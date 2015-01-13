@@ -7,6 +7,14 @@
 #include "common.h"
 #include <logger.h>
 #include <sys/stat.h>
+#include "Infomation.h"
+#include <pwd.h>
+#include <math.h>
+#include <logger.h>
+#include <sys/stat.h>
+#include <cairo-script-interpreter.h>
+#include <imcommon/friends.h>
+#include <imcommon/user.h>
 #include "chartmessage.h"
 
 //解码
@@ -17,7 +25,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
     GtkTextBuffer *show_buffer;
     GtkTextIter start, end;
     GtkTextTag *wordtag;
-    show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
+    show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     wordtag = gtk_text_buffer_create_tag(show_buffer, NULL, NULL, NULL);
     while (ptext < ptext_end)
@@ -106,7 +114,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
                     anchor = gtk_text_buffer_create_child_anchor(show_buffer, &end);
                     image = gtk_image_new_from_file(filename);
                     gtk_widget_show_all(image);
-                    gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->show_text), image, anchor);
+                    gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW(info->show_text), image, anchor);
                     ptext = ptext + 16;
                     break;
                 }
@@ -126,7 +134,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
-    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW (info->show_text),
+    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->show_text),
                                        gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
 }
 
@@ -153,7 +161,7 @@ void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
     time(&timep);
     p = localtime(&timep);
     sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
-    show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (info->show_text));
+    show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              nicheng_times, -1, "blue_foreground", "size1", NULL);
@@ -226,6 +234,19 @@ gboolean progress_bar_crcle(void *data)
     {
         gtk_widget_destroy(bar_crcle->file);
         gtk_widget_destroy(bar_crcle->progressbar);
+
+//
+//        char nicheng_times[40] = {0};
+//        time_t timep;
+//        struct tm *p;
+//        time(&timep);
+//        p = localtime(&timep);
+//        sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
+//        gchar char_text[80];
+//        memcpy(char_text, bar_crcle->image_message_data->message_data, bar_crcle->image_message_data->charlen-4);
+//        show_local_text(char_text, bar_crcle->info, nicheng_times, bar_crcle->image_message_data->charlen-4);
+        free(bar_crcle->image_message_data->message_data);
+        free(bar_crcle->image_message_data);
         free(bar_crcle);
         return 0;
     }
@@ -235,7 +256,6 @@ gboolean progress_bar_crcle(void *data)
 int deal_with_file(CRPBaseHeader *header, void *data)
 {
     struct PictureMessageFileUploadingData *file_message = (struct PictureMessageFileUploadingData *) data;
-
     size_t num;
     int ret = 1;
     if (header->packetID == CRP_PACKET_FAILURE)
@@ -243,7 +263,7 @@ int deal_with_file(CRPBaseHeader *header, void *data)
         CRPPacketFailure *infodata = CRPFailureCast(header);
         log_info("FAILURE reason", infodata->reason);
         fclose(file_message->fp);
-        free(file_message);
+        file_message->file_loading_end = 1;
         return 0;
     }
     log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
@@ -263,10 +283,14 @@ int deal_with_file(CRPBaseHeader *header, void *data)
             else
             {
                 fclose(file_message->fp);
-                file_message->file_loading_end = 1;
                 CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
                 ret = 0;
-
+                session_id_t sessionID = CountSessionId();
+                CRPMessageNormalSend(sockfd, sessionID, UMT_FILE_OFFLINE,
+                                     file_message->image_message_data->uid,
+                                     file_message->image_message_data->charlen,
+                                     file_message->image_message_data->message_data);
+                file_message->file_loading_end = 1;
             }
             free(filedata);
 
@@ -280,6 +304,11 @@ int deal_with_file(CRPBaseHeader *header, void *data)
     {
         fclose(file_message->fp);
         file_message->file_loading_end = 1;
+        session_id_t sessionID = CountSessionId();
+        CRPMessageNormalSend(sockfd, sessionID, UMT_FILE_OFFLINE,
+                             file_message->image_message_data->uid,
+                             file_message->image_message_data->charlen,
+                             file_message->image_message_data->message_data);
         ret = 0;
     }
 
@@ -290,36 +319,75 @@ int deal_with_file(CRPBaseHeader *header, void *data)
 //上传文件
 void UploadingFile(gchar *filename, FriendInfo *info)
 {
-
-    struct PictureMessageFileUploadingData *imagemessge
+    //文件的信息初始化
+    struct ImageMessageFileData *file_message_data = (struct ImageMessageFileData *) malloc(sizeof(struct ImageMessageFileData));
+    file_message_data->uid = info->user.uid;
+    file_message_data->message_data = (gchar *) malloc(300);
+    //上传文件的所需信息初始化
+    struct PictureMessageFileUploadingData *file_messge
             = (struct PictureMessageFileUploadingData *) malloc(sizeof(struct PictureMessageFileUploadingData));
+    file_messge->image_message_data = file_message_data;
+    file_messge->seq = 0;
+    file_messge->file_loading_end = 0;
+    file_messge->fp = (fopen(filename, "r"));
+    file_messge->file_count = 0;
+    file_messge->info = info;
     gchar sendfile_size[100];
     struct stat stat_buf;
     PangoFontDescription *font;
-    char strdest[17] = {0};
-    session_id_t session_id;
-    Md5Coding(filename, strdest);  //获得MD5值存在strdest
 
-    imagemessge->seq = 0;
-    imagemessge->file_loading_end = 0;
-    imagemessge->fp = (fopen(filename, "r"));
-    imagemessge->file_count = 0;
+    session_id_t session_id;
     stat(filename, &stat_buf);
-    imagemessge->file_size = stat_buf.st_size;
-    sprintf(sendfile_size, "%s \n \t大小为：%.2f M", filename, stat_buf.st_size / 1048576.0);
-    imagemessge->file = gtk_label_new(sendfile_size);
+
+    file_messge->file_size = stat_buf.st_size;
+    char strdest[17] = {0};
+
+    //截取最后的文件名
+    int filename_len = strlen(filename);
+    int i;
+    for (i = filename_len - 1; i >= 0; i--)
+    {
+        if (filename[i] == '/')
+        {
+            memcpy(file_messge->image_message_data->message_data, filename + i + 1, filename_len - i - 1);
+
+            break;
+        }
+    }
+    if (i < 0)
+    {
+        memcpy(file_messge->image_message_data->message_data, filename, filename_len);
+        Md5Coding(file_messge->image_message_data->message_data, strdest);  //获得MD5值存在strdest
+        memcpy(file_messge->image_message_data->message_data + filename_len, &file_messge->file_size, 4);
+    }
+    else
+    {
+        Md5Coding(file_messge->image_message_data->message_data, strdest);  //获得MD5值存在strdest
+        memcpy(file_messge->image_message_data->message_data + filename_len - i - 1, &file_messge->file_size, 4);
+    }
+    file_messge->image_message_data->charlen = filename_len - i + 4;
+
+    if (stat_buf.st_size / 1048576.0 > 0)
+    {
+        sprintf(sendfile_size, "\t %s \n \t大小为：%.2f M", filename + i + 1, stat_buf.st_size / 1048576.0);
+    }
+    else
+    {
+        sprintf(sendfile_size, "\t %s \n 大小为：%d byte", filename + i + 1, stat_buf.st_size);
+    }
+    file_messge->file = gtk_label_new(sendfile_size);
     font = pango_font_description_from_string("Sans");//"Sans"字体名
     pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
-    gtk_widget_override_font(imagemessge->file, font);
-    gtk_fixed_put(GTK_FIXED(info->chartlayout), imagemessge->file, 140, 5);
-    gtk_widget_show(imagemessge->file);                   //文件名和大小
+    gtk_widget_override_font(file_messge->file, font);
+    gtk_fixed_put(GTK_FIXED(info->chartlayout), file_messge->file, 160, 5);
+    gtk_widget_show(file_messge->file);                   //文件名和大小
 
-    imagemessge->progressbar = gtk_progress_bar_new();        //进度条
-    gtk_fixed_put(GTK_FIXED(info->chartlayout), imagemessge->progressbar, 170, 50);
-    gtk_widget_show(imagemessge->progressbar);
-    g_idle_add(progress_bar_crcle, imagemessge);  //用来更新进度条
+    file_messge->progressbar = gtk_progress_bar_new();        //进度条
+    gtk_fixed_put(GTK_FIXED(info->chartlayout), file_messge->progressbar, 175, 50);
+    gtk_widget_show(file_messge->progressbar);
+    g_idle_add(progress_bar_crcle, file_messge);  //用来更新进度条
     session_id = CountSessionId();
-    AddMessageNode(session_id, deal_with_file, imagemessge);
+    AddMessageNode(session_id, deal_with_file, file_messge);
     CRPFileStoreRequestSend(sockfd, session_id, (size_t) stat_buf.st_size, 0, strdest);
 }
 
