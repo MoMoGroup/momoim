@@ -66,3 +66,7 @@ extern enum {
     PRIORITY_COL,
 };
 
+extern GtkWidget *StatusShowText;
+
+extern int OnLineStatus();
+

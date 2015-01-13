@@ -781,6 +781,7 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
     UserGroup *friendGroup;
     GtkTreeIter to_group_iter;
     //第一个分组id的信息
+
     gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter);
 
     do
