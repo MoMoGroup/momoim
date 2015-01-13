@@ -683,12 +683,12 @@ typedef struct move_info
 } move_info;
 
 
-uint32_t curren_group_id;
-
 gboolean mov(void *data)
 {
+
     move_info *move_info_detail = (move_info *) data;
-    GtkTreeIter iteruser;
+
+    GtkTreeIter iteruser, formegroup;
     GdkPixbuf *pixbuf;
     uint32_t uid;
     int64_t priority;
@@ -699,12 +699,17 @@ gboolean mov(void *data)
                        -1
                       );
 
+
     gtk_tree_store_append(TreeViewListStore, &iteruser, &move_info_detail->itergroup);
     gtk_tree_store_set(TreeViewListStore, &iteruser,
                        PIXBUF_COL, pixbuf,
                        FRIENDUID_COL, uid,
                        PRIORITY_COL, priority,
                        -1);
+
+    UserGroup *frome = UserFriendsGroupGet(friends, move_info_detail->currentGid);
+    UserGroup *to = UserFriendsGroupGet(friends, move_info_detail->toGid);
+    UserFriendsUserMove(frome, to, uid);
 
     gtk_tree_store_remove(TreeViewListStore, &move_info_detail->iteruser);
 
@@ -747,7 +752,7 @@ int mov_friend(GtkWidget *widget, GdkEventButton *event, gpointer data)
 GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
 {
     move_info moveInfo;
-
+    uint32_t curren_group_id;
     GtkWidget *show;
     uint32_t groupid;
     GtkTreeIter itergroup, iteruser;

@@ -4,6 +4,7 @@
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
 #include <errno.h>
+#include <logger.h>
 #include "run/user.h"
 #include "datafile/file.h"
 
@@ -123,7 +124,11 @@ int ProcessPacketFileRequest(POnlineUser user, uint32_t session, CRPPacketFileRe
             op->onResponseFailure = onRequestCancel;
             aio_read(&opData->aio);
             UserOperationDrop(user, op);
-            CRPFileDataStartSend(user->crp, session, (uint64_t) fileInfo.st_size);
+            if (!CRPFileDataStartSend(user->crp, session, (uint64_t) fileInfo.st_size))
+            {
+
+                log_info("FileRequest", "DataStart Error %d\n", user->crp->fd);
+            };
             return 1;
             fail:
             if (op)

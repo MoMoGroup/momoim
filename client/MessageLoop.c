@@ -66,8 +66,6 @@ int MessageLoopFunc()
     CRPBaseHeader *header;
     while (1)
     {
-
-        log_info("CRPPacket", "Begin CRPRecv\n");
         header = CRPRecv(sockfd);
         pthread_rwlock_rdlock(&lock);//读锁定
         messageloop *prev = &messagehead, *p;

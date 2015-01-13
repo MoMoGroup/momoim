@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <run/jobs.h>
 #include <datafile/message.h>
+#include <asm-generic/errno.h>
 
 #include "datafile/user.h"
 #include "datafile/friend.h"
@@ -38,6 +39,7 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
         [CRP_PACKET_INFO_REQUEST]         = (GeneralPacketProcessor) ProcessPacketInfoRequest,
         [CRP_PACKET_INFO_DATA]            = (GeneralPacketProcessor) ProcessPacketInfoData,
         [CRP_PACKET_INFO_STATUS_CHANGE]   = (GeneralPacketProcessor) ProcessPacketInfoStatusChange,
+        [CRP_PACKET_INFO_PASSWORD_CHANGE] = (GeneralPacketProcessor) ProcessPacketInfoPasswordChange,
 
         [CRP_PACKET_FRIEND__START]        = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_FRIEND_REQUEST]       = (GeneralPacketProcessor) ProcessPacketFriendRequest,
@@ -51,7 +53,6 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
         [CRP_PACKET_FRIEND_GROUP_RENAME]  = (GeneralPacketProcessor) ProcessPacketFriendGroupRename,
         [CRP_PACKET_FRIEND_GROUP_MOVE]    = (GeneralPacketProcessor) ProcessPacketFriendGroupMove,
         [CRP_PACKET_FRIEND_DISCOVER]      = (GeneralPacketProcessor) ProcessPacketFriendDiscover,
-
 
         [CRP_PACKET_FILE__START]          = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_FILE_REQUEST]         = (GeneralPacketProcessor) ProcessPacketFileRequest,
@@ -123,7 +124,12 @@ int ProcessUser(POnlineUser user, CRPBaseHeader *packet)
 
 static void PendingUserTableRemove(PPendingUser user)
 {
-    pthread_rwlock_wrlock(&PendingUserTableLock);
+    int lock;
+    lock = pthread_rwlock_wrlock(&PendingUserTableLock);
+    if (lock != 0 && lock != EDEADLOCK)
+    {
+        return;
+    }
     if (user->prev != NULL || user->next != NULL || PendingUserTable.first == user)
     {
         if (user->prev == NULL)
@@ -144,7 +150,10 @@ static void PendingUserTableRemove(PPendingUser user)
         }
         user->prev = user->next = NULL;
     }
-    pthread_rwlock_unlock(&PendingUserTableLock);
+    if (lock == 0)
+    {
+        pthread_rwlock_unlock(&PendingUserTableLock);
+    }
 }
 
 int PendingUserDelete(PPendingUser user)
@@ -266,6 +275,35 @@ PPendingUser UserNew(int fd)
     return user;
 }
 
+void UserGC()
+{
+    pthread_rwlock_wrlock(&PendingUserTableLock);
+    time_t now;
+    time(&now);
+    for (PPendingUser user = PendingUserTable.first; user != NULL; user = user->next)
+    {
+        if (difftime(now, user->lastUpdateTime) > 10)//Pending表只允许10秒切换
+        {
+            PendingUserDelete(user);
+        }
+    }
+
+    pthread_rwlock_unlock(&PendingUserTableLock);
+}
+
+int UserHold(POnlineUser user)
+{
+    return user->state != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
+}
+
+void UserDrop(POnlineUser user)
+{
+    if (user)
+    {
+        pthread_rwlock_unlock(user->holdLock);
+    }
+}
+
 void UserBroadcastNotify(POnlineUser user, FriendNotifyType type)
 {
     POnlineUserInfo info = user->info;
@@ -353,19 +391,6 @@ int OnlineUserDelete(POnlineUser user)
 
     free(user);
     return 1;
-}
-
-int UserHold(POnlineUser user)
-{
-    return user->state != OUS_PENDING_CLEAN && pthread_rwlock_tryrdlock(user->holdLock) == 0;
-}
-
-void UserDrop(POnlineUser user)
-{
-    if (user)
-    {
-        pthread_rwlock_unlock(user->holdLock);
-    }
 }
 
 POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid)

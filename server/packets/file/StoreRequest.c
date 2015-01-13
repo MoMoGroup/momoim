@@ -19,7 +19,7 @@ int onCancel(POnlineUser user, PUserOperation operation)
 
     UserOperationUnregister(user, operation);
     free(storeOperation);
-    return 1;
+    return 0;
 }
 
 int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet)

@@ -146,6 +146,8 @@ void UserDrop(POnlineUser user);
 //创建一个等待用户对象
 PPendingUser UserNew(int fd);
 
+void UserGC();
+
 int PendingUserDelete(PPendingUser);
 
 //删除一个在线用户对象,如果用户被保持,它将阻塞当前线程,直到用户被释放.

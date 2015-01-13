@@ -12,6 +12,8 @@ extern int mysockfd();
 
 extern int MainInterFace();
 
+extern void DestoryMainInterface();
+
 //extern gboolean backttologinLayout(gpointer user_data);
 
 extern gboolean mythread(gpointer user_data);
@@ -20,7 +22,6 @@ extern gboolean destoryall(gpointer user_data);
 
 extern gboolean loadloginLayout(gpointer user_data);
 
-extern gboolean DestoryMainInterFace(gpointer user_data);
 
 gboolean DestroyLayout(gpointer user_data);
 

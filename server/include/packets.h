@@ -47,6 +47,8 @@ int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData 
 
 int ProcessPacketInfoStatusChange(POnlineUser user, uint32_t session, CRPPacketInfoStatusChange *packet);
 
+int ProcessPacketInfoPasswordChange(POnlineUser user, uint32_t session, CRPPacketInfoPasswordChange *packet);
+
 //好友处理
 int ProcessPacketFriendRequest(POnlineUser user, uint32_t session, CRPPacketFriendRequest *packet);
 

@@ -251,68 +251,30 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
     return FALSE;
 }
 
-//树状视图双击列表事件 &&单击好友显示右键菜单
-gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    GdkEventButton *event_button;
-    GtkTreeIter iter;
-
-    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
-    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
-    gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
-    GtkWidget *menu = GTK_WIDGET(data);
-    if (event->type == GDK_BUTTON_PRESS)
+    if (event->type == GDK_2BUTTON_PRESS && event->button == 0x1)
     {
-        event_button = (GdkEventButton *) event;
-
-        if (event->button == 0x1)
-        {
-            return FALSE;
-        }
-        if (event->button == 0x2)
-        {
-            return FALSE;
-        }
-        if (event->button == 0x3)
-        {
-            int i, j;
-            GtkTreePath *path;
-            path = gtk_tree_model_get_path(model, &iter);
-            i = gtk_tree_path_get_indices(path)[0];
-            j = gtk_tree_path_get_indices(path)[1];
-
-            if ((gtk_tree_model_iter_has_child(model,
-                                               &iter) == 0) && !((i == 0) && (j == 0)) && (friends->groups[i].friendCount > 0))
-            {
-                gtk_menu_item_set_submenu(friend_mov_group, MovFriendButtonEvent(treeView));
-                gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
-                return FALSE;
-            }
-        }
-    }
-    else if (event->type == GDK_2BUTTON_PRESS && event->button == 0x1)
-    {
-        int i, j;
+        GtkTreeIter iter;
+        GtkTreeView *treeview = GTK_TREE_VIEW(widget);
+        GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+        gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
+        uint32_t id = 0;
+        gtk_tree_model_get(model, &iter, FRIENDUID_COL, &id, -1);
         int uidfindflag = 0;
-        GtkTreePath *path;
         FriendInfo *friendinforear;
-        path = gtk_tree_model_get_path(model, &iter);
-        i = gtk_tree_path_get_indices(path)[0];
-        j = gtk_tree_path_get_indices(path)[1];
 
-        if (gtk_tree_model_iter_has_child(model, &iter) == 0)
+        if (id >= 10000)
         {
-            uint32_t t;
-            gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
-            if (t == CurrentUserInfo->uid)
+            if (id == CurrentUserInfo->uid)
             {
                 return FALSE;
             }
             friendinforear = FriendInfoHead;
             while (friendinforear)
             {
-                if (friendinforear->user.uid == t)
+                if (friendinforear->user.uid == id)
                 {
 
                     uidfindflag = 1;
@@ -331,10 +293,39 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
                 }
                 else
                 {
-                    gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
+                    gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));
                 }
             }
 
+        }
+    }
+    return FALSE;
+}
+
+//树状视图双击列表事件 &&单击好友显示右键菜单
+gboolean button2_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    GtkTreeIter iter;
+    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
+    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+
+
+    if (event->button == 0x3)
+    {
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+        gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
+        uint32_t id = 0;
+        gtk_tree_model_get(model, &iter, FRIENDUID_COL, &id, -1);
+        if (id >= 256)
+        {
+            GtkMenu *menu = g_object_get_data(G_OBJECT(widget), "FriendMenu");
+            gtk_menu_item_set_submenu(GTK_MENU_ITEM(friend_mov_group), MovFriendButtonEvent(treeView));
+            gtk_menu_popup(menu, NULL, NULL, NULL, NULL, event->button, event->time);
+        }
+        else
+        {
+            GtkMenu *menu = g_object_get_data(G_OBJECT(widget), "GroupMenu");
+            gtk_menu_popup(menu, NULL, NULL, NULL, NULL, event->button, event->time);
         }
     }
     return FALSE;
@@ -1025,8 +1016,8 @@ int MainInterFace()
     gtk_container_add(GTK_CONTAINER(menu1), Refresh);
     gtk_widget_show(Refresh);
 
-    g_signal_connect(G_OBJECT(treeView), "button_press_event",
-                     G_CALLBACK(button2_press_event2), (gpointer) menu1);
+    /*g_signal_connect(G_OBJECT(treeView), "button_press_event",
+                     G_CALLBACK(button2_press_event2), (gpointer) menu1);*/
     //分组上移事件
     g_signal_connect(G_OBJECT(up), "button_release_event",
                      G_CALLBACK(UpGroupButtonPressEvent), treeView);
@@ -1070,8 +1061,12 @@ int MainInterFace()
     gtk_container_add(GTK_CONTAINER(menu2), friend_mov_group);
     gtk_widget_show(friend_mov_group);
 
+    g_object_set_data(G_OBJECT(treeView), "GroupMenu", menu1);
+    g_object_set_data(G_OBJECT(treeView), "FriendMenu", menu2);
+    g_signal_connect(G_OBJECT(treeView), "button_release_event",
+                     G_CALLBACK(button2_release_event), NULL);
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
-                     G_CALLBACK(button2_press_event), (gpointer) menu2);
+                     G_CALLBACK(button2_dblclick_event), NULL);
 
     g_signal_connect(G_OBJECT(sendmsg), "button_press_event",
                      G_CALLBACK(sendmsg_button_press_event), (gpointer) treeView);
@@ -1087,8 +1082,7 @@ int MainInterFace()
     return 0;
 }
 
-gboolean DestoryMainInterFace(gpointer user_data)
+void DestoryMainInterface()
 {
     gtk_widget_destroy(window);
-    return FALSE;
 }
