@@ -6,6 +6,8 @@
 
 int MessageFileClose(MessageFile *file)
 {
+    lseek(file->fd, sizeof(uint32_t), SEEK_SET);
+    write(file->fd, &file->lastUpdateDate, sizeof(uint32_t));
     int ret = close(file->fd);
     if (ret == 0)
     {
@@ -18,8 +20,8 @@ int MessageFileClose(MessageFile *file)
 
 static void MessageFileReset(int fd)
 {
-    ftruncate(fd, 0);
     lseek(fd, 0, SEEK_SET);
+    ftruncate(fd, 0);
     uint32_t startTime = (uint32_t) (time(NULL) / (24 * 60 * 60));
     write(fd, &startTime, sizeof(uint32_t));//fileBeginDate
     write(fd, &startTime, sizeof(uint32_t));//lastUpdateDate
@@ -52,6 +54,11 @@ MessageFile *MessageFileOpen(const char *path)
         return NULL;
     }
     MessageFile *file = (MessageFile *) malloc(sizeof(MessageFile));
+    if (file == NULL)
+    {
+        close(fd);
+        return NULL;
+    }
     file->fd = fd;
     pthread_mutex_init(&file->lock, NULL);
 
@@ -71,7 +78,9 @@ MessageFile *MessageFileOpen(const char *path)
             + 10 * 365 * sizeof(off_t);
     if (file->fileBeginOffset != lseek(file->fd, file->fileBeginOffset, SEEK_SET))
     {
-        abort();
+        free(file);
+        close(fd);
+        return NULL;
     }
     return file;
 }
@@ -85,9 +94,10 @@ int MessageFileAppend(MessageFile *file, UserMessage *message)
     off_t posEnd = lseek(file->fd, 0, SEEK_END);
     if (file->lastUpdateDate != messageDate)
     {
-        lseek(file->fd, sizeof(file->fileBeginDate) +
-                sizeof(file->lastUpdateDate) +
-                sizeof(off_t) * (messageDate - file->lastUpdateDate + 1),
+        lseek(file->fd,
+              sizeof(file->fileBeginDate) +
+              sizeof(file->lastUpdateDate) +
+              sizeof(off_t) * (messageDate - file->lastUpdateDate + 1),
               SEEK_SET);
         for (int i = file->lastUpdateDate + 1; i <= messageDate; ++i)
         {
