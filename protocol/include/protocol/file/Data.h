@@ -5,7 +5,7 @@
 #include <glob.h>
 
 /**
-* 请求服务器数据
+* 文件数据
 */
 
 CRP_STRUCTURE

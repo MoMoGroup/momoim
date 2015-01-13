@@ -6,6 +6,8 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
+#include <sys/stat.h>
+#include <protocol/file/Data.h>
 #include "common.h"
 #include "addfriend.h"
 #include "chartmessage.h"
@@ -88,13 +90,14 @@ GtkTreeModel *createModel()
                 if (rear->uid == friends->groups[i].friends[j])
                 {
                     memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
-
-
                     break;
                 }
                 rear = rear->next;
             }
-
+            if (!rear)
+            {
+                continue;
+            }
 
             pixbuf = DrawFriend(&rear->user, rear->inonline);
 
@@ -116,7 +119,7 @@ GtkTreeModel *createModel()
                                PIXBUF_COL, pixbuf,
                                FRIENDUID_COL, friends->groups[i].friends[j],
                                PRIORITY_COL, priority,
-                               -1);
+                                       - 1);
             g_object_unref(pixbuf);
 
         }
@@ -342,7 +345,183 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
 }
 
 
-int deal_with_recv_message(void *data)  //图片处理函数
+gboolean recv_progress_bar_crcle(void *data)
+{
+    struct RECVFileMessagedata *recv_file_bar_crcle = (struct RECVFileMessagedata *) data;
+
+    if (recv_file_bar_crcle->file_loading_end == 0)
+    {
+        gdouble pvalue;
+        pvalue = (gdouble) recv_file_bar_crcle->file_count / (gdouble) recv_file_bar_crcle->file_size;
+        log_info("Progress", "%lf\n", pvalue);
+        gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(recv_file_bar_crcle->progressbar), pvalue);
+        return 1;
+    }
+    else
+    {
+        gtk_widget_destroy(recv_file_bar_crcle->file);
+        gtk_widget_destroy(recv_file_bar_crcle->progressbar);
+        gchar filemulu[200] = {0};
+        sprintf(filemulu, "文件保存地址为%s/.momo/files/%s", getpwuid(getuid())->pw_dir, recv_file_bar_crcle->filename);
+        ShoweRmoteText(filemulu, recv_file_bar_crcle->userinfo,
+                       strlen(filemulu));
+        free(recv_file_bar_crcle->filename);
+        free(recv_file_bar_crcle);
+        return 0;
+    }
+}
+
+int deal_with_recv_file(CRPBaseHeader *header, void *data)
+{
+    struct RECVFileMessagedata *recv_message = (struct RECVFileMessagedata *) data;
+    int ret = 1;
+    switch (header->packetID)
+    {
+        case CRP_PACKET_FAILURE:
+        {
+            CRPPacketFailure *infodata = CRPFailureCast(header);
+            log_info("FAILURE reason", infodata->reason);
+            fclose(recv_message->Wfp);
+            recv_message->file_loading_end = 1;
+            return 0;
+        };
+        case  CRP_PACKET_FILE_DATA_START:
+        {
+            log_info("Recv Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
+            CRPOKSend(sockfd, header->sessionID);
+            break;
+        };
+        case CRP_PACKET_FILE_DATA:
+        {
+
+            CRPPacketFileData *packet = CRPFileDataCast(header);
+            fwrite(packet->data, 1, packet->length, recv_message->Wfp);
+            recv_message->file_count = recv_message->file_count + packet->length;
+            CRPOKSend(sockfd, header->sessionID);
+            break;
+        };
+        case CRP_PACKET_FILE_DATA_END:
+        {
+            fclose(recv_message->Wfp);
+            recv_message->file_loading_end = 1;
+            ret = 0;
+            break;
+        };
+
+    }
+
+    return ret;
+}
+
+//接收文件处理函数
+int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
+{
+    if (info->chartwindow != NULL)
+    {
+
+        GtkWidget *dialog;
+        dialog = gtk_message_dialog_new(info->chartwindow, GTK_DIALOG_MODAL,
+                                        GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+                                        "莫默询问您：\n您想接收这份文件吗？");
+        gtk_window_set_title(GTK_WINDOW (dialog), "Question");
+        gint result = gtk_dialog_run(GTK_DIALOG (dialog));
+        g_print("%the result is %d\n", result);
+        if (result == -5)
+        {
+            gtk_widget_destroy(dialog);
+            //文件的信息初始化
+            struct RECVFileMessagedata *file_message_data = (struct RECVFileMessagedata *) malloc(sizeof(struct RECVFileMessagedata));
+            file_message_data->charlen = charlen;
+            file_message_data->filename = (gchar *) malloc(100);
+            memcpy(file_message_data->filename, recv_text, charlen - 4); //获取文件名
+            size_t filename_len = strlen(file_message_data->filename);
+            memcpy(&file_message_data->file_size, recv_text + filename_len, 4);//获取文件大小
+            file_message_data->file_loading_end = 0;
+            file_message_data->file_count = 0;
+            file_message_data->userinfo = info;
+            gchar sendfile_size[100];
+            PangoFontDescription *font;
+            char strdest[17] = {0};
+            session_id_t session_id;
+
+            if (file_message_data->file_size / 1048576.0 > 0)
+            {
+                sprintf(sendfile_size, "\t %s \n 大小为：%.2f M", file_message_data->filename,
+                        file_message_data->file_size / 1048576.0);
+            }
+            else
+            {
+                sprintf(sendfile_size,
+                        "\t %s \n 大小为：%d byte", file_message_data->filename, file_message_data->file_size);
+            }
+            //显示的文件名和大小
+            file_message_data->file = gtk_label_new(sendfile_size);
+            font = pango_font_description_from_string("Sans");//"Sans"字体名
+            pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
+            gtk_widget_override_font(file_message_data->file, font);
+            gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->file, 160, 5);
+            gtk_widget_show(file_message_data->file);                   //文件名和大小
+
+            //进度条
+            file_message_data->progressbar = gtk_progress_bar_new();        //进度条
+            gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->progressbar, 175, 50);
+            gtk_widget_show(file_message_data->progressbar);
+            g_idle_add(recv_progress_bar_crcle, file_message_data);  //用来更新进度条
+
+            //写文件
+            gchar filemulu[100] = {0};
+            sprintf(filemulu, "%s/.momo/files/%s", getpwuid(getuid())->pw_dir, file_message_data->filename);
+            file_message_data->Wfp = (fopen(filemulu, "w"));
+
+            session_id = CountSessionId();
+            Md5Coding(file_message_data->filename, strdest);  //获得MD5值存在strdest
+            AddMessageNode(session_id, deal_with_recv_file, file_message_data);
+            CRPFileRequestSend(sockfd, session_id, 0, strdest);
+            return 1;
+        }
+        else
+        {
+            gtk_widget_destroy(dialog);
+            return 0;
+        }
+
+    }
+}
+
+//文件接收函数
+void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid)
+{
+    log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
+    int uidfindflag = 0;
+    FriendInfo *userinfo = FriendInfoHead;
+    while (userinfo)
+    {
+        if (userinfo->user.uid == recd_uid)
+        {
+            uidfindflag = 1;
+            break;
+        }
+        else
+        {
+            userinfo = userinfo->next;
+        }
+    }
+    if (uidfindflag == 1)
+    {
+        if (userinfo->chartwindow == NULL)
+        {
+            MainChart(userinfo);
+        }
+        else
+        {
+            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
+        }
+        file_message_recv(rcvd_text, userinfo, len);
+    }
+}
+
+//图片处理函数
+int deal_with_recv_message(void *data)
 {
     struct RECVImageMessagedata *recv_message = (struct RECVImageMessagedata *) data;
     recv_message->imagecount--;
@@ -356,6 +535,7 @@ int deal_with_recv_message(void *data)  //图片处理函数
     return FALSE;
 }
 
+//接收图片函数
 int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
 {
     int i = 0;
@@ -690,9 +870,7 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event,
-
-                                        gpointer data)
+static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     if (AddFriendflag)//判断是否打开搜索窗口

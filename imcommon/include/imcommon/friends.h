@@ -46,4 +46,6 @@ extern int UserFriendsUserMove(UserGroup *src, UserGroup *dst, uint32_t uid);
 
 extern int UserFriendsUserDelete(UserGroup *group, uint32_t user);
 
+extern int UserFriendsExist(UserFriends *friends, uint8_t gid, uint32_t uid);
+
 extern void UserFriendsFree(UserFriends *friends);

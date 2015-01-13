@@ -59,7 +59,9 @@ UserFriends *UserFriendsDecode(unsigned char *p)
     for (int i = 0; i < friends->groupCount; ++i)
     {
         UserGroup *group = friends->groups + i;
-        memcpy(group, p, sizeof(UserGroup) - sizeof(((UserGroup *) 0)->friends));   //2. Read Group Info (WITHOUT FRIENDS)
+        memcpy(group,
+               p,
+               sizeof(UserGroup) - sizeof(((UserGroup *) 0)->friends));   //2. Read Group Info (WITHOUT FRIENDS)
         p += sizeof(UserGroup) - sizeof(((UserGroup *) 0)->friends);
 
         //III.Alloc Friends
@@ -241,4 +243,20 @@ int UserFriendsUserMove(UserGroup *src, UserGroup *dst, uint32_t uid)
         return 0;
     }
     return 1;
+}
+
+int UserFriendsExist(UserFriends *friends, uint8_t gid, uint32_t uid)
+{
+    UserGroup *group = UserFriendsGroupGet(friends, gid);
+    if (group)
+    {
+        for (int i = 0; i < group->friendCount; ++i)
+        {
+            if (group->friends[i] == uid)
+            {
+                return 1;
+            }
+        }
+    }
+    return 0;
 }

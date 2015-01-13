@@ -9,8 +9,8 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
 {
     if (user->state == OUS_ONLINE)
     {
-        MessageFile *file = UserMessageFileGet(user->info->uid);
-        UserInfo *info = UserInfoGet(user->info->uid);
+        MessageFile *file = UserMessageFileGet(user->uid);
+        UserInfo *info = UserInfoGet(user->uid);
         if (MessageFileSeek(file, (uint32_t) (info->lastlogout / (24 * 60 * 60))))
         {
             CRPOKSend(user->crp, session);
@@ -23,7 +23,7 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
         UserMessage *msg;
         while ((msg = MessageFileNext(file)) != NULL)
         {
-            if (msg->time >= info->lastlogout)
+            if (msg->time >= info->lastlogout && msg->to == user->uid)
             {
                 if (!CRPMessageNormalSend(user->crp, 0, msg->messageType, msg->from, msg->messageLen, msg->content))
                 {
@@ -32,7 +32,7 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
             }
             free(msg);
         }
-        UserMessageFileDrop(user->info->uid);
+        UserMessageFileDrop(user->uid);
 
     }
     else

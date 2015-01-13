@@ -82,12 +82,11 @@ struct structUserOperationTable
 //用户在线信息
 struct structOnlineUserInfo
 {
-    uint32_t uid;
     char *userDir;
     time_t loginTime;
-    UserOnlineStatus status;
     UserFriends *friends;
     pthread_rwlock_t *friendsLock;
+    MessageFile *message;
 };
 
 //在线用户数据
@@ -100,6 +99,8 @@ struct structOnlineUser
     time_t lastUpdateTime;
 
     //该状态私有数据
+    uint32_t uid;
+    UserOnlineStatus status;
     POnlineUserInfo info;
     UserOperationTable operations;
 };
@@ -143,7 +144,7 @@ int UserHold(POnlineUser user);
 void UserDrop(POnlineUser user);
 
 //创建一个等待用户对象
-PPendingUser PendingUserNew(int fd);
+PPendingUser UserNew(int fd);
 
 int PendingUserDelete(PPendingUser);
 
@@ -152,13 +153,16 @@ int OnlineUserDelete(POnlineUser user);
 
 //设置用户状态
 //该函数作用包括切换用户状态,更改存储位置,初始化状态参数.删除状态参数,状态更变通知
-POnlineUser UserSetStatus(POnlineUser user, OnlineUserState state, uint32_t uid);
+POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid);
 
 //通过uid查找用户
 POnlineUser OnlineUserGet(uint32_t uid);
 
 //注册一个可取消用户操作
-PUserOperation UserOperationRegister(POnlineUser user, session_id_t sessionID, int type, void *data) __attribute_malloc__;
+PUserOperation UserOperationRegister(POnlineUser user,
+                                     session_id_t sessionID,
+                                     int type,
+                                     void *data) __attribute_malloc__;
 
 //注销一个可取消用户操作.如果operation是孤立的(无前后节点),它将被简单的释放.
 void UserOperationUnregister(POnlineUser user, PUserOperation op);
@@ -171,7 +175,10 @@ void UserOperationDrop(POnlineUser user, PUserOperation);
 //通过自定义函数和操作获得用户操作
 //type为-1时会枚举所有操作.
 //注意,不要试图在枚举时注册或注销一个操作
-PUserOperation UserOperationQuery(POnlineUser user, UserOperationType type, int (*func)(PUserOperation op, void *data), void *data);
+PUserOperation UserOperationQuery(POnlineUser user,
+                                  UserOperationType type,
+                                  int (*func)(PUserOperation op, void *data),
+                                  void *data);
 
 //取消一个操作.
 //如果操作oncancel字段不为空,会调用oncancel指定的函数.

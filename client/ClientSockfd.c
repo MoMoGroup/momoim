@@ -72,32 +72,53 @@ gboolean postMessage(gpointer user_data)
 {
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
     CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
-
-
-    if (packet->messageType == UMT_TEXT)
+    switch (packet->messageType)
     {
-        char *message = (char *) malloc(packet->messageLen);
-        memcpy(message, packet->message, packet->messageLen);
-        //fun();
-        RecdServerMsg(message, packet->messageLen, packet->uid);
-        free(message);
-        if ((void *) packet != header->data)
+        case UMT_FILE_OFFLINE:
         {
-            free(packet);
-        }
+            char *message = (char *) malloc(packet->messageLen);
+            memcpy(message, packet->message, packet->messageLen);
+            //fun();
+            RecdServerFileMsg(message, packet->messageLen, packet->uid);
+            free(message);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+        };
+        case UMT_FILE_ONLINE:
+        {
+            break;
+        };
+        case UMT_TEXT:
+        {
+            char *message = (char *) malloc(packet->messageLen);
+            memcpy(message, packet->message, packet->messageLen);
+            //fun();
+            RecdServerMsg(message, packet->messageLen, packet->uid);
+            free(message);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+
+        };
+        case UMT_NEW_FRIEND:
+        {
+            char *mes = calloc(1, 100);
+            memcpy(mes, packet->message, packet->messageLen);
+            Friend_Fequest_Popup(packet->uid, mes);
+
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            break;
+        };
     }
 
-    if (packet->messageType == UMT_NEW_FRIEND)
-    {
-        char *mes = calloc(1, 100);
-        memcpy(mes, packet->message, packet->messageLen);
-        Friend_Fequest_Popup(packet->uid, mes);
-
-        if ((void *) packet != header->data)
-        {
-            free(packet);
-        }
-    }
     return 0;
 }
 

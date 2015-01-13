@@ -16,6 +16,7 @@ SET(LIBPROTOCOL_SRC
     packets/friend/GroupDelete.c
     packets/friend/GroupMove.c
     packets/friend/GroupRename.c
+    packets/friend/Discover.c
 
     packets/info/Request.c
     packets/info/Data.c
@@ -41,9 +42,13 @@ SET(LIBPROTOCOL_SRC
     packets/file/DataEnd.c
     packets/file/Reset.c
     packets/file/StoreRequest.c
+    packets/file/Proxy.c
 
     packets/message/Normal.c
     packets/message/QueryOffline.c
+    packets/message/RecordNext.c
+    packets/message/RecordSeek.c
+    packets/message/RecordData.c
 
     packets/net/Discover.c
     packets/net/QualityTest.c

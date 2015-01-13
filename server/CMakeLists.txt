@@ -13,6 +13,7 @@ SET(SERVER_SOURCE_FILE
     run/worker.c
     run/natTraversal.c
     run/gc.c
+    run/operation.c
 
     datafile/init.c
     datafile/auth.c
@@ -49,6 +50,7 @@ SET(SERVER_SOURCE_FILE
     packets/friend/GroupRename.c
     packets/friend/GroupMove.c
     packets/friend/GroupDelete.c
+    packets/friend/Discover.c
 
     packets/login/Login.c
     packets/login/Logout.c
@@ -56,6 +58,8 @@ SET(SERVER_SOURCE_FILE
 
     packets/message/Normal.c
     packets/message/QueryOffline.c
+    packets/message/RecordNext.c
+    packets/message/RecordSeek.c
 
     packets/net/Discover.c
     )

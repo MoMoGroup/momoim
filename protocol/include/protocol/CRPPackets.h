@@ -15,6 +15,7 @@
 #include "protocol/friend/GroupRename.h"
 #include "protocol/friend/GroupDelete.h"
 #include "protocol/friend/GroupMove.h"
+#include "protocol/friend/Discover.h"
 
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
@@ -26,6 +27,7 @@
 #include "protocol/file/DataEnd.h"
 #include "protocol/file/StoreRequest.h"
 #include "protocol/file/Reset.h"
+#include "protocol/file/Proxy.h"
 
 #include "protocol/login/Login.h"
 #include "protocol/login/Accept.h"
@@ -43,6 +45,9 @@
 
 #include "protocol/message/Normal.h"
 #include "protocol/message/QueryOffline.h"
+#include "protocol/message/RecordNext.h"
+#include "protocol/message/RecordSeek.h"
+#include "protocol/message/RecordData.h"
 
 #include "protocol/net/Discover.h"
 #include "protocol/net/QualityTest.h"
@@ -86,6 +91,7 @@ typedef enum
     CRP_PACKET_FRIEND_GROUP_RENAME, //重命名分组
     CRP_PACKET_FRIEND_GROUP_DELETE, //删除分组
     CRP_PACKET_FRIEND_GROUP_MOVE,   //移动分组
+    CRP_PACKET_FRIEND_DISCOVER,     //好友网络发现
 
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件
@@ -94,15 +100,19 @@ typedef enum
     CRP_PACKET_FILE_DATA_END,      //响应数据结束
     CRP_PACKET_FILE_RESET,         //重置文件发送进程
     CRP_PACKET_FILE_STORE_REQUEST, //请求存储新文件
+    CRP_PACKET_FILE_PROXY,         //请求实时文件数据代理
 
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
     CRP_PACKET_MESSAGE_NORMAL,        //消息
     CRP_PACKET_MESSAGE_QUERY_OFFLINE, //查询离线消息
+    CRP_PACKET_MESSAGE_RECORD_NEXT, //消息记录向前
+    CRP_PACKET_MESSAGE_RECORD_SEEK, //消息记录重定位
+    CRP_PACKET_MESSAGE_RECORD_DATA, //消息记录数据
 
     CRP_PACKET_NET__START = 0x60,   //NAT内网穿透开始
-    CRP_PACKET_NAT_DISCOVER,        //网络发现
     CRP_PACKET_NET_QUALITY_TEST,    //网络质量测试
     CRP_PACKET_NET_INET_ADDRESS,    //IP地址数据包
+    CRP_PACKET_NAT_DISCOVER,        //网络发现
     CRP_PACKET_NAT_DETECTED,        //主机已检测到
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID

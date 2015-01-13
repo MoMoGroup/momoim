@@ -11,16 +11,16 @@
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_KEEP_ALIVE]               = (void *(*)(CRPBaseHeader *)) CRPKeepAliveCast,
         [CRP_PACKET_HELLO]                    = (void *(*)(CRPBaseHeader *)) CRPHelloCast,
-        [CRP_PACKET_OK]                       = (void *(*)(CRPBaseHeader *)) CRPOKCast,
         [CRP_PACKET_FAILURE]                  = (void *(*)(CRPBaseHeader *)) CRPFailureCast,
-        [CRP_PACKET_CRASH]                    = (void *(*)(CRPBaseHeader *)) CRPCrashCast,
+        [CRP_PACKET_OK]                       = (void *(*)(CRPBaseHeader *)) CRPOKCast,
         [CRP_PACKET_KICK]                     = (void *(*)(CRPBaseHeader *)) CRPKickCast,
         [CRP_PACKET_CANCEL]                   = (void *(*)(CRPBaseHeader *)) CRPCancelCast,
         [CRP_PACKET_SWITCH_PROTOCOL]          = (void *(*)(CRPBaseHeader *)) CRPSwitchProtocolCast,
+        [CRP_PACKET_CRASH]                    = (void *(*)(CRPBaseHeader *)) CRPCrashCast,
 
         [CRP_PACKET_LOGIN__START]             = (void *(*)(CRPBaseHeader *)) NULL,
-        [CRP_PACKET_LOGIN_ACCEPT]             = (void *(*)(CRPBaseHeader *)) CRPLoginAcceptCast,
         [CRP_PACKET_LOGIN_LOGIN]              = (void *(*)(CRPBaseHeader *)) CRPLoginLoginCast,
+        [CRP_PACKET_LOGIN_ACCEPT]             = (void *(*)(CRPBaseHeader *)) CRPLoginAcceptCast,
         [CRP_PACKET_LOGIN_LOGOUT]             = (void *(*)(CRPBaseHeader *)) CRPLoginLogoutCast,
         [CRP_PACKET_LOGIN_REGISTER]           = (void *(*)(CRPBaseHeader *)) CRPLoginRegisterCast,
 
@@ -32,10 +32,10 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_FRIEND__START]            = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_FRIEND_REQUEST]           = (void *(*)(CRPBaseHeader *)) CRPFriendRequestCast,
         [CRP_PACKET_FRIEND_DATA]              = (void *(*)(CRPBaseHeader *)) CRPFriendDataCast,
-        [CRP_PACKET_FRIEND_ADD]               = (void *(*)(CRPBaseHeader *)) CRPFriendAddCast,
+        [CRP_PACKET_FRIEND_NOTIFY]            = (void *(*)(CRPBaseHeader *)) CRPFriendNotifyCast,
         [CRP_PACKET_FRIEND_SEARCH_BY_NICKNAME]= (void *(*)(CRPBaseHeader *)) CRPFriendSearchByNicknameCast,
         [CRP_PACKET_FRIEND_USER_LIST]         = (void *(*)(CRPBaseHeader *)) CRPFriendUserListCast,
-        [CRP_PACKET_FRIEND_NOTIFY]            = (void *(*)(CRPBaseHeader *)) CRPFriendNotifyCast,
+        [CRP_PACKET_FRIEND_ADD]               = (void *(*)(CRPBaseHeader *)) CRPFriendAddCast,
         [CRP_PACKET_FRIEND_ACCEPT]            = (void *(*)(CRPBaseHeader *)) CRPFriendAcceptCast,
         [CRP_PACKET_FRIEND_MOVE]              = (void *(*)(CRPBaseHeader *)) CRPFriendMoveCast,
         [CRP_PACKET_FRIEND_DELETE]            = (void *(*)(CRPBaseHeader *)) CRPFriendDeleteCast,
@@ -43,21 +43,29 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_FRIEND_GROUP_RENAME]      = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupRenameCast,
         [CRP_PACKET_FRIEND_GROUP_DELETE]      = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupDeleteCast,
         [CRP_PACKET_FRIEND_GROUP_MOVE]        = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupMoveCast,
+        [CRP_PACKET_FRIEND_DISCOVER]          = (void *(*)(CRPBaseHeader *)) CRPFriendDiscoverCast,
 
         [CRP_PACKET_FILE__START]              = (void *(*)(CRPBaseHeader *)) NULL,
-        [CRP_PACKET_FILE_DATA]                = (void *(*)(CRPBaseHeader *)) CRPFileDataCast,
-        [CRP_PACKET_FILE_DATA_END]            = (void *(*)(CRPBaseHeader *)) CRPFileDataEndCast,
-        [CRP_PACKET_FILE_DATA_START]          = (void *(*)(CRPBaseHeader *)) CRPFileDataStartCast,
         [CRP_PACKET_FILE_REQUEST]             = (void *(*)(CRPBaseHeader *)) CRPFileRequestCast,
+        [CRP_PACKET_FILE_DATA]                = (void *(*)(CRPBaseHeader *)) CRPFileDataCast,
+        [CRP_PACKET_FILE_DATA_START]          = (void *(*)(CRPBaseHeader *)) CRPFileDataStartCast,
+        [CRP_PACKET_FILE_DATA_END]            = (void *(*)(CRPBaseHeader *)) CRPFileDataEndCast,
         [CRP_PACKET_FILE_RESET]               = (void *(*)(CRPBaseHeader *)) CRPFileResetCast,
         [CRP_PACKET_FILE_STORE_REQUEST]       = (void *(*)(CRPBaseHeader *)) CRPFileStoreRequestCast,
+        [CRP_PACKET_FILE_PROXY]               = (void *(*)(CRPBaseHeader *)) CRPFileProxyRequestCast,
 
         [CRP_PACKET_MESSAGE__START]           = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_MESSAGE_NORMAL]           = (void *(*)(CRPBaseHeader *)) CRPMessageNormalCast,
         [CRP_PACKET_MESSAGE_QUERY_OFFLINE]    = (void *(*)(CRPBaseHeader *)) CRPMessageQueryOfflineCast,
+        [CRP_PACKET_MESSAGE_RECORD_NEXT]      = (void *(*)(CRPBaseHeader *)) CRPMessageRecordNextCast,
+        [CRP_PACKET_MESSAGE_RECORD_SEEK]      = (void *(*)(CRPBaseHeader *)) CRPMessageRecordSeekCast,
+        [CRP_PACKET_MESSAGE_RECORD_DATA]      = (void *(*)(CRPBaseHeader *)) CRPMessageRecordDataCast,
 
+        [CRP_PACKET_NET__START]               = (void *(*)(CRPBaseHeader *)) NULL,
+        [CRP_PACKET_NET_QUALITY_TEST]         = (void *(*)(CRPBaseHeader *)) CRPNETQualityTestCast,
+        [CRP_PACKET_NET_INET_ADDRESS]         = (void *(*)(CRPBaseHeader *)) CRPNETInetAddressCast,
         [CRP_PACKET_NAT_DISCOVER]             = (void *(*)(CRPBaseHeader *)) CRPNATDiscoverCast,
-        [CRP_PACKET_NET_QUALITY_TEST]         = (void *(*)(CRPBaseHeader *)) CRPNETQualityTestCast
+        [CRP_PACKET_NAT_DETECTED]             = (void *(*)(CRPBaseHeader *)) CRPNATDetectedCast,
 };
 
 static void CRPEncryptDisableUnlock(CRPContext context)
@@ -89,7 +97,8 @@ CRPContext CRPOpen(int fd)
 
 int CRPClose(CRPContext context)
 {
-    if (!context) {
+    if (!context)
+    {
         return 0;
     }
     CRPEncryptDisableUnlock(context);
@@ -106,17 +115,21 @@ int CRPEncryptTest(const char key[32], const char iv[32])
     int ret = 0;
     char *cpKey = (char *) malloc(32),
             *cpIV = (char *) malloc(32);
-    if (cpKey == NULL || cpIV == NULL) {
+    if (cpKey == NULL || cpIV == NULL)
+    {
         goto cleanup;
     }
     MCRYPT td = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
-    if (td == MCRYPT_FAILED) {
+    if (td == MCRYPT_FAILED)
+    {
         goto cleanup;
     }
-    if (32 != mcrypt_enc_get_key_size(td) || 32 != mcrypt_enc_get_iv_size(td) || 32 != mcrypt_enc_get_block_size(td)) {
+    if (32 != mcrypt_enc_get_key_size(td) || 32 != mcrypt_enc_get_iv_size(td) || 32 != mcrypt_enc_get_block_size(td))
+    {
         goto cleanup;
     }
-    if (0 != mcrypt_enc_self_test(td)) {
+    if (0 != mcrypt_enc_self_test(td))
+    {
         goto cleanup;
     }
     memcpy(cpKey, key, 32);
@@ -143,11 +156,13 @@ int CRPEncryptEnable(CRPContext context, const char sendKey[32], const char recv
     int retcode = 0;
     pthread_mutex_lock(&context->sendLock);
     pthread_mutex_lock(&context->recvLock);
-    if (context->sendTd || context->recvTd) {
+    if (context->sendTd || context->recvTd)
+    {
         CRPEncryptDisableUnlock(context);
     }
     MCRYPT sendTd = mcrypt_module_open(MCRYPT_RIJNDAEL_256, NULL, MCRYPT_CBC, NULL);
-    if (sendTd == MCRYPT_FAILED) {
+    if (sendTd == MCRYPT_FAILED)
+    {
         goto cleanup;
     }
     if (mcrypt_enc_get_key_size(sendTd) != 32 || mcrypt_enc_get_iv_size(sendTd) != 32 || mcrypt_enc_get_block_size(
@@ -208,7 +223,11 @@ void CRPEncryptDisable(CRPContext context)
     pthread_mutex_unlock(&context->recvLock);
 }
 
-ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID, void const *data, CRP_LENGTH_TYPE dataLength)
+ssize_t CRPSend(CRPContext context,
+                packet_id_t packetID,
+                session_id_t sessionID,
+                void const *data,
+                CRP_LENGTH_TYPE dataLength)
 {
     void *packet;
     CRPBaseHeader *header;
@@ -242,7 +261,8 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
     header->totalLength = (CRP_LENGTH_TYPE) protocolLength;
     header->packetID = packetID;
     header->sessionID = sessionID;
-    if (dataLength) {
+    if (dataLength)
+    {
         memcpy(header->data, data, dataLength);
     }
 
@@ -276,7 +296,8 @@ ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID
 
     cleanup:
     pthread_mutex_unlock(&context->sendLock);
-    if (packet) {
+    if (packet)
+    {
         free(packet);
     }
     return ret;
@@ -291,7 +312,8 @@ CRPBaseHeader *CRPRecv(CRPContext context)
     {
         CRP_LENGTH_TYPE encryptedLength;
         ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
-        if (ret != sizeof(encryptedLength)) {
+        if (ret != sizeof(encryptedLength))
+        {
             return NULL;
         }
         encryptedLength <<= 5;
