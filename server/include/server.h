@@ -25,5 +25,3 @@ void EpollRemove(POnlineUser);
 
 //重新设置fd事件
 void EpollModify(POnlineUser);
-
-void ServerListenerShutdown();

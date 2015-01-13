@@ -10,9 +10,6 @@ typedef struct
 
     pthread_t WorkerThread;
 
-    sem_t ready;
-    pthread_mutex_t lock;
-
 } WorkerType;
 
 //事务处理器主线程

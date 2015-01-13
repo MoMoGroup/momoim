@@ -5,21 +5,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <sys/epoll.h>
-#include <logger.h>
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
+
+#include <logger.h>
 
 #include <run/user.h>
 #include <run/jobs.h>
 #include <run/natTraversal.h>
 
 static int ServerIOPool;
-
-void ServerListenerShutdown()
-{
-    close(ServerIOPool);
-}
 
 void EpollAdd(POnlineUser user)
 {
@@ -49,8 +46,10 @@ void EpollRemove(POnlineUser user)
 {
     if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->crp->fd, NULL))
     {
-        if (errno != ENOENT)//如果fd已经移除,不要报错
+        if (errno != ENOENT)
+        {//如果fd已经移除,不要报错
             perror("epoll_remove");
+        }
     }
 }
 
@@ -148,6 +147,7 @@ void *ListenMain(void *listenSocket)
         epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);//P2P索引SOCKET
     }
 
+    signal(SIGINT, SIG_IGN);
     struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
     char keyBuffer[32];
     struct sockaddr_in idxSock;
@@ -181,6 +181,11 @@ void *ListenMain(void *listenSocket)
                             log_error("SERVER-LISTENER", "accept failure:%s\n", strerror(errno));
                             break;
                         }
+                    }
+                    if (OnlineUserCount >= CONFIG_MAX_CLIENTS)
+                    {
+                        close(fd);
+                        continue;
                     }
                     fcntl(fd, F_SETFL, O_NONBLOCK);
                     PPendingUser user = UserNew(fd);//分配一个用户对象空间(只做简单初始化)

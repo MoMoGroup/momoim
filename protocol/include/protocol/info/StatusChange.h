@@ -5,7 +5,7 @@
 #include <stddef.h>
 
 /**
-* 客户端请求用户资料
+* 更变在线状态
 */
 
 CRP_STRUCTURE
