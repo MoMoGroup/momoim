@@ -20,6 +20,7 @@
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
 #include "protocol/info/StatusChange.h"
+#include "protocol/info/PasswordChange.h"
 
 #include "protocol/file/Request.h"
 #include "protocol/file/Data.h"
@@ -75,7 +76,8 @@ typedef enum
     CRP_PACKET_INFO__START = 0x20,
     CRP_PACKET_INFO_REQUEST,        //用户资料请求报
     CRP_PACKET_INFO_DATA,           //用户资料回复
-    CRP_PACKET_INFO_STATUS_CHANGE,           //用户资料回复
+    CRP_PACKET_INFO_STATUS_CHANGE,  //用户资料回复
+    CRP_PACKET_INFO_PASSWORD_CHANGE,//密码修改
 
     CRP_PACKET_FRIEND__START = 0x30,
     CRP_PACKET_FRIEND_REQUEST,      //请求好友列表

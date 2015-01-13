@@ -6,6 +6,7 @@
 static sqlite3 *db = 0;
 static const char sqlAuth[] = "SELECT id FROM users WHERE name = ? AND key = ?;";
 static const char sqlReg[] = "INSERT INTO users (name,key) VALUES ( ? , ? );";
+static const char sqlPwd[] = "UPDATE users SET key = ? WHERE id = ?;";
 
 //static pthread_mutex_t lock;        //认证模块单线程执行
 int AuthInit()
@@ -54,6 +55,34 @@ int AuthUser(const char *user, const unsigned char *hashKey, uint32_t *uid)
     }
     sqlite3_finalize(authStmt);
     //pthread_mutex_unlock(&lock);
+    return ret;
+}
+
+int AuthPasswordChange(uint32_t uid, const unsigned char *hashKey)
+{
+
+    int ret = 0;
+    char hashText[33];//128bit MD5 hash * 2(hex char) + 1(null char)
+    for (int i = 0; i < 16; ++i)
+    {
+        hashText[i * 2] = (char) ((hashKey[i] >> 4) > 9 ? 'a' + ((hashKey[i] >> 4) - 10) : '0' + (hashKey[i] >> 4));
+        hashText[i * 2 + 1] = (char) ((hashKey[i] & 0xf) > 9 ? 'a' + ((hashKey[i] & 0xf) - 10) : '0' + (hashKey[i] & 0xf));
+    }
+    hashText[32] = 0;
+
+    sqlite3_stmt *cpStmt;
+    if (sqlite3_prepare_v2(db, sqlAuth, sizeof(sqlPwd), &cpStmt, NULL) != SQLITE_OK)
+    {
+        return 0;
+    }
+    sqlite3_bind_text(cpStmt, 1, hashText, 32, NULL);
+    sqlite3_bind_int(cpStmt, 2, uid);
+    int r = sqlite3_step(cpStmt);
+    if (r == SQLITE_DONE)
+    {
+        ret = 1;
+    }
+    sqlite3_finalize(cpStmt);
     return ret;
 }
 

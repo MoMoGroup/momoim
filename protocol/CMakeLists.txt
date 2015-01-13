@@ -21,6 +21,7 @@ SET(LIBPROTOCOL_SRC
     packets/info/Request.c
     packets/info/Data.c
     packets/info/StatusChange.c
+    packets/info/PasswordChange.c
 
     packets/login/Login.c
     packets/login/Accept.c
