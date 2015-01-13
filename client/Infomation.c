@@ -26,7 +26,7 @@ static GtkWidget *Infobackground, *Infosave, *Infocancel, *Infoguanbi;
 static GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
 static GtkWidget *itel, *imail, *imotto, *icalendar;
 static GtkWidget *headicon, *BianJi;
-
+char *filename;
 
 static const char *constellations[12] = {
         "水瓶座", "双鱼座", "白羊座", "金牛座",
@@ -454,6 +454,11 @@ static void destroy_infosurfaces()
 //保存按钮后
 int infosockfd()
 {
+    if (filename)
+    {
+        new_head(filename);
+    }
+
     UserInfo weinfo = *CurrentUserInfo;
     const gchar *buf;
     buf = gtk_entry_get_text(GTK_ENTRY(inickname));
@@ -573,7 +578,6 @@ static gint save_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
 //鼠标抬起事件
 static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
     if (event->button == 1)
     {
         infosockfd();
@@ -584,6 +588,46 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             destroy_infosurfaces();
             gtk_widget_destroy(Infowind);
         }
+        gtk_label_set_label((GtkLabel *) userid, CurrentUserInfo->nickName);//更新主界面昵称
+        char userhead[80] = {0};
+        static cairo_t *cr;
+        cairo_surface_t *surface, *surfacehead2;
+        HexadecimalConversion(userhead, CurrentUserInfo->icon);
+        //加载一个图片
+        surface = cairo_image_surface_create_from_png(userhead);
+        int w = cairo_image_surface_get_width(surface);
+        int h = cairo_image_surface_get_height(surface);
+        //创建画布
+        surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
+        //创建画笔
+        cr = cairo_create(surfacehead2);
+        //缩放
+        cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
+        cairo_clip(cr);
+        cairo_scale(cr, 125.0 / w, 126.0 / h);
+        //把画笔和图片相结合。
+        cairo_set_source_surface(cr, surface, 0, 0);
+        cairo_paint(cr);
+        gtk_image_set_from_surface((GtkImage *) headx, surfacehead2);//更新主界面头像
+
+        //更新主界面分组下用户的头像和昵称
+        GdkPixbuf *pixbuf;
+        pixbuf = DrawFriend(CurrentUserInfo, 1);
+        GtkTreeIter group_iter, useriter;
+        uint32_t groupid = 0;
+
+        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &group_iter);
+        do
+        {
+            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
+                               FRIENDUID_COL, &groupid,
+                               -1);
+        } while (!(groupid == 1));
+        gtk_tree_model_iter_children(TreeViewListStore, &useriter, &group_iter);
+        gtk_tree_store_set(TreeViewListStore, &useriter,
+                           PIXBUF_COL, pixbuf,
+                           PRIORITY_COL, 1,
+                           -1);
     }
     return 0;
 }
@@ -626,6 +670,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
 
     if (event->button == 1)
     {
+        free(filename);
         destroy_infosurfaces();
         gtk_widget_destroy(Infowind);
     }
@@ -714,7 +759,6 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
     if (event->button == 1)   // 判断是否是点击关闭图标
     {
         GtkWidget *dialog;
-        gchar *filename;
         dialog = gtk_file_chooser_dialog_new("请选择图片作为头像",
                                              (GtkWindow *) Infowind,
                                              GTK_FILE_CHOOSER_ACTION_OPEN,
@@ -723,8 +767,31 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
                                              NULL);
         if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
         {
+            filename = (char *) malloc(256);
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-            new_head(filename);
+
+            static cairo_t *cr;
+            cairo_surface_t *surface;
+            //加载一个图片
+            surface = cairo_image_surface_create_from_png(filename);
+            int w = cairo_image_surface_get_width(surface);
+            int h = cairo_image_surface_get_height(surface);
+
+            //创建画布
+            surfacehead = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
+            //创建画笔
+            cr = cairo_create(surfacehead);
+            //缩放
+            cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
+            cairo_clip(cr);
+            cairo_scale(cr, 125.0 / w, 126.0 / h);
+            //把画笔和图片相结合。
+            cairo_set_source_surface(cr, surface, 0, 0);
+            cairo_paint(cr);
+            gtk_image_set_from_surface((GtkImage *) headicon, surfacehead);
+            cairo_destroy(cr);
+
+            //gtk_label_set_label((GtkLabel *)BianJi, "编 辑");
         }
         gtk_widget_destroy(dialog);
     }
@@ -874,6 +941,7 @@ void infotv()
     surface = cairo_image_surface_create_from_png(infohead);
     int w = cairo_image_surface_get_width(surface);
     int h = cairo_image_surface_get_height(surface);
+
     //创建画布
     surfacehead = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
     //创建画笔
@@ -895,7 +963,6 @@ void infotv()
 
 int ChangeInfo()
 {
-
     static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
     static GtkEventBox *touxiang_event_box;
     Infowind = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -953,8 +1020,9 @@ int ChangeInfo()
                                        G_CALLBACK(touxiang_button_release_event),
                                        NULL,
                                        NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), touxiang_event_box, 25, 20);
+    gtk_fixed_put(GTK_FIXED(Infolayout), touxiang_event_box, 25, 15);
     gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
 
     gtk_widget_show_all(Infowind);
+    return 0;
 }

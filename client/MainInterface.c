@@ -15,14 +15,13 @@
 #include "onlylookinfo.h"
 #include "Managegroup.h"
 
-
-static GtkWidget *background, *headx, *search, *friend, *closebut;
-static GtkWidget *background1, *headx, *search, *friend, *change, *closebut;
+static GtkWidget *background1, *search, *friend, *change, *closebut;
 static GtkWidget *window;
-static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacechangetheme, *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
-
+GtkWidget *userid, *headx;
+//全局变量用以实时更新昵称和头像
+GtkTreeView *treeView;
 
 GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
@@ -152,7 +151,6 @@ static void create_surfaces()
 
 static void loadinfo()
 {
-    GtkWidget *userid;
     userid = gtk_label_new(CurrentUserInfo->nickName);
     //设置字体大小
     PangoFontDescription *font;
@@ -950,11 +948,11 @@ int MainInterFace()
                                     NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
 
-
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
 
     treeView = (GtkTreeView *) gtk_tree_view_new_with_model(createModel());//list
+
     //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
     gtk_tree_view_set_headers_visible(treeView, 0);//去掉头部空白
 

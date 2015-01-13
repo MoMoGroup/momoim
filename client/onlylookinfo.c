@@ -308,7 +308,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     cairo_paint(cr);
     headicon = gtk_image_new_from_surface(surfacehead);
     cairo_destroy(cr);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), headicon, 25, 20);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), headicon, 25, 15);
 
     gtk_widget_show_all(friendinfonode->Infowind);
     return 0;

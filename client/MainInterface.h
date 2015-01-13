@@ -65,3 +65,4 @@ extern enum {
     PRIORITY_COL,
 };
 
+extern GtkWidget *userid, *headx;
