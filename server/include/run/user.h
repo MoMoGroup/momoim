@@ -196,3 +196,4 @@ void FinalizeUserManager();
 
 //在线的小伙伴们！！
 extern OnlineUsersTableType OnlineUserTable;
+extern uint_fast32_t OnlineUserCount;

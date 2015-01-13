@@ -99,11 +99,11 @@ gboolean postMessage(gpointer user_data)
                 free(packet);
             }
             break;
-        };
+        }
         case UMT_FILE_ONLINE:
         {
             break;
-        };
+        }
         case UMT_TEXT:
         {
             char *message = (char *) malloc(packet->messageLen);
@@ -116,8 +116,7 @@ gboolean postMessage(gpointer user_data)
                 free(packet);
             }
             break;
-
-        };
+        }
         case UMT_NEW_FRIEND:
         {
             char *mes = calloc(1, 100);
@@ -129,7 +128,7 @@ gboolean postMessage(gpointer user_data)
                 free(packet);
             }
             break;
-        };
+        }
     }
 
 

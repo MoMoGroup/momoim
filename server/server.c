@@ -16,8 +16,6 @@ pthread_t ThreadListener;
 static void initWorker(int id, WorkerType *worker)
 {
     worker->workerId = id;
-    sem_init(&worker->ready, 0, 0);
-    pthread_mutex_init(&worker->lock, NULL);
     pthread_create(&worker->WorkerThread, NULL, WorkerMain, worker);
 }
 
@@ -25,7 +23,11 @@ static void sigInterupt(int sig)
 {
     log_info("MAIN", "Server is exiting...\n");
     IsServerRunning = 0;
-    ServerListenerShutdown();
+    pthread_kill(ThreadListener, SIGINT);
+    for (int i = 0; i < CONFIG_WORKER_COUNT; ++i)
+    {
+        pthread_kill(worker[i].WorkerThread, SIGINT);
+    }
     struct sigaction act = {
             .sa_handler=SIG_DFL,
     };
@@ -53,8 +55,7 @@ int main(int argc, char **argv)
 
     InitJobManger();
 
-    int i;
-    for (i = 0; i < CONFIG_WORKER_COUNT; i++)
+    for (int i = 0; i < CONFIG_WORKER_COUNT; i++)
     {
         initWorker(i, worker + i);
     }
@@ -68,12 +69,11 @@ int main(int argc, char **argv)
     }
     pthread_join(ThreadListener, NULL);
     GarbageCollectorFinalize();
-    for (i = 0; i < CONFIG_WORKER_COUNT; i++)
+    for (int i = 0; i < CONFIG_WORKER_COUNT; i++)
     {
         pthread_join(worker[i].WorkerThread, NULL);
     }
     FinalizeUserManager();
     DataModuleFinalize();
     return EXIT_SUCCESS;
-
 }

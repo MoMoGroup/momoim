@@ -11,9 +11,10 @@
 #include "datafile/friend.h"
 
 OnlineUsersTableType OnlineUserTable = {
-        .user=NULL,
+        .user=(POnlineUser) -1,
         .prev=NULL
 };
+uint_fast32_t OnlineUserCount = 0;
 PendingUsersTableType PendingUserTable = {
         .first=NULL,
         .last=NULL
@@ -245,6 +246,7 @@ POnlineUser OnlineUserGet(uint32_t uid)
 void OnlineUserTableRemove(uint32_t uid)
 {
     pthread_rwlock_wrlock(&OnlineUserTableLock);
+    --OnlineUserCount;
     OnlineUserTableSetUnlock(uid, NULL);
     pthread_rwlock_unlock(&OnlineUserTableLock);
 }
@@ -254,6 +256,7 @@ POnlineUser OnlineUserTableSet(OnlineUser *user)
     POnlineUser ret = NULL;
     pthread_rwlock_wrlock(&OnlineUserTableLock);
     ret = OnlineUserTableSetUnlock(user->uid, user);
+    ++OnlineUserCount;
     pthread_rwlock_unlock(&OnlineUserTableLock);
     return ret;
 }
@@ -275,6 +278,42 @@ PPendingUser UserNew(int fd)
     return user;
 }
 
+static int OnlineTableGC(POnlineUsersTableType table)
+{
+    time_t now;
+    time(&now);
+    int child = 0;
+    for (int i = 0; i < 0xf; ++i)
+    {
+        if (table->next[i] && !OnlineTableGC(table->next[i]))
+        {
+            child++;
+        }
+    }
+
+    if (!child)
+    {
+        if (!table->user)
+        {
+            free(table);
+            return 1;
+        }
+        else
+        {
+            UserHold(table->user);
+            if (difftime(table->user->lastUpdateTime, now) > 120)//Online用户最小宽限时间为120秒
+            {
+                OnlineUserDelete(table->user);
+            }
+            else
+            {
+                UserDrop(table->user);
+            }
+        }
+    }
+    return 0;
+}
+
 void UserGC()
 {
     pthread_rwlock_wrlock(&PendingUserTableLock);
@@ -282,12 +321,15 @@ void UserGC()
     time(&now);
     for (PPendingUser user = PendingUserTable.first; user != NULL; user = user->next)
     {
-        if (difftime(now, user->lastUpdateTime) > 10)//Pending表只允许10秒切换
+        if (difftime(now, user->lastUpdateTime) > 10)//Pending表最小宽限时间为10秒
         {
             PendingUserDelete(user);
         }
     }
+    pthread_rwlock_unlock(&PendingUserTableLock);
 
+    pthread_rwlock_wrlock(&OnlineUserTableLock);
+    OnlineTableGC(&OnlineUserTable);
     pthread_rwlock_unlock(&PendingUserTableLock);
 }
 

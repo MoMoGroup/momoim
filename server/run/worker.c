@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <logger.h>
 #include <protocol/base.h>
+#include <run/worker.h>
+#include <signal.h>
 
-#include "run/worker.h"
 #include "run/user.h"
 #include "run/jobs.h"
 
@@ -16,10 +17,19 @@ void *WorkerMain(void *arg)
     WorkerType *worker = (WorkerType *) arg;
 
     sprintf(workerName, "WORKER-%d", worker->workerId);
+    signal(SIGINT, SIG_IGN);
     while (IsServerRunning)
     {
+        if (worker->workerId == 0)
+        {
+            if (random() / (double) RAND_MAX < CONFIG_GC_RADIO)
+            {
+                UserGC();
+            }
+        }
         user = JobManagerPop();
-        if (!user && !IsServerRunning) {
+        if (!user && !IsServerRunning)
+        {
             break;
         }
         header = CRPRecv(user->crp);
