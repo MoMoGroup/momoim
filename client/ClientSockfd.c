@@ -73,7 +73,7 @@ gboolean postMessage(gpointer user_data)
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
     CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
 
-    UserGroup *blackgroup = UserFriendsGroupGet(friends, 255);
+    UserGroup *blackgroup = UserFriendsGroupGet(friends, UGI_BLACKLIST);
     int i = 0;
     while (i < blackgroup->friendCount)
     {
