@@ -16,10 +16,10 @@ int ProcessPacketMessageRecordNext(POnlineUser user, uint32_t session, CRPPacket
                 if (packet->uid == 0 || message->from == packet->uid || message->to == packet->uid)
                 {
                     --remain;
-                    CRPMessageRecordDataSend(user->crp,
-                                             session,
-                                             remain,
-                                             message);
+                    if (!CRPMessageRecordDataSend(user->crp, session, remain, message))
+                    {
+                        return 0;
+                    }
                 }
                 free(message);
             }
