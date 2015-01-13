@@ -2,7 +2,7 @@
 
 #include <gtk/gtk.h>
 
-extern GtkWidget *username, *passwd;
+extern GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
 extern const gchar *name, *pwd;
 int FlagRemember;
 int FirstPwd;

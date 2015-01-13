@@ -3,6 +3,8 @@
 #include <pwd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <imcommon/user.h>
+#include <math.h>
 #include "ClientSockfd.h"
 #include "common.h"
 #include "Infomation.h"
@@ -54,7 +56,6 @@ static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, 
     }
     return 0;
 }
-
 //关闭按钮
 //鼠标抬起事件
 static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -67,7 +68,6 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
     }
     return 0;
 }
-
 //关闭按钮
 //鼠标移动事件
 static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -78,7 +78,6 @@ static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) info->Infocancel, Surfacecancel1); //置换图标
     return 0;
 }
-
 //关闭按钮
 //鼠标离开事件
 static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -102,7 +101,6 @@ static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, 
     }
     return 0;
 }
-
 //关闭
 //鼠标抬起事件
 static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -115,7 +113,6 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
     }
     return 0;
 }
-
 //关闭
 //鼠标移动事件
 static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -126,7 +123,6 @@ static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) info->Infoguanbi, Surfaceend2);
     return 0;
 }
-
 //关闭
 //鼠标离开事件
 static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -147,7 +143,6 @@ static gint change_button_press_event(GtkWidget *widget, GdkEventButton *event, 
     }
     return 0;
 }
-
 //更新
 //鼠标抬起事件
 static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -160,7 +155,6 @@ static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event
     }
     return 0;
 }
-
 //更新
 //鼠标移动事件
 static gint change_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -170,7 +164,6 @@ static gint change_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) info->Infochange, Surfacechange1); //置换图标
     return 0;
 }
-
 //更新
 //鼠标离开事件
 static gint change_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -243,7 +236,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     }
 
     GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
-    GtkWidget *itel, *ischool, *ipostcode, *ihometown;
+    GtkWidget *itel, *imail, *imotto;
     GtkWidget *headicon;
 
     char idstring[80] = {0};
@@ -262,16 +255,11 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     iname = gtk_label_new(friendinfonode->user.name);//姓名
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), iname, 48, 241);
 
-    memset(idstring, 0, strlen(idstring));
-    sprintf(idstring, "%d", friendinfonode->user.postcode);
-    ipostcode = gtk_label_new(idstring);//邮编
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ipostcode, 305, 353);
+    imail = gtk_label_new(friendinfonode->user.mail);//邮箱
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), imail, 305, 353);
 
-    ischool = gtk_label_new(friendinfonode->user.school);//毕业院校
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ischool, 75, 381);
-
-    ihometown = gtk_label_new(friendinfonode->user.hometown);//故乡
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ihometown, 48, 408);
+    imotto = gtk_label_new(friendinfonode->user.motto);//个人说明
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), imotto, 75, 383);
 
     itel = gtk_label_new(friendinfonode->user.tel);//电话
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), itel, 48, 353);
@@ -300,10 +288,27 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), iconstellation, 305, 266);
 
     char infohead[80] = {0};
-    sprintf(infohead, "%s/.momo/friend/%d.png", getpwuid(getuid())->pw_dir, friendinfonode->user.uid);
-    surfacehead = cairo_image_surface_create_from_png(infohead);
+    static cairo_t *cr;
+    cairo_surface_t *surface;
+    HexadecimalConversion(infohead, friendinfonode->user.icon);
+    //加载一个图片
+    surface = cairo_image_surface_create_from_png(infohead);
+    int w = cairo_image_surface_get_width(surface);
+    int h = cairo_image_surface_get_height(surface);
+    //创建画布
+    surfacehead = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
+    //创建画笔
+    cr = cairo_create(surfacehead);
+    //缩放
+    cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
+    cairo_clip(cr);
+    cairo_scale(cr, 125.0 / w, 126.0 / h);
+    //把画笔和图片相结合。
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_paint(cr);
     headicon = gtk_image_new_from_surface(surfacehead);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), headicon, 23, 16);
+    cairo_destroy(cr);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), headicon, 25, 15);
 
     gtk_widget_show_all(friendinfonode->Infowind);
     return 0;

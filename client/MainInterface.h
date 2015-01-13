@@ -70,3 +70,4 @@ extern GtkWidget *StatusShowText;
 
 extern int OnLineStatus();
 
+extern GtkWidget *userid, *headx;

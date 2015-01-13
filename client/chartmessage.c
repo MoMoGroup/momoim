@@ -481,7 +481,6 @@ int deal_with_message(CRPBaseHeader *header, void *data)
                 }
                 free(photomessage);
             }
-
         }
     }
     else if (header->packetID == CRP_PACKET_FILE_DATA_END)
