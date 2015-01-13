@@ -6,20 +6,22 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
+#include <imcommon/user.h>
+#include <sys/stat.h>
+#include <protocol/file/Data.h>
 #include "common.h"
 #include "addfriend.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "Managegroup.h"
 
-
-static GtkWidget *background, *headx, *search, *friend, *closebut;
-static GtkWidget *background1, *headx, *search, *friend, *change, *closebut;
+static GtkWidget *background1, *search, *friend, *change, *closebut;
 static GtkWidget *window;
-static GtkTreeView *treeView;
 static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacechangetheme, *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
-
+GtkWidget *userid, *headx;
+//全局变量用以实时更新昵称和头像
+GtkTreeView *treeView;
 
 GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
@@ -149,7 +151,6 @@ static void create_surfaces()
 
 static void loadinfo()
 {
-    GtkWidget *userid;
     userid = gtk_label_new(CurrentUserInfo->nickName);
     //设置字体大小
     PangoFontDescription *font;
@@ -176,8 +177,7 @@ static void loadinfo()
         char userhead[80] = {0};
         static cairo_t *cr;
         cairo_surface_t *surface;
-
-        sprintf(userhead, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
+        HexadecimalConversion(userhead, CurrentUserInfo->icon);
         //加载一个图片
         surface = cairo_image_surface_create_from_png(userhead);
         int w = cairo_image_surface_get_width(surface);
@@ -242,7 +242,6 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
         {
             if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
             {
-
                 gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
                 return FALSE;
             }
@@ -940,11 +939,11 @@ int MainInterFace()
                                     NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
 
-
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
 
     treeView = (GtkTreeView *) gtk_tree_view_new_with_model(createModel());//list
+
     //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
     gtk_tree_view_set_headers_visible(treeView, 0);//去掉头部空白
 
