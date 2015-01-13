@@ -378,6 +378,8 @@ static void create_surfaces()
 
 }
 
+GtkWidget *StatusShowText;
+
 static void loadinfo()
 {
     userid = gtk_label_new(CurrentUserInfo->nickName);
@@ -388,6 +390,14 @@ static void loadinfo()
     gtk_widget_override_font(userid, font);
 
     gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
+
+    StatusShowText = gtk_label_new("");
+    pango_font_description_set_size(font, 15 * PANGO_SCALE);//设置字体大小
+    gtk_widget_override_font(StatusShowText, font);
+    ShowStatus("在线");
+    gtk_fixed_put(GTK_FIXED(MainLayout), StatusShowText, 140, 65);
+
+
 
     //加载用户头像
     int finduidflag = 0;
@@ -546,12 +556,18 @@ gboolean button2_release_event(GtkWidget *widget, GdkEventButton *event, gpointe
         gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
         uint32_t id = 0;
         gtk_tree_model_get(model, &iter, FRIENDUID_COL, &id, -1);
-        if (id >= 256)
+
+        if (id == CurrentUserInfo->uid)
+        {
+            return FALSE;
+        }
+        else if (id >= 256)
         {
             GtkMenu *menu = g_object_get_data(G_OBJECT(widget), "FriendMenu");
             gtk_menu_item_set_submenu(GTK_MENU_ITEM(friend_mov_group), MovFriendButtonEvent(treeView));
             gtk_menu_popup(menu, NULL, NULL, NULL, NULL, event->button, event->time);
         }
+
         else
         {
             GtkMenu *menu = g_object_get_data(G_OBJECT(widget), "GroupMenu");
@@ -1112,6 +1128,14 @@ static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+GtkWidget *status;
+
+int aaaaa(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    GtkMenu *menu = g_object_get_data(G_OBJECT(status), "ChangeMenu");
+
+    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event->button, event->time);
+}
 
 int MainInterFace()
 {
@@ -1157,6 +1181,7 @@ int MainInterFace()
     search = gtk_image_new_from_surface(surfaceresearch);
     search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
 
+
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), change_event_box, 240, 185);
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
@@ -1172,6 +1197,56 @@ int MainInterFace()
                                     NULL,
                                     NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
+
+    cairo_surface_t *surface_online, *surface_hideline;
+    GtkWidget *online, *hideline;
+    surface_online = ChangeThem_png("在线.png");
+    surface_hideline = ChangeThem_png("隐身.png");
+    online = gtk_image_new_from_surface(surface_online);
+    hideline = gtk_image_new_from_surface(surface_hideline);
+
+    cairo_surface_t *surface_status;
+
+    surface_status = ChangeThem_png("状态.png");
+    status = gtk_image_new_from_surface(surface_status);
+
+    GtkEventBox *online_event_box, *hide_event_box, *status_event_box;
+    status_event_box = BuildEventBox(status,
+                                     G_CALLBACK(aaaaa),
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL,
+                                     NULL);
+    gtk_fixed_put(GTK_FIXED(MainLayout), status_event_box, 220, 0);//起始坐标
+
+
+    GtkWidget *changeMenu;
+
+    changeMenu = gtk_menu_new();
+    //在线
+    online = gtk_menu_item_new_with_mnemonic("在线");
+    gtk_container_add(GTK_CONTAINER(changeMenu), online);
+    gtk_widget_show(online);
+    //隐身
+    hideline = gtk_menu_item_new_with_mnemonic("隐身");
+    gtk_container_add(GTK_CONTAINER(changeMenu), hideline);
+    gtk_widget_show(hideline);
+
+    //添加在线事件
+    g_signal_connect(G_OBJECT(online), "button_release_event",
+                     G_CALLBACK(ChangeOnLine), (gpointer) changeMenu);
+    //添加隐身事件
+    g_signal_connect(G_OBJECT(hideline), "button_release_event",
+                     G_CALLBACK(ChangeHideLine), (gpointer) changeMenu);
+
+    g_object_set_data(G_OBJECT(status), "ChangeMenu", changeMenu);
+
+
+
+
+
+
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
@@ -1297,6 +1372,7 @@ int MainInterFace()
 
     g_object_set_data(G_OBJECT(treeView), "GroupMenu", menu1);
     g_object_set_data(G_OBJECT(treeView), "FriendMenu", menu2);
+
     g_signal_connect(G_OBJECT(treeView), "button_release_event",
                      G_CALLBACK(button2_release_event), NULL);
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
@@ -1319,4 +1395,10 @@ int MainInterFace()
 void DestoryMainInterface()
 {
     gtk_widget_destroy(window);
+}
+
+int ShowStatus(void *data)
+{
+    gtk_label_set_text(StatusShowText, data);
+    return 0;
 }
