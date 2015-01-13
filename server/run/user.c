@@ -79,12 +79,18 @@ void InitUserManager()
     pthread_rwlock_init(&PendingUserTableLock, NULL);
 }
 
-void FinalizeUserManager()
+void deleteAllUser()
+{
+
+}
+
+void UserManagerFinalize()
 {
     while (PendingUserTable.first)
     {
         PendingUserDelete(PendingUserTable.first);
     }
+
     pthread_rwlock_destroy(&OnlineUserTableLock);
     pthread_rwlock_destroy(&PendingUserTableLock);
 }

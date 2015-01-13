@@ -192,7 +192,7 @@ void UserOperationRemoveAll(POnlineUser user);
 
 void InitUserManager();
 
-void FinalizeUserManager();
+void UserManagerFinalize();
 
 //在线的小伙伴们！！
 extern OnlineUsersTableType OnlineUserTable;
