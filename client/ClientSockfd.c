@@ -72,10 +72,24 @@ gboolean postMessage(gpointer user_data)
 {
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
     CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
+
+    UserGroup *blackgroup = UserFriendsGroupGet(friends, 255);
+    int i = 0;
+    while (i < blackgroup->friendCount)
+    {
+        if (blackgroup->friends[i] == packet->uid)
+        {
+            return 0;
+        }
+        i++;
+    }
+
     switch (packet->messageType)
     {
+
         case UMT_FILE_OFFLINE:
         {
+
             char *message = (char *) malloc(packet->messageLen);
             memcpy(message, packet->message, packet->messageLen);
             //fun();
@@ -118,6 +132,7 @@ gboolean postMessage(gpointer user_data)
             break;
         };
     }
+
 
     return 0;
 }
@@ -521,7 +536,8 @@ int mysockfd()
                     }
 
 
-                    if ((void *) packet != header->data) {
+                    if ((void *) packet != header->data)
+                    {
                         free(packet);
                     }
                     break;

@@ -780,15 +780,13 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
 
     do
     {
-        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore),
-                           &to_group_iter,
-                           FRIENDUID_COL,
-                           &groupid,
+        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter,
+                           FRIENDUID_COL, &groupid,
                            -1);
-        log_info("first_group_id", "%d\n", groupid);
+
         move_info *move_info_detail = (move_info *) malloc(sizeof(move_info));
         *move_info_detail = moveInfo;
-        move_info_detail->itergroup = to_group_iter;//一道分组iter
+        move_info_detail->itergroup = to_group_iter;//to分组iter
         move_info_detail->toGid = groupid;
 
         friendGroup = UserFriendsGroupGet(friends, groupid);//保存好友信息
