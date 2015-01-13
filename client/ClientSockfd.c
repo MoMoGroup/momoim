@@ -73,6 +73,7 @@ gboolean postMessage(gpointer user_data)
     CRPBaseHeader *header = (CRPBaseHeader *) user_data;
     CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
 
+
     if (packet->messageType == UMT_TEXT)
     {
         char *message = (char *) malloc(packet->messageLen);

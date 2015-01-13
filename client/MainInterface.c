@@ -26,7 +26,7 @@ static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box, *change_event_box;
-
+static GtkWidget *friend_mov_group;
 
 static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
 {
@@ -241,6 +241,7 @@ gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer
         {
             if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
             {
+
                 gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
                 return FALSE;
             }
@@ -284,6 +285,7 @@ gboolean button2_press_event(GtkWidget *widget, GdkEventButton *event, gpointer 
             if ((gtk_tree_model_iter_has_child(model,
                                                &iter) == 0) && !((i == 0) && (j == 0)) && (friends->groups[i].friendCount > 0))
             {
+                gtk_menu_item_set_submenu(friend_mov_group, MovFriendButtonEvent(treeView));
                 gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
                 return FALSE;
             }
@@ -818,7 +820,7 @@ int MainInterFace()
     GtkWidget *deletefriend;
     GtkWidget *remark;
     GtkWidget *sendfile;
-    GtkWidget *lookinfo, *mov;
+    GtkWidget *lookinfo;
     //分组菜单
     menu1 = gtk_menu_new();
 
@@ -889,9 +891,9 @@ int MainInterFace()
     lookinfo = gtk_menu_item_new_with_mnemonic("查看资料");
     gtk_container_add(GTK_CONTAINER(menu2), lookinfo);
     gtk_widget_show(lookinfo);
-    mov = gtk_menu_item_new_with_mnemonic("移动分组");
-    gtk_container_add(GTK_CONTAINER(menu2), mov);
-    gtk_widget_show(mov);
+    friend_mov_group = gtk_menu_item_new_with_mnemonic("移动分组");
+    gtk_container_add(GTK_CONTAINER(menu2), friend_mov_group);
+    gtk_widget_show(friend_mov_group);
 
     g_signal_connect(G_OBJECT(treeView), "button_press_event",
                      G_CALLBACK(button2_press_event), (gpointer) menu2);
