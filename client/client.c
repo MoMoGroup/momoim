@@ -16,7 +16,7 @@
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *username, *passwd;
 const gchar *name, *pwd;
-static pthread_t thread1;
+static pthread_t threadMainLoop;
 static GtkWidget *window;
 typedef struct cunchu {
     char cunchu_name[40];
@@ -282,7 +282,7 @@ void on_button_clicked()
 
     gtk_widget_show_all(pendingLayout);//显示layout2
 
-    pthread_create(&thread1, NULL, sendhello, NULL);
+    pthread_create(&threadMainLoop, NULL, sendhello, NULL);
 }
 
 /*账号更改触发*/
@@ -532,7 +532,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
 {
     if (event->button == 1) {                                         //设置取消按钮
         gtk_image_set_from_surface((GtkImage *) imagecancel, scancel10_1);
-        pthread_cancel(thread1);
+        pthread_cancel(threadMainLoop);
         CRPClose(sockfd);
         gtk_widget_hide(pendingLayout);
         gtk_widget_show_all(loginLayout);
@@ -647,7 +647,7 @@ int main(int argc, char *argv[])
 
 gboolean destoryall(gpointer user_data)
 {
-    g_idle_add(DestoryMainInterFace, NULL);//销毁主窗口,--maininterface
+    DestoryMainInterface();//销毁主窗口,--maininterface
 
     FriendInfo *head = FriendInfoHead;
     FriendInfo *p;
@@ -660,8 +660,7 @@ gboolean destoryall(gpointer user_data)
         free(p);
     }
 
-    pthread_cancel(ThreadKeepAlive);
-    g_idle_add(loadloginLayout, NULL);
+    loadloginLayout(NULL);
     popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
     return FALSE;
 }

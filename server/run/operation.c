@@ -169,18 +169,8 @@ int UserOperationCancel(POnlineUser user, PUserOperation op)
 
 void UserOperationRemoveAll(POnlineUser user)
 {
-    if (pthread_mutex_lock(&user->operations.lock))
+    while (user->operations.first)
     {
-        abort();
+        UserOperationUnregister(user, user->operations.first);
     }
-    PUserOperation next = user->operations.first;
-    user->operations.first = user->operations.last = NULL;
-    for (PUserOperation op = next; op != NULL; op = next)
-    {
-        next = op->next;
-        op->prev = op->next = NULL;
-        UserOperationCancel(user, op);
-    }
-    user->operations.count = 0;
-    pthread_mutex_unlock(&user->operations.lock);
 }

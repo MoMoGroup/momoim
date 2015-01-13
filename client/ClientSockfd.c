@@ -59,7 +59,6 @@ FriendInfo *FineNode(uint32_t uid)
 
 void *keepalive(void *dada)
 {
-    log_info("DEBUG", "KeepAlive Begin\n");
     while (1)
     {
         sleep(60);
@@ -186,6 +185,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         //服务器通知用户下线
         case CRP_PACKET_KICK:
         {
+            pthread_cancel(ThreadKeepAlive);
             g_idle_add(destoryall, NULL);
             CRPClose(sockfd);
             pthread_t pth = pthread_self();
@@ -282,6 +282,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
 int mysockfd()
 {
+    log_info("Test", "test\n");
 //头像,好友头像
     char mulu[80] = {0};
     char mulu2[80] = {0};
@@ -352,7 +353,7 @@ int mysockfd()
 
     if (header->packetID == CRP_PACKET_LOGIN_ACCEPT)
     {
-        log_info("登录成功", "登录成功\n");
+        // log_info("登录成功", "登录成功\n");
         sleep(1);//登录动画
         //将记住的密码保存本地
         if ((FlagRemember == 1) && (FirstPwd == 1))
