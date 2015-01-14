@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
     GarbageCollectorFinalize();
     UserManagerFinalize();
-    JobManagerFinalize;
+    JobManagerFinalize();
     DataModuleFinalize();
     return EXIT_SUCCESS;
 }

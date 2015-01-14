@@ -8,6 +8,6 @@ void AuthFinalize();
 
 int AuthUser(const char *user, const unsigned char *hashKey, uint32_t *uid);
 
-int AuthPasswordChange(uint32_t uid, const unsigned char *hashKey);
+int AuthPasswordChange(uint32_t uid, const unsigned char *oldKey, const unsigned char *newKey);
 
 uint32_t AuthRegister(const char *user, const unsigned char *hashKey);

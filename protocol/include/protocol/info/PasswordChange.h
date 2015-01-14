@@ -10,10 +10,10 @@
 
 CRP_STRUCTURE
 {
-    char password[16];
+    char oldPwd[16], newPwd[16];
 } CRPPacketInfoPasswordChange;
 
 __attribute_malloc__
 CRPPacketInfoPasswordChange *CRPInfoPasswordChangeCast(CRPBaseHeader *base);
 
-int CRPInfoPasswordChangeSend(CRPContext context, uint32_t sessionID, const char password[16]);
+int CRPInfoPasswordChangeSend(CRPContext context, uint32_t sessionID, const char oldPwd[16], const char newPwd[16]);
