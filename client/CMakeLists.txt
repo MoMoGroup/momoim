@@ -23,9 +23,13 @@ SET(CLIENT_SOURCE_FILE
     addfriend.c
     UpdataFriendList.c
     onlylookinfo.c
-    Managegroup.c
     changestatus.c
     chartmessage.c
+    managegroup/FriendsGroupMove.c
+    managegroup/AddGroup.c
+    managegroup/DeleteGroup.c
+    managegroup/RenameGroup.c
+    managegroup/MoveGroup.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)

@@ -10,7 +10,7 @@
 #include "addfriend.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
-#include "Managegroup.h"
+#include "managegroup/ManageGroup.h"
 
 static GtkWidget *status;
 

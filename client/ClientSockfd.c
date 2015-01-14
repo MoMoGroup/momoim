@@ -185,10 +185,12 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_KICK:
         {
             pthread_cancel(ThreadKeepAlive);
+            pthread_join(ThreadKeepAlive, NULL);
             g_idle_add(destoryall, NULL);
             CRPClose(sockfd);
-            pthread_t pth = pthread_self();
-            pthread_cancel(pth);
+
+            pthread_detach(pthread_self());//安全退出当前线程
+            pthread_exit(NULL);
             return 0;
         };
             //消息
@@ -204,7 +206,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
             CRPPacketFriendNotify *data = CRPFriendNotifyCast(header);
-            // CRPPacketInfoData *infodata = CRPInfoDataCast(header);
             log_info("收到对方同意消息", "\n");
             log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n", data->type);
             switch (data->type)
@@ -261,6 +262,11 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     break;
                 };
             }
+            if ((void *) data != header->data)
+            {
+                free(data);
+            }
+
             break;
 
         };
@@ -347,6 +353,11 @@ int mysockfd()
         memcpy(mem, f->reason, strlen(f->reason));
         mem[strlen(f->reason)] = 0;
         g_idle_add(DestroyLayout, mem);
+
+        if ((void *) f != header->data)
+        {
+            free(f);
+        }
         return 1;
     }
 
