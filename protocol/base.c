@@ -309,7 +309,7 @@ CRPBaseHeader *CRPRecv(CRPContext context)
     CRPBaseHeader *packet = NULL;
     ssize_t ret;
     pthread_mutex_lock(&context->recvLock);
-    if (context->recvTd)
+    if (context->recvTd)//接收通道被加密时
     {
         CRP_LENGTH_TYPE encryptedLength;
         ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
@@ -337,7 +337,7 @@ CRPBaseHeader *CRPRecv(CRPContext context)
         }
     }
     else
-    {
+    {   //接收通道未加密时
         CRPBaseHeader h;
         ret = recv(context->fd, &h, sizeof(CRPBaseHeader), MSG_PEEK | MSG_WAITALL);
         if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)

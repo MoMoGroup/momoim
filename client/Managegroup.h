@@ -22,6 +22,13 @@ extern int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, g
 //移动好友
 extern GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview);
 
+extern int ChangeOnLine();
+
+extern int ChangeHideLine();
+
+extern int ShowStatus(void *data);//显示在线隐身的函数
+
+
 
 
 

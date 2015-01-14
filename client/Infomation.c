@@ -617,12 +617,22 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
         uint32_t groupid = 0;
 
         gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &group_iter);
-        do
+        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
+                           FRIENDUID_COL, &groupid,
+                           -1);
+        if (groupid != 1)
         {
-            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
-                               FRIENDUID_COL, &groupid,
-                               -1);
-        } while (!(groupid == 1));
+
+            do
+            {
+                gtk_tree_model_iter_next(TreeViewListStore, &group_iter);
+                gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
+                                   FRIENDUID_COL, &groupid,
+                                   -1);
+            }
+            while (!(groupid == 1));
+        }
+
         gtk_tree_model_iter_children(TreeViewListStore, &useriter, &group_iter);
         gtk_tree_store_set(TreeViewListStore, &useriter,
                            PIXBUF_COL, pixbuf,
@@ -681,7 +691,6 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
 //鼠标移动事件
 static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) Infocancel, Surfacecancel1); //置换图标
     return 0;
@@ -701,7 +710,6 @@ static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 //鼠标点击事件
 static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
     if (event->button == 1)
     {
         gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -714,7 +722,6 @@ static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, 
 //鼠标抬起事件
 static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
     if (event->button == 1)
     {
         destroy_infosurfaces();
@@ -727,7 +734,6 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
 //鼠标移动事件
 static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
     gdk_window_set_cursor(gtk_widget_get_window(Infowind), gdk_cursor_new(GDK_HAND2));
     gtk_image_set_from_surface((GtkImage *) Infoguanbi, Surfaceend2);
     return 0;

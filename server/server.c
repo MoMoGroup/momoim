@@ -4,8 +4,8 @@
 #include <logger.h>
 #include <signal.h>
 #include <stdio.h>
-#include <unistd.h>
 #include <run/gc.h>
+#include <unistd.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
@@ -23,11 +23,6 @@ static void sigInterupt(int sig)
 {
     log_info("MAIN", "Server is exiting...\n");
     IsServerRunning = 0;
-    pthread_kill(ThreadListener, SIGINT);
-    for (int i = 0; i < CONFIG_WORKER_COUNT; ++i)
-    {
-        pthread_kill(worker[i].WorkerThread, SIGINT);
-    }
     struct sigaction act = {
             .sa_handler=SIG_DFL,
     };
@@ -36,7 +31,6 @@ static void sigInterupt(int sig)
 
 int main(int argc, char **argv)
 {
-    //setbuf(stdin, NULL);
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
     struct sigaction act = {
@@ -46,14 +40,14 @@ int main(int argc, char **argv)
     act.sa_handler = sigInterupt;
     sigaction(SIGINT, &act, NULL);
     act.sa_handler = SIG_IGN;
-    sigaction(SIGPIPE, &act, NULL);
+    sigaction(SIGPIPE, &act, NULL);//忽略Socket PIPE Error 信号
     if (!DataModuleInit())
     {
         log_error("MAIN", "Fail to initliaze data module.\n");
         return EXIT_FAILURE;
     }
 
-    InitJobManger();
+    JobManagerInitialize();
 
     for (int i = 0; i < CONFIG_WORKER_COUNT; i++)
     {
@@ -65,15 +59,23 @@ int main(int argc, char **argv)
     GarbageCollectorInitialize();
     while (IsServerRunning)
     {
-        sleep(1);
+        pause();
     }
+    log_info("MAIN", "Stopping Listener\n");
+    pthread_cancel(ThreadListener);
     pthread_join(ThreadListener, NULL);
-    GarbageCollectorFinalize();
-    for (int i = 0; i < CONFIG_WORKER_COUNT; i++)
+
+    for (int i = 0; i < CONFIG_WORKER_COUNT; ++i)
     {
+        log_info("MAIN", "Stopping Worker %d\n", worker[i].workerId);
+        pthread_cancel(worker[i].WorkerThread);
         pthread_join(worker[i].WorkerThread, NULL);
     }
-    FinalizeUserManager();
+    log_info("MAIN", "Cleanup Modules\n");
+
+    GarbageCollectorFinalize();
+    UserManagerFinalize();
+    JobManagerFinalize();
     DataModuleFinalize();
     return EXIT_SUCCESS;
 }

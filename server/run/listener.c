@@ -8,7 +8,6 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <signal.h>
 
 #include <logger.h>
 
@@ -53,104 +52,16 @@ void EpollRemove(POnlineUser user)
     }
 }
 
-void *ListenMain(void *listenSocket)
+static void closeHandler(void *fd)
 {
-    int sockListener, sockIdx;
-    sockListener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    sockIdx = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (sockListener == -1 || sockIdx == -1)
-    {
-        close(sockListener);
-        close(sockIdx);
-        perror("socket");
-        return NULL;
-    }
-    struct sockaddr_in addr = {
-            .sin_family = AF_INET,
-            .sin_port = htons(CONFIG_LISTEN_PORT),
-            .sin_addr.s_addr = htons(INADDR_ANY)
-    };
+    close(*(int *) fd);
+}
 
-    int on = 1;
-    if ((setsockopt(sockListener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
-    {
-        perror("setsockopt reuse address");
-        close(sockListener);
-        close(sockIdx);
-        return NULL;
-    }
-
-    if ((setsockopt(sockIdx, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
-    {
-        perror("setsockopt reuse address");
-        close(sockListener);
-        close(sockIdx);
-        return NULL;
-    }
-
-    if (-1 == bind(sockListener, (struct sockaddr *) &addr, sizeof addr))
-    {
-        perror("bind");
-        close(sockListener);
-        close(sockIdx);
-        return NULL;
-    }
-    addr.sin_port = htons(CONFIG_HOST_DISCOVER_PORT);
-    if (-1 == bind(sockIdx, (struct sockaddr *) &addr, sizeof addr))
-    {
-        perror("bind");
-        close(sockListener);
-        close(sockIdx);
-        return NULL;
-    }
-
-    if (-1 == listen(sockListener, CONFIG_LISTENER_BACKLOG))
-    {
-        perror("listen");
-        close(sockListener);
-        close(sockIdx);
-        return NULL;
-    }
-    {
-        int flags = fcntl(sockListener, F_GETFL, 0);
-        if (flags == -1)
-        {
-            perror("fcntl");
-            close(sockListener);
-            close(sockIdx);
-            return NULL;
-        }
-
-        flags |= O_NONBLOCK;
-        flags = fcntl(sockListener, F_SETFL, flags);
-        if (flags == -1)
-        {
-            perror("fcntl");
-            close(sockListener);
-            close(sockIdx);
-            return NULL;
-        }
-    }
-    log_info("Listener", "Main Listenning on TCP %d\n", CONFIG_LISTEN_PORT);
-    log_info("Listener", "Host Discover on UDP %d\n", CONFIG_HOST_DISCOVER_PORT);
-
-    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);    //创建epoll,在服务端fork时关闭
-    {
-        struct epoll_event event = {
-                .data.ptr=NULL,
-                .events=EPOLLET | EPOLLIN               //EPOLLET-边沿触发.
-        };
-        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockListener, &event); //将监听socket加入epoll(data.ptr==NULL)
-
-        event.data.ptr = (void *) -1;
-        event.events = EPOLLERR | EPOLLIN | EPOLLET;
-        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);//P2P索引SOCKET
-    }
-
-    signal(SIGINT, SIG_IGN);
-    struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
+static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events)
+{
     char keyBuffer[32];
     struct sockaddr_in idxSock;
+    struct sockaddr_in addr;
     socklen_t addrLen;
     while (IsServerRunning)
     {
@@ -168,7 +79,9 @@ void *ListenMain(void *listenSocket)
                 socklen_t addr_len = sizeof addr;
                 while (1)
                 {
-                    fd = accept(sockListener, (struct sockaddr *) &addr, &addr_len);  //尝试接受一个客户端
+                    fd = accept(sockListener,
+                                (struct sockaddr *) &addr,
+                                &addr_len);  //尝试接受一个客户端
                     if (-1 == fd)
                     {
 
@@ -178,7 +91,9 @@ void *ListenMain(void *listenSocket)
                         }
                         else
                         {
-                            log_error("SERVER-LISTENER", "accept failure:%s\n", strerror(errno));
+                            log_error("SERVER-LISTENER",
+                                      "accept failure:%s\n",
+                                      strerror(errno));
                             break;
                         }
                     }
@@ -195,7 +110,12 @@ void *ListenMain(void *listenSocket)
             else if (events[i].data.ptr == (void *) -1) //P2P发现
             {
                 addrLen = sizeof(idxSock);
-                if (32 == recvfrom(sockIdx, keyBuffer, sizeof(keyBuffer), 0, (struct sockaddr *) &idxSock, &addrLen))
+                if (32 == recvfrom(sockIdx,
+                                   keyBuffer,
+                                   sizeof(keyBuffer),
+                                   0,
+                                   (struct sockaddr *) &idxSock,
+                                   &addrLen))
                 {
                     NatHostDiscoverNotify(&idxSock, keyBuffer);
                 }
@@ -208,8 +128,134 @@ void *ListenMain(void *listenSocket)
         }
 
     }
-    log_info("Listener", "Exiting...\n");
-    free(events);
-    close(ServerIOPool);
+}
+
+static int prepareListener()
+{
+    struct sockaddr_in addr = {
+            .sin_family = AF_INET,
+            .sin_port = htons(CONFIG_LISTEN_PORT),
+            .sin_addr.s_addr = htons(INADDR_ANY)
+    };
+
+    int fd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (fd == -1)
+    {
+        close(fd);
+        return -1;
+    }
+    int on = 1;
+    if ((setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
+    {
+        perror("setsockopt reuse address");
+        close(fd);
+        return -1;
+    }
+
+    if (-1 == bind(fd, (struct sockaddr *) &addr, sizeof addr))
+    {
+        perror("bind");
+        close(fd);
+        return -1;
+    }
+
+    if (-1 == listen(fd, CONFIG_LISTENER_BACKLOG))
+    {
+        perror("listen");
+        close(fd);
+        return -1;
+    }
+    {
+        int flags = fcntl(fd, F_GETFL, 0);
+        if (flags == -1)
+        {
+            perror("fcntl");
+            close(fd);
+            return -1;
+        }
+
+        flags |= O_NONBLOCK;
+        flags = fcntl(fd, F_SETFL, flags);
+        if (flags == -1)
+        {
+            perror("fcntl");
+            close(fd);
+            return -1;
+        }
+    }
+    return fd;
+}
+
+static int prepareIndexer()
+{
+    int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    int on = 1;
+    struct sockaddr_in addr = {
+            .sin_family = AF_INET,
+            .sin_port = htons(CONFIG_HOST_DISCOVER_PORT),
+            .sin_addr.s_addr = htons(INADDR_ANY)
+    };
+
+    if (fd == -1)
+    {
+        close(fd);
+        perror("socket");
+        return -1;
+    }
+
+    if ((setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on))) < 0)
+    {
+        perror("setsockopt reuse address");
+        close(fd);
+        return -1;
+    }
+
+    if (-1 == bind(fd, (struct sockaddr *) &addr, sizeof addr))
+    {
+        perror("bind");
+        close(fd);
+        return -1;
+    }
+    return fd;
+
+}
+
+void *ListenMain(void *listenSocket)
+{
+    int sockListener, sockIdx;
+    sockListener = prepareListener();
+    if (sockListener < 0)
+    {
+        return NULL;
+    }
+    pthread_cleanup_push(closeHandler, &sockListener);
+            sockIdx = prepareIndexer();
+            if (sockIdx < 0)
+            {
+                break;//跳出本层pthread_cleanup_push
+            }
+            pthread_cleanup_push(closeHandler, &sockIdx);
+
+                    log_info("Listener", "Main Listenning on TCP %d\n", CONFIG_LISTEN_PORT);
+                    log_info("Listener", "Host Discover on UDP %d\n", CONFIG_HOST_DISCOVER_PORT);
+
+                    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);    //创建epoll,在服务端fork时关闭
+                    {
+                        struct epoll_event event = {
+                                .data.ptr=NULL,
+                                .events=EPOLLET | EPOLLIN               //EPOLLET-边沿触发.
+                        };
+                        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockListener, &event); //将监听socket加入epoll(data.ptr==NULL)
+
+                        event.data.ptr = (void *) -1;
+                        event.events = EPOLLERR | EPOLLIN | EPOLLET;
+                        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);//P2P索引SOCKET
+                    }
+                    struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
+                    pthread_cleanup_push(free, events);
+                            listenLoop(sockListener, sockIdx, events);
+                    pthread_cleanup_pop(1);
+            pthread_cleanup_pop(1);
+    pthread_cleanup_pop(1);
     return (void *) -1;
 }

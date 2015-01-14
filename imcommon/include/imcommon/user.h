@@ -14,7 +14,7 @@ typedef struct __attribute__ ((packed))
     char sex;
     char nickName[32];
     unsigned char icon[16];
-    char name[13];
+    char name[32];
     char birthday[12];
     char constellation;
     //星座

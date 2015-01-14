@@ -24,6 +24,7 @@ SET(CLIENT_SOURCE_FILE
     UpdataFriendList.c
     onlylookinfo.c
     Managegroup.c
+    changestatus.c
     chartmessage.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})

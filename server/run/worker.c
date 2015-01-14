@@ -3,7 +3,6 @@
 #include <logger.h>
 #include <protocol/base.h>
 #include <run/worker.h>
-#include <signal.h>
 
 #include "run/user.h"
 #include "run/jobs.h"
@@ -17,7 +16,8 @@ void *WorkerMain(void *arg)
     WorkerType *worker = (WorkerType *) arg;
 
     sprintf(workerName, "WORKER-%d", worker->workerId);
-    signal(SIGINT, SIG_IGN);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
     while (IsServerRunning)
     {
         if (worker->workerId == 0)
@@ -32,6 +32,7 @@ void *WorkerMain(void *arg)
         {
             break;
         }
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
         header = CRPRecv(user->crp);
         if (header == NULL)
         {
@@ -44,7 +45,6 @@ void *WorkerMain(void *arg)
             {
                 time(&user->lastUpdateTime);
             }
-            log_info("Packet", "Processing %x\n", header->packetID);
             EpollAdd(user);
             if (ProcessUser(user, header) == 0)
             {
@@ -55,6 +55,7 @@ void *WorkerMain(void *arg)
             free(header);
         }
         UserDrop(user);
+        pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     }
     log_info(workerName, "Exit.\n");
     return 0;
