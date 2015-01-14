@@ -26,7 +26,7 @@ extern int ChangeOnLine();
 
 extern int ChangeHideLine();
 
-extern int ShowStatus(void *data);
+extern int ShowStatus(void *data);//显示在线隐身的函数
 
 
 

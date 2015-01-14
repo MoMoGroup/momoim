@@ -6,9 +6,6 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
-#include <imcommon/user.h>
-#include <sys/stat.h>
-#include <protocol/file/Data.h>
 #include "common.h"
 #include "addfriend.h"
 #include "chartmessage.h"
@@ -18,7 +15,7 @@
 static GtkWidget *background1, *search, *friend, *change, *closebut;
 static GtkWidget *window;
 static GtkWidget *frameLayout, *MainLayout;
-static cairo_surface_t *surfacechangetheme, *surfacechangetheme2,*surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
+static cairo_surface_t *surfacechangetheme, *surfacechangetheme2, *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 GtkWidget *userid, *headx;
 //全局变量用以实时更新昵称和头像
 GtkTreeView *treeView;
@@ -29,13 +26,14 @@ static cairo_t *cr;
 static GtkWidget *vbox;
 static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box, *change_event_box;
 static GtkWidget *friend_mov_group;
+cairo_surface_t *surface_status, *surface_status2;
 
 //换肤变量
 static GtkWidget *huanfuwindow;
 static GtkWidget *huanfuLayout;
-static GtkWidget *iback,*isure, *icancel,*ipic1,*ipic2,*ipic3;
-static cairo_surface_t *sbackground, *ssure1, *ssure2, *scancel1, *scancel2,*spic11,*spic12,*spic21,*spic22,*spic31,*spic32;
-static GtkEventBox *sure_event_box, *cancel_event_box,*ipic1_event_box,*ipic2_event_box,*ipic3_event_box;
+static GtkWidget *iback, *isure, *icancel, *ipic1, *ipic2, *ipic3;
+static cairo_surface_t *sbackground, *ssure1, *ssure2, *scancel1, *scancel2, *spic11, *spic12, *spic21, *spic22, *spic31, *spic32;
+static GtkEventBox *sure_event_box, *cancel_event_box, *ipic1_event_box, *ipic2_event_box, *ipic3_event_box;
 int FlagChange = 1;
 
 /**********换肤窗口********/
@@ -84,7 +82,7 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
             symlink(mulu_themnewpath, mulu_thempath);
         }
 
-        if(FlagChange == 3)
+        if (FlagChange == 3)
         {
             //换肤成lol
             char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80], string1[80], string2[80];
@@ -245,7 +243,7 @@ int changethemeface()
                                      NULL);
 
     //布局
-    gtk_widget_set_size_request(GTK_WIDGET(iback), 432,238);
+    gtk_widget_set_size_request(GTK_WIDGET(iback), 432, 238);
     gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic1_event_box, 20, 70);
     gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic2_event_box, 155, 70);
     gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic3_event_box, 290, 70);
@@ -1104,6 +1102,14 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+//static gint search_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+//{
+//    GtkWidget *add_surface=data;
+//    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
+//    gtk_image_set_from_surface((GtkImage *) add_surface, surface_status2);
+//    return 0;
+//}
+
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
@@ -1130,11 +1136,52 @@ static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event
 
 GtkWidget *status;
 
-int aaaaa(GtkWidget *widget, GdkEventButton *event, gpointer data)
+void set_position(GtkMenu *menu, gint *px, gint *py, gboolean *push_in, gpointer data)
 {
-    GtkMenu *menu = g_object_get_data(G_OBJECT(status), "ChangeMenu");
 
-    gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event->button, event->time);
+    gdk_window_get_origin(window, px, py);
+    *py += 20;
+
+}
+
+//放上去
+static gint status_button_notify_event(GtkWidget *widget, GdkEventButton *event,
+                                       gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) status, surface_status2);
+    return 0;
+}
+
+//按下
+int status_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
+    {
+        gtk_image_set_from_surface((GtkImage *) status, surface_status2);
+//        GtkMenu *menu_status = g_object_get_data(G_OBJECT(status), "ChangeMenu");
+//        gtk_menu_popup(GTK_MENU(menu_status), NULL, NULL, set_position, NULL, event->button, event->time);
+    }
+}
+
+//松开
+int status_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    GtkMenu *menu_status = g_object_get_data(G_OBJECT(status), "ChangeMenu");
+    gtk_menu_popup(GTK_MENU(menu_status), NULL, NULL, set_position, NULL, event->button, event->time);
+    gtk_image_set_from_surface((GtkImage *) status, surface_status);
+
+}
+
+//离开
+static gint status_button_leave_event(GtkWidget *widget, GdkEventButton *event,
+                                      gpointer data)         // 鼠标移动事件
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+
+    gtk_image_set_from_surface((GtkImage *) status, surface_status);
+    return 0;
 }
 
 int MainInterFace()
@@ -1205,17 +1252,16 @@ int MainInterFace()
     online = gtk_image_new_from_surface(surface_online);
     hideline = gtk_image_new_from_surface(surface_hideline);
 
-    cairo_surface_t *surface_status;
-
     surface_status = ChangeThem_png("状态.png");
+    surface_status2 = ChangeThem_png("状态2.png");
     status = gtk_image_new_from_surface(surface_status);
 
     GtkEventBox *online_event_box, *hide_event_box, *status_event_box;
     status_event_box = BuildEventBox(status,
-                                     G_CALLBACK(aaaaa),
-                                     NULL,
-                                     NULL,
-                                     NULL,
+                                     G_CALLBACK(status_button_press_event),
+                                     G_CALLBACK(status_button_notify_event),
+                                     G_CALLBACK(status_button_leave_event),
+                                     G_CALLBACK(status_button_release_event),
                                      NULL,
                                      NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), status_event_box, 220, 0);//起始坐标
@@ -1241,11 +1287,6 @@ int MainInterFace()
                      G_CALLBACK(ChangeHideLine), (gpointer) changeMenu);
 
     g_object_set_data(G_OBJECT(status), "ChangeMenu", changeMenu);
-
-
-
-
-
 
 
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
@@ -1348,6 +1389,9 @@ int MainInterFace()
     //添加好友
     g_signal_connect(G_OBJECT(addpeople), "button_release_event",
                      G_CALLBACK(search_button_release_event), treeView);
+//    //添加好友鼠标放上去
+//    g_signal_connect(G_OBJECT(addpeople), "button_press_event",
+//                     G_CALLBACK(search_button_notify_event), addpeople);
 
     //好友菜单
     menu2 = gtk_menu_new();
