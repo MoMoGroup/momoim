@@ -70,7 +70,7 @@ int rename_group(void *data)
 
 int rename_group_recv(CRPBaseHeader *header, void *data)
 {
-    if (header->packetID = CRP_PACKET_OK)
+    if (header->packetID == CRP_PACKET_OK)
     {
 
         g_idle_add(rename_group, data);
@@ -173,7 +173,7 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
             NULL,
             NULL,
             renamewindow);
-    gtk_fixed_put(GTK_FIXED(renamelayout), rename_done_event_box, 160, 30);
+    gtk_fixed_put(GTK_FIXED(renamelayout), GTK_WIDGET(rename_done_event_box), 160, 30);
 
 
     gtk_container_add(GTK_CONTAINER (renamewindow), renameframelayout);

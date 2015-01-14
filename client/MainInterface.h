@@ -65,7 +65,8 @@ extern enum {
     FRIENDUID_COL = 1,
     PRIORITY_COL,
 };
-extern GtkWidget *StatusShowText;
+
+extern GtkWidget *StatusShowText;//显示在线隐身字体
 
 extern int OnLineStatus();
 

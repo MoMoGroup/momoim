@@ -8,7 +8,7 @@
 //删除分组………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 //……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 
-uint32_t del_usg;
+uint8_t del_usg;
 GtkTreeIter del_iterGroup;
 
 int GroupPop(void *data)
@@ -19,7 +19,8 @@ int GroupPop(void *data)
 
 int delete_group_recv(CRPBaseHeader *header, void *data)
 {
-    if (header->packetID = CRP_PACKET_OK)
+
+    if (header->packetID == CRP_PACKET_OK)
     {
         gtk_tree_store_remove(TreeViewListStore, &del_iterGroup);
         UserFriendsGroupDelete(friends, del_usg);

@@ -13,8 +13,8 @@ typedef struct move_info
 {
     //保存移动好友需要的信息
     uint32_t currentuid;
-    uint32_t currentGid;
-    uint32_t toGid;
+    uint8_t currentGid;
+    uint8_t toGid;
     GtkTreeIter itergroup;
     GtkTreeIter iteruser;
 
@@ -27,11 +27,11 @@ gboolean mov(void *data)
 
     move_info *move_info_detail = (move_info *) data;
 
-    GtkTreeIter iteruser, formegroup;
+    GtkTreeIter iteruser;
     GdkPixbuf *pixbuf;
     uint32_t uid;
     int64_t priority;
-    gtk_tree_model_get(TreeViewListStore, &move_info_detail->iteruser,
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &move_info_detail->iteruser,
                        PIXBUF_COL, &pixbuf,
                        FRIENDUID_COL, &uid,
                        PRIORITY_COL, &priority,
@@ -76,7 +76,7 @@ int mov_friend(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     move_info *move_info_detail = g_object_get_data(G_OBJECT(widget), "moveInfo");
 
-    uint32_t current_friend_uid = (uint32_t *) data;
+    // uint8_t current_friend_uid = (uint8_t *) data;
     session_id_t sessionid = CountSessionId();
     AddMessageNode(sessionid, mov_recv, move_info_detail);
     CRPFriendMoveSend(sockfd,
@@ -91,9 +91,9 @@ int mov_friend(GtkWidget *widget, GdkEventButton *event, gpointer data)
 GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
 {
     move_info moveInfo;
-    uint32_t curren_group_id;
+    uint8_t curren_group_id;
     GtkWidget *show;
-    uint32_t groupid;
+    uint8_t groupid;
     GtkTreeIter itergroup, iteruser;
 //首先拿到选中好友所在分组id,和好友uid
     uint32_t current_friend_uid;

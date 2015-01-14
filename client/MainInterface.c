@@ -246,11 +246,11 @@ int changethemeface()
 
     //布局
     gtk_widget_set_size_request(GTK_WIDGET(iback), 432, 238);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic1_event_box, 20, 70);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic2_event_box, 155, 70);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), ipic3_event_box, 290, 70);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), sure_event_box, 240, 205);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), cancel_event_box, 340, 205);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic1_event_box), 20, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic2_event_box), 155, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic3_event_box), 290, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(sure_event_box), 240, 205);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(cancel_event_box), 340, 205);
 
 
     gtk_widget_show_all(huanfuwindow);
@@ -261,8 +261,8 @@ int changethemeface()
 static gint friendListStoreFunc(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer user_data)
 {
     int64_t priA, priB;
-    gtk_tree_model_get(TreeViewListStore, a, PRIORITY_COL, &priA, -1);
-    gtk_tree_model_get(TreeViewListStore, b, PRIORITY_COL, &priB, -1);
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), a, PRIORITY_COL, &priA, -1);
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), b, PRIORITY_COL, &priB, -1);
     return priA - priB;
 }
 
@@ -276,8 +276,8 @@ GtkTreeModel *createModel()
     GtkTreeIter iter1, iter2;
 
     TreeViewListStore = gtk_tree_store_new(3, GDK_TYPE_PIXBUF, G_TYPE_UINT, G_TYPE_INT64);
-    gtk_tree_sortable_set_default_sort_func(TreeViewListStore, friendListStoreFunc, NULL, NULL);
-    gtk_tree_sortable_set_sort_column_id(TreeViewListStore,
+    gtk_tree_sortable_set_default_sort_func(GTK_TREE_MODEL(TreeViewListStore), friendListStoreFunc, NULL, NULL);
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_MODEL(TreeViewListStore),
                                          GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID,
                                          GTK_SORT_DESCENDING);
 
@@ -1451,8 +1451,7 @@ void DestoryMainInterface()
 int ShowStatus(void *data)
 {
     //在线
-
-    gtk_label_set_text(StatusShowText, data);
+    gtk_label_set_text(GTK_LABEL(StatusShowText), data);
     return 0;
 }
 
@@ -1463,13 +1462,13 @@ int Status(void *data)//shezhi da goude
 
     if (data)
     {
-        gtk_check_menu_item_set_active(online, TRUE);
+        gtk_check_menu_item_set_active(online, 1);
         gtk_check_menu_item_set_active(hideline, FALSE);
     }
     else
     {
         gtk_check_menu_item_set_active(online, FALSE);
-        gtk_check_menu_item_set_active(hideline, TRUE);
+        gtk_check_menu_item_set_active(hideline, 1);
     }
 
     return 0;

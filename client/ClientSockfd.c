@@ -515,7 +515,7 @@ int mysockfd()
                     log_info("FileDataEnd", "Session:%u\n", header->sessionID);
 
 
-                    int friendnum = 0;
+                    //int friendnum = 0;
                     FriendInfo *node;
                     node = FriendInfoHead;
                     while (node)
@@ -524,7 +524,7 @@ int mysockfd()
                         {
                             fclose(node->fp);
                             node->flag = 1;//接受完毕，标志位1;
-                            friendnum++;//接受完毕的个数加1
+                            // friendnum++;//接受完毕的个数加1
                             break;
                         }
                         node = node->next;
@@ -568,6 +568,10 @@ int mysockfd()
                             CRPInfoRequestSend(sockfd, group->friends[j], group->friends[j]); //请求用户资料,
                         }
                     }
+                    break;
+                }
+                default:
+                {
                     break;
                 }
             }

@@ -796,7 +796,7 @@ gboolean loadloginLayout(gpointer user_data)
     //设置两个输入框
     LoginWindowUserNameBox = gtk_combo_box_text_new_with_entry();
     GtkEntry *nameEntry = GTK_ENTRY(gtk_bin_get_child(LoginWindowUserNameBox));
-    gtk_entry_set_width_chars(nameEntry, 19);
+    gtk_entry_set_width_chars(nameEntry, 15);
 
     LoginWindowPassWordBox = gtk_entry_new();
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度

@@ -32,7 +32,7 @@ GtkEventBox *done_event_box;
 GtkWidget *yanzhengxinxi;
 //事件盒子
 
-GtkWidget *background0;
+
 
 typedef struct add_friend_info {
     FILE *fp;
@@ -80,12 +80,32 @@ static gint add_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   (gint) event->x_root, (gint) event->y_root, event->time);
     }
     return 0;
 }
 
-//关闭按钮
+//关闭按钮放上去
+static gint close_button_notify_event(GtkWidget *widget, GdkEventButton *event,
+                                      gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_HAND2));
+    cairo_surface_t *surface_close2 = ChangeThem_png("关闭按钮2.png");
+    gtk_image_set_from_surface((GtkImage *) addclose, surface_close2);
+    return 0;
+}
+
+//关闭按钮移走
+static gint close_button_leave_event(GtkWidget *widget, GdkEventButton *event,
+                                     gpointer data)         // 鼠标移动事件
+{
+    gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *surface_close1 = ChangeThem_png("关闭按钮1.png");
+    gtk_image_set_from_surface((GtkImage *) addclose, surface_close1);
+    return 0;
+}
+
+//关闭按钮按下
 static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
@@ -93,8 +113,27 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
     return 0;
 }
 
+//完成放上去
+static gint done_button_notify_event(GtkWidget *widget, GdkEventButton *event,
+                                     gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_HAND2));
+    cairo_surface_t *surface_done2 = ChangeThem_png("完成2.png");
+    gtk_image_set_from_surface((GtkImage *) done, surface_done2);
+    return 0;
+}
 
-//完成
+//完成移走
+static gint done_button_leave_event(GtkWidget *widget, GdkEventButton *event,
+                                    gpointer data)         // 鼠标移动事件
+{
+    gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *surface_done1 = ChangeThem_png("完成.png");
+    gtk_image_set_from_surface((GtkImage *) done, surface_done1);
+    return 0;
+}
+
+//完成按下
 static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
@@ -108,13 +147,26 @@ static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, 
         gtk_widget_destroy(addwindow);
     }
 }
-//
-//static gint done2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-//{
-////    struct add_friend_info *p = data;
-////    CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
-////    gtk_widget_destroy(addwindow);
-//}
+
+//下一步放上去
+static gint next_button_notify_event(GtkWidget *widget, GdkEventButton *event,
+                                     gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_HAND2));
+    cairo_surface_t *surface_next2 = ChangeThem_png("下一步2.png");
+    gtk_image_set_from_surface((GtkImage *) next, surface_next2);
+    return 0;
+}
+
+//下一步移走
+static gint next_button_leave_event(GtkWidget *widget, GdkEventButton *event,
+                                    gpointer data)         // 鼠标移动事件
+{
+    gdk_window_set_cursor(gtk_widget_get_window(addwindow), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *surface_next1 = ChangeThem_png("下一步.png");
+    gtk_image_set_from_surface((GtkImage *) next, surface_next1);
+    return 0;
+}
 
 static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -126,8 +178,8 @@ static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //
     done_event_box = BuildEventBox(done,
             NULL,
-            NULL,
-            NULL,
+            G_CALLBACK(done_button_notify_event),
+            G_CALLBACK(done_button_leave_event),
             G_CALLBACK(done_button_release_event),
             NULL,
             p);
@@ -138,7 +190,7 @@ static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     gtk_fixed_put(GTK_FIXED(addlayout2), background3, 183, 0);
     gtk_fixed_put(GTK_FIXED(addlayout2), addclose, 519, 0);
-    gtk_fixed_put(GTK_FIXED(addlayout2), done_event_box, 400, 200);
+    gtk_fixed_put(GTK_FIXED(addlayout2), GTK_WIDGET(done_event_box), 400, 200);
     //gtk_container_add(GTK_CONTAINER (addframelayout), addlayout2);
     gtk_widget_show_all(addframelayout);
 
@@ -170,7 +222,7 @@ gboolean putimage(gpointer user_data)
     //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
     //  gtk_fixed_put(GTK_FIXED(addlayout1), add_mov_event, 0, 0);
 
-    gtk_fixed_put(GTK_FIXED(addlayout2), add_mov_event, 0, 0);
+    gtk_fixed_put(GTK_FIXED(addlayout2), GTK_WIDGET(add_mov_event), 0, 0);
 
     struct add_friend_info *p = user_data;
     static cairo_t *cr;
@@ -231,20 +283,21 @@ gboolean putimage(gpointer user_data)
 
     create_surface();
 
-
+//第2个界面的关闭，下一步
     close_event_box2 = BuildEventBox(
             addclose,
             NULL,
-            NULL,
-            NULL,
+            G_CALLBACK(close_button_notify_event),
+            G_CALLBACK(close_button_leave_event),
             G_CALLBACK(close_button_release_event),
             NULL,
             NULL);
+
     next_enent_box2 = BuildEventBox(
             next,
             NULL,
-            NULL,
-            NULL,
+            G_CALLBACK(next_button_notify_event),
+            G_CALLBACK(next_button_leave_event),
             G_CALLBACK(next2_button_release_event),
             NULL,
             p);
@@ -322,6 +375,7 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
     return 1;
 }
 
+
 //点击下一步开始查找好友资料，主线程
 static gint next_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -353,8 +407,8 @@ int AddFriendFun()
     next_enent_box = BuildEventBox(
             next,
             NULL,
-            NULL,
-            NULL,
+            G_CALLBACK(next_button_notify_event),
+            G_CALLBACK(next_button_leave_event),
             G_CALLBACK(next_button_release_event),
             NULL,
             NULL
@@ -363,8 +417,8 @@ int AddFriendFun()
     close_event_box = BuildEventBox(
             addclose,
             NULL,
-            NULL,
-            NULL,
+            G_CALLBACK(close_button_notify_event),
+            G_CALLBACK(close_button_leave_event),
             G_CALLBACK(close_button_release_event),
             NULL,
             NULL
@@ -381,13 +435,13 @@ int AddFriendFun()
             NULL);
 
     //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
-    gtk_fixed_put(GTK_FIXED(addlayout1), add_mov_event, 0, 0);
+    gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(add_mov_event), 0, 0);
 
     gtk_fixed_put(GTK_FIXED(addlayout1), biaoji1, 6, 75);
     gtk_fixed_put(GTK_FIXED(addlayout1), biaoji2, 6, 118);
 
-    gtk_fixed_put(GTK_FIXED(addlayout1), next_enent_box, 400, 200);
-    gtk_fixed_put(GTK_FIXED(addlayout1), close_event_box, 519, 0);
+    gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(next_enent_box), 400, 200);
+    gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(close_event_box), 519, 0);
 
 
     addtext = gtk_entry_new();//帐号输入
@@ -400,6 +454,10 @@ int AddFriendFun()
     gtk_widget_show_all(addwindow);
 
 }
+
+
+
+
 
 //以下函数为添加好友提示框，同意或者或略。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。
 
@@ -434,7 +492,7 @@ static gint pop_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   (gint) event->x_root, (gint) event->y_root, event->time);
     }
     return 0;
 }
@@ -479,7 +537,7 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
             NULL,
             NULL);
 
-    gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
+    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(pop_mov_event), 0, 0);
 
     // gtk_fixed_put(GTK_FIXED(popuplayout), popupbackground, 0, 0);
 
@@ -520,12 +578,12 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
 //    gtk_widget_override_background_color(text, GTK_STATE_NORMAL, &rgba);//设置透明
     //gtk_widget_override_background_color(title, GTK_STATE_NORMAL, &rgba);//设置透明
 
-    gtk_fixed_put(GTK_FIXED(popuplayout), text, 30, 70);
-    gtk_fixed_put(GTK_FIXED(popuplayout), yanzheng, 40, 120);
+    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(text), 30, 70);
+    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(yanzheng), 40, 120);
 
 
-    gtk_fixed_put(GTK_FIXED(popuplayout), popup_cancel_eventbox, 30, 170);
-    gtk_fixed_put(GTK_FIXED(popuplayout), popup_accept_eventbox, 150, 170);
+    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(popup_cancel_eventbox), 30, 170);
+    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(popup_accept_eventbox), 150, 170);
 
 
     gtk_container_add(GTK_CONTAINER (popupwindow), popupframelayout);

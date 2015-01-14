@@ -17,7 +17,7 @@ static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer dat
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                                   event->x_root, event->y_root, event->time);
+                                   (gint) event->x_root, (gint) event->y_root, event->time);
     }
     return 0;
 }
@@ -75,7 +75,7 @@ static gint add_group_done(GtkWidget *widget, GdkEventButton *event, gpointer da
 
 
     UserGroup *group = calloc(1, sizeof(UserGroup));
-    for (int i = 2; i < 256; i++)
+    for (uint8_t i = 2; i < 256; i++)
     {
 
         if (UserFriendsGroupGet(friends, i) == NULL)

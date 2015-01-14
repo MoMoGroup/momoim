@@ -85,7 +85,7 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
     if (event->button == 1)
     {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                                   event->x_root, event->y_root, event->time);
+                                   (gint) event->x_root, (gint) event->y_root, event->time);
     }
     return 0;
 
@@ -669,7 +669,7 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
 
 
     GtkWidget *dialog;
-    dialog = gtk_font_chooser_dialog_new("choose a font", event->window);
+    dialog = gtk_font_chooser_dialog_new("choose a font", GTK_WINDOW(event->window));
 
     if (UserWordInfo.description != NULL)
     {
@@ -761,13 +761,13 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         GtkColorSelectionDialog *dialog;
         GtkColorSelection *colorsel;
         GdkColor color;
-        dialog = gtk_color_selection_dialog_new("ColorSelect");
+        dialog = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new("ColorSelect"));
         color.red = 0;
         color.blue = 65535;
         color.green = 0;
-        colorsel = gtk_color_selection_dialog_get_color_selection((dialog));
-        gtk_color_selection_set_has_opacity_control(colorsel, TRUE);
-        gtk_color_selection_set_has_palette(colorsel, TRUE);
+        colorsel = GTK_COLOR_SELECTION((gtk_color_selection_dialog_get_color_selection((dialog))));
+        gtk_color_selection_set_has_opacity_control(colorsel, 1);//1原来是true
+        gtk_color_selection_set_has_palette(colorsel, 1);
         gtk_color_selection_set_previous_color(colorsel, &color);
         gtk_color_selection_set_current_color(colorsel, &color);
         if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)

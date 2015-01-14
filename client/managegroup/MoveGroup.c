@@ -12,7 +12,7 @@ int up_group(void *data)
 {
 
 //遍历iter
-    uint32_t gid = data;
+    uint8_t gid = (uint8_t) data;
     uint32_t usg;
     int64_t priority;
     int64_t next_priority;
@@ -163,8 +163,6 @@ int down_grou(void *data)
 
     }
 
-    log_info("PRIORITY_COL", "%d\n", priority);
-    log_info("PRIORITY_next COL", "%d\n", next_priority);
 
 
     gtk_tree_store_set(TreeViewListStore, &up_itergroup,
@@ -197,8 +195,8 @@ int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer
     int64_t up_priority;
     //  int64_t next_priority;
 
-    uint32_t current_gid;
-    uint32_t next_gid;
+    uint8_t current_gid;
+    uint8_t next_gid;
     GtkTreeIter up_iter_group;
     //   GtkTextIter tem_iter;
 
