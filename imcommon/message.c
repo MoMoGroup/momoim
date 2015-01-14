@@ -124,102 +124,103 @@ static const char *getOrderBy(int op)
 
 UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *condition, int *count)
 {
-    char zSQLPreBuild[250] = "SELECT * FROM msg WHERE ",
-            *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
-    char zSQLOrder[100] = "",
-            *orderTail = zSQLOrder;
-    int conditionCount = 0;
-    if (condition->id != -1)
-    {
-        zSQLTail += sprintf(zSQLTail, "`id` %s %ld ", getOperator(condition->idOperator), condition->id);
-        orderTail += sprintf(orderTail, "`id` %s", getOrderBy(condition->idOperator));
-        ++conditionCount;
-    }
-    if (condition->time != -1)
-    {
-        if (conditionCount)
-        {
-            zSQLTail += sprintf(zSQLTail, "AND ");
-        }
-        zSQLTail += sprintf(zSQLTail, "`time` %s %ld ", getOperator(condition->timeOperator), condition->time);
-        if (zSQLOrder[0])
-        {
-            *orderTail = ',';
-            ++orderTail;
-        }
-        orderTail += sprintf(orderTail, "`time` %s", getOrderBy(condition->timeOperator));
-
-        ++conditionCount;
-    }
-    if (condition->from != 0 && condition->to != 0)
-    {
-        if (conditionCount)
-        {
-            zSQLTail += sprintf(zSQLTail, "AND ");
-        }
-        if (condition->fromtoOperator != 3)
-        {
-            condition->fromtoOperator = 4;
-        }
-        zSQLTail += sprintf(zSQLTail,
-                            "(`from` = %u %s `to` = %u) ",
-                            condition->from,
-                            getOperator(condition->fromtoOperator),
-                            condition->to);
-        ++conditionCount;
-    }
-    else
-    {
-        if (condition->from)
-        {
-            if (conditionCount)
-            {
-                zSQLTail += sprintf(zSQLTail, "AND ");
-            }
-            zSQLTail += sprintf(zSQLTail, "`from` = %u ", condition->from);
-            ++conditionCount;
-        }
-        if (condition->to)
-        {
-            if (conditionCount)
-            {
-                zSQLTail += sprintf(zSQLTail, "AND ");
-            }
-            zSQLTail += sprintf(zSQLTail, "`to` = %u ", condition->to);
-            ++conditionCount;
-        }
-    }
-
-    if (condition->messageType != 255)
-    {
-        if (conditionCount)
-        {
-            zSQLTail += sprintf(zSQLTail, "AND ");
-        }
-        zSQLTail += sprintf(zSQLTail, "`type` = %u ", (uint) condition->messageType);
-        ++conditionCount;
-    }
-    if (condition->limit == 0)
-    {
-        condition->limit = 20;
-    }
-    if (!conditionCount)    //不允许无任何筛选条件
-    {
-        return 0;
-    }
-    if (zSQLOrder[0] != 0)
-    {
-        zSQLTail += sprintf(zSQLTail, "ORDER BY %s ", zSQLOrder);
-    }
-    zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
     sqlite3_stmt *stmt;
-    log_info("DEBUG", "%s\n", zSQLPreBuild);
-
-    if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
     {
-        return 0;
-    }
+        char zSQLPreBuild[250] = "SELECT * FROM msg WHERE ",
+                *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
+        char zSQLOrder[100] = "",
+                *orderTail = zSQLOrder;
+        int conditionCount = 0;
+        if (condition->id != -1)
+        {
+            zSQLTail += sprintf(zSQLTail, "`id` %s %ld ", getOperator(condition->idOperator), condition->id);
+            orderTail += sprintf(orderTail, "`id` %s", getOrderBy(condition->idOperator));
+            ++conditionCount;
+        }
+        if (condition->time != -1)
+        {
+            if (conditionCount)
+            {
+                zSQLTail += sprintf(zSQLTail, "AND ");
+            }
+            zSQLTail += sprintf(zSQLTail, "`time` %s %ld ", getOperator(condition->timeOperator), condition->time);
+            if (zSQLOrder[0])
+            {
+                *orderTail = ',';
+                ++orderTail;
+            }
+            orderTail += sprintf(orderTail, "`time` %s", getOrderBy(condition->timeOperator));
 
+            ++conditionCount;
+        }
+        if (condition->from != 0 && condition->to != 0)
+        {
+            if (conditionCount)
+            {
+                zSQLTail += sprintf(zSQLTail, "AND ");
+            }
+            if (condition->fromtoOperator != 3)
+            {
+                condition->fromtoOperator = 4;
+            }
+            zSQLTail += sprintf(zSQLTail,
+                                "(`from` = %u %s `to` = %u) ",
+                                condition->from,
+                                getOperator(condition->fromtoOperator),
+                                condition->to);
+            ++conditionCount;
+        }
+        else
+        {
+            if (condition->from)
+            {
+                if (conditionCount)
+                {
+                    zSQLTail += sprintf(zSQLTail, "AND ");
+                }
+                zSQLTail += sprintf(zSQLTail, "`from` = %u ", condition->from);
+                ++conditionCount;
+            }
+            if (condition->to)
+            {
+                if (conditionCount)
+                {
+                    zSQLTail += sprintf(zSQLTail, "AND ");
+                }
+                zSQLTail += sprintf(zSQLTail, "`to` = %u ", condition->to);
+                ++conditionCount;
+            }
+        }
+
+        if (condition->messageType != 255)
+        {
+            if (conditionCount)
+            {
+                zSQLTail += sprintf(zSQLTail, "AND ");
+            }
+            zSQLTail += sprintf(zSQLTail, "`type` = %u ", (uint) condition->messageType);
+            ++conditionCount;
+        }
+        if (condition->limit == 0)
+        {
+            condition->limit = 20;
+        }
+        if (!conditionCount)    //不允许无任何筛选条件
+        {
+            return 0;
+        }
+        if (zSQLOrder[0] != 0)
+        {
+            zSQLTail += sprintf(zSQLTail, "ORDER BY %s ", zSQLOrder);
+        }
+        zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
+        log_info("DEBUG", "%s\n", zSQLPreBuild);
+
+        if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
+        {
+            return 0;
+        }
+    }
     int rc;
     UserMessage **messages = (UserMessage **) malloc(sizeof(UserMessage *) * condition->limit),
             *peekedMessage;
@@ -228,9 +229,9 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
     const char *p;
     while (SQLITE_ROW == (rc = sqlite3_step(stmt)))
     {
-        peekedMessage = messages[i];
         len = sqlite3_column_bytes(stmt, 5);
         messages[i] = (UserMessage *) malloc(sizeof(UserMessage) + len);
+        peekedMessage = messages[i];
         peekedMessage->id = sqlite3_column_int64(stmt, 0);
         peekedMessage->from = (uint32_t) sqlite3_column_int64(stmt, 1);
         peekedMessage->to = (uint32_t) sqlite3_column_int64(stmt, 2);
