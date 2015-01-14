@@ -1,4 +1,4 @@
-rm -rf user/*
+rm -rf user/* temp/*
 rm auth.db info.db
 sqlite3 auth.db <<-'EOF'
 CREATE TABLE users(

@@ -125,7 +125,7 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
 {
     sqlite3_stmt *stmt;
     {
-        char zSQLPreBuild[250] = "SELECT `id`,`from`,`to`,`time`,`type`,`content` FROM msg WHERE ",
+        char zSQLPreBuild[250] = "SELECT * FROM msg WHERE ",
                 *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
         char zSQLOrder[100] = "",
                 *orderTail = zSQLOrder;
@@ -213,8 +213,12 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
             zSQLTail += sprintf(zSQLTail, "ORDER BY %s ", zSQLOrder);
         }
         zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
-
-        if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
+        int rc;
+        if (SQLITE_OK != (rc = sqlite3_prepare_v2(file->db,
+                                                  zSQLPreBuild,
+                                                  (int) (zSQLTail - zSQLPreBuild),
+                                                  &stmt,
+                                                  NULL)))
         {
             return 0;
         }
