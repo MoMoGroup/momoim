@@ -83,7 +83,7 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
     if (event->button == 1)
     {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   event->x_root, event->y_root, event->time);
     }
     return 0;
 
@@ -484,10 +484,10 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
         GtkWidget *dialog;
         gchar *filename;
         dialog = gtk_file_chooser_dialog_new("Open File(s) ...", GTK_WINDOW(info->chartwindow),
-                GTK_FILE_CHOOSER_ACTION_OPEN,
-                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                NULL);
+                                             GTK_FILE_CHOOSER_ACTION_OPEN,
+                                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                             GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                             NULL);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
         if (result == GTK_RESPONSE_ACCEPT)
         {
@@ -503,8 +503,8 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             {
                 GtkWidget *cue_dialog;
                 cue_dialog = gtk_message_dialog_new(dialog, GTK_DIALOG_MODAL,
-                        GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
-                        "文件大小不应超过150M，请选择其他文件");
+                                                    GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
+                                                    "文件大小不应超过150M，请选择其他文件");
                 gtk_window_set_title(GTK_WINDOW (cue_dialog), "Information");
                 gtk_dialog_run(GTK_DIALOG (cue_dialog));
                 gtk_widget_destroy(cue_dialog);
@@ -566,10 +566,10 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
         GtkWidget *dialog;
         gchar *filename;
         dialog = gtk_file_chooser_dialog_new("Open Image(s) ...", (GtkWindow *) info->chartwindow,
-                GTK_FILE_CHOOSER_ACTION_OPEN,
-                GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-                NULL);
+                                             GTK_FILE_CHOOSER_ACTION_OPEN,
+                                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                             GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                             NULL);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
         if (result == GTK_RESPONSE_ACCEPT)
         {
@@ -698,7 +698,9 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
             gtk_widget_destroy(GTK_WIDGET (dialog));
     }
     if (response == GTK_RESPONSE_OK)
+    {
         gtk_widget_destroy(GTK_WIDGET (dialog));
+    }
 
     return 0;
 
@@ -707,7 +709,7 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
 //鼠标移动事件
 static gint wordart_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)
+                                       gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -719,7 +721,7 @@ static gint wordart_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标likai事件
 static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)
+                                       gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
 
@@ -735,7 +737,7 @@ static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标点击事件
 static gint color_button_press_event(GtkWidget *widget,
 
-        GdkEventButton *event, gpointer data)
+                                     GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
 
@@ -781,7 +783,7 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
             handle_font_color(info);
         }
 
-        gtk_widget_destroy(dialog);
+        gtk_widget_destroy(GTK_WIDGET(dialog));
     }
 
     return 0;
@@ -791,7 +793,7 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint color_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)
+                                     gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -802,7 +804,7 @@ static gint color_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标likai事件
 static gint color_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 
-        gpointer data)
+                                     gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
 
@@ -831,11 +833,12 @@ int MainChart(FriendInfo *friendinfonode)
     friendinfonode->chartlayout = gtk_fixed_new();
     friendinfonode->chartlayout2 = gtk_layout_new(NULL, NULL);
 
-    gtk_container_add(GTK_CONTAINER (friendinfonode->chartwindow), friendinfonode->chartlayout2);//chartlayout2 加入到window
+    gtk_container_add(GTK_CONTAINER (friendinfonode->chartwindow),
+                      friendinfonode->chartlayout2);//chartlayout2 加入到window
     gtk_container_add(GTK_CONTAINER (friendinfonode->chartlayout2), friendinfonode->chartlayout);
 
     g_signal_connect(G_OBJECT(friendinfonode->chartwindow), "delete_event",
-            G_CALLBACK(gtk_main_quit), NULL);
+                     G_CALLBACK(gtk_main_quit), NULL);
 
     gtk_window_set_default_size(GTK_WINDOW(friendinfonode->chartwindow), 500, 550);
     gtk_window_set_position(GTK_WINDOW(friendinfonode->chartwindow), GTK_WIN_POS_CENTER);//窗口出现位置
@@ -982,7 +985,7 @@ int MainChart(FriendInfo *friendinfonode)
 
 
 //背景
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), chartbackground_event_box, 0, 0);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(chartbackground_event_box), 0, 0);
     //逆臣  //daxiao
     GtkWidget *nicheng;
     PangoFontDescription *font;
@@ -993,27 +996,27 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), nicheng, 100, 20);
 
 //发送
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), send_event_box, 390, 512);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(send_event_box), 390, 512);
 //语音
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), voice_event_box, 80, 50);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(voice_event_box), 80, 50);
 //视频按钮
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), video_event_box, 120, 50);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(video_event_box), 120, 50);
 //下方关闭按钮
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_event_box, 300, 514);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(close_event_box), 300, 514);
 //右上角关闭按钮
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), close_but_event_box, 460, 0);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(close_but_event_box), 460, 0);
 //表情
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), look_event_box, 80, 405);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(look_event_box), 80, 405);
 //截图
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), jietu_event_box, 210, 405);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(jietu_event_box), 210, 405);
 //文件
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), file_event_box, 165, 405);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(file_event_box), 165, 405);
 //图片
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), photo_event_box, 120, 405);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(photo_event_box), 120, 405);
 //字体
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), wordart_event_box, 5, 405);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(wordart_event_box), 5, 405);
     //颜色
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), color_event_box, 44, 410);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(color_event_box), 44, 410);
     //
 //头像
     friendinfonode->imagehead3 = gtk_image_new_from_surface(surfacehead3);
@@ -1053,8 +1056,8 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 320);//大小
 
     GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
-    gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_NORMAL, &rgba);//设置透明
-    gtk_widget_override_background_color(friendinfonode->show_text, GTK_STATE_NORMAL, &rgba);//设置透明
+    gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
+    gtk_widget_override_background_color(friendinfonode->show_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
 
 //    comboBox = gtk_combo_box_new();
 //    gtk_combo_box_set_active(GTK_COMBO_BOX(comboBox), 0);

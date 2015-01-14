@@ -277,6 +277,11 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURe reason", infodata->reason);
+
+            if ((void *) infodata != header->data)
+            {
+                free(data);
+            }
             break;
         };
         case CRP_PACKET_INFO_DATA:

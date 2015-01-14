@@ -4,6 +4,9 @@
 #include <gtk/gtk.h>
 
 
+extern int GroupPop(void *data);
+
+
 //添加
 extern int AddGroupButtonPressEvent();
 
@@ -27,6 +30,8 @@ extern int ChangeOnLine();
 extern int ChangeHideLine();
 
 extern int ShowStatus(void *data);//显示在线隐身的函数
+
+
 
 
 
