@@ -32,7 +32,7 @@ typedef struct
 } MessageFile;
 typedef struct
 {
-    uint64_t id;           //-1表示不筛选
+    int64_t id;           //-1表示不筛选
     time_t time;           //-1表示不筛选
     int idOperator;        //-2:<,-1:<=,0:=,1:>=,2:>
     int timeOperator;      //-2:<,-1:<=,0:=,1:>=,2:>

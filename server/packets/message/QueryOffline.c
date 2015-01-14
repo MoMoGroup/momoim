@@ -8,14 +8,16 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
 {
     if (user->state == OUS_ONLINE)
     {
+        int count;
         UserInfo *info = UserInfoGet(user->uid);
         MessageQueryCondition condition = {
                 .to=user->uid,
+                .id=-1,
                 .time=info->lastlogout,
-                .timeOperator=2//>
+                .timeOperator=2,
+                .messageType=255
         };
         UserInfoDrop(info);
-        int count;
         UserMessage **p = MessageFileQuery(user->info->message, &condition, &count);
         if (p)
         {

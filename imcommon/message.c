@@ -3,6 +3,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../logger/include/logger.h"
 
 static const char *SQLCreateTable = ""
         "CREATE TABLE msg("
@@ -99,7 +100,7 @@ const char *operators[] = {"<", "<=", "=", ">=", ">", "AND", "OR"};
 
 static const char *getOperator(int op)
 {
-    if (op < -2 || op > 2)
+    if (op < -2 || op > 4)
     {
         return NULL;
     }
@@ -109,14 +110,29 @@ static const char *getOperator(int op)
     }
 }
 
+static const char *getOrderBy(int op)
+{
+    if (op <= 0)
+    {
+        return "DESC";
+    }
+    else
+    {
+        return "ASC";
+    }
+}
+
 UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *condition, int *count)
 {
     char zSQLPreBuild[150] = "SELECT * FROM msg WHERE ",
             *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
+    char zSQLOrder[100] = "",
+            *orderTail = zSQLOrder;
     int conditionCount = 0;
     if (condition->id != -1)
     {
         zSQLTail += sprintf(zSQLTail, "`id` %s %ld ", getOperator(condition->idOperator), condition->id);
+        orderTail += sprintf(orderTail, "`id` %s", getOrderBy(condition->idOperator));
         ++conditionCount;
     }
     if (condition->time != -1)
@@ -126,6 +142,13 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
             zSQLTail += sprintf(zSQLTail, "AND ");
         }
         zSQLTail += sprintf(zSQLTail, "`time` %s %ld ", getOperator(condition->timeOperator), condition->time);
+        if (zSQLOrder[0])
+        {
+            *orderTail = ',';
+            ++orderTail;
+        }
+        orderTail += sprintf(orderTail, "`time` %s", getOrderBy(condition->timeOperator));
+
         ++conditionCount;
     }
     if (condition->from != 0 && condition->to != 0)
@@ -139,7 +162,7 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
             condition->fromtoOperator = 4;
         }
         zSQLTail += sprintf(zSQLTail,
-                            "(`from` = %u %s `to` = %u)",
+                            "(`from` = %u %s `to` = %u) ",
                             condition->from,
                             getOperator(condition->fromtoOperator),
                             condition->to);
@@ -184,9 +207,14 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
     {
         return 0;
     }
+    if (zSQLOrder[0] != 0)
+    {
+        zSQLTail += sprintf(zSQLTail, "ORDER BY %s ", zSQLOrder);
+    }
     zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
     sqlite3_stmt *stmt;
-
+    log_info("DEBUG", "%s\n", zSQLPreBuild);
+    return NULL;
     if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
     {
         return 0;

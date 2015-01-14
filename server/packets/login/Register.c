@@ -2,6 +2,7 @@
 #include "run/user.h"
 #include <string.h>
 #include <asm-generic/errno-base.h>
+#include <datafile/message.h>
 #include "datafile/auth.h"
 #include "datafile/user.h"
 #include "datafile/friend.h"
@@ -22,6 +23,7 @@ int ProcessPacketLoginRegister(POnlineUser user, uint32_t session, CRPPacketLogi
                     packet->nicknameLength > sizeof(info->nickName) ? sizeof(info->nickName) : packet->nicknameLength);
             UserInfoSave(uid, info);
             UserInfoDrop(info);
+            UserMessageFileCreate(uid);
             CRPOKSend(user->crp, session);
         }
         else
