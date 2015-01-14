@@ -3,6 +3,11 @@
 #include <asm-generic/errno-base.h>
 #include <stdlib.h>
 
+static int cmp(const void *a, const void *b)
+{
+    return (*(UserMessage **) a)->id - (*(UserMessage **) b)->id;
+}
+
 int ProcessPacketMessageRecordQuery(POnlineUser user, uint32_t session, CRPPacketMessageRecordQuery *packet)
 {
     if (user->state == OUS_ONLINE)
@@ -11,6 +16,7 @@ int ProcessPacketMessageRecordQuery(POnlineUser user, uint32_t session, CRPPacke
         UserMessage **p = MessageFileQuery(user->info->message, &packet->condition, &count);
         if (p)
         {
+            qsort(p, (size_t) count, sizeof(UserMessage *), cmp);
             for (int i = 0; i < count; ++i)
             {
                 CRPMessageRecordDataSend(user->crp, session, (uint8_t) (count - i), p[i]);

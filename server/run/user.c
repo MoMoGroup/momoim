@@ -65,7 +65,7 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
         [CRP_PACKET_MESSAGE__START]       = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_MESSAGE_NORMAL]       = (GeneralPacketProcessor) ProcessPacketMessageNormal,
         [CRP_PACKET_MESSAGE_QUERY_OFFLINE]= (GeneralPacketProcessor) ProcessPacketMessageQueryOffline,
-        [CRP_PACKET_MESSAGE_RECORD_QUERY]  = (GeneralPacketProcessor) ProcessPacketMessageRecordQuery,
+        [CRP_PACKET_MESSAGE_RECORD_QUERY] = (GeneralPacketProcessor) ProcessPacketMessageRecordQuery,
 
         [CRP_PACKET_NET__START]           = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_NET_FRIEND_DISCOVER]  = (GeneralPacketProcessor) ProcessPacketNETFriendDiscover,

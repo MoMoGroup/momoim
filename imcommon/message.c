@@ -3,7 +3,6 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../logger/include/logger.h"
 
 static const char SQLCreateTable[] = ""
         "CREATE TABLE msg("
@@ -126,7 +125,7 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
 {
     sqlite3_stmt *stmt;
     {
-        char zSQLPreBuild[250] = "SELECT * FROM msg WHERE ",
+        char zSQLPreBuild[250] = "SELECT `id`,`from`,`to`,`time`,`type`,`content` FROM msg WHERE ",
                 *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
         char zSQLOrder[100] = "",
                 *orderTail = zSQLOrder;
@@ -214,20 +213,18 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
             zSQLTail += sprintf(zSQLTail, "ORDER BY %s ", zSQLOrder);
         }
         zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
-        log_info("DEBUG", "%s\n", zSQLPreBuild);
 
         if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
         {
             return 0;
         }
     }
-    int rc;
     UserMessage **messages = (UserMessage **) malloc(sizeof(UserMessage *) * condition->limit),
             *peekedMessage;
     int i = 0;
     int len;
     const char *p;
-    while (SQLITE_ROW == (rc = sqlite3_step(stmt)))
+    while (SQLITE_ROW == sqlite3_step(stmt))
     {
         len = sqlite3_column_bytes(stmt, 5);
         messages[i] = (UserMessage *) malloc(sizeof(UserMessage) + len);
