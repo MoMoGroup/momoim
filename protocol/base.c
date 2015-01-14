@@ -44,7 +44,6 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_FRIEND_GROUP_RENAME]      = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupRenameCast,
         [CRP_PACKET_FRIEND_GROUP_DELETE]      = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupDeleteCast,
         [CRP_PACKET_FRIEND_GROUP_MOVE]        = (void *(*)(CRPBaseHeader *)) CRPFriendFriendGroupMoveCast,
-        [CRP_PACKET_FRIEND_DISCOVER]          = (void *(*)(CRPBaseHeader *)) CRPFriendDiscoverCast,
 
         [CRP_PACKET_FILE__START]              = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_FILE_REQUEST]             = (void *(*)(CRPBaseHeader *)) CRPFileRequestCast,
@@ -65,8 +64,11 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_NET__START]               = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_NET_QUALITY_TEST]         = (void *(*)(CRPBaseHeader *)) CRPNETQualityTestCast,
         [CRP_PACKET_NET_INET_ADDRESS]         = (void *(*)(CRPBaseHeader *)) CRPNETInetAddressCast,
-        [CRP_PACKET_NAT_DISCOVER]             = (void *(*)(CRPBaseHeader *)) CRPNATDiscoverCast,
-        [CRP_PACKET_NAT_DETECTED]             = (void *(*)(CRPBaseHeader *)) CRPNATDetectedCast,
+        [CRP_PACKET_NET_FRIEND_DISCOVER]      = (void *(*)(CRPBaseHeader *)) CRPNETFriendDiscoverCast,
+        [CRP_PACKET_NET_DISCOVER_ACCEPT]      = (void *(*)(CRPBaseHeader *)) CRPNETDiscoverAcceptCast,
+        [CRP_PACKET_NET_DISCOVER_REFUSE]      = (void *(*)(CRPBaseHeader *)) CRPNETDiscoverRefuseCast,
+        [CRP_PACKET_NET_NAT_DISCOVER]         = (void *(*)(CRPBaseHeader *)) CRPNATDiscoverCast,
+        [CRP_PACKET_NET_DETECTED]             = (void *(*)(CRPBaseHeader *)) CRPNATDetectedCast,
 };
 
 static void CRPEncryptDisableUnlock(CRPContext context)

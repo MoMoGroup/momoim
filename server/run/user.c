@@ -53,7 +53,6 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
         [CRP_PACKET_FRIEND_GROUP_DELETE]  = (GeneralPacketProcessor) ProcessPacketFriendGroupDelete,
         [CRP_PACKET_FRIEND_GROUP_RENAME]  = (GeneralPacketProcessor) ProcessPacketFriendGroupRename,
         [CRP_PACKET_FRIEND_GROUP_MOVE]    = (GeneralPacketProcessor) ProcessPacketFriendGroupMove,
-        [CRP_PACKET_FRIEND_DISCOVER]      = (GeneralPacketProcessor) ProcessPacketFriendDiscover,
 
         [CRP_PACKET_FILE__START]          = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_FILE_REQUEST]         = (GeneralPacketProcessor) ProcessPacketFileRequest,
@@ -70,7 +69,10 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
         [CRP_PACKET_MESSAGE_RECORD_SEEK]  = (GeneralPacketProcessor) ProcessPacketMessageRecordSeek,
 
         [CRP_PACKET_NET__START]           = (GeneralPacketProcessor) NULL,
-        [CRP_PACKET_NAT_DISCOVER]         = (GeneralPacketProcessor) ProcessPacketNatDiscover,
+        [CRP_PACKET_NET_FRIEND_DISCOVER]  = (GeneralPacketProcessor) ProcessPacketNETFriendDiscover,
+        [CRP_PACKET_NET_NAT_DISCOVER]     = (GeneralPacketProcessor) ProcessPacketNETNATDiscover,
+        [CRP_PACKET_NET_DISCOVER_ACCEPT]  = (GeneralPacketProcessor) ProcessPacketNetDiscoverAccept,
+        [CRP_PACKET_NET_DISCOVER_REFUSE]  = (GeneralPacketProcessor) ProcessPacketNetDiscoverRefuse
 };
 
 void InitUserManager()
@@ -532,13 +534,13 @@ void PostMessage(UserMessage *message)
         MessageFile *file = UserMessageFileGet(message->to);
         if (file)
         {
-            MessageFileAppend(file, message);
+            MessageFileInsert(file, message);
             UserMessageFileDrop(message->to);
         }
         file = UserMessageFileGet(message->from);
         if (file)
         {
-            MessageFileAppend(file, message);
+            MessageFileInsert(file, message);
             UserMessageFileDrop(message->from);
         }
     }

@@ -2,7 +2,7 @@
 #include <asm-generic/errno-base.h>
 #include "run/user.h"
 
-int ProcessPacketFriendDiscover(POnlineUser user, uint32_t session, CRPPacketFriendDiscover *packet)
+int ProcessPacketNETFriendDiscover(POnlineUser user, uint32_t session, CRPPacketNETFriendDiscover *packet)
 {
     if (user->state == OUS_ONLINE)
     {
@@ -22,24 +22,15 @@ int ProcessPacketFriendDiscover(POnlineUser user, uint32_t session, CRPPacketFri
         pthread_rwlock_unlock(user->info->friendsLock);
 
         POnlineUser duser = OnlineUserGet(packet->uid);
-        if (!duser || duser->status == UOS_HIDDEN)
+        if (!duser)
         {
-            if (duser) UserDrop(duser);
             CRPFailureSend(user->crp, session, ENOENT, "目标用户不在线");
             return 1;
         }
-        struct sockaddr_in addr;
-        socklen_t addrLen = sizeof(addr);
-        if (getpeername(duser->crp->fd, (struct sockaddr *) &addr, &addrLen) == 0)
-        {
-            CRPNETInetAddressSend(user->crp, session, addr.sin_addr.s_addr);
-        }
-        else
-        {
-            CRPFailureSend(user->crp, session, EFAULT, "无法发现该用户");
-        }
 
+        CRPNETFriendDiscoverSend(duser->crp, 0, UGI_BLACKLIST, packet->uid, packet->reason);
         UserDrop(duser);
+        CRPOKSend(user->crp, session);
     }
     else
     {

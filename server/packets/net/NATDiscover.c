@@ -36,7 +36,7 @@ static void DiscoverDetected(struct sockaddr_in *addr, void *data)
     UserOperationUnregister(user, op);
 }
 
-int ProcessPacketNatDiscover(POnlineUser user, uint32_t session, CRPPacketNATDiscover *packet)
+int ProcessPacketNETNATDiscover(POnlineUser user, uint32_t session, CRPPacketNATDiscover *packet)
 {
     if (user->state == OUS_ONLINE)
     {

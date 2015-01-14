@@ -7,5 +7,5 @@ CRPPacketNATDetected *CRPNATDetectedCast(CRPBaseHeader *base)
 
 int CRPNATDetectedSend(CRPContext context, uint32_t sessionID, struct sockaddr_in const *addr)
 {
-    return CRPSend(context, CRP_PACKET_NAT_DETECTED, sessionID, addr, sizeof(struct sockaddr_in)) != -1;
+    return CRPSend(context, CRP_PACKET_NET_DETECTED, sessionID, addr, sizeof(struct sockaddr_in)) != -1;
 }

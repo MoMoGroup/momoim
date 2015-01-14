@@ -5,7 +5,7 @@ include_directories(../imcommon/include)
 
 SET(SERVER_SOURCE_FILE
     server.c
-    sqlite3.c
+    ../imcommon/sqlite3.c
 
     run/jobs.c
     run/listener.c
@@ -51,7 +51,6 @@ SET(SERVER_SOURCE_FILE
     packets/friend/GroupRename.c
     packets/friend/GroupMove.c
     packets/friend/GroupDelete.c
-    packets/friend/Discover.c
 
     packets/login/Login.c
     packets/login/Logout.c
@@ -62,7 +61,10 @@ SET(SERVER_SOURCE_FILE
     packets/message/RecordNext.c
     packets/message/RecordSeek.c
 
-    packets/net/Discover.c
+    packets/net/NATDiscover.c
+    packets/net/FriendDiscover.c
+    packets/net/DiscoverAccept.c
+    packets/net/DiscoverRefuse.c
     )
 add_executable(server ${SERVER_SOURCE_FILE})
 target_link_libraries(server protocol)

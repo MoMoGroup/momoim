@@ -15,7 +15,6 @@
 #include "protocol/friend/GroupRename.h"
 #include "protocol/friend/GroupDelete.h"
 #include "protocol/friend/GroupMove.h"
-#include "protocol/friend/Discover.h"
 
 #include "protocol/info/Request.h"
 #include "protocol/info/Data.h"
@@ -50,7 +49,10 @@
 #include "protocol/message/RecordSeek.h"
 #include "protocol/message/RecordData.h"
 
-#include "protocol/net/Discover.h"
+#include "protocol/net/NATDiscover.h"
+#include "protocol/net/FriendDiscover.h"
+#include "protocol/net/DiscoverAccept.h"
+#include "protocol/net/DiscoverRefuse.h"
 #include "protocol/net/QualityTest.h"
 #include "protocol/net/Detected.h"
 #include "protocol/net/InetAddress.h"
@@ -93,7 +95,6 @@ typedef enum
     CRP_PACKET_FRIEND_GROUP_RENAME, //重命名分组
     CRP_PACKET_FRIEND_GROUP_DELETE, //删除分组
     CRP_PACKET_FRIEND_GROUP_MOVE,   //移动分组
-    CRP_PACKET_FRIEND_DISCOVER,     //好友网络发现
 
     CRP_PACKET_FILE__START = 0x40, //文件请求类数据包开始
     CRP_PACKET_FILE_REQUEST,       //请求文件
@@ -114,8 +115,11 @@ typedef enum
     CRP_PACKET_NET__START = 0x60,   //NAT内网穿透开始
     CRP_PACKET_NET_QUALITY_TEST,    //网络质量测试
     CRP_PACKET_NET_INET_ADDRESS,    //IP地址数据包
-    CRP_PACKET_NAT_DISCOVER,        //网络发现
-    CRP_PACKET_NAT_DETECTED,        //主机已检测到
+    CRP_PACKET_NET_DETECTED,        //主机已检测到
+    CRP_PACKET_NET_NAT_DISCOVER,    //NAT网络发现
+    CRP_PACKET_NET_FRIEND_DISCOVER, //好友网络发现
+    CRP_PACKET_NET_DISCOVER_ACCEPT, //同意被发现
+    CRP_PACKET_NET_DISCOVER_REFUSE, //拒绝被发现
 
     CRP_PACKET_ID_MAX = UINT16_MAX  //最大包ID
 } CRPPacketIDs;

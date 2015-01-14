@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <fcntl.h>
+#include "sqlite3.h"
 //Message Post
 
 typedef enum
@@ -16,6 +17,7 @@ typedef enum
 } USER_MESSAGE_TYPE;
 typedef struct __attribute__ ((packed)) strucUserMessage
 {
+    int64_t id;
     uint32_t from, to;
     time_t time;
     uint8_t messageType; //USER_MESSAGE_TYPE
@@ -25,12 +27,20 @@ typedef struct __attribute__ ((packed)) strucUserMessage
 
 typedef struct
 {
-    size_t count;
-    int fd;
-    uint32_t fileBeginDate, lastUpdateDate, currentDate;
-    off_t fileBeginOffset, currentBeginOffset;
-    pthread_mutex_t lock;
+    sqlite3 *db;
+    sqlite3_mutex *mutex;
 } MessageFile;
+typedef struct
+{
+    uint64_t id;
+    uint32_t from, to;
+    time_t time;
+    uint8_t messageType;
+    uint8_t limit;
+
+    int idDirect;
+    int timeDirect;
+} MessageQueryCondition;
 
 extern int MessageFileCreate(const char *path);
 
@@ -38,8 +48,6 @@ extern MessageFile *MessageFileOpen(const char *path);
 
 extern int MessageFileClose(MessageFile *);
 
-extern int MessageFileAppend(MessageFile *, UserMessage *message);
+extern int64_t MessageFileInsert(MessageFile *, UserMessage *message);
 
-extern int MessageFileSeek(MessageFile *, uint32_t date);
-
-extern UserMessage *MessageFileNext(MessageFile *);
+extern int MessageFileQuery(MessageFile *, MessageQueryCondition *);

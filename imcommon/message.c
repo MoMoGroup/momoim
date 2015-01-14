@@ -1,21 +1,36 @@
 #include <unistd.h>
 #include <imcommon/message.h>
 #include <malloc.h>
-#include <string.h>
 #include <stdlib.h>
+
+static const char *SQLCreateTable = ""
+        "CREATE TABLE msg("
+        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "from INTEGER,"
+        "to INTEGER,"
+        "time INTEGER,"
+        "type INTEGER,"
+        "content BLOB"
+        ");"
+        "CREATE INDEX IDX_MSG_FROM ON msg (from);"
+        "CREATE INDEX IDX_MSG_TO ON msg (to);";
+static const char *SQLInsertMessage = ""
+        "INSERT INTO msg("
+        "from,to,time,type,content"
+        ") VALUES ("
+        "? , ? , ? , ? , ?"
+        ");";
 
 int MessageFileClose(MessageFile *file)
 {
-    lseek(file->fd, sizeof(uint32_t), SEEK_SET);
-    write(file->fd, &file->lastUpdateDate, sizeof(uint32_t));
-    int ret = close(file->fd);
-    if (ret == 0)
+    int rc = sqlite3_close(file->db);
+
+    if (rc == SQLITE_OK)
     {
-        pthread_mutex_unlock(&file->lock);
-        pthread_mutex_destroy(&file->lock);
         free(file);
+        return 1;
     }
-    return !ret;
+    return 0;
 }
 
 static void MessageFileReset(int fd)
@@ -33,161 +48,69 @@ static void MessageFileReset(int fd)
 
 int MessageFileCreate(const char *path)
 {
-    int fd = creat(path, 0600);
-    if (fd)
+    sqlite3 *db;
+    int rc = sqlite3_open_v2(path, &db, SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE, NULL);
+
+    if (rc == SQLITE_OK)
     {
-        MessageFileReset(fd);
-        close(fd);
-        return 1;
+        rc = sqlite3_exec(db, SQLCreateTable, NULL, NULL, NULL);
+        sqlite3_close(db);
+        if (rc == SQLITE_OK)
+        {
+            return 1;
+        }
     }
-    else
-    {
-        return 0;
-    }
+    return 0;
 }
 
 MessageFile *MessageFileOpen(const char *path)
 {
-    int fd = open(path, O_RDWR | O_CLOEXEC | O_CREAT, 0600);
-    if (fd < 0)
+    sqlite3 *db;
+    int rc = sqlite3_open_v2(path, &db, SQLITE_OPEN_NOMUTEX | SQLITE_OPEN_READWRITE, NULL);
+    if (rc != SQLITE_OK)
     {
         return NULL;
     }
     MessageFile *file = (MessageFile *) malloc(sizeof(MessageFile));
     if (file == NULL)
     {
-        close(fd);
+        sqlite3_close(db);
         return NULL;
     }
-    file->fd = fd;
-    pthread_mutex_init(&file->lock, NULL);
-
-    if (sizeof(uint32_t) == read(fd, &file->fileBeginDate, sizeof(uint32_t)))
-    {
-        read(fd, &file->lastUpdateDate, sizeof(uint32_t));
-    }
-    else
-    {
-        MessageFileReset(fd);
-        file->fileBeginDate = file->lastUpdateDate = (uint32_t) (time(NULL) / (24 * 60 * 60));
-    }
-    file->currentDate = file->fileBeginDate;
-    file->currentBeginOffset = file->fileBeginOffset =
-            sizeof(file->fileBeginDate)
-            + sizeof(file->lastUpdateDate)
-            + 10 * 365 * sizeof(off_t);
-    if (file->fileBeginOffset != lseek(file->fd, file->fileBeginOffset, SEEK_SET))
-    {
-        free(file);
-        close(fd);
-        return NULL;
-    }
+    file->db = db;
+    file->mutex = sqlite3_db_mutex(db);
     return file;
 }
 
-int MessageFileAppend(MessageFile *file, UserMessage *message)
+int64_t MessageFileInsert(MessageFile *file, UserMessage *message)
 {
-    int ret = 0;
-    uint32_t messageDate = (uint32_t) (message->time / (24 * 60 * 60));
-    pthread_mutex_lock(&file->lock);
-    off_t posCur = lseek(file->fd, 0, SEEK_CUR);
-    off_t posEnd = lseek(file->fd, 0, SEEK_END);
-    if (file->lastUpdateDate != messageDate)
+    sqlite3_stmt *stmt;
+    int64_t ret = -1;
+    int rc = sqlite3_prepare_v2(file->db, SQLInsertMessage, sizeof(SQLInsertMessage), &stmt, NULL);
+    if (rc != SQLITE_OK)
     {
-        lseek(file->fd,
-              sizeof(file->fileBeginDate) +
-              sizeof(file->lastUpdateDate) +
-              sizeof(off_t) * (messageDate - file->lastUpdateDate + 1),
-              SEEK_SET);
-        for (int i = file->lastUpdateDate + 1; i <= messageDate; ++i)
-        {
-            write(file->fd, &posEnd, sizeof(off_t));
-        }
-        file->lastUpdateDate = messageDate;
-        lseek(file->fd, 0, SEEK_END);
+        return 0;
     }
-    ssize_t nbytes;
-    nbytes = write(file->fd, message, sizeof(UserMessage));
-    if (nbytes != sizeof(UserMessage))
+    sqlite3_bind_int64(stmt, 1, message->from);
+    sqlite3_bind_int64(stmt, 2, message->to);
+    sqlite3_bind_int64(stmt, 3, message->time);
+    sqlite3_bind_int(stmt, 4, message->messageType);
+    sqlite3_bind_blob(stmt, 5, message->content, message->messageType, NULL);
+    sqlite3_mutex_enter(file->mutex);
+    rc = sqlite3_step(stmt);
+    if (rc == SQLITE_DONE)
     {
-        ftruncate(file->fd, posEnd);
-        goto cleanup;
+        ret = sqlite3_last_insert_rowid(file->db);
     }
-    nbytes = write(file->fd, message->content, (size_t) message->messageLen);
-    if (nbytes != message->messageLen)
-    {
-        ftruncate(file->fd, posEnd);
-        goto cleanup;
-    }
-    ret = 1;
-
-    cleanup:
-    lseek(file->fd, posCur, SEEK_SET);
-    pthread_mutex_unlock(&file->lock);
+    sqlite3_mutex_leave(file->mutex);
+    sqlite3_finalize(stmt);
     return ret;
 }
 
-UserMessage *MessageFileNext(MessageFile *file)
+int MessageFileQuery(MessageFile *file, MessageQueryCondition *condition)
 {
-    UserMessage *ret = NULL;
-    pthread_mutex_lock(&file->lock);
-    off_t posCur = lseek(file->fd, 0, SEEK_CUR);
+    sqlite3_stmt *stmt;
 
-    UserMessage header;
-    ssize_t nbytes = read(file->fd, &header, sizeof(UserMessage));
-    if (nbytes != sizeof(UserMessage))
-    {
-        lseek(file->fd, posCur, SEEK_SET);
-        goto cleanup;
-    }
-    ret = (UserMessage *) malloc(sizeof(UserMessage) + header.messageLen);
-    memcpy(ret, &header, sizeof(UserMessage));
-    nbytes = read(file->fd, ret->content, header.messageLen);
-    if (nbytes != header.messageLen)
-    {
-        free(ret);
-        ret = NULL;
-        lseek(file->fd, posCur, SEEK_SET);
-        goto cleanup;
-    }
-    cleanup:
-    pthread_mutex_unlock(&file->lock);
-    return ret;
-}
 
-int MessageFileSeek(MessageFile *file, uint32_t date)
-{
-    int ret = 0;
-    pthread_mutex_lock(&file->lock);
-
-    if (date < file->fileBeginDate)
-    {
-        ret = file->fileBeginOffset == lseek(file->fd, file->fileBeginOffset, SEEK_SET);
-    }
-    else if (date > file->lastUpdateDate)
-    {
-        ret = lseek(file->fd, 0, SEEK_END) != -1;
-    }
-    else if (date == file->currentDate)
-    {
-        ret = file->currentBeginOffset == lseek(file->fd, file->currentBeginOffset, SEEK_SET);
-    }
-    else
-    {
-        lseek(file->fd, sizeof(file->fileBeginDate) +
-                sizeof(file->lastUpdateDate) +
-                sizeof(off_t) * (date - file->fileBeginDate), SEEK_SET);
-        off_t dateSet;
-        if (sizeof(dateSet) != read(file->fd, &dateSet, sizeof(dateSet)))
-        {
-            lseek(file->fd, file->currentBeginOffset, SEEK_SET);
-            goto cleanup;
-        }
-        file->currentDate = date;
-        file->currentBeginOffset = dateSet;
-        ret = file->currentBeginOffset == lseek(file->fd, file->currentBeginOffset, SEEK_SET);
-    }
-    cleanup:
-    pthread_mutex_unlock(&file->lock);
-    return ret;
+    return 0;
 }
