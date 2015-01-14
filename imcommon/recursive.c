@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <asm-generic/errno-base.h>
-#include <eti.h>
 
 RecursiveMutex RecursiveMutexInit()
 {
@@ -58,14 +57,14 @@ int RecursiveMutexTry(RecursiveMutex p)
     if (p->nRef > 0 && pthread_equal(p->owner, self))
     {
         p->nRef++;
-        rc = E_OK;
+        rc = 0;
     }
     else if (pthread_mutex_trylock(&p->mutex) == 0)
     {
         assert(p->nRef == 0);
         p->owner = self;
         p->nRef = 1;
-        rc = E_OK;
+        rc = 0;
     }
     else
     {
