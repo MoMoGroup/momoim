@@ -12,7 +12,12 @@ int ProcessPacketInfoPasswordChange(POnlineUser user, uint32_t session, CRPPacke
             CRPFailureSend(user->crp, session, EINVAL, "不允许使用未加密协议修改密码");
             return 0;//要求重新登陆
         }
-        if (AuthPasswordChange(user->uid, (unsigned char *) packet->password))
+        int change = AuthPasswordChange(user->uid, (unsigned char *) packet->oldPwd, (unsigned char *) packet->newPwd);
+        if (change == 0)
+        {
+            CRPFailureSend(user->crp, session, EPERM, "原密码不正确");
+        }
+        else if (change > 0)
         {
             CRPOKSend(user->crp, session);
         }
