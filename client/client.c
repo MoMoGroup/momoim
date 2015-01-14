@@ -34,7 +34,7 @@ GtkStyleProvider *comboprovider;
 const gchar *combostring;
 
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd, *sremember1, *sremember2;
-static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *slandimage, *scancel10_1, *scancel10_2, *scancel10_3;
+static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3,  *scancel10_1, *scancel10_2, *scancel10_3;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
 
@@ -187,7 +187,6 @@ create_surfaces1()
     sclosebut1 = ChangeThem_png("关闭按钮1.png");
     sclosebut2 = ChangeThem_png("关闭按钮2.png");
     sclosebut3 = ChangeThem_png("关闭按钮3.png");
-    slandimage = ChangeThem_png("登录.png");
     scancel10_1 = ChangeThem_png("取消1.png");
     scancel10_2 = ChangeThem_png("取消2.png");
     scancel10_3 = ChangeThem_png("取消3.png");
@@ -212,7 +211,6 @@ destroy_surfaces()
     cairo_surface_destroy(sclosebut1);
     cairo_surface_destroy(sclosebut2);
     cairo_surface_destroy(sclosebut3);
-    cairo_surface_destroy(slandimage);
     cairo_surface_destroy(scancel10_1);
     cairo_surface_destroy(scancel10_2);
     cairo_surface_destroy(scancel10_3);
@@ -709,7 +707,7 @@ gboolean loadloginLayout(gpointer user_data)
     //加载loginlayout
     create_surfaces1();
     GtkWidget *imagebackground, *imagehead, *imagewhite, *imageaccount, *imagepasswd;
-    GtkWidget *iwait, *imainland;
+    GtkWidget *iwait;
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
     g_signal_connect(G_OBJECT(window), "delete_event",
@@ -730,7 +728,6 @@ gboolean loadloginLayout(gpointer user_data)
     imagepasswd = gtk_image_new_from_surface(spasswd);
     imageregistered = gtk_image_new_from_surface(sregistered1);
     imageclosebut = gtk_image_new_from_surface(sclosebut1);
-    imainland = gtk_image_new_from_surface(slandimage);
     imagecancel = gtk_image_new_from_surface(scancel10_1);
     imageremember = gtk_image_new_from_surface(sremember1);
 
@@ -840,8 +837,7 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
     gtk_fixed_put(GTK_FIXED(loginLayout), sunevent_box, 3, 3);
     gtk_fixed_put(GTK_FIXED(loginLayout), remember_box, 190, 185);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), imainland, 0, 0);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 55, 110);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 0, 0);
     gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 75, 350);
     gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowUserNameBox, 82, 215);
     gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowPassWordBox, 82, 256);
