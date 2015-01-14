@@ -57,8 +57,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_MESSAGE__START]           = (void *(*)(CRPBaseHeader *)) NULL,
         [CRP_PACKET_MESSAGE_NORMAL]           = (void *(*)(CRPBaseHeader *)) CRPMessageNormalCast,
         [CRP_PACKET_MESSAGE_QUERY_OFFLINE]    = (void *(*)(CRPBaseHeader *)) CRPMessageQueryOfflineCast,
-        [CRP_PACKET_MESSAGE_RECORD_NEXT]      = (void *(*)(CRPBaseHeader *)) CRPMessageRecordNextCast,
-        [CRP_PACKET_MESSAGE_RECORD_SEEK]      = (void *(*)(CRPBaseHeader *)) CRPMessageRecordSeekCast,
+        [CRP_PACKET_MESSAGE_RECORD_QUERY]     = (void *(*)(CRPBaseHeader *)) CRPMessageRecordQueryCast,
         [CRP_PACKET_MESSAGE_RECORD_DATA]      = (void *(*)(CRPBaseHeader *)) CRPMessageRecordDataCast,
 
         [CRP_PACKET_NET__START]               = (void *(*)(CRPBaseHeader *)) NULL,

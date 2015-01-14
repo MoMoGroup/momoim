@@ -65,8 +65,7 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
         [CRP_PACKET_MESSAGE__START]       = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_MESSAGE_NORMAL]       = (GeneralPacketProcessor) ProcessPacketMessageNormal,
         [CRP_PACKET_MESSAGE_QUERY_OFFLINE]= (GeneralPacketProcessor) ProcessPacketMessageQueryOffline,
-        [CRP_PACKET_MESSAGE_RECORD_NEXT]  = (GeneralPacketProcessor) ProcessPacketMessageRecordNext,
-        [CRP_PACKET_MESSAGE_RECORD_SEEK]  = (GeneralPacketProcessor) ProcessPacketMessageRecordSeek,
+        [CRP_PACKET_MESSAGE_RECORD_QUERY]  = (GeneralPacketProcessor) ProcessPacketMessageRecordQuery,
 
         [CRP_PACKET_NET__START]           = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_NET_FRIEND_DISCOVER]  = (GeneralPacketProcessor) ProcessPacketNETFriendDiscover,
@@ -422,7 +421,7 @@ int OnlineUserDelete(POnlineUser user)
             info->lastlogout = now;
             info->level += (now - user->info->loginTime) / 60;
             UserInfoSave(info->uid, info);
-            UserInfoFree(info);
+            UserInfoDrop(info);
         }
 
         UserFriendsDrop(user->uid);

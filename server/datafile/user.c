@@ -150,7 +150,7 @@ UserInfo *UserInfoGet(uint32_t uid)
     return info;
 }
 
-void UserInfoFree(UserInfo *info)
+void UserInfoDrop(UserInfo *info)
 {
     if (info)
     {

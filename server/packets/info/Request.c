@@ -21,7 +21,7 @@ int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRe
             {
                 UserDrop(duser);
             }
-            UserInfoFree(info);
+            UserInfoDrop(info);
         }
     }
     else

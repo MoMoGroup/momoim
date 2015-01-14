@@ -58,8 +58,7 @@ SET(SERVER_SOURCE_FILE
 
     packets/message/Normal.c
     packets/message/QueryOffline.c
-    packets/message/RecordNext.c
-    packets/message/RecordSeek.c
+    packets/message/RecordQuery.c
 
     packets/net/NATDiscover.c
     packets/net/FriendDiscover.c

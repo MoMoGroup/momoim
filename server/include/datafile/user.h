@@ -21,4 +21,4 @@ int UserInfoSave(uint32_t uid, UserInfo *info);
 
 UserInfo *UserInfoGet(uint32_t uid);
 
-void UserInfoFree(UserInfo *info);
+void UserInfoDrop(UserInfo *info);

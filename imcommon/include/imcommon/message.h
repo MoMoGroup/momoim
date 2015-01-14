@@ -32,14 +32,16 @@ typedef struct
 } MessageFile;
 typedef struct
 {
-    uint64_t id;
-    uint32_t from, to;
-    time_t time;
-    uint8_t messageType;
-    uint8_t limit;
+    uint64_t id;           //-1表示不筛选
+    time_t time;           //-1表示不筛选
+    int idOperator;        //-2:<,-1:<=,0:=,1:>=,2:>
+    int timeOperator;      //-2:<,-1:<=,0:=,1:>=,2:>
 
-    int idDirect;
-    int timeDirect;
+    uint32_t from, to;     //0表示不筛选
+    int fromtoOperator;    //3:AND,其他:OR
+    uint8_t messageType;   //255表示不筛选
+    uint8_t limit;         //传入0将被替换为20
+
 } MessageQueryCondition;
 
 extern int MessageFileCreate(const char *path);
@@ -50,4 +52,4 @@ extern int MessageFileClose(MessageFile *);
 
 extern int64_t MessageFileInsert(MessageFile *, UserMessage *message);
 
-extern int MessageFileQuery(MessageFile *, MessageQueryCondition *);
+extern UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *condition, int *count);

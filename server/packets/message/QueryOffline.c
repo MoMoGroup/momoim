@@ -1,6 +1,5 @@
 #include <protocol/CRPPackets.h>
 #include <asm-generic/errno-base.h>
-#include <datafile/message.h>
 #include <datafile/user.h>
 #include <stdlib.h>
 #include "run/user.h"
@@ -9,30 +8,34 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
 {
     if (user->state == OUS_ONLINE)
     {
-        MessageFile *file = UserMessageFileGet(user->uid);
         UserInfo *info = UserInfoGet(user->uid);
-        if (MessageFileSeek(file, (uint32_t) (info->lastlogout / (24 * 60 * 60))))
+        MessageQueryCondition condition = {
+                .to=user->uid,
+                .time=info->lastlogout,
+                .timeOperator=2//>
+        };
+        UserInfoDrop(info);
+        int count;
+        UserMessage **p = MessageFileQuery(user->info->message, &condition, &count);
+        if (p)
         {
+            for (int i = 0; i < count; ++i)
+            {
+                CRPMessageNormalSend(user->crp,
+                                     0,
+                                     (USER_MESSAGE_TYPE) (p[i]->messageType),
+                                     p[i]->from,
+                                     p[i]->messageLen,
+                                     p[i]->content);
+                free(p[i]);
+            }
             CRPOKSend(user->crp, session);
+            free(p);
         }
         else
         {
-            CRPFailureSend(user->crp, session, EFAULT, "无法找到下线时间.");
+            CRPFailureSend(user->crp, session, ENOENT, "无数据");
         }
-        UserInfoFree(info);
-        UserMessage *msg;
-        while ((msg = MessageFileNext(file)) != NULL)
-        {
-            if (msg->time >= info->lastlogout && msg->to == user->uid)
-            {
-                if (!CRPMessageNormalSend(user->crp, 0, msg->messageType, msg->from, msg->messageLen, msg->content))
-                {
-                    break;
-                }
-            }
-            free(msg);
-        }
-        UserMessageFileDrop(user->uid);
 
     }
     else

@@ -45,8 +45,7 @@
 
 #include "protocol/message/Normal.h"
 #include "protocol/message/QueryOffline.h"
-#include "protocol/message/RecordNext.h"
-#include "protocol/message/RecordSeek.h"
+#include "protocol/message/RecordQuery.h"
 #include "protocol/message/RecordData.h"
 
 #include "protocol/net/NATDiscover.h"
@@ -108,8 +107,7 @@ typedef enum
     CRP_PACKET_MESSAGE__START = 0x50, //消息类数据包开始
     CRP_PACKET_MESSAGE_NORMAL,        //消息
     CRP_PACKET_MESSAGE_QUERY_OFFLINE, //查询离线消息
-    CRP_PACKET_MESSAGE_RECORD_NEXT, //消息记录向前
-    CRP_PACKET_MESSAGE_RECORD_SEEK, //消息记录重定位
+    CRP_PACKET_MESSAGE_RECORD_QUERY, //消息记录查询
     CRP_PACKET_MESSAGE_RECORD_DATA, //消息记录数据
 
     CRP_PACKET_NET__START = 0x60,   //NAT内网穿透开始

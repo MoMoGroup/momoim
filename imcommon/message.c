@@ -2,21 +2,22 @@
 #include <imcommon/message.h>
 #include <malloc.h>
 #include <stdlib.h>
+#include <string.h>
 
 static const char *SQLCreateTable = ""
         "CREATE TABLE msg("
-        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-        "from INTEGER,"
-        "to INTEGER,"
-        "time INTEGER,"
-        "type INTEGER,"
-        "content BLOB"
+        "`id` INTEGER PRIMARY KEY AUTOINCREMENT,"
+        "`from` INTEGER,"
+        "`to` INTEGER,"
+        "`time` INTEGER,"
+        "`type` INTEGER,"
+        "`content` BLOB"
         ");"
-        "CREATE INDEX IDX_MSG_FROM ON msg (from);"
-        "CREATE INDEX IDX_MSG_TO ON msg (to);";
+        "CREATE INDEX IDX_MSG_FROM ON msg (`from`);"
+        "CREATE INDEX IDX_MSG_TO ON msg (`to`);";
 static const char *SQLInsertMessage = ""
         "INSERT INTO msg("
-        "from,to,time,type,content"
+        "`from`,`to`,`time`,`type`,`content`"
         ") VALUES ("
         "? , ? , ? , ? , ?"
         ");";
@@ -31,19 +32,6 @@ int MessageFileClose(MessageFile *file)
         return 1;
     }
     return 0;
-}
-
-static void MessageFileReset(int fd)
-{
-    lseek(fd, 0, SEEK_SET);
-    ftruncate(fd, 0);
-    uint32_t startTime = (uint32_t) (time(NULL) / (24 * 60 * 60));
-    write(fd, &startTime, sizeof(uint32_t));//fileBeginDate
-    write(fd, &startTime, sizeof(uint32_t));//lastUpdateDate
-    off_t messageBegin = sizeof(uint32_t) + sizeof(uint32_t) + (10 * 365 * sizeof(off_t));
-    write(fd, &messageBegin, sizeof(off_t));//First Message Offset
-    lseek(fd, messageBegin - 1, SEEK_SET);
-    write(fd, "", 1);
 }
 
 int MessageFileCreate(const char *path)
@@ -107,10 +95,125 @@ int64_t MessageFileInsert(MessageFile *file, UserMessage *message)
     return ret;
 }
 
-int MessageFileQuery(MessageFile *file, MessageQueryCondition *condition)
+const char *operators[] = {"<", "<=", "=", ">=", ">", "AND", "OR"};
+
+static const char *getOperator(int op)
 {
+    if (op < -2 || op > 2)
+    {
+        return NULL;
+    }
+    else
+    {
+        return operators[op + 2];
+    }
+}
+
+UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *condition, int *count)
+{
+    char zSQLPreBuild[150] = "SELECT * FROM msg WHERE ",
+            *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
+    int conditionCount = 0;
+    if (condition->id != -1)
+    {
+        zSQLTail += sprintf(zSQLTail, "`id` %s %ld ", getOperator(condition->idOperator), condition->id);
+        ++conditionCount;
+    }
+    if (condition->time != -1)
+    {
+        if (conditionCount)
+        {
+            zSQLTail += sprintf(zSQLTail, "AND ");
+        }
+        zSQLTail += sprintf(zSQLTail, "`time` %s %ld ", getOperator(condition->timeOperator), condition->time);
+        ++conditionCount;
+    }
+    if (condition->from != 0 && condition->to != 0)
+    {
+        if (conditionCount)
+        {
+            zSQLTail += sprintf(zSQLTail, "AND ");
+        }
+        if (condition->fromtoOperator != 3)
+        {
+            condition->fromtoOperator = 4;
+        }
+        zSQLTail += sprintf(zSQLTail,
+                            "(`from` = %u %s `to` = %u)",
+                            condition->from,
+                            getOperator(condition->fromtoOperator),
+                            condition->to);
+        ++conditionCount;
+    }
+    else
+    {
+        if (condition->from)
+        {
+            if (conditionCount)
+            {
+                zSQLTail += sprintf(zSQLTail, "AND ");
+            }
+            zSQLTail += sprintf(zSQLTail, "`from` = %u ", condition->from);
+            ++conditionCount;
+        }
+        if (condition->to)
+        {
+            if (conditionCount)
+            {
+                zSQLTail += sprintf(zSQLTail, "AND ");
+            }
+            zSQLTail += sprintf(zSQLTail, "`to` = %u ", condition->to);
+            ++conditionCount;
+        }
+    }
+
+    if (condition->messageType != 255)
+    {
+        if (conditionCount)
+        {
+            zSQLTail += sprintf(zSQLTail, "AND ");
+        }
+        zSQLTail += sprintf(zSQLTail, "`type` = %u ", (uint) condition->messageType);
+        ++conditionCount;
+    }
+    if (condition->limit == 0)
+    {
+        condition->limit = 20;
+    }
+    if (!conditionCount)    //不允许无任何筛选条件
+    {
+        return 0;
+    }
+    zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
     sqlite3_stmt *stmt;
 
+    if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
+    {
+        return 0;
+    }
 
-    return 0;
+    int rc;
+    UserMessage **messages = (UserMessage **) malloc(sizeof(UserMessage *) * condition->limit),
+            *peekedMessage;
+    int i = 0;
+    int len;
+    const char *p;
+    while (SQLITE_ROW == (rc = sqlite3_step(stmt)))
+    {
+        peekedMessage = messages[i];
+        len = sqlite3_column_bytes(stmt, 5);
+        messages[i] = (UserMessage *) malloc(sizeof(UserMessage) + len);
+        peekedMessage->id = sqlite3_column_int64(stmt, 0);
+        peekedMessage->from = (uint32_t) sqlite3_column_int64(stmt, 1);
+        peekedMessage->to = (uint32_t) sqlite3_column_int64(stmt, 2);
+        peekedMessage->time = (time_t) sqlite3_column_int64(stmt, 3);
+        peekedMessage->messageType = (uint8_t) sqlite3_column_int(stmt, 4);
+        peekedMessage->messageLen = (uint16_t) len;
+        p = sqlite3_column_blob(stmt, 5);
+        memcpy(peekedMessage->content, p, (size_t) len);
+        ++i;
+    }
+    sqlite3_finalize(stmt);
+    *count = i;
+    return messages;
 }
