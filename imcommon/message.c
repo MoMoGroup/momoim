@@ -5,7 +5,7 @@
 #include <string.h>
 #include "../logger/include/logger.h"
 
-static const char *SQLCreateTable = ""
+static const char SQLCreateTable[] = ""
         "CREATE TABLE msg("
         "`id` INTEGER PRIMARY KEY AUTOINCREMENT,"
         "`from` INTEGER,"
@@ -16,7 +16,7 @@ static const char *SQLCreateTable = ""
         ");"
         "CREATE INDEX IDX_MSG_FROM ON msg (`from`);"
         "CREATE INDEX IDX_MSG_TO ON msg (`to`);";
-static const char *SQLInsertMessage = ""
+static const char SQLInsertMessage[] = ""
         "INSERT INTO msg("
         "`from`,`to`,`time`,`type`,`content`"
         ") VALUES ("
@@ -84,7 +84,7 @@ int64_t MessageFileInsert(MessageFile *file, UserMessage *message)
     sqlite3_bind_int64(stmt, 2, message->to);
     sqlite3_bind_int64(stmt, 3, message->time);
     sqlite3_bind_int(stmt, 4, message->messageType);
-    sqlite3_bind_blob(stmt, 5, message->content, message->messageType, NULL);
+    sqlite3_bind_blob(stmt, 5, message->content, message->messageLen, NULL);
     sqlite3_mutex_enter(file->mutex);
     rc = sqlite3_step(stmt);
     if (rc == SQLITE_DONE)
@@ -214,7 +214,7 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
     zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
     sqlite3_stmt *stmt;
     log_info("DEBUG", "%s\n", zSQLPreBuild);
-    return NULL;
+
     if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
     {
         return 0;
