@@ -11,22 +11,27 @@
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "managegroup/ManageGroup.h"
+#include "Managegroup.h"
+#include "SetupWind.h"
 
 static GtkWidget *status;
 
-static GtkWidget *background1, *search, *friend, *change, *closebut;
+static GtkWidget *background1, *search, *friend, *change, *closebut, *SetUp;
 static GtkWidget *window;
 static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacechangetheme, *surfacechangetheme2, *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
 GtkWidget *userid, *headx;
 //全局变量用以实时更新昵称和头像
+int MarkNewpasswd = 0, MarkUpdateInfo = 0;
 GtkTreeView *treeView;
+
+static cairo_surface_t *surfacesetup;
 
 GtkTreeStore *TreeViewListStore;
 static GdkPixbuf *pixbuf;
 static cairo_t *cr;
 static GtkWidget *vbox;
-static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box, *change_event_box;
+static GtkEventBox *closebut_event_box, *background_event_box, *search_event_box, *headx_event_box, *change_event_box, *setup_event_box;
 static GtkWidget *friend_mov_group;
 cairo_surface_t *surface_status, *surface_status2;
 
@@ -368,12 +373,14 @@ static void create_surfaces()
     surfaceclose51 = ChangeThem_png("关闭按钮1.png");
     surfaceclose52 = ChangeThem_png("关闭按钮2.png");
     surfaceclose53 = ChangeThem_png("关闭按钮3.png");
+    surfacesetup = ChangeThem_png("设置图标.png");
 
     background1 = gtk_image_new_from_surface(surfacemainbackgroud);
     search = gtk_image_new_from_surface(surfaceresearch);
     change = gtk_image_new_from_surface(surfacechangetheme);
     friend = gtk_image_new_from_surface(surfacefriendimage);
     closebut = gtk_image_new_from_surface(surfaceclose51);
+    SetUp = gtk_image_new_from_surface(surfacesetup);
 
 
 }
@@ -448,6 +455,7 @@ destroy_surfaces()
     cairo_surface_destroy(surfacefriendimage);
     cairo_surface_destroy(surfacechangetheme);
     cairo_surface_destroy(surfacechangetheme2);
+    cairo_surface_destroy(surfacesetup);
 
 }
 
@@ -965,7 +973,7 @@ static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 //鼠标抬起事件
 static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    if (event->button == 1)
+    if ((event->button == 1) && (MarkUpdateInfo == 0))
     {
         FriendInfo *friendinforear;
         friendinforear = FriendInfoHead;
@@ -975,6 +983,7 @@ static gint headx_button_release_event(GtkWidget *widget, GdkEventButton *event,
             {
                 //查看资料
                 OnlyLookInfo(friendinforear);
+                MarkUpdateInfo = 1;
                 break;
             }
             else
@@ -1003,6 +1012,44 @@ static gint headx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
     //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave);
     return 0;
 }
+
+//设置按钮开始
+//鼠标点击事件
+static gint setup_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+
+    if (event->button == 1)
+    {              //设置按钮
+        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+    }
+    return 0;
+}
+
+//鼠标抬起事件
+static gint setup_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    if ((event->button == 1) && MarkNewpasswd == 0)       // 判断是否是点击设置按钮
+    {
+        SetupFace();
+        MarkNewpasswd = 1;
+    }
+    return 0;
+}
+
+//鼠标移动事件
+static gint setup_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
+    return 0;
+}
+
+//离开事件
+static gint setup_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    return 0;
+}
+//设置按钮结束
 
 //右键菜单发送即时消息
 static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -1230,11 +1277,20 @@ int MainInterFace()
     search = gtk_image_new_from_surface(surfaceresearch);
     search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
 
+    setup_event_box = BuildEventBox(SetUp,
+                                    G_CALLBACK(setup_button_press_event),
+                                    G_CALLBACK(setup_enter_notify_event),
+                                    G_CALLBACK(setup_leave_notify_event),
+                                    G_CALLBACK(setup_button_release_event),
+                                    NULL,
+                                    NULL);
+
 
     gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(MainLayout), change_event_box, 240, 185);
     gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
     gtk_fixed_put(GTK_FIXED(MainLayout), search_event_box, 0, 140);
+    gtk_fixed_put(GTK_FIXED(MainLayout), setup_event_box, 205, 188);//设置按钮
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);
     loadinfo();
 

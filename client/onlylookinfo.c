@@ -8,6 +8,7 @@
 #include "ClientSockfd.h"
 #include "common.h"
 #include "Infomation.h"
+#include "MainInterface.h"
 
 static cairo_surface_t *Surfaceback, *Surfacecancel, *Surfacecancel1, *Surfaceend, *Surfaceend1, *Surfaceend2, *Surfacechange, *Surfacechange1;
 static cairo_surface_t *surfacehead;
@@ -69,6 +70,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
     {
         gtk_widget_destroy(info->Infowind);
         info->Infowind = NULL;
+        MarkUpdateInfo = 0;
     }
     return 0;
 }
@@ -119,6 +121,7 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
     {
         gtk_widget_destroy(info->Infowind);
         info->Infowind = NULL;
+        MarkUpdateInfo = 0;
     }
     return 0;
 }
@@ -166,6 +169,7 @@ static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event
         ChangeInfo();
         gtk_widget_destroy(info->Infowind);
         info->Infowind = NULL;
+        MarkUpdateInfo = 1;
     }
     return 0;
 }
