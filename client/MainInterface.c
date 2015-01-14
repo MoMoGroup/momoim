@@ -12,6 +12,8 @@
 #include "onlylookinfo.h"
 #include "Managegroup.h"
 
+static GtkWidget *status;
+
 static GtkWidget *background1, *search, *friend, *change, *closebut;
 static GtkWidget *window;
 static GtkWidget *frameLayout, *MainLayout;
@@ -394,6 +396,7 @@ static void loadinfo()
     gtk_widget_override_font(StatusShowText, font);
     ShowStatus("在线");
     gtk_fixed_put(GTK_FIXED(MainLayout), StatusShowText, 140, 65);
+
 
 
 
@@ -1134,7 +1137,6 @@ static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-GtkWidget *status;
 
 void set_position(GtkMenu *menu, gint *px, gint *py, gboolean *push_in, gpointer data)
 {
@@ -1159,8 +1161,6 @@ int status_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
         gtk_image_set_from_surface((GtkImage *) status, surface_status2);
-//        GtkMenu *menu_status = g_object_get_data(G_OBJECT(status), "ChangeMenu");
-//        gtk_menu_popup(GTK_MENU(menu_status), NULL, NULL, set_position, NULL, event->button, event->time);
     }
 }
 
@@ -1169,7 +1169,9 @@ int status_button_release_event(GtkWidget *widget, GdkEventButton *event, gpoint
 {
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
     GtkMenu *menu_status = g_object_get_data(G_OBJECT(status), "ChangeMenu");
+    //GtkCheckMenuItem *menu_status = g_object_get_data(G_OBJECT(status), "ChangeMenu");
     gtk_menu_popup(GTK_MENU(menu_status), NULL, NULL, set_position, NULL, event->button, event->time);
+
     gtk_image_set_from_surface((GtkImage *) status, surface_status);
 
 }
@@ -1191,7 +1193,7 @@ int MainInterFace()
     vbox = gtk_box_new(TRUE, 5);
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_resizable(GTK_WINDOW (window), FALSE);//固定窗口大小
+    gtk_window_set_resizable(GTK_WINDOW(window), FALSE);//固定窗口大小
     gtk_widget_set_size_request(GTK_WIDGET(window), 284, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
@@ -1271,11 +1273,13 @@ int MainInterFace()
 
     changeMenu = gtk_menu_new();
     //在线
-    online = gtk_menu_item_new_with_mnemonic("在线");
+    online = gtk_check_menu_item_new();
+    online = gtk_check_menu_item_new_with_mnemonic("在线");
     gtk_container_add(GTK_CONTAINER(changeMenu), online);
     gtk_widget_show(online);
     //隐身
-    hideline = gtk_menu_item_new_with_mnemonic("隐身");
+    hideline = gtk_check_menu_item_new();
+    hideline = gtk_check_menu_item_new_with_mnemonic("隐身");
     gtk_container_add(GTK_CONTAINER(changeMenu), hideline);
     gtk_widget_show(hideline);
 
@@ -1288,7 +1292,10 @@ int MainInterFace()
 
     g_object_set_data(G_OBJECT(status), "ChangeMenu", changeMenu);
 
+    g_object_set_data(G_OBJECT(status), "OnlineMenu", online);
+    g_object_set_data(G_OBJECT(status), "HidelineMenu", hideline);
 
+    Status((void *) -1);//设置在线
     gtk_container_add(GTK_CONTAINER(window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER(frameLayout), MainLayout);
 
@@ -1303,7 +1310,7 @@ int MainInterFace()
                                                       "pixbuf", PIXBUF_COL,
                                                       NULL);
     //gtk_tree_view_column_set_sort_column_id(column, 0);
-    gtk_tree_view_append_column(GTK_TREE_VIEW (treeView), column);
+    gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
     gtk_tree_view_column_set_resizable(column, TRUE);
 
 
@@ -1443,6 +1450,27 @@ void DestoryMainInterface()
 
 int ShowStatus(void *data)
 {
+    //在线
+
     gtk_label_set_text(StatusShowText, data);
+    return 0;
+}
+
+int Status(void *data)//shezhi da goude
+{
+    GtkCheckMenuItem *online = g_object_get_data(G_OBJECT(status), "OnlineMenu");
+    GtkCheckMenuItem *hideline = g_object_get_data(G_OBJECT(status), "HidelineMenu");
+
+    if (data)
+    {
+        gtk_check_menu_item_set_active(online, TRUE);
+        gtk_check_menu_item_set_active(hideline, FALSE);
+    }
+    else
+    {
+        gtk_check_menu_item_set_active(online, FALSE);
+        gtk_check_menu_item_set_active(hideline, TRUE);
+    }
+
     return 0;
 }

@@ -8,7 +8,7 @@ int changeOnlineRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_OK)
     {
-
+        g_idle_add(Status, ((void *) -1));
         g_idle_add(ShowStatus, "在线");
 
     }
@@ -20,6 +20,7 @@ int changeHideLineRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_OK)
     {
+        g_idle_add(Status, NULL);
         g_idle_add(ShowStatus, "隐身");
     }
     return 0;
@@ -27,6 +28,7 @@ int changeHideLineRecv(CRPBaseHeader *header, void *data)
 
 int ChangeOnLine()
 {
+
     session_id_t sessionid = CountSessionId();//注册会话接受服务器
     AddMessageNode(sessionid, changeOnlineRecv, NULL);
     CRPInfoStatusChangeSend(sockfd, sessionid, 0);

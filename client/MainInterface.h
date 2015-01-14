@@ -71,3 +71,5 @@ extern GtkWidget *StatusShowText;
 extern int OnLineStatus();
 
 extern GtkWidget *userid, *headx;
+
+extern int Status(void *data);
