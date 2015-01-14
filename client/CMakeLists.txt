@@ -30,6 +30,7 @@ SET(CLIENT_SOURCE_FILE
     managegroup/DeleteGroup.c
     managegroup/RenameGroup.c
     managegroup/MoveGroup.c
+    ChartRecord.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)

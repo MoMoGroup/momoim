@@ -8,13 +8,14 @@
 #include <pwd.h>
 #include <math.h>
 #include "chartmessage.h"
+#include "ChartRecord.h"
 #include <sys/stat.h>
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
 static cairo_surface_t *surfaceclose1, *surfaceclose2, *surfaceclosebut1, *surfaceclosebut2, *surfaceclosebut3;
 static cairo_surface_t *surfacelook1, *surfacelook2, *surfacejietu1, *surfacejietu2, *surfacefile1, *surfacefile2, *surfaceimage1, *surfaceimage2;
-static cairo_surface_t *surfacewordart1, *surfacewordart2, *surfacecolor;
+static cairo_surface_t *surfacewordart1, *surfacewordart2, *surfacecolor, *surfacechartrecord;
 
 static void create_surfaces(FriendInfo *information)
 {
@@ -46,6 +47,7 @@ static void create_surfaces(FriendInfo *information)
         surfaceclosebut2 = ChangeThem_png("关闭按钮2.png");
         surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
         surfacecolor = ChangeThem_png("颜色.png");
+        surfacechartrecord = ChangeThem_png("消息记录.png");
     }
 
     static cairo_t *cr;
@@ -818,7 +820,62 @@ static gint color_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 //{
 //
 //}
+//聊天记录
+//鼠标点击事件
+static gint chartrecord_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
 
+    if (event->button == 1)
+    {   //设置视频按钮
+        gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+    }
+
+    return 0;
+}
+
+//聊天记录
+//鼠标抬起事件
+static gint chartrecord_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+
+    if (event->button == 1)       // 判断是否是点击关闭图标
+
+    {
+        if (info->record_window == NULL)
+        {
+            ChartRecord(info);
+        }
+        else
+        {
+            gtk_window_set_keep_above(GTK_WINDOW(info->record_window), TRUE);
+        }
+
+    }
+    return 0;
+
+}
+
+//聊天记录
+//鼠标移动事件
+static gint chartrecord_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+
+    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+    return 0;
+}
+
+//聊天记录
+//鼠标likai事件
+static gint chartrecord_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+
+    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
+    return 0;
+}
 
 
 int MainChart(FriendInfo *friendinfonode)
@@ -826,7 +883,7 @@ int MainChart(FriendInfo *friendinfonode)
 
     GtkEventBox *chartbackground_event_box, *send_event_box, *voice_event_box, *video_event_box;
     GtkEventBox *close_event_box, *close_but_event_box, *look_event_box, *jietu_event_box, *file_event_box;
-    GtkEventBox *photo_event_box, *wordart_event_box, *color_event_box;
+    GtkEventBox *photo_event_box, *wordart_event_box, *color_event_box, *chartrecord_event_box;
 
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
     friendinfonode->chartwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -859,7 +916,7 @@ int MainChart(FriendInfo *friendinfonode)
     friendinfonode->imagephoto = gtk_image_new_from_surface(surfaceimage1);
     friendinfonode->imagewordart = gtk_image_new_from_surface(surfacewordart1);
     friendinfonode->imagecolor = gtk_image_new_from_surface(surfacecolor);
-
+    friendinfonode->imagechartrecord = gtk_image_new_from_surface(surfacechartrecord);
 
 // 设置窗体获取鼠标事件 背景
 
@@ -981,7 +1038,15 @@ int MainChart(FriendInfo *friendinfonode)
             G_CALLBACK(color_button_release_event),
             NULL,
             friendinfonode);
-
+//聊天记录
+    chartrecord_event_box = BuildEventBox(
+            friendinfonode->imagechartrecord,
+            G_CALLBACK(chartrecord_button_press_event),
+            G_CALLBACK(chartrecord_enter_notify_event),
+            G_CALLBACK(chartrecord_leave_notify_event),
+            G_CALLBACK(chartrecord_button_release_event),
+            NULL,
+            friendinfonode);
 
 
 //背景
@@ -1017,6 +1082,8 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(wordart_event_box), 5, 405);
     //颜色
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(color_event_box), 44, 410);
+    //聊天记录
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(chartrecord_event_box), 420, 410);
     //
 //头像
     friendinfonode->imagehead3 = gtk_image_new_from_surface(surfacehead3);

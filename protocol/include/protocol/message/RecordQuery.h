@@ -12,4 +12,4 @@ CRP_STRUCTURE
 __attribute_malloc__
 CRPPacketMessageRecordQuery *CRPMessageRecordQueryCast(CRPBaseHeader *base);
 
-int CRPMessageRecordQuerySend(CRPContext context, uint32_t sessionID, CRPPacketMessageRecordQuery *condition);
+int CRPMessageRecordQuerySend(CRPContext context, uint32_t sessionID, MessageQueryCondition *condition);

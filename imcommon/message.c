@@ -124,7 +124,7 @@ static const char *getOrderBy(int op)
 
 UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *condition, int *count)
 {
-    char zSQLPreBuild[150] = "SELECT * FROM msg WHERE ",
+    char zSQLPreBuild[250] = "SELECT * FROM msg WHERE ",
             *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
     char zSQLOrder[100] = "",
             *orderTail = zSQLOrder;
@@ -214,7 +214,6 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
     zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
     sqlite3_stmt *stmt;
     log_info("DEBUG", "%s\n", zSQLPreBuild);
-    return NULL;
     if (SQLITE_OK != sqlite3_prepare_v2(file->db, zSQLPreBuild, (int) (zSQLTail - zSQLPreBuild), &stmt, NULL))
     {
         return 0;

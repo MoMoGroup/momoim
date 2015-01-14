@@ -534,7 +534,7 @@ gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpoint
                 }
                 else
                 {
-                    gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));
+                    gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));;
                 }
             }
 
