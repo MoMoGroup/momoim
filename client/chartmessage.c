@@ -7,14 +7,6 @@
 #include "common.h"
 #include <logger.h>
 #include <sys/stat.h>
-#include "Infomation.h"
-#include <pwd.h>
-#include <math.h>
-#include <logger.h>
-#include <sys/stat.h>
-#include <cairo-script-interpreter.h>
-#include <imcommon/friends.h>
-#include <imcommon/user.h>
 #include "chartmessage.h"
 
 //解码
@@ -234,17 +226,17 @@ gboolean progress_bar_crcle(void *data)
     {
         gtk_widget_destroy(bar_crcle->file);
         gtk_widget_destroy(bar_crcle->progressbar);
+        char nicheng_times[40] = {0};
+        time_t timep;
+        struct tm *p;
+        time(&timep);
+        p = localtime(&timep);
+        sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
+        gchar char_text[100];
+        sprintf(char_text, " 文件 %s 已经成功发送 ", bar_crcle->image_message_data->message_data);
 
-//
-//        char nicheng_times[40] = {0};
-//        time_t timep;
-//        struct tm *p;
-//        time(&timep);
-//        p = localtime(&timep);
-//        sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
-//        gchar char_text[80];
-//        memcpy(char_text, bar_crcle->image_message_data->message_data, bar_crcle->image_message_data->charlen-4);
-//        show_local_text(char_text, bar_crcle->info, nicheng_times, bar_crcle->image_message_data->charlen-4);
+        show_local_text(char_text, bar_crcle->info, nicheng_times, strlen(char_text));
+
         free(bar_crcle->image_message_data->message_data);
         free(bar_crcle->image_message_data);
         free(bar_crcle);
@@ -264,6 +256,10 @@ int deal_with_file(CRPBaseHeader *header, void *data)
         log_info("FAILURE reason", infodata->reason);
         fclose(file_message->fp);
         file_message->file_loading_end = 1;
+        if ((void *) infodata != header->data)
+        {
+            free(infodata);
+        }
         return 0;
     }
     log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
@@ -448,6 +444,10 @@ int deal_with_message(CRPBaseHeader *header, void *data)
         fclose(photomessage->fp);
         free(photomessage);
         free(imagedata);
+        if ((void *) infodata != header->data)
+        {
+            free(infodata);
+        }
         return 0;
     }
     log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);

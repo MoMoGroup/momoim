@@ -65,7 +65,6 @@ extern enum {
     FRIENDUID_COL = 1,
     PRIORITY_COL,
 };
-
 extern GtkWidget *StatusShowText;
 
 extern int OnLineStatus();

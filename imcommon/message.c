@@ -124,7 +124,7 @@ static const char *getOrderBy(int op)
 
 UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *condition, int *count)
 {
-    char zSQLPreBuild[150] = "SELECT * FROM msg WHERE ",
+    char zSQLPreBuild[250] = "SELECT * FROM msg WHERE ",
             *zSQLTail = zSQLPreBuild + 24;//24==sizeof("SELECT * FROM msg WHERE ")
     char zSQLOrder[100] = "",
             *orderTail = zSQLOrder;
