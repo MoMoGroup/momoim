@@ -2,7 +2,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <logger.h>
 #include "datafile/file.h"
 
 const uint8_t DataFilePathLength = sizeof(DATA_FILE_ROOT_PATH) +    //"files/"
@@ -41,7 +40,6 @@ int DataFileOpen(unsigned char *key, int flags)
 {
     char buf[DataFilePathLength];
     DataFilePath(key, buf);
-    log_info("DFO", "%s\n", buf);
     return open(buf, flags);
 }
 

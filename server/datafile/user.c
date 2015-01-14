@@ -90,7 +90,8 @@ void UserInfoCreate(uint32_t uid)
             .sex=0,
             .icon={
                     [15]=1
-            }
+            },
+            .level=1
     };
     time(&info.lastlogout);
     UserInfoSave(uid, &info);
@@ -152,5 +153,7 @@ UserInfo *UserInfoGet(uint32_t uid)
 void UserInfoFree(UserInfo *info)
 {
     if (info)
+    {
         free(info);
+    }
 }

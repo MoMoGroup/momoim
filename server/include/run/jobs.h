@@ -3,7 +3,10 @@
 #include "server.h"
 
 //初始化事务管理器
-void InitJobManger(void);
+void JobManagerInitialize(void);
+
+//结束事务管理器
+void JobManagerFinalize(void);
 
 //将一个用户从事务管理器中移除
 void JobManagerKick(POnlineUser user);

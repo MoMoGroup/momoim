@@ -38,7 +38,8 @@ static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *even
 
     FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_ARROW));
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                                    event->x_root, event->y_root, event->time);
     }
@@ -51,23 +52,27 @@ static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, 
 {
 
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     }
     return 0;
 }
+
 //关闭按钮
 //鼠标抬起事件
 static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gtk_widget_destroy(info->Infowind);
         info->Infowind = NULL;
     }
     return 0;
 }
+
 //关闭按钮
 //鼠标移动事件
 static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -78,6 +83,7 @@ static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) info->Infocancel, Surfacecancel1); //置换图标
     return 0;
 }
+
 //关闭按钮
 //鼠标离开事件
 static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -95,24 +101,28 @@ static gint guanxx_button_press_event(GtkWidget *widget, GdkEventButton *event, 
 {
 
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->Infoguanbi, Surfaceend1); //置换图标
     }
     return 0;
 }
+
 //关闭
 //鼠标抬起事件
 static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gtk_widget_destroy(info->Infowind);
         info->Infowind = NULL;
     }
     return 0;
 }
+
 //关闭
 //鼠标移动事件
 static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -123,6 +133,7 @@ static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) info->Infoguanbi, Surfaceend2);
     return 0;
 }
+
 //关闭
 //鼠标离开事件
 static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -138,23 +149,27 @@ static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 static gint change_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         gdk_window_set_cursor(gtk_widget_get_window(info->Infowind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     }
     return 0;
 }
+
 //更新
 //鼠标抬起事件
 static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-    if (event->button == 1) {
+    if (event->button == 1)
+    {
         ChangeInfo();
         gtk_widget_destroy(info->Infowind);
         info->Infowind = NULL;
     }
     return 0;
 }
+
 //更新
 //鼠标移动事件
 static gint change_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -164,6 +179,7 @@ static gint change_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
     gtk_image_set_from_surface((GtkImage *) info->Infochange, Surfacechange1); //置换图标
     return 0;
 }
+
 //更新
 //鼠标离开事件
 static gint change_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -224,7 +240,8 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
                                      friendinfonode);
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Guanxx_event_box, 509, 0);
 
-    if (CurrentUserInfo->uid == friendinfonode->user.uid) {
+    if (CurrentUserInfo->uid == friendinfonode->user.uid)
+    {
         Change_event_box = BuildEventBox(friendinfonode->Infochange,
                                          G_CALLBACK(change_button_press_event),
                                          G_CALLBACK(change_enter_notify_event),
@@ -236,8 +253,9 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     }
 
     GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
-    GtkWidget *itel, *imail, *imotto;
-    GtkWidget *headicon;
+    GtkWidget *itel, *imail;
+    GtkWidget *headicon, *imotto;
+    GtkScrolledWindow *showimotto;
 
     char idstring[80] = {0};
     sprintf(idstring, "%d", friendinfonode->user.uid);
@@ -273,14 +291,20 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     ibirthday = gtk_label_new(friendinfonode->user.birthday);//生日
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ibirthday, 48, 270);
 
-    if (0 == friendinfonode->user.sex)//性别
+    if (0 == friendinfonode->user.sex)
+    {//性别
         isex = gtk_label_new("女");
+    }
     else
+    {
         isex = gtk_label_new("男");
+    }
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), isex, 305, 240);
 
-    for (int i = 0; i < 12; ++i) {
-        if (friendinfonode->user.constellation == i) {
+    for (int i = 0; i < 12; ++i)
+    {
+        if (friendinfonode->user.constellation == i)
+        {
             iconstellation = gtk_label_new(constellations[i]);//星座
             break;
         }
