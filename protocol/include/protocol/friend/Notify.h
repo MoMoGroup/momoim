@@ -16,6 +16,7 @@ typedef enum
     FNT_FRIEND_MOVE,
     FNT_GROUP_NEW,
     FNT_GROUP_DELETE,
+    FNT_GROUP_MOVE,
     FNT_GROUP_RENAME
 } FriendNotifyType;
 CRP_STRUCTURE

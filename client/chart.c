@@ -487,8 +487,8 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
         gchar *filename;
         dialog = gtk_file_chooser_dialog_new("Open File(s) ...", GTK_WINDOW(info->chartwindow),
                                              GTK_FILE_CHOOSER_ACTION_OPEN,
-                                             GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-                                             GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+                                             "_Cancel", GTK_RESPONSE_CANCEL,
+                                             "_Open", GTK_RESPONSE_ACCEPT,
                                              NULL);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
         if (result == GTK_RESPONSE_ACCEPT)
@@ -683,7 +683,6 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
         case (GTK_RESPONSE_OK):
         {
             PangoFontFamily *fontFamily;
-            int num;
             UserWordInfo.codinglen = 0;
             fontFamily = gtk_font_chooser_get_font_family(GTK_FONT_CHOOSER(dialog));
             UserWordInfo.description = gtk_font_chooser_get_font_desc(GTK_FONT_CHOOSER(dialog));
@@ -761,6 +760,7 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         GtkColorSelectionDialog *dialog;
         GtkColorSelection *colorsel;
         GdkColor color;
+        //gtk_color_chooser_dialog_new(<#(const gchar*)title#>, <#(GtkWindow*)parent#>);
         dialog = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new("ColorSelect"));
         color.red = 0;
         color.blue = 65535;
@@ -770,6 +770,7 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_color_selection_set_has_palette(colorsel, 1);
         gtk_color_selection_set_previous_color(colorsel, &color);
         gtk_color_selection_set_current_color(colorsel, &color);
+        //gtk_color_chooser_set_rgba(<#(GtkColorChooser*)chooser#>, <#(const GdkRGBA*)color#>)
         if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
         {
             gtk_color_selection_get_current_color(colorsel, &color);

@@ -36,7 +36,7 @@ static gint popback_button_press_event(GtkWidget *widget, GdkEventButton *event,
     gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1) { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   (gint) event->x_root, (gint) event->y_root, event->time);
     }
     return 0;
 }
@@ -115,7 +115,7 @@ int popup(const char *title, const char *tell)
 
     // 设置窗体获取鼠标事件
     Popback_event_box = BuildEventBox(popback, G_CALLBACK(popback_button_press_event), NULL, NULL, NULL, NULL, NULL);
-    gtk_fixed_put(GTK_FIXED(popupLayout), Popback_event_box, 0, 0);
+    gtk_fixed_put(GTK_FIXED(popupLayout), GTK_WIDGET(Popback_event_box), 0, 0);
 
     Anniu_event_box = BuildEventBox(popanniu,
                                     G_CALLBACK(ok_button_press_event),
@@ -124,7 +124,7 @@ int popup(const char *title, const char *tell)
                                     G_CALLBACK(ok_button_release_event),
                                     NULL,
                                     NULL);
-    gtk_fixed_put(GTK_FIXED(popupLayout), Anniu_event_box, 52, 170);
+    gtk_fixed_put(GTK_FIXED(popupLayout), GTK_WIDGET(Anniu_event_box), 52, 170);
 
     gtk_fixed_put(GTK_FIXED(popupLayout), telltitle, 14, 10);
     if (maWidth > 400)

@@ -8,6 +8,7 @@ int ProcessPacketFriendDelete(POnlineUser user, uint32_t session, CRPPacketFrien
     if (user->state == OUS_ONLINE)
     {
         UserFriends *friends = user->info->friends;
+        pthread_rwlock_wrlock(user->info->friendsLock);
         UserGroup *group = UserFriendsGroupGet(friends, packet->gid);
         if (!group)
         {
@@ -18,32 +19,35 @@ int ProcessPacketFriendDelete(POnlineUser user, uint32_t session, CRPPacketFrien
         {
             UserFriends *peerFriends = UserFriendsGet(packet->uid, NULL, O_RDWR);
             UserGroup *peerGroup = NULL;
+            int peerGid = -1;
             for (int i = 0; i < peerFriends->groupCount; ++i)
             {
                 peerGroup = peerFriends->groups + i;
-                if (UserFriendsUserDelete(peerGroup, packet->uid))
+                if (UserFriendsUserDelete(peerGroup, user->uid))
                 {
+                    peerGid = peerGroup->groupId;
                     break;
                 }
-                peerGroup = NULL;
             }
             UserFriendsDrop(packet->uid);
-            if (peerGroup)
+            if (peerGid != -1)
             {
                 OnlineUser *peer = OnlineUserGet(packet->uid);
                 if (peer)
                 {
-                    CRPFriendNotifySend(peer->crp, session, FNT_FRIEND_DELETE, user->uid, peerGroup->groupId, 0);
+                    CRPFriendNotifySend(peer->crp, 0, FNT_FRIEND_DELETE, user->uid, (uint8_t) peerGid, 0);
                     UserDrop(peer);
                 }
             }
-            CRPFriendNotifySend(user->crp, session, FNT_FRIEND_DELETE, packet->uid, packet->gid, 0);
+            CRPFriendNotifySend(user->crp, 0, FNT_FRIEND_DELETE, packet->uid, packet->gid, 0);
             CRPOKSend(user->crp, session);
         }
         else
         {
             CRPFailureSend(user->crp, session, EFAULT, "无法删除用户.");
         }
+
+        pthread_rwlock_unlock(user->info->friendsLock);
     }
     else
     {

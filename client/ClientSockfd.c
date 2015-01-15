@@ -13,6 +13,7 @@
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
+#include "manage_friend/friend.h"
 
 pthread_t ThreadKeepAlive;
 
@@ -206,8 +207,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
             CRPPacketFriendNotify *data = CRPFriendNotifyCast(header);
-            log_info("收到对方同意消息", "\n");
-            log_info("CRP_PACKET_FRIEND_NOTIFY", "%u\n", data->type);
+
             switch (data->type)
             {
                 case FNT_FRIEND_ONLINE://好友上线
@@ -260,6 +260,10 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     }
                     CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
                     break;
+                };
+                case FNT_FRIEND_DELETE:
+                {
+                    RemoveFriend(data);
                 };
             }
             if ((void *) data != header->data)

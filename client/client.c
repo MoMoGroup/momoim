@@ -819,7 +819,7 @@ gboolean loadloginLayout(gpointer user_data)
         int i = 0;
         while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20))
         {
-            gtk_combo_box_text_append(LoginWindowUserNameBox, NULL, str_cunchu[i].cunchu_name);
+            gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(LoginWindowUserNameBox), NULL, str_cunchu[i].cunchu_name);
             ++i;
         }
         flag_cunchu = i;
@@ -827,18 +827,18 @@ gboolean loadloginLayout(gpointer user_data)
     }
 
 
-    gtk_fixed_put(GTK_FIXED(loginLayout), backgroundevent_box, 0, 0);//起始坐标
+    gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(backgroundevent_box), 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
-    gtk_fixed_put(GTK_FIXED(loginLayout), landbutevent_box, 75, 300);
+    gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(landbutevent_box), 75, 300);
     gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 33, 220);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 33, 260);
-    gtk_fixed_put(GTK_FIXED(loginLayout), registeredevent_box, 5, 380);
-    gtk_fixed_put(GTK_FIXED(loginLayout), closebutevent_box, 247, 0);
-    gtk_fixed_put(GTK_FIXED(loginLayout), sunevent_box, 3, 3);
-    gtk_fixed_put(GTK_FIXED(loginLayout), remember_box, 190, 185);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), waitevent_box, 0, 0);
-    gtk_fixed_put(GTK_FIXED(pendingLayout), cancelevent_box, 75, 350);
+    gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(registeredevent_box), 5, 380);
+    gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(closebutevent_box), 247, 0);
+    gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(sunevent_box), 3, 3);
+    gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(remember_box), 190, 185);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), GTK_WIDGET(waitevent_box), 0, 0);
+    gtk_fixed_put(GTK_FIXED(pendingLayout), GTK_WIDGET(cancelevent_box), 75, 350);
     gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowUserNameBox, 82, 215);
     gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowPassWordBox, 82, 256);
 

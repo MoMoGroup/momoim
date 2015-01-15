@@ -11,6 +11,7 @@
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "managegroup/ManageGroup.h"
+#include"manage_friend/friend.h"
 
 static GtkWidget *status;
 
@@ -554,7 +555,7 @@ gboolean button2_release_event(GtkWidget *widget, GdkEventButton *event, gpointe
     if (event->button == 0x3)
     {
         GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
-        gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
+        gtk_tree_selection_get_selected(selection, &model, &iter);//拿到 选中列的iter
         uint32_t id = 0;
         gtk_tree_model_get(model, &iter, FRIENDUID_COL, &id, -1);
 
@@ -1420,6 +1421,9 @@ int MainInterFace()
     friend_mov_group = gtk_menu_item_new_with_mnemonic("移动分组");
     gtk_container_add(GTK_CONTAINER(menu2), friend_mov_group);
     gtk_widget_show(friend_mov_group);
+
+    g_signal_connect(G_OBJECT(deletefriend), "button_release_event",
+                     G_CALLBACK(Friend_Delete_Popup), (gpointer) treeView);
 
     g_object_set_data(G_OBJECT(treeView), "GroupMenu", menu1);
     g_object_set_data(G_OBJECT(treeView), "FriendMenu", menu2);

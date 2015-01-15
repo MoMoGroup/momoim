@@ -43,6 +43,7 @@ int ProcessPacketFriendGroupMove(POnlineUser user, uint32_t session, CRPPacketFr
                 }
             }
             *groupNextTo = copyGroup;
+            CRPFriendNotifySend(user->crp, 0, FNT_GROUP_MOVE, 0, packet->gid, packet->nextGid);
             CRPOKSend(user->crp, session);
         }
         pthread_rwlock_unlock(user->info->friendsLock);

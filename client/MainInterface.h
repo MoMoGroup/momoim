@@ -64,7 +64,7 @@ extern enum {
     PIXBUF_COL = 0,
     FRIENDUID_COL = 1,
     PRIORITY_COL,
-};
+} MainInterfaceTreeColumns;
 
 extern GtkWidget *StatusShowText;//显示在线隐身字体
 

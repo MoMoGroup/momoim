@@ -195,8 +195,8 @@ int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer
     int64_t up_priority;
     //  int64_t next_priority;
 
-    uint8_t current_gid;
-    uint8_t next_gid;
+    uint32_t current_gid;
+    uint32_t next_gid;
     GtkTreeIter up_iter_group;
     //   GtkTextIter tem_iter;
 

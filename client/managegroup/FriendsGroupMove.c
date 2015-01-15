@@ -13,8 +13,8 @@ typedef struct move_info
 {
     //保存移动好友需要的信息
     uint32_t currentuid;
-    uint8_t currentGid;
-    uint8_t toGid;
+    uint32_t currentGid;
+    uint32_t toGid;
     GtkTreeIter itergroup;
     GtkTreeIter iteruser;
 
@@ -91,18 +91,20 @@ int mov_friend(GtkWidget *widget, GdkEventButton *event, gpointer data)
 GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
 {
     move_info moveInfo;
-    uint8_t curren_group_id;
+    uint32_t curren_group_id;
     GtkWidget *show;
-    uint8_t groupid;
+    uint32_t groupid;
     GtkTreeIter itergroup, iteruser;
 //首先拿到选中好友所在分组id,和好友uid
     uint32_t current_friend_uid;
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iteruser);//拿到选中的列
-    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &iteruser, FRIENDUID_COL, &current_friend_uid, -1);
 
-    gtk_tree_model_iter_parent(GTK_TREE_MODEL(TreeViewListStore), &itergroup, &iteruser);
+
+    gtk_tree_model_get(model, &iteruser, FRIENDUID_COL, &current_friend_uid, -1);//选中好友uid
+
+    gtk_tree_model_iter_parent(GTK_TREE_MODEL(TreeViewListStore), &itergroup, &iteruser);//拿到父列
     gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &itergroup, FRIENDUID_COL, &curren_group_id, -1);
     log_info("curren_group_id", "%d\n", curren_group_id);
     log_info("current_friend_uid", "%d\n", current_friend_uid);

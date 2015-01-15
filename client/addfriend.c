@@ -12,24 +12,20 @@
 #include "MainInterface.h"
 #include "PopupWinds.h"
 
-GtkWidget *addwindow, *addframelayout;
-GtkWidget *addlayout2, *addlayout1, *addlayout31;//layout
-
-GtkWidget *addtext;
-
-cairo_surface_t *surfacebiaoji, *surfacenext, *surfacenext_press, *surfaceclose;
-cairo_surface_t *surfacebackground1, *surfacebackground3, *surfacebackground2, *surfacedone, *surfacedone2;
-cairo_surface_t *surfacehead;
+static GtkWidget *addwindow, *addframelayout;
+static GtkWidget *addlayout2, *addlayout1, *addlayout31;
+//layout
+static GtkWidget *addtext;
+static cairo_surface_t *surfacebiaoji, *surfacenext, *surfacenext_press, *surfaceclose;
+static cairo_surface_t *surfacebackground1, *surfacebackground3, *surfacebackground2, *surfacedone, *surfacedone2;
+static cairo_surface_t *surfacehead;
 //资源
-
-GtkWidget *background1, *background2, *background3, *biaoji1, *biaoji2, *next, *addclose;    //引用
-GtkWidget *smallhead, *done, *done2;
-
-GtkEventBox *next_enent_box, *close_event_box;
-GtkEventBox *next_enent_box2, *close_event_box2, *add_mov_event;
-GtkEventBox *done_event_box;
-
-GtkWidget *yanzhengxinxi;
+static GtkWidget *background1, *background2, *background3, *biaoji1, *biaoji2, *next, *addclose;    //引用
+static GtkWidget *smallhead, *done, *done2;
+static GtkEventBox *next_enent_box, *close_event_box;
+static GtkEventBox *next_enent_box2, *close_event_box2, *add_mov_event;
+static GtkEventBox *done_event_box;
+static GtkWidget *yanzhengxinxi;
 //事件盒子
 
 
@@ -330,7 +326,6 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURe reason", infodata->reason);
-
             if ((void *) infodata != header->data)
             {
                 free(data);

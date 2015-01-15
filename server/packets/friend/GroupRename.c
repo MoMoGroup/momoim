@@ -18,6 +18,7 @@ int ProcessPacketFriendGroupRename(POnlineUser user, uint32_t session, CRPPacket
         else
         {
             memcpy(group->groupName, packet->groupName, sizeof(group->groupName));
+            CRPFriendNotifySend(user->crp, 0, FNT_GROUP_MOVE, 0, packet->gid, 0);
             CRPOKSend(user->crp, session);
         }
 

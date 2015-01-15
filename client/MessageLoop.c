@@ -2,7 +2,6 @@
 #include <protocol/base.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <logger.h>
 #include "ClientSockfd.h"
 
 
@@ -69,7 +68,7 @@ int MessageLoopFunc()
         header = CRPRecv(sockfd);
         pthread_rwlock_rdlock(&lock);//读锁定
         messageloop *prev = &messagehead, *p;
-        log_info("CRPPacket", "packet id %hu,session id %u\n", header->packetID, header->sessionID);
+        //log_info("CRPPacket", "packet id %hu,session id %u\n", header->packetID, header->sessionID);
         int flag = 1;
         while (prev->next)
         {

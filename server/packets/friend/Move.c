@@ -7,6 +7,7 @@ int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendM
     if (user->state == OUS_ONLINE)
     {
         UserFriends *friends = user->info->friends;
+        pthread_rwlock_wrlock(user->info->friendsLock);
         UserGroup *groupFrom = UserFriendsGroupGet(friends, packet->fromGid),
                 *groupTo = UserFriendsGroupGet(friends, packet->toGid);
         if (!groupFrom || !groupTo)
@@ -21,7 +22,9 @@ int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendM
             return 1;
         }
         UserFriendsUserDelete(groupFrom, packet->uid);
+        CRPFriendNotifySend(user->crp, 0, FNT_FRIEND_MOVE, packet->uid, packet->fromGid, packet->toGid);
         CRPOKSend(user->crp, session);
+        pthread_rwlock_unlock(user->info->friendsLock);
     }
     else
     {

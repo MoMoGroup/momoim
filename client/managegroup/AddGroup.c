@@ -7,7 +7,7 @@
 #include"ManageGroup.h"
 
 GtkWidget *add_group_window;
-GtkTextView *new_group_name;
+GtkWidget *new_group_name;
 
 //拖拽窗口
 static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -75,7 +75,7 @@ static gint add_group_done(GtkWidget *widget, GdkEventButton *event, gpointer da
 
 
     UserGroup *group = calloc(1, sizeof(UserGroup));
-    for (uint8_t i = 2; i < 256; i++)
+    for (uint32_t i = 2; i < 256; i++)
     {
 
         if (UserFriendsGroupGet(friends, i) == NULL)
@@ -98,7 +98,7 @@ int AddGroupButtonPressEvent()
 {
     log_info("ADD", "\n");
     GtkWidget *add_group_framelayout, *add_group_layout;
-    GtkTextView *title;
+    GtkWidget *title;
     GtkEventBox *addgroup_mov_event, *addgroup_done_event, *addgroup_close_event;
 
     GtkWidget *background, *done, *close;

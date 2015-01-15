@@ -12,7 +12,7 @@ int ProcessPacketFriendGroupDelete(POnlineUser user, uint32_t session, CRPPacket
 
         if (UserFriendsGroupDelete(user->info->friends, packet->gid))
         {
-            CRPFriendNotifySend(user->crp, session, FNT_GROUP_DELETE, 0, packet->gid, 0);
+            CRPFriendNotifySend(user->crp, 0, FNT_GROUP_DELETE, 0, packet->gid, 0);
             CRPOKSend(user->crp, session);
         }
         else
