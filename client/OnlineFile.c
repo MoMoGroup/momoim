@@ -24,12 +24,21 @@ int kong()
 
 }
 
+int askd()
+{
+
+}
+
 int OnlineFileButtonEvent(uint8_t gid, uint32_t uid)
 {
     //点击在线文件，向服务器发送IP请求
     uint32_t sessionid = CountSessionId();
     AddMessageNode(sessionid, kong, NULL);
-    CRPNETFriendDiscoverSend(sockfd, sessionid, gid, uid, CRPFDR_ONLINE_FILE);
+
+    session_id_t sid = CountSessionId();
+    AddMessageNode(sid, askd, NULL);//给sid注册一个函数，此sid
+
+    CRPNETFriendDiscoverSend(sockfd, sessionid, gid, uid, CRPFDR_ONLINE_FILE, sid);
 
     return 0;
 }

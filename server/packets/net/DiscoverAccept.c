@@ -17,7 +17,7 @@ int ProcessPacketNetDiscoverAccept(POnlineUser user, uint32_t session, CRPPacket
         socklen_t addrLen = sizeof(addr);
         if (getpeername(user->crp->fd, (struct sockaddr *) &addr, &addrLen) == 0)
         {
-            CRPNETInetAddressSend(duser->crp, 0, user->uid, addr.sin_addr.s_addr);
+            CRPNETInetAddressSend(duser->crp, packet->session, user->uid, addr.sin_addr.s_addr);
             UserDrop(duser);
             CRPOKSend(user->crp, session);
         }

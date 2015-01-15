@@ -28,7 +28,7 @@ int ProcessPacketNETFriendDiscover(POnlineUser user, uint32_t session, CRPPacket
             return 1;
         }
 
-        CRPNETFriendDiscoverSend(duser->crp, 0, UGI_BLACKLIST, user->uid, packet->reason);
+        CRPNETFriendDiscoverSend(duser->crp, 0, UGI_BLACKLIST, user->uid, packet->reason, packet->session);
         UserDrop(duser);
         CRPOKSend(user->crp, session);
     }

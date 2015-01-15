@@ -225,7 +225,7 @@ gboolean treatment_request_audio_net_discover(gpointer user_data)
             g_print("the result is %d\n", result);
             if (result == -5)
             {
-                CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), header->uid);
+                CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), header->uid, header->session);
                 return 0;
             }
             else
@@ -310,7 +310,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 case CRPFDR_ONLINE_FILE:
                 {
                     log_info("Serve Message", "文件请求\n");
-                    CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), audio_data->uid);
+                    CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), audio_data->uid, audio_data->session);
                     break;
                 };
             }
