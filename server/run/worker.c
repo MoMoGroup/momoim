@@ -10,13 +10,14 @@
 
 void *WorkerMain(void *arg)
 {
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);//允许被取消
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);//允许任意时间被取消
     char workerName[10];
     CRPBaseHeader *header;
     POnlineUser user;
     WorkerType *worker = (WorkerType *) arg;
-
+    int isPendingUser = 0;
     sprintf(workerName, "WORKER-%d", worker->workerId);
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
     while (IsServerRunning)
     {
@@ -27,13 +28,14 @@ void *WorkerMain(void *arg)
                 UserGC();
             }
         }
+        isPendingUser = 0;
         user = JobManagerPop();
         if (!user && !IsServerRunning)
         {
             break;
         }
-        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
         header = CRPRecv(user->crp);
+        pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);//正在处理数据,此时不允许被取消
         if (header == NULL)
         {
             OnlineUserDelete(user);
@@ -41,11 +43,15 @@ void *WorkerMain(void *arg)
         }
         else
         {
-            if (user->state == OUS_ONLINE)
+            if (user->state == OUS_ONLINE)//如果用户当前在线.更新最后一次收到数据包时间
             {
                 time(&user->lastUpdateTime);
+                EpollAdd(user);//只允许在线用户的数据包并行处理,等待用户的数据包只允许串行处理
             }
-            EpollAdd(user);
+            else//由于等待用户内存占用量比较少,而且有可能产生realloc导致地址发生变化,所以要标记以特殊处理
+            {
+                isPendingUser = 1;
+            }
             if (ProcessUser(user, header) == 0)
             {
                 OnlineUserDelete(user);
@@ -54,7 +60,14 @@ void *WorkerMain(void *arg)
             }
             free(header);
         }
-        UserDrop(user);
+        if (isPendingUser)//如果之前是等待用户,这里重新加入epoll,接收下一包数据.并且等待用户不可以被Drop!
+        {
+            EpollAdd(user);
+        }
+        else//如果是在线用户则Drop
+        {
+            UserDrop(user);
+        }
         pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     }
     log_info(workerName, "Exit.\n");

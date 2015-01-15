@@ -11,7 +11,6 @@
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "managegroup/ManageGroup.h"
-#include "Managegroup.h"
 #include "SetupWind.h"
 
 static GtkWidget *status;

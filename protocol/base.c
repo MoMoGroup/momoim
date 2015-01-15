@@ -70,6 +70,21 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_NET_DETECTED]             = (void *(*)(CRPBaseHeader *)) CRPNATDetectedCast,
 };
 
+typedef struct
+{
+    uint8_t type;
+    uint16_t seq;
+    uint16_t length;
+    uint8_t payload[0];
+} ARQPacket;
+static pthread_t arqThread;
+static pthread_mutex_t arqLock;
+
+static void ARQInit()
+{
+    //TOD!O ARQ
+}
+
 static void CRPEncryptDisableUnlock(CRPContext context)
 {
     if (context->sendTd || context->recvTd)
@@ -94,6 +109,7 @@ CRPContext CRPOpen(int fd)
     context->recvTd = NULL;
     pthread_mutex_init(&context->sendLock, NULL);
     pthread_mutex_init(&context->recvLock, NULL);
+
     return context;
 }
 

@@ -74,8 +74,8 @@ void UserOperationUnregister(POnlineUser user, PUserOperation op)
             op->next->prev = op->prev;
         }
         --user->operations.count;
-        pthread_mutex_unlock(&op->lock);
         pthread_cond_broadcast(&user->operations.unlockCond);
+        pthread_mutex_unlock(&op->lock);
         pthread_mutex_destroy(&op->lock);
         free(op);
     }
@@ -103,7 +103,6 @@ PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId)
         if (0 != errcode)
         {
             if (errcode == EBUSY)
-                //本机测试pthread_mutex_trylock返回非0值的时候,errno返回竟然是0.Unbelievable!
             {
                 pthread_cond_wait(&user->operations.unlockCond, &user->operations.lock);
                 goto refind;
@@ -122,8 +121,13 @@ void UserOperationDrop(POnlineUser user, PUserOperation op)
 {
     pthread_mutex_unlock(&op->lock);
     pthread_cond_broadcast(&user->operations.unlockCond);
+    if (op->cancel)
+    {
+        UserOperationUnregister(user, op);
+    }
 }
 
+/*
 PUserOperation UserOperationQuery(POnlineUser user,
                                   UserOperationType type,
                                   int (*func)(PUserOperation op, void *data),
@@ -148,7 +152,7 @@ PUserOperation UserOperationQuery(POnlineUser user,
         }
     }
     return ret;
-}
+}*/
 
 int UserOperationCancel(POnlineUser user, PUserOperation op)
 {
@@ -169,8 +173,10 @@ int UserOperationCancel(POnlineUser user, PUserOperation op)
 
 void UserOperationRemoveAll(POnlineUser user)
 {
+    pthread_mutex_lock(&user->operations.lock);
     while (user->operations.first)
     {
         UserOperationUnregister(user, user->operations.first);
     }
+    pthread_mutex_unlock(&user->operations.lock);
 }

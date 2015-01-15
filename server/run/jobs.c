@@ -26,7 +26,6 @@ void JobManagerKick(POnlineUser user)
 
 POnlineUser JobManagerPop(void)
 {
-    struct timespec lastPop;
     POnlineUser user;
     pthread_mutex_lock(&jobLock);
     redo:
@@ -44,15 +43,19 @@ POnlineUser JobManagerPop(void)
 
     if (queueFull)
     {
-        pthread_cond_broadcast(&cond);          //如果Pop之前队列是满的,现在已经不满了,通知Push操作.
+        pthread_cond_signal(&cond);          //如果Pop之前队列是满的,现在已经不满了,通知Push操作.
     }
 
-    if (user == NULL || !UserHold(user))
+    if (user == NULL || !OnlineUserHold(user))
     {  //如果得到的对象为空或者无法保持用户(用户正在被删除)
+        if (!IsServerRunning)//如果服务器正在终止,则直接返回NULL
+        {
+            pthread_mutex_unlock(&jobLock);
+            return NULL;
+        }
         goto redo;
     }                              //重新选择下一个事务
 
-    clock_gettime(CLOCK_MONOTONIC, &lastPop);
     pthread_mutex_unlock(&jobLock);
     return user;
 }
@@ -74,7 +77,7 @@ void JobManagerPush(POnlineUser v)
 
     if (isEmpty)
     {
-        pthread_cond_broadcast(&cond);          //如果Push之前队列是空的,现在已经非空了,通知Pop操作
+        pthread_cond_signal(&cond);          //如果Push之前队列是空的,现在已经非空了,通知Pop操作
     }
     clock_gettime(CLOCK_MONOTONIC, &lastPushEnd);
     pthread_mutex_unlock(&jobLock);
