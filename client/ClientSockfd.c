@@ -9,18 +9,17 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <pwd.h>
-#include <protocol/base.h>
-#include <imcommon/user.h>
-#include <protocol/message/Normal.h>
-#include <protocol/net/FriendDiscover.h>
+#include <arpa/inet.h>
 #include "MainInterface.h"
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "addfriend.h"
 #include "manage_friend/friend.h"
 #include "audio.h"
+#include "OnlineFile.h"
 
 pthread_t ThreadKeepAlive;
+pthread_t ThreadListenOnLine;//监听在线传输文件的线程
 
 CRPContext sockfd;
 UserFriends *friends;
@@ -184,7 +183,7 @@ int new_friend_info(CRPBaseHeader *header, void *data)
 
 gboolean treatment_request_audio_net_discover(gpointer user_data)
 {
-    CRPPacketNETFriendDiscover *header = (CRPPacketNETFriendDiscover *)user_data;
+    CRPPacketNETFriendDiscover *header = (CRPPacketNETFriendDiscover *) user_data;
     //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
     //找到这个好友
     FriendInfo *userinfo = FriendInfoHead;
@@ -213,7 +212,7 @@ gboolean treatment_request_audio_net_discover(gpointer user_data)
         {
             gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
-        if(userinfo -> chartwindow != NULL)
+        if (userinfo->chartwindow != NULL)
         {
 
             GtkWidget *dialog_request_audio_net_discover;
@@ -223,15 +222,15 @@ gboolean treatment_request_audio_net_discover(gpointer user_data)
                                                                        "莫默询问您：\n您想与这位好友语音聊天吗？");
             gtk_window_set_title(GTK_WINDOW (dialog_request_audio_net_discover), "Question");
             gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_audio_net_discover));
-            g_print("the result is %d\n",result);
+            g_print("the result is %d\n", result);
             if (result == -5)
             {
-                CRPNETDiscoverAcceptSend(sockfd , CountSessionId(), header->uid);
+                CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), header->uid);
                 return 0;
             }
             else
             {
-                CRPNETDiscoverRefuseSend(sockfd , CountSessionId(), header->uid);
+                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), header->uid);
                 gtk_widget_destroy(dialog_request_audio_net_discover);
                 return 0;
             }
@@ -265,31 +264,58 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             g_idle_add(postMessage, dup);
             return 1;
         }
+        case CRP_PACKET_NET_INET_ADDRESS://收到ip地址
+        {
+            CRPPacketNETInetAddress *info = CRPNETInetAddressCast(header);
 
-        //用来分离收到语言视频在线文件请求的包
-        case CRP_PACKET_NET_FRIEND_DISCOVER:{
-            CRPPacketNETFriendDiscover *audio_data= CRPNETFriendDiscoverCast(header);
-            switch(audio_data->reason){
+            log_info("Uid", "%u\n", info->uid);
+
+            Bbb(info->ipv4);
+            struct in_addr *addr;
+            addr->s_addr = info->ipv4;
+            char *ip = inet_ntoa(*addr);
+//
+//            log_info("IP", "%s\n",ip);
+
+//            if((void *)info!=header)
+//            {
+//                free(info);
+//            }
+            break;
+        };
+
+            //用来分离收到语言视频在线文件请求的包
+        case CRP_PACKET_NET_FRIEND_DISCOVER:
+        {
+            CRPPacketNETFriendDiscover *audio_data = CRPNETFriendDiscoverCast(header);
+            switch (audio_data->reason)
+            {
                 //分离语音请求的包
-                case CRPFDR_AUDIO:{
+                case CRPFDR_AUDIO:
+                {
                     log_info("Serve Message", "语音请求\n");
-                    char *audio_data_copy=(CRPPacketNETFriendDiscover*)malloc(sizeof(CRPPacketNETFriendDiscover));
-                    memcpy(audio_data_copy,audio_data,sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_audio_net_discover,audio_data_copy);
+                    char *audio_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
+                    memcpy(audio_data_copy, audio_data, sizeof(CRPPacketNETFriendDiscover));
+                    g_idle_add(treatment_request_audio_net_discover, audio_data_copy);
                     break;
                 };
-                //视频请求
-                case CRPFDR_VEDIO:{
+                    //视频请求
+                case CRPFDR_VEDIO:
+                {
                     log_info("Serve Message", "视频请求\n");
                     //g_idle_add(treatment_request_vedio_net_discover,audio_data);
                     break;
                 };
-                //在线文件的包
-                case CRPFDR_ONLINE_FILE:{
+                    //在线文件的包
+                case CRPFDR_ONLINE_FILE:
+                {
+                    log_info("Serve Message", "文件请求\n");
+                    CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), audio_data->uid);
                     break;
                 };
             }
-            if (audio_data != header->data) {
+            if (audio_data != header->data)
+            {
                 free(audio_data);
             }
             //memcpy(audio_data,header,header->totalLength);
@@ -297,22 +323,24 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //g_idle_add(Pretreatment_request_audio_net_discover,audio_data);
             break;
         };
-        //对方同意好友发现
-        case CRP_PACKET_NET_DISCOVER_ACCEPT:{
-            if(the_log_request_friend_discover.requset_reason==NET_DISCOVER_AUDIO) {
+            //对方同意好友发现
+        case CRP_PACKET_NET_DISCOVER_ACCEPT:
+        {
+            if (the_log_request_friend_discover.requset_reason == NET_DISCOVER_AUDIO)
+            {
                 g_idle_add(audio_request_accept, NULL);
             }
-            if(the_log_request_friend_discover.requset_reason==NET_DISCOVER_VIDEO) {
+            if (the_log_request_friend_discover.requset_reason == NET_DISCOVER_VIDEO)
+            {
                 g_idle_add(video_request_accept, NULL);
             }
-            if(the_log_request_friend_discover.requset_reason==NET_DISCOVER_ONLINE_FILE){
-                //g_idle_add(online_file_request_accept, NULL);
-            }
+
             break;
         }
-        //对方拒绝好友发现
-        case CRP_PACKET_NET_DISCOVER_REFUSE:{
-            g_idle_add(audio_request_refuse,NULL);
+            //对方拒绝好友发现
+        case CRP_PACKET_NET_DISCOVER_REFUSE:
+        {
+            g_idle_add(audio_request_refuse, NULL);
             break;
         };
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
@@ -657,7 +685,7 @@ int mysockfd()
                     }
                     if (node == NULL)
                     {
-                        g_idle_add(mythread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
+                        g_idle_add(MyThread, NULL);//登陆成功调用Mythread，销毁登陆界面，加载主界面，应该在资料获取之后调用
                         loop = 0;
                     }
 

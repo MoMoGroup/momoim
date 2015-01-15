@@ -7,12 +7,12 @@
 #include <string.h>
 #include <math.h>
 #include "common.h"
-#include "addfriend.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "managegroup/ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
+#include "OnlineFile.h"
 
 static GtkWidget *status;
 
@@ -546,7 +546,7 @@ gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpoint
                 }
                 else
                 {
-                    gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));;
+                    gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));
                 }
             }
 
@@ -1184,10 +1184,10 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
 
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
+    OnlineFileButtonEvent(1, 10001);
     if (AddFriendflag)//判断是否打开搜索窗口
     {
-        AddFriendFun();
+        //AddFriendFun();
         //Friend_Fequest_Popup(10001,"as");//添加爱弹出框
 
     } //调用添加好友函数

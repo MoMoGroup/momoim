@@ -50,4 +50,6 @@ extern FriendInfo *FriendInfoHead;
 extern CRPContext sockfd;
 extern UserInfo *CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;
+extern pthread_t ThreadListenOnLine;
+//监听在线传输文件的线程
 extern int AddFriendflag;//判断是否打开搜索窗口

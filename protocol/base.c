@@ -253,7 +253,6 @@ ssize_t CRPSend(CRPContext context,
             encryptedLength = protocolLength,
             fullLength;
     ssize_t ret = 0;
-
     pthread_mutex_lock(&context->sendLock);
 
     if (context->sendTd != NULL)

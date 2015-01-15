@@ -16,7 +16,7 @@ extern void DestoryMainInterface();
 
 //extern gboolean backttologinLayout(gpointer user_data);
 
-extern gboolean mythread(gpointer user_data);
+extern gboolean MyThread(gpointer user_data);
 
 extern gboolean destoryall(gpointer user_data);
 

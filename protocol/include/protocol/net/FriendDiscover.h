@@ -17,6 +17,7 @@ CRP_STRUCTURE
     uint8_t gid;
     uint32_t uid;
     uint8_t reason;
+
 } CRPPacketNETFriendDiscover;
 
 __attribute_malloc__

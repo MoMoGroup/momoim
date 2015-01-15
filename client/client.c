@@ -13,6 +13,7 @@
 #include "common.h"
 #include "chart.h"
 #include "audio.h"
+#include "OnlineFile.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
@@ -35,7 +36,7 @@ GtkStyleProvider *comboprovider;
 const gchar *combostring;
 
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd, *sremember1, *sremember2;
-static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3,  *scancel10_1, *scancel10_2, *scancel10_3;
+static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *scancel10_1, *scancel10_2, *scancel10_3;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
 
@@ -128,8 +129,15 @@ void open_setting_file(FILE *fp)
     }
 }
 
-gboolean mythread(gpointer user_data)//合并
+
+gboolean MyThread(gpointer user_data)//合并
 {
+    pthread_create(&ThreadListenOnLine,
+                   NULL,
+                   ListenOnLineTrans,
+                   NULL);
+
+
     //这里是高铭的代码。用来初始化音视频的数据
     the_log_request_friend_discover.uid=-1;
     the_log_request_friend_discover.requset_reason=-1;
