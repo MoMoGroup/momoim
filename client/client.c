@@ -12,6 +12,7 @@
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
+#include "audio.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
@@ -129,6 +130,10 @@ void open_setting_file(FILE *fp)
 
 gboolean mythread(gpointer user_data)//合并
 {
+    //这里是高铭的代码。用来初始化音视频的数据
+    the_log_request_friend_discover.uid=-1;
+    the_log_request_friend_discover.requset_reason=-1;
+    //初始化音视频结束
     gtk_widget_destroy(window);
     FILE *fp;
     char wordfile[256];

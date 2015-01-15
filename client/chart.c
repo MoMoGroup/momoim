@@ -10,6 +10,9 @@
 #include "chartmessage.h"
 #include "ChartRecord.h"
 #include <sys/stat.h>
+#include "audio.h"
+#include <imcommon/friends.h>
+#include <imcommon/user.h>
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
@@ -183,11 +186,48 @@ static gint voice_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
+        uint8_t gid_audio;
+        int quantity_group=friends->groupCount;
+        //用来找出gid
+        int i,j=0;
+        for(i=0;i<quantity_group;i++){
+            for(j=0;j<friends->groups[i].friendCount;j++){
+                if(friends->groups[i].friends[j]==info->user.uid){
+                    gid_audio=friends->groups[i].groupId;
+                    break;
+                }
+            }
+        }
+        friends->groups[i].friends[j];
+        session_id_t session_id_video_release=CountSessionId();
+        //struct Audio_Request_Info *audio_data_opposite;
+        //audio_data_opposite ->uid=info->user.uid;
+        //audio_data_opposite ->audio_data=NULL;
+        //audio_data_opposite ->audiocount=0;
+        //audio_data_opposite ->charlen=0;
+        //audio_data_opposite ->
+
+
+        //同一时间只允许发起一个请求
+        if(the_log_request_friend_discover.uid!=-1){
+            g_idle_add(popup_request_num_limit, NULL);
+        }
+        the_log_request_friend_discover.uid=info->user.uid;
+        the_log_request_friend_discover.requset_reason=NET_DISCOVER_AUDIO;
+        AddMessageNode(session_id_video_release , deal_dicover_send_feedback, NULL);
+        //CRPFriendDiscoverSend(sockfd , session_id_video_release, gid_audio, info->user.uid);
+
+        CRPNETFriendDiscoverSend(sockfd,
+                                 session_id_video_release,
+                                 gid_audio,
+                                 info->uid,
+                                 CRPFDR_AUDIO);
+
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+
     }
     return 0;
 

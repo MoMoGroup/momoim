@@ -14,6 +14,7 @@ typedef enum
     UMT_FRIEND_ACCEPT,
     UMT_FILE_OFFLINE,
     UMT_FILE_ONLINE,
+    UMT_AUDIO_REQUEST,//请求好友视频
 } USER_MESSAGE_TYPE;
 typedef struct __attribute__ ((packed)) strucUserMessage
 {

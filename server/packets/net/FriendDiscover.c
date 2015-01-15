@@ -13,7 +13,7 @@ int ProcessPacketNETFriendDiscover(POnlineUser user, uint32_t session, CRPPacket
         }
 
         pthread_rwlock_rdlock(user->info->friendsLock);
-        if (!UserFriendsExist(user->info->friends, packet->gid, packet->gid))
+        if (!UserFriendsExist(user->info->friends, packet->gid, packet->uid))
         {
             pthread_rwlock_unlock(user->info->friendsLock);
             CRPFailureSend(user->crp, session, EINVAL, "未在好友分组中找到用户");
