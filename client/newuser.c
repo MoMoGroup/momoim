@@ -115,6 +115,7 @@ int newsockfd()
         popup("莫默告诉你：", "请完善注册信息");
         return 1;
     }
+    return 0;
 }
 
 static void create_zhucefaces()
@@ -298,10 +299,10 @@ int newface()
     newusername = gtk_entry_new();//id
     passwd1 = gtk_entry_new();//密码1
     passwd2 = gtk_entry_new();//密码2
-    gtk_entry_set_max_length(mnickname, 20);//设置输入的最大长度
-    gtk_entry_set_max_length(newusername, 20);
-    gtk_entry_set_max_length(passwd1, 20);
-    gtk_entry_set_max_length(passwd2, 20);
+    gtk_entry_set_max_length((GTK_ENTRY(mnickname)), 20);//设置输入的最大长度
+    gtk_entry_set_max_length((GTK_ENTRY(newusername)), 20);
+    gtk_entry_set_max_length((GTK_ENTRY(passwd1)), 20);
+    gtk_entry_set_max_length((GTK_ENTRY(passwd2)), 20);
 
     gtk_entry_set_visibility(GTK_ENTRY(passwd1), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(passwd1), '*');

@@ -25,6 +25,7 @@ SET(CLIENT_SOURCE_FILE
     onlylookinfo.c
     changestatus.c
     chartmessage.c
+    SetupWind.c
     managegroup/FriendsGroupMove.c
     managegroup/AddGroup.c
     managegroup/DeleteGroup.c

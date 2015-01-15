@@ -29,6 +29,7 @@ typedef struct
     char sendKey[32], sendIV[32];
     char recvKey[32], recvIV[32];
     pthread_mutex_t sendLock, recvLock;
+
 } __CRPContext;
 typedef __CRPContext *CRPContext;
 
@@ -45,7 +46,11 @@ extern CRPContext CRPOpen(int fd);
 extern int CRPClose(CRPContext);
 
 //用于打包并发送CRP包
-extern ssize_t CRPSend(CRPContext context, packet_id_t packetID, session_id_t sessionID, void const *data, CRP_LENGTH_TYPE dataLength);
+extern ssize_t CRPSend(CRPContext context,
+                       packet_id_t packetID,
+                       session_id_t sessionID,
+                       void const *data,
+                       CRP_LENGTH_TYPE dataLength);
 
 //用于接收一个CRP包
 extern CRPBaseHeader *CRPRecv(CRPContext context);

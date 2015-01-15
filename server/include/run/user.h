@@ -138,7 +138,7 @@ void PostMessage(UserMessage *message);
 void UserBroadcastNotify(POnlineUser user, FriendNotifyType type);
 
 //保持用户.
-int UserHold(POnlineUser user);
+int OnlineUserHold(POnlineUser user);
 
 //释放用户.
 void UserDrop(POnlineUser user);
@@ -173,14 +173,14 @@ void UserOperationUnregister(POnlineUser user, PUserOperation op);
 PUserOperation UserOperationGet(POnlineUser user, uint32_t sessionId);
 
 void UserOperationDrop(POnlineUser user, PUserOperation);
-
+/*
 //通过自定义函数和操作获得用户操作
 //type为-1时会枚举所有操作.
 //注意,不要试图在枚举时注册或注销一个操作
 PUserOperation UserOperationQuery(POnlineUser user,
                                   UserOperationType type,
                                   int (*func)(PUserOperation op, void *data),
-                                  void *data);
+                                  void *data);*/
 
 //取消一个操作.
 //如果操作oncancel字段不为空,会调用oncancel指定的函数.

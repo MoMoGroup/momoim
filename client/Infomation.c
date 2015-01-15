@@ -1,12 +1,12 @@
 #include <gtk/gtk.h>
 #include <imcommon/friends.h>
-#include <pwd.h>
 #include <string.h>
 #include <logger.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <imcommon/user.h>
 #include <math.h>
+#include <protocol/base.h>
 #include "ClientSockfd.h"
 #include "common.h"
 #include "MainInterface.h"
@@ -211,6 +211,19 @@ static const char *xingzuo[12][2] = {
         {"射手座", "魔蝎座"}
 };
 
+static void destroy_infosurfaces()
+{
+    g_print("destroying infoface");
+    cairo_surface_destroy(Surfaceback);
+    cairo_surface_destroy(Surfacesave);
+    cairo_surface_destroy(Surfacesave1);
+    cairo_surface_destroy(Surfacecancel);
+    cairo_surface_destroy(Surfacecancel1);
+    cairo_surface_destroy(Surfaceend);
+    cairo_surface_destroy(Surfaceend1);
+    cairo_surface_destroy(Surfaceend2);
+}
+
 int infoupdate(CRPBaseHeader *header, void *data)//资料更新处理函数
 {
     switch (header->packetID)
@@ -224,6 +237,10 @@ int infoupdate(CRPBaseHeader *header, void *data)//资料更新处理函数
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURe reason", infodata->reason);
+            if ((void *) infodata != header->data)
+            {
+                free(infodata);
+            }
             break;
         };
     }
@@ -254,7 +271,6 @@ int sheng_change_city()
 
 int calendar_event()
 {
-
     gtk_calendar_get_date(GTK_CALENDAR(icalendar), &year, &month, &day);/*取得选择的年月日*/
     char *buf = (char *) malloc(12);
     int x = month + 1;//日历获取月份是0～11
@@ -271,7 +287,6 @@ int calendar_event()
             break;
         }
     }
-
     gtk_widget_destroy(icalendar);
     RiliFlag = 0;
     return 0;
@@ -340,6 +355,10 @@ int dealwith_photo(CRPBaseHeader *header, void *data)
     {
         CRPPacketFailure *infodata = CRPFailureCast(header);
         log_info("FAILURE reason", infodata->reason);
+        if ((void *) infodata != header->data)
+        {
+            free(infodata);
+        }
         fclose(photo_message->fp);
         free(photo_message);
         free(imagedata);
@@ -370,12 +389,10 @@ int dealwith_photo(CRPBaseHeader *header, void *data)
             UserInfo weinfo = *CurrentUserInfo;
             session_id_t newinfoid = CountSessionId();
             memcpy(weinfo.icon, photo_message->code, 16);
-            AddMessageNode(newinfoid, infoupdate, NULL);
+            AddMessageNode(newinfoid, infoupdate, photo_message);
             CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
             memcpy(CurrentUserInfo->icon, photo_message->code, 16);
             free(photo_message);
-            log_info("头像3", "%s", CurrentUserInfo->icon);
-
         }
     }
     else if (header->packetID == CRP_PACKET_FILE_DATA_END)
@@ -421,7 +438,6 @@ int new_head(const char *filename)
 
 static void create_infofaces()
 {
-
     Surfaceback = ChangeThem_png("资料2.png");
     Surfacesave = ChangeThem_png("保存.png");
     Surfacesave1 = ChangeThem_png("保存2.png");
@@ -436,19 +452,6 @@ static void create_infofaces()
     Infocancel = gtk_image_new_from_surface(Surfacecancel);
     Infoguanbi = gtk_image_new_from_surface(Surfaceend);
     gtk_widget_set_size_request(GTK_WIDGET(Infobackground), 550, 488);
-}
-
-static void destroy_infosurfaces()
-{
-    g_print("destroying infoface");
-    cairo_surface_destroy(Surfaceback);
-    cairo_surface_destroy(Surfacesave);
-    cairo_surface_destroy(Surfacesave1);
-    cairo_surface_destroy(Surfacecancel);
-    cairo_surface_destroy(Surfacecancel1);
-    cairo_surface_destroy(Surfaceend);
-    cairo_surface_destroy(Surfaceend1);
-    cairo_surface_destroy(Surfaceend2);
 }
 
 //保存按钮后
@@ -541,7 +544,7 @@ int infosockfd()
     log_info("获取的日期", "%c", weinfo.constellation);
     //log_info("获取的日期", "Year:%d Month:%d Day:%d DATE:%s", year, month, day, buf);
     session_id_t newinfoid = CountSessionId();
-    AddMessageNode(newinfoid, infoupdate, NULL);
+    AddMessageNode(newinfoid, infoupdate, &weinfo);
     CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
     memcpy(CurrentUserInfo, &weinfo, sizeof(weinfo));
     return 0;
@@ -587,6 +590,7 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
         {
             destroy_infosurfaces();
             gtk_widget_destroy(Infowind);
+            MarkUpdateInfo = 0;
         }
         gtk_label_set_label((GtkLabel *) userid, CurrentUserInfo->nickName);//更新主界面昵称
         char userhead[80] = {0};
@@ -608,8 +612,7 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
         //把画笔和图片相结合。
         cairo_set_source_surface(cr, surface, 0, 0);
         cairo_paint(cr);
-        gtk_image_set_from_surface((GtkImage *) headx, surfacehead2);//更新主界面头像
-
+        gtk_image_set_from_surface((GtkImage *) headx, surfacehead2);//更新主界面头
         //更新主界面分组下用户的头像和昵称
         GdkPixbuf *pixbuf;
         pixbuf = DrawFriend(CurrentUserInfo, 1);
@@ -683,6 +686,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
         free(filename);
         destroy_infosurfaces();
         gtk_widget_destroy(Infowind);
+        MarkUpdateInfo = 0;
     }
     return 0;
 }
@@ -726,6 +730,7 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
     {
         destroy_infosurfaces();
         gtk_widget_destroy(Infowind);
+        MarkUpdateInfo = 0;
     }
     return 0;
 }
@@ -765,37 +770,57 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
     if (event->button == 1)   // 判断是否是点击关闭图标
     {
         GtkWidget *dialog;
-        dialog = gtk_file_chooser_dialog_new("请选择图片作为头像",
+        dialog = gtk_file_chooser_dialog_new("请选择PNG格式的图片作为头像",
                                              (GtkWindow *) Infowind,
                                              GTK_FILE_CHOOSER_ACTION_OPEN,
                                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                                              NULL);
-        if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
+        while (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
         {
             filename = (char *) malloc(256);
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            FILE *fp = fopen(filename, "rb");
+            if (fp == NULL)
+            {
+                perror("打开失败\n");
+                return -1;
+            }
+            else
+            {//PNG文件，其文件偏移第1个字节处（以0起始）为PNG。
+                char buf[11] = "";
+                fread(buf, sizeof(buf), 1, fp);
+                if (strncmp("PNG", buf + 1, strlen("PNG")) != 0)
+                {
+                    popup("莫默告诉你：", "请选择png格式的图片");
+                    //gtk_widget_destroy(dialog);
+                }
+                else
+                {
+                    gtk_widget_destroy(dialog);
+                    static cairo_t *cr;
+                    cairo_surface_t *surface;
+                    //加载一个图片
+                    surface = cairo_image_surface_create_from_png(filename);
+                    int w = cairo_image_surface_get_width(surface);
+                    int h = cairo_image_surface_get_height(surface);
 
-            static cairo_t *cr;
-            cairo_surface_t *surface;
-            //加载一个图片
-            surface = cairo_image_surface_create_from_png(filename);
-            int w = cairo_image_surface_get_width(surface);
-            int h = cairo_image_surface_get_height(surface);
-
-            //创建画布
-            surfacehead = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
-            //创建画笔
-            cr = cairo_create(surfacehead);
-            //缩放
-            cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
-            cairo_clip(cr);
-            cairo_scale(cr, 125.0 / w, 126.0 / h);
-            //把画笔和图片相结合。
-            cairo_set_source_surface(cr, surface, 0, 0);
-            cairo_paint(cr);
-            gtk_image_set_from_surface((GtkImage *) headicon, surfacehead);
-            cairo_destroy(cr);
+                    //创建画布
+                    surfacehead = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
+                    //创建画笔
+                    cr = cairo_create(surfacehead);
+                    //缩放
+                    cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
+                    cairo_clip(cr);
+                    cairo_scale(cr, 125.0 / w, 126.0 / h);
+                    //把画笔和图片相结合。
+                    cairo_set_source_surface(cr, surface, 0, 0);
+                    cairo_paint(cr);
+                    gtk_image_set_from_surface((GtkImage *) headicon, surfacehead);
+                    cairo_destroy(cr);
+                }
+            }
+            fclose(fp);
         }
         gtk_widget_destroy(dialog);
     }

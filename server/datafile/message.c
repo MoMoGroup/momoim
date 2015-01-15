@@ -104,13 +104,19 @@ void UserMessageFileDrop(uint32_t uid)
     UserMessageFileEntry *entry;
     pthread_mutex_lock(&userMessageTableLock);
     entry = UserMessageEntryGetUnlock(uid);
-    pthread_rwlock_unlock(&entry->refLock);
+    if (!entry)
+    {
+        pthread_mutex_unlock(&userMessageTableLock);
+        return;
+    }
+    pthread_rwlock_unlock(&entry->refLock);//删除当前线程引用锁
 
-    if (pthread_rwlock_trywrlock(&entry->refLock) == 0)
+    if (pthread_rwlock_trywrlock(&entry->refLock) == 0)//如果当前引用锁不被任何线程占用,清除消息记录文件
     {
         UserMessageTableSetUnlock(uid, NULL);
         pthread_mutex_unlock(&userMessageTableLock);
         MessageFileClose(entry->file);
+        return;
     }
     pthread_mutex_unlock(&userMessageTableLock);
 }
