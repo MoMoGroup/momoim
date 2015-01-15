@@ -63,13 +63,16 @@ int chenggong(void *data)
     popup("莫默告诉你：", "恭喜你修改成功");
     destroy_setsurfaces();
     gtk_widget_destroy(SetupWind);
+
     MarkNewpasswd = 0;
     return 0;
 }
 
-int shibai(void *data)
+int shibai(void *reason)
 {
-    popup("莫默告诉你：", data);
+    log_info("FAILURe reason2", reason);
+    popup("莫默告诉你：", reason);
+    free(reason);
     return 0;
 }
 
@@ -86,9 +89,10 @@ int dealwith_passwd(CRPBaseHeader *header, void *data)
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURe reason", infodata->reason);
-            char failreason[80] = {0};
-            memcpy(failreason, infodata->reason, strlen(infodata->reason));
+            char *failreason = (char *) malloc(strlen(infodata->reason));
+            memcpy(failreason, infodata->reason, strlen(infodata->reason - 1));
             g_idle_add(shibai, failreason);
+            log_info("FAILURe reason1", failreason);
             if ((void *) infodata != header->data)
             {
                 free(infodata);
