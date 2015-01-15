@@ -46,7 +46,7 @@ void *WorkerMain(void *arg)
             if (user->state == OUS_ONLINE)//如果用户当前在线.更新最后一次收到数据包时间
             {
                 time(&user->lastUpdateTime);
-                EpollAdd(user);//只允许在线用户的数据包并行处理,等待用户的数据包只允许串行处理
+                EpollAdd(user);//只允许在线用户的数据包并行处理,等待认证用户的数据包只允许串行处理
             }
             else//由于等待用户内存占用量比较少,而且有可能产生realloc导致地址发生变化,所以要标记以特殊处理
             {
@@ -60,11 +60,7 @@ void *WorkerMain(void *arg)
             }
             free(header);
         }
-        if (isPendingUser)//如果之前是等待用户,这里重新加入epoll,接收下一包数据.并且等待用户不可以被Drop!
-        {
-            EpollAdd(user);
-        }
-        else//如果是在线用户则Drop
+        if (!isPendingUser)//等待用户不允许被Drop
         {
             UserDrop(user);
         }

@@ -82,7 +82,7 @@ static pthread_mutex_t arqLock;
 
 static void ARQInit()
 {
-    //TOD!O ARQ
+    //T!ODO ARQ
 }
 
 static void CRPEncryptDisableUnlock(CRPContext context)

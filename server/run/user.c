@@ -476,7 +476,6 @@ POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid)
         }
         JobManagerKick(user);   //清除当前用户待处理任务
         user = ret;
-        EpollModify(user);      //修正epoll事件附加参数为新的用户地址
 
         user->uid = uid;
 

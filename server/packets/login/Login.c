@@ -3,6 +3,7 @@
 #include <asm-generic/errno-base.h>
 
 #include <run/user.h>
+#include <server.h>
 #include "datafile/auth.h"
 
 int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *packet)
@@ -18,6 +19,7 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
         {
             log_info("Login-Login", "User %s Login failure.\n", packet->username);
             CRPFailureSend(user->crp, session, EFAULT, "用户名或密码不正确");
+            EpollAdd(user);//非已登陆用户
         }
         else
         {
@@ -36,10 +38,9 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
             }
             time(&onlineUser->info->loginTime);
             user = onlineUser;
+            EpollAdd(user);      //允许下一帧数据包
             log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
-
             CRPLoginAcceptSend(user->crp, session, uid);
-
         }
     }
     else
