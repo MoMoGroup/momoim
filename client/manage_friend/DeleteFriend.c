@@ -170,7 +170,7 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
 
 
     gtk_fixed_put(GTK_FIXED(delete_layout), delete_background, 0, 0);
-    gtk_fixed_put(GTK_FIXED(delete_layout), txt, 70, 130);
+    gtk_fixed_put(GTK_FIXED(delete_layout), txt, 70, 90);
     gtk_fixed_put(GTK_FIXED(delete_layout), GTK_WIDGET(delete_cancel_eventbox), 30, 170);
     gtk_fixed_put(GTK_FIXED(delete_layout), GTK_WIDGET(delete_done_eventbox), 150, 170);
 

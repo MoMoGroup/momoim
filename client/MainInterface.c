@@ -509,6 +509,10 @@ gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpoint
         GtkTreeModel *model = gtk_tree_view_get_model(treeview);
         GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
         gtk_tree_selection_get_selected(selection, &model, &iter);//拿到它iter
+
+        GtkTreePath *path;
+        path = gtk_tree_model_get_path(model, &iter);
+
         uint32_t id = 0;
         gtk_tree_model_get(model, &iter, FRIENDUID_COL, &id, -1);
         int uidfindflag = 0;
@@ -545,6 +549,24 @@ gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpoint
                     gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));;
                 }
             }
+
+        }
+        else//双击的是分组
+        {
+            if (gtk_tree_model_iter_has_child(GTK_TREE_MODEL(TreeViewListStore), &iter))//如果有子行，展开
+            {
+                if (gtk_tree_view_expand_row(treeview, path, FALSE))
+                {
+                    //展开本行成功
+                    g_print("expand child ");
+                }
+                else //本行已经被展开
+                {
+                    //收起本行
+                    gtk_tree_view_collapse_row(treeview, path);
+                }
+            }
+
 
         }
     }
