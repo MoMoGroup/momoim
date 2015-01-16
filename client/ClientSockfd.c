@@ -666,7 +666,7 @@ inet_aton("192.168.8.167",&server_addr.sin_addr);
             passwdfp = fopen(mulu_username, "a+");
             fwrite(name, 1, 40, passwdfp);
             fwrite(pwd, 1, 16, passwdfp);
-            fwrite(uid, 1, 4, passwdfp);
+            fwrite(&uid, 1, 4, passwdfp);
             fwrite(CurrentUserInfo->icon, 1, 16, passwdfp);
             fclose(passwdfp);
         }
