@@ -55,7 +55,7 @@ int ProcessPacketFriendAdd(POnlineUser user, uint32_t session, CRPPacketFriendAd
             pthread_rwlock_unlock(user->info->friendsLock);
             return 1;
         }
-        CRPFriendNotifySend(user->crp, session, FNT_FRIEND_NEW, packet->uid, 0, UGI_PENDING);
+        CRPFriendNotifySend(user->crp, 0, FNT_FRIEND_NEW, packet->uid, 0, UGI_PENDING);
 
         sendNotifyMessage:
         pthread_rwlock_unlock(user->info->friendsLock);

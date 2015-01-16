@@ -386,10 +386,7 @@ int PendingUserDelete(PPendingUser user)
         return 0;
     }
     UserSetState((POnlineUser) user, OUS_PENDING_CLEAN, 0);
-    pthread_rwlock_unlock(user->holdLock);
-    pthread_rwlock_wrlock(user->holdLock);
     PendingUserTableRemove(user);
-    pthread_rwlock_unlock(user->holdLock);
     pthread_rwlock_destroy(user->holdLock);
     free(user->holdLock);
     free(user);
@@ -510,9 +507,10 @@ POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid)
         user->info = info;
         bzero(&user->operations, sizeof(UserOperationTable));
         //初始化用户操作锁
-        pthread_mutexattr_t attr;
-        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-        pthread_mutex_init(&user->operations.lock, &attr);
+        pthread_mutexattr_t recursiveAttr;
+        pthread_mutexattr_init(&recursiveAttr);
+        pthread_mutexattr_settype(&recursiveAttr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&user->operations.lock, &recursiveAttr);
         user->state = OUS_ONLINE;
         UserBroadcastNotify(user, FNT_FRIEND_ONLINE);           //向好友们广播上线消息
         return OnlineUserTableSet(user);
