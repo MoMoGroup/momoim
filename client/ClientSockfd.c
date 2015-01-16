@@ -393,8 +393,6 @@ int mysockfd()
             .sin_port=htons(8014)
     };
 
-//    .sin_port=htons(8014)
-//};
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
         perror("Connect");
