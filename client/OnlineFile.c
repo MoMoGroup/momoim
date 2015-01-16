@@ -25,7 +25,7 @@ int kong()
     log_info("da", "da");
 }
 
-}
+
 
 int askd()
 {

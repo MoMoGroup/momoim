@@ -13,7 +13,6 @@
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
 #include "OnlineFile.h"
-#include "addfriend.h"
 
 static GtkWidget *status;
 

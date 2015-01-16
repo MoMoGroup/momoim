@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <arpa/inet.h>
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
@@ -67,6 +68,8 @@ int newsockfd()
                     .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
                     .sin_port=htons(8014)
             };
+
+inet_aton("192.168.8.167",&server_addr.sin_addr);
             if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
             {
                 perror("Connect");
