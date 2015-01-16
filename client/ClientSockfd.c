@@ -274,8 +274,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             struct in_addr *addr;
             addr->s_addr = info->ipv4;
             char *ip = inet_ntoa(*addr);
-//
-//            log_info("IP", "%s\n",ip);
+            log_info("IP", "%s\n", ip);
 
 //            if((void *)info!=header)
 //            {
