@@ -386,10 +386,7 @@ int PendingUserDelete(PPendingUser user)
         return 0;
     }
     UserSetState((POnlineUser) user, OUS_PENDING_CLEAN, 0);
-    pthread_rwlock_unlock(user->holdLock);
-    pthread_rwlock_wrlock(user->holdLock);
     PendingUserTableRemove(user);
-    pthread_rwlock_unlock(user->holdLock);
     pthread_rwlock_destroy(user->holdLock);
     free(user->holdLock);
     free(user);
