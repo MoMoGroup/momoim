@@ -1,5 +1,6 @@
 #include <protocol/CRPPackets.h>
 #include <asm-generic/errno-base.h>
+#include <protocol/net/DiscoverRefuse.h>
 #include "run/user.h"
 
 int ProcessPacketNetDiscoverRefuse(POnlineUser user, uint32_t session, CRPPacketNETDiscoverRefuse *packet)
@@ -13,7 +14,7 @@ int ProcessPacketNetDiscoverRefuse(POnlineUser user, uint32_t session, CRPPacket
             CRPFailureSend(user->crp, session, EBADF, "目标已离线");
             return 1;
         }
-        CRPNETDiscoverRefuseSend(duser->crp, 0, user->uid);
+        CRPNETDiscoverRefuseSend(duser->crp, packet->session, user->uid,0);
         UserDrop(duser);
         CRPOKSend(duser->crp, session);
     }

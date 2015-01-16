@@ -46,6 +46,11 @@ cairo_surface_t *ChangeThem_png(char *picname)
     char path_theme[80] = "", path_pic[80] = "";
     sprintf(path_theme, "%s/.momo/current_theme", getpwuid(getuid())->pw_dir);//获取本机主题目录
     sprintf(path_pic, "%s/%s", path_theme, picname);
+    if (access(path_pic, F_OK) != 0)
+    {
+        sprintf(path_theme, "%s/.momo/theme/images", getpwuid(getuid())->pw_dir);
+        sprintf(path_pic, "%s/%s", path_theme, picname);
+    }
     return cairo_image_surface_create_from_png(path_pic);
 }
 
@@ -58,7 +63,7 @@ GtkWidget *ChangeThem_file(char *picname)
 }
 
 GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release,
-        GCallback click, void *data)
+                           GCallback click, void *data)
 {
     GtkEventBox *eventBox = GTK_EVENT_BOX(gtk_event_box_new());
     gtk_widget_set_events(GTK_WIDGET(eventBox),  // 设置窗体获取鼠标事件

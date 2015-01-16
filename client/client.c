@@ -7,14 +7,17 @@
 #include <sys/stat.h>
 #include <imcommon/friends.h>
 #include <arpa/inet.h>
+#include <math.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
+#include "audio.h"
+#include "OnlineFile.h"
 
-static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
+static GtkWidget *imageremember, *imagehead,*ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
 const gchar *name, *pwd;
 static pthread_t threadMainLoop;
@@ -23,6 +26,8 @@ typedef struct cunchu
 {
     char cunchu_name[40];
     char cunchu_pwd[16];
+    uint32_t cunchu_uid;
+    char cunchu_lujing[16];
 };
 struct cunchu str_cunchu[20];
 FILE *passwdfp;
@@ -135,6 +140,16 @@ void open_setting_file(FILE *fp)
 
 gboolean MyThread(gpointer user_data)//合并
 {
+    pthread_create(&ThreadListenOnLine,
+                   NULL,
+                   ListenOnLineTrans,
+                   NULL);
+
+
+    //这里是高铭的代码。用来初始化音视频的数据
+    //the_log_request_friend_discover.uid=-1;
+    //the_log_request_friend_discover.requset_reason=-1;
+    //初始化音视频结束
     gtk_widget_destroy(window);
     FILE *fp;
     char wordfile[256];
@@ -304,9 +319,30 @@ void on_button_clicked()
 static gint combo_change_event()
 {
     int i;
+    char buflujing[256];
     FlagRemember = 0;
     gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换不记住图片
     gtk_test_text_set(LoginWindowPassWordBox, "");
+
+    cairo_surface_t *surface, *surfacehead2;//设置默认头像
+    static cairo_t *cr;
+    //加载一个图片
+    surface = ChangeThem_png("头像.png");
+    int w = cairo_image_surface_get_width(surface);
+    int h = cairo_image_surface_get_height(surface);
+    //创建画布
+    surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 164, 164);
+    //创建画笔
+    cr = cairo_create(surfacehead2);
+    //缩放
+    cairo_arc(cr, 82, 82, 82, 0, M_PI * 2);
+    cairo_clip(cr);
+    cairo_scale(cr, 164.0 / w, 164.0 / h);
+    //把画笔和图片相结合。
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_paint(cr);
+    gtk_image_set_from_surface((GtkImage *) imagehead, surfacehead2);
+
     name = gtk_combo_box_text_get_active_text(LoginWindowUserNameBox);
 
     if (strcmp(name, "") != 0)
@@ -316,6 +352,24 @@ static gint combo_change_event()
             if (strcmp(name, str_cunchu[i].cunchu_name) == 0)
             {
                 gtk_test_text_set(LoginWindowPassWordBox, str_cunchu[i].cunchu_pwd);
+                HexadecimalConversion(buflujing, str_cunchu[i].cunchu_lujing);
+                //加载一个图片
+                surface = cairo_image_surface_create_from_png(buflujing);
+                int w = cairo_image_surface_get_width(surface);
+                int h = cairo_image_surface_get_height(surface);
+                //创建画布
+                surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 164, 164);
+                //创建画笔
+                cr = cairo_create(surfacehead2);
+                //缩放
+                cairo_arc(cr, 82, 82, 82, 0, M_PI * 2);
+                cairo_clip(cr);
+                cairo_scale(cr, 164.0 / w, 164.0 / h);
+                //把画笔和图片相结合。
+                cairo_set_source_surface(cr, surface, 0, 0);
+                cairo_paint(cr);
+                gtk_image_set_from_surface((GtkImage *) imagehead, surfacehead2);
+
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember2);//显示记住密码
                 FlagRemember = 1;
             }
@@ -360,7 +414,7 @@ static gint passwd_change_event()
                 size_t len = (size_t) statBuf.st_size, cpLen;
                 char *addr = (char *) malloc(len);
                 read(fd, addr, len);
-                char *p = addr + 56 * i, *pLine = addr + 56 * (i + 1);
+                char *p = addr + 76 * i, *pLine = addr + 76 * (i + 1);
                 while (pLine < addr + len)
                 {
                     *p++ = *pLine++;
@@ -377,7 +431,7 @@ static gint passwd_change_event()
                 if ((passwdfp = fopen(mulu_username, "r")) != NULL)
                 {
                     int i = 0;
-                    while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20))
+                    while ((fread(str_cunchu + i, 1, 76, passwdfp) != NULL) && (i < 20))
                     {
                         gtk_combo_box_text_append(LoginWindowUserNameBox, NULL, str_cunchu[i].cunchu_name);
                         ++i;
@@ -637,7 +691,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                     size_t len = (size_t) statBuf.st_size, cpLen;
                     char *addr = (char *) malloc(len);
                     read(fd, addr, len);
-                    char *p = addr + 56 * i, *pLine = addr + 56 * (i + 1);
+                    char *p = addr + 76 * i, *pLine = addr + 76 * (i + 1);
                     while (pLine < addr + len)
                     {
                         *p++ = *pLine++;
@@ -654,7 +708,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
                     if ((passwdfp = fopen(mulu_username, "r")) != NULL)
                     {
                         int i = 0;
-                        while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20))
+                        while ((fread(str_cunchu + i, 1, 76, passwdfp) != NULL) && (i < 20))
                         {
                             gtk_combo_box_text_append(LoginWindowUserNameBox, NULL, str_cunchu[i].cunchu_name);
                             ++i;
@@ -867,7 +921,7 @@ gboolean loadloginLayout(gpointer user_data)
 {
     //加载loginlayout
     create_surfaces1();
-    GtkWidget *imagebackground, *imagehead, *imagewhite, *imageaccount, *imagepasswd;
+    GtkWidget *imagebackground, *imagewhite, *imageaccount, *imagepasswd;
     GtkWidget *iwait;
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
@@ -891,11 +945,6 @@ gboolean loadloginLayout(gpointer user_data)
     imageclosebut = gtk_image_new_from_surface(sclosebut1);
     imagecancel = gtk_image_new_from_surface(scancel10_1);
     imageremember = gtk_image_new_from_surface(sremember1);
-
-//    gtk_container_add (GTK_CONTAINER(loginLayout),landbutevent_box);
-//    gtk_container_add (GTK_CONTAINER(loginLayout), registeredevent_box);
-//    gtk_container_add (GTK_CONTAINER(loginLayout), closebutevent_box);
-//    gtk_container_add (GTK_CONTAINER(loginLayout),cancelevent_box);
 
     backgroundevent_box = BuildEventBox(
             imagebackground,
@@ -957,7 +1006,7 @@ gboolean loadloginLayout(gpointer user_data)
     //设置两个输入框
     LoginWindowUserNameBox = gtk_combo_box_text_new_with_entry();
     GtkEntry *nameEntry = GTK_ENTRY(gtk_bin_get_child(LoginWindowUserNameBox));
-    gtk_entry_set_width_chars(nameEntry, 15);
+    gtk_entry_set_width_chars(nameEntry, 19);
 
     LoginWindowPassWordBox = gtk_entry_new();
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度
@@ -965,7 +1014,7 @@ gboolean loadloginLayout(gpointer user_data)
     //   gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
 
     gtk_entry_set_visibility(GTK_ENTRY(LoginWindowPassWordBox), FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(LoginWindowPassWordBox), '*');
+    gtk_entry_set_invisible_char(GTK_ENTRY(LoginWindowPassWordBox), '*');//设置密码不可见
 
     g_signal_connect(LoginWindowUserNameBox, "changed", G_CALLBACK(combo_change_event), NULL);//账号修改触发
     g_signal_connect(LoginWindowPassWordBox, "changed", G_CALLBACK(passwd_change_event), NULL);//密码修改触发
@@ -978,7 +1027,7 @@ gboolean loadloginLayout(gpointer user_data)
     if ((passwdfp = fopen(mulu_username, "r")) != NULL)
     {
         int i = 0;
-        while ((fread(str_cunchu + i, 1, 56, passwdfp) != NULL) && (i < 20))
+        while ((fread(str_cunchu + i, 1, 76, passwdfp) != NULL) && (i < 20))
         {
             gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(LoginWindowUserNameBox), NULL, str_cunchu[i].cunchu_name);
             ++i;
@@ -986,8 +1035,9 @@ gboolean loadloginLayout(gpointer user_data)
         flag_cunchu = i;
         fclose(passwdfp);
     }
+    gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
 
-
+//放置组件的相对位置
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(backgroundevent_box), 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);

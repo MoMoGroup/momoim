@@ -140,7 +140,7 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
     cairo_surface_t *rename_surface_close;
     GtkWidget *rename_close;
     GtkEventBox *rename_close_event_box;
-    rename_surface_close = cairo_image_surface_create_from_png("关闭按钮1.png");
+    rename_surface_close = ChangeThem_png("关闭按钮1.png");
     rename_close = gtk_image_new_from_surface(rename_surface_close);
     rename_close_event_box = BuildEventBox(
             rename_close,
@@ -163,7 +163,7 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
     cairo_surface_t *rename_surface_done;
     GtkWidget *rename_done;
     GtkEventBox *rename_done_event_box;
-    rename_surface_done = cairo_image_surface_create_from_png("确定.png");
+    rename_surface_done = ChangeThem_png("确定.png");
     rename_done = gtk_image_new_from_surface(rename_surface_done);
     rename_done_event_box = BuildEventBox(
             rename_done,

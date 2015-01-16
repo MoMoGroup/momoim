@@ -19,6 +19,8 @@ unsigned int sem_recv_number = 0;
 sem_t sem_send;
 sem_t sem_recv;
 
+struct sockaddr_in addr_opposite;
+
 //////////////////////循环队列/////////////////////////
 pthread_mutex_t mutex_send, mutex_recv;
 pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
@@ -81,6 +83,8 @@ void *pthread_send(struct sockaddr_in *addr_opposite) {
 
 void *pthread_recv() {
     char *p_recv;
+    int flag_send=0;//收到第一帧获得对面ip地址之后解开锁
+    //struct sockaddr *
     while (1) {
         p_recv = (char*)malloc(1000);
         recvfrom(sock_recv, p_recv , 1000, 0, NULL, NULL);
@@ -94,6 +98,9 @@ void *pthread_recv() {
 }
 
 int primary_audio(struct sockaddr_in addr_opposite) {
+    ////////////////////////////////修改中，判断有几个参数。没有参数的监听，有参数的尝试连接////////////////////////////////////
+    //
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////初始化本地地址//////////////////////////////////////////
     bzero(&addr_my.sin_zero, sizeof(struct sockaddr));//清空
     addr_my.sin_family = AF_INET;//初始化网络协议
@@ -137,6 +144,9 @@ int primary_audio(struct sockaddr_in addr_opposite) {
     pthread_mutex_init(&mutex_recv, 0); //记得摧毁锁
     pthread_cond_init(&recv_idle, NULL);
     pthread_cond_init(&recv_busy, NULL);
+    //因为没写一地址的方没有对面的IP地址。所以在收到对面的第一帧后才开始给对面发送数据。因此一开始锁住发送线程的send
+    pthread_mutex_lock(&mutex_send);
+    //
     pthread_create(&pthd_send, NULL, pthread_send,&addr_opposite);
     pthread_create(&pthd_recv, NULL, pthread_recv, NULL);
     pthread_create(&pthd_record, NULL, pthread_record, NULL);
@@ -190,20 +200,24 @@ int primary_audio(struct sockaddr_in addr_opposite) {
 int main(int argc,char**argv){
     setbuf(stdout, 0);
     setbuf(stderr, 0);
-    struct sockaddr_in addr_opposite;
+
     /////////////////////////////////////////初始化对面地址///////////////////////////////////////////////////////////
-    if (argc < 2) {
-        printf("please input the other side addr\n");
-        return 0;
-    }
-    bzero(&addr_opposite, sizeof(struct sockaddr));
-    inet_pton(PF_INET, argv[1], &addr_opposite.sin_addr);
-    addr_opposite.sin_port = htons(7777);
-    sock_send = socket(PF_INET, SOCK_DGRAM, 0);//创建socket
+    //if (argc < 2) {
+      //  printf("please input the other side addr\n");
+        //return 0;
+    //}
+    //bzero(&addr_opposite, sizeof(struct sockaddr));
+    //inet_pton(PF_INET, argv[1], &addr_opposite.sin_addr);
+    //addr_opposite.sin_port = htons(7777);
+    //sock_send = socket(PF_INET, SOCK_DGRAM, 0);//创建socket
 //    if (sock_send < 0) {
 //        printf("socket error!\n");
 //        exit(1);
 //    }
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////修改中/////////////////////////////////////////////////////////////
+    //if(argc==1)primary_audio(1,NULL);
+    //if(argc==2)primary_audio(2,argv[1]);
     /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     primary_audio(addr_opposite);
     return 0;
