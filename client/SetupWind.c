@@ -18,7 +18,7 @@ static GtkWidget *OldPasswd, *NewPasswd1, *Newpasswd2;
 static void create_setfaces()
 {
 
-    SurSetBack = ChangeThem_png("安全设置背景.png");
+    SurSetBack = ChangeThem_png("设置.png");
     SurSetSave = ChangeThem_png("保存.png");
     SurSetSave1 = ChangeThem_png("保存2.png");
     SurSetCancel = ChangeThem_png("资料取消.png");

@@ -506,19 +506,6 @@ int mysockfd()
     {
         // log_info("登录成功", "登录成功\n");
         sleep(1);//登录动画
-        //将记住的密码保存本地
-        if ((FlagRemember == 1) && (FirstPwd == 1))
-        {
-            FILE *passwdfp;
-            char mulu_benji[80], mulu_username[80];
-            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
-            mkdir(mulu_benji, 0700);
-            sprintf(mulu_username, "%s/username", mulu_benji);
-            passwdfp = fopen(mulu_username, "a+");
-            fwrite(name, 1, 40, passwdfp);
-            fwrite(pwd, 1, 16, passwdfp);
-            fclose(passwdfp);
-        }
 
         //登陆成功之后开始请求资料
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
@@ -720,6 +707,23 @@ int mysockfd()
 
 
         }
+
+        //按下记住密码的，保存用户名、密码、uid、头像路径至本地
+        if ((FlagRemember == 1) && (FirstPwd == 1))
+        {
+            FILE *passwdfp;
+            char mulu_benji[80], mulu_username[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            mkdir(mulu_benji, 0700);
+            sprintf(mulu_username, "%s/username", mulu_benji);
+            passwdfp = fopen(mulu_username, "a+");
+            fwrite(name, 1, 40, passwdfp);
+            fwrite(pwd, 1, 16, passwdfp);
+            fwrite(uid, 1, 4, passwdfp);
+            fwrite(CurrentUserInfo->icon, 1, 16, passwdfp);
+            fclose(passwdfp);
+        }
+
         AddMessageNode(0, servemessage, "");//注册服务器发来的消息
 
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);
