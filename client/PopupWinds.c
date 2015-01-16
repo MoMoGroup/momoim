@@ -3,6 +3,7 @@
 #include "PopupWinds.h"
 #include "common.h"
 
+/*弹窗的控件*/
 static GtkWidget *popupwindow; //dialog
 static GtkWidget *popupLayout; //放入box
 static GtkWidget *popback, *popanniu;
@@ -85,20 +86,20 @@ static gint ok_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpoi
 
 int popup(const char *title, const char *tell)
 {
-    popupwindow = gtk_dialog_new();
+    popupwindow = gtk_dialog_new();//新建一个dialog
     gtk_window_set_position(GTK_WINDOW(popupwindow), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (popupwindow), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(popupwindow), FALSE);//去掉边框
-    gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);
+    gtk_widget_set_size_request(GTK_WIDGET(popupwindow), 250, 235);//设置窗体大小
 
     box = gtk_dialog_get_content_area((GtkDialog *) popupwindow);//得到dialog的box
     action = gtk_dialog_get_action_area((GtkDialog *) popupwindow);//得到dialog的action_area
     int maWidth, maHeight;
-    popupLayout = gtk_fixed_new();
+    popupLayout = gtk_fixed_new();//创建布局容纳控件
     create_popupfaces();
 
     GtkWidget *telltitle, *tellyou;
-    gtk_container_add(GTK_CONTAINER(box), popupLayout);
+    gtk_container_add(GTK_CONTAINER(box), popupLayout);//将layout放入dialog的box中
 
     telltitle = gtk_label_new(title);//标题
     tellyou = gtk_label_new(tell);//内容

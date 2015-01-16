@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <arpa/inet.h>
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
+#include "client.h"
 
 static GtkWidget *newwindow;
 static GtkWidget *zhuceLayout;
@@ -62,9 +64,16 @@ int newsockfd()
                 popup("莫默告诉你：", "两次密码不一致");
                 return 1;
             }
+            FILE *ipfp2;
+            char myip1[80];
+            struct in_addr inp;
+            ipfp2 = fopen(checkmulu_ip, "r");
+            fread(myip1, 1, 80, ipfp2);
+            inet_aton(myip1, &inp);
             struct sockaddr_in server_addr = {
                     .sin_family=AF_INET,
-                    .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+                    //.sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+                    .sin_addr.s_addr=inp.s_addr,
                     .sin_port=htons(8014)
             };
             if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
@@ -78,7 +87,7 @@ int newsockfd()
             CRPBaseHeader *header;
             log_info("Hello", "Waiting OK\n");
             header = CRPRecv(sockfd);
-            if (header->packetID != CRP_PACKET_OK)
+            if (header == NULL || header->packetID != CRP_PACKET_OK)
             {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
                 return 1;
@@ -226,7 +235,6 @@ static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *eve
         gtk_image_set_from_surface((GtkImage *) endwind, surface8);  //设置关闭按钮
         destroy_surfaces();
         gtk_widget_destroy(newwindow);
-        //gtk_main_quit();
     }
     return 0;
 }

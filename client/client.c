@@ -6,14 +6,13 @@
 #include <pwd.h>
 #include <sys/stat.h>
 #include <imcommon/friends.h>
+#include <arpa/inet.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
-#include "audio.h"
-#include "OnlineFile.h"
 
 static GtkWidget *imageremember, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
@@ -40,6 +39,11 @@ static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
 
+//IP填写界面所需变量
+static GtkWidget *IpFillinWind, *IpLayout;
+static GtkWidget *IpBackg, *IpSure, *IpFillText;
+static cairo_surface_t *IpFillBackgface, *IpAnniuface, *IpAnniuface1;
+char checkmulu_ip[80];
 
 void open_setting_file(FILE *fp)
 {
@@ -129,19 +133,8 @@ void open_setting_file(FILE *fp)
     }
 }
 
-
 gboolean MyThread(gpointer user_data)//合并
 {
-    pthread_create(&ThreadListenOnLine,
-                   NULL,
-                   ListenOnLineTrans,
-                   NULL);
-
-
-    //这里是高铭的代码。用来初始化音视频的数据
-    the_log_request_friend_discover.uid=-1;
-    the_log_request_friend_discover.requset_reason=-1;
-    //初始化音视频结束
     gtk_widget_destroy(window);
     FILE *fp;
     char wordfile[256];
@@ -678,14 +671,170 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+
+//填写IP背景的eventbox拖曳窗口
+static gint ipbackg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+
+    gdk_window_set_cursor(gtk_widget_get_window(IpFillinWind), gdk_cursor_new(GDK_ARROW));
+    if (event->button == 1)
+    { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
+        gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
+                                   event->x_root, event->y_root, event->time);
+    }
+    return 0;
+}
+
+//保存
+//鼠标点击事件
+static gint ipsure_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+
+    if (event->button == 1)
+    {
+        gdk_window_set_cursor(gtk_widget_get_window(IpFillinWind), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+    }
+    return 0;
+}
+
+//保存
+//鼠标抬起事件
+static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    if (event->button == 1)
+    {
+        const gchar *ipstrings;
+        struct in_addr inp;
+        ipstrings = gtk_entry_get_text(GTK_ENTRY(IpFillText));
+        if ((inet_aton(ipstrings, &inp)) == 1)
+        {
+            int fd = socket(AF_INET, SOCK_STREAM, 0);
+            struct sockaddr_in server_addr = {
+                    .sin_family=AF_INET,
+                    .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+                    //.sin_addr.s_addr=inp.s_addr,
+                    .sin_port=htons(8014)
+            };
+            if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+            {
+                perror("Connect");
+                popup("莫默告诉你：", "连接不到服务器");
+                return 0;
+            }
+            CRPContext sockfd = CRPOpen(fd);
+            log_info("Hello", "Sending Hello\n");
+            CRPHelloSend(sockfd, 0, 1, 1, 1, 0);
+            CRPBaseHeader *header;
+            log_info("Hello", "Waiting OK\n");
+            header = CRPRecv(sockfd);
+            if (header == NULL || header->packetID != CRP_PACKET_OK)
+            {
+                log_error("Hello", "Recv Packet:%d\n", header->packetID);
+                popup("莫默告诉你：", "连接不到服务器");
+                return 1;
+            }
+            else
+            {
+                FILE *ipfp;
+                ipfp = fopen(data, "a+");
+                fwrite(ipstrings, 1, strlen(ipstrings), ipfp);
+                fclose(ipfp);
+                gtk_widget_destroy(IpFillinWind);
+                loadloginLayout(NULL);//加载登陆界面
+            }
+
+        }
+        else
+        {
+            popup("莫默告诉你：", "请输入正确的IP地址");
+        }
+    }
+    return 0;
+}
+
+//保存
+//鼠标移动事件
+static gint ipsure_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(IpFillinWind), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) IpSure, IpAnniuface1); //置换图标
+    return 0;
+}
+
+//保存
+//鼠标离开事件
+static gint ipsure_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(IpFillinWind), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) IpSure, IpAnniuface);
+    return 0;
+}
+
+int FillinIp(char *filename)
+{
+    static GtkEventBox *IpBackg_event_box, *IpSure_event_box;
+    IpFillinWind = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    gtk_window_set_position(GTK_WINDOW(IpFillinWind), GTK_WIN_POS_CENTER);//窗口位置
+    gtk_window_set_resizable(GTK_WINDOW(IpFillinWind), FALSE);//固定窗口大小
+    gtk_window_set_decorated(GTK_WINDOW(IpFillinWind), FALSE);//去掉边框
+    gtk_widget_set_size_request(GTK_WIDGET(IpFillinWind), 432, 238);
+
+    IpLayout = gtk_fixed_new();
+    IpFillBackgface = cairo_image_surface_create_from_png("首次登陆.png");
+    IpAnniuface = ChangeThem_png("提示框按钮1.png");
+    IpAnniuface1 = ChangeThem_png("提示框按钮2.png");
+
+    gtk_container_add(GTK_CONTAINER(IpFillinWind), IpLayout);
+
+    IpBackg = gtk_image_new_from_surface(IpFillBackgface);
+    IpSure = gtk_image_new_from_surface(IpAnniuface);
+
+    IpBackg_event_box = BuildEventBox(IpBackg,
+                                      G_CALLBACK(ipbackg_button_press_event),
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL,
+                                      NULL);
+    gtk_fixed_put(GTK_FIXED(IpLayout), IpBackg_event_box, 0, 0);
+
+    IpSure_event_box = BuildEventBox(IpSure,
+                                     G_CALLBACK(ipsure_button_press_event),
+                                     G_CALLBACK(ipsure_enter_notify_event),
+                                     G_CALLBACK(ipsure_leave_notify_event),
+                                     G_CALLBACK(ipsure_button_release_event),
+                                     NULL,
+                                     filename);
+    gtk_fixed_put(GTK_FIXED(IpLayout), IpSure_event_box, 143, 180);
+
+    IpFillText = gtk_entry_new();
+    gtk_fixed_put(GTK_FIXED(IpLayout), IpFillText, 125, 130);
+    gtk_widget_show_all(IpFillinWind);
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     //初始化GTK+程序
     gtk_init(&argc, &argv);
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
-
-    loadloginLayout("ad");//加载登陆界面
-
+    char checkmulu[80], minglingcp[256], checkmulu_theme[80];
+    sprintf(checkmulu, "%s/.momo", getpwuid(getuid())->pw_dir);
+    sprintf(checkmulu_ip, "%s/ip", checkmulu);
+    sprintf(minglingcp, "cp -r /opt/momo/theme %s/theme/", checkmulu);
+    mkdir(checkmulu, 0700);
+    if (access(checkmulu_ip, 0) != 0)
+    {
+        system(minglingcp);
+        sprintf(checkmulu_theme, "%s/theme/cartoon", checkmulu);
+        sprintf(checkmulu, "%s/current_theme", checkmulu);
+        symlink(checkmulu_theme, checkmulu);
+        FillinIp(checkmulu_ip);
+    }
+    else
+    {
+        loadloginLayout("ad");//加载登陆界面
+    }
     gtk_main();
     destroy_surfaces();
     return 0;
@@ -812,8 +961,8 @@ gboolean loadloginLayout(gpointer user_data)
 
     LoginWindowPassWordBox = gtk_entry_new();
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度
- //   gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
- //   gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
+    //   gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
+    //   gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
 
     gtk_entry_set_visibility(GTK_ENTRY(LoginWindowPassWordBox), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(LoginWindowPassWordBox), '*');

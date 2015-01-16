@@ -433,9 +433,16 @@ int mysockfd()
     char mulu[80] = {0};
     char mulu2[80] = {0};
     int fd = socket(AF_INET, SOCK_STREAM, 0);
+    FILE *ipfp1;
+    char myip[80];
+    struct in_addr inp;
+    ipfp1 = fopen(checkmulu_ip, "r");
+    fread(myip, 1, 80, ipfp1);
+    inet_aton(myip, &inp);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
-            .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+            //.sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+            .sin_addr.s_addr=inp.s_addr,
             .sin_port=htons(8014)
     };
 
@@ -451,7 +458,7 @@ int mysockfd()
     CRPHelloSend(sockfd, 0, 1, 1, 1, 1);
     CRPBaseHeader *header;
     header = CRPRecv(sockfd);
-    if (header->packetID != CRP_PACKET_OK)
+    if (header == NULL || header->packetID != CRP_PACKET_OK)
     {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 0;
