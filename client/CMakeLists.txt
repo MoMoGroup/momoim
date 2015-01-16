@@ -21,7 +21,6 @@ SET(CLIENT_SOURCE_FILE
     common/util.c
     common/draw.c
     Infomation.c
-    addfriend.c
     UpdataFriendList.c
     onlylookinfo.c
     changestatus.c
@@ -33,6 +32,8 @@ SET(CLIENT_SOURCE_FILE
     managegroup/RenameGroup.c
     managegroup/MoveGroup.c
     manage_friend/DeleteFriend.c
+    manage_friend/AcceptFriendRequest.c
+    manage_friend/AddFriend.c
     ChartRecord.c
     OnlineFile.c
     )
