@@ -12,6 +12,8 @@
 #include "managegroup/ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
+#include "OnlineFile.h"
+#include "addfriend.h"
 
 static GtkWidget *status;
 
@@ -1183,6 +1185,7 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
 
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
+   // OnlineFileButtonEvent(1, 10001);
 
     if (AddFriendflag)//判断是否打开搜索窗口
     {

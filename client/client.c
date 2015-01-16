@@ -139,8 +139,8 @@ gboolean MyThread(gpointer user_data)//合并
 
 
     //这里是高铭的代码。用来初始化音视频的数据
-    the_log_request_friend_discover.uid=-1;
-    the_log_request_friend_discover.requset_reason=-1;
+    //the_log_request_friend_discover.uid=-1;
+    //the_log_request_friend_discover.requset_reason=-1;
     //初始化音视频结束
     gtk_widget_destroy(window);
     FILE *fp;

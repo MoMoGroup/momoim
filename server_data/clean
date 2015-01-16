@@ -1,7 +1,18 @@
-rm -rf user/*
-rm auth.db
+rm -rf user/* temp/*
+rm auth.db info.db
 sqlite3 auth.db <<-'EOF'
-.read auth.sql
+CREATE TABLE users(
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+name varchar UNIQUE,
+key varchar
+);
+INSERT INTO sqlite_sequence VALUES('users',9999);
 .q
 EOF
-
+sqlite3 info.db <<-'EOF'
+CREATE TABLE info(
+uid INTEGER PRIMARY KEY,
+nick varchar
+);
+.q
+EOF

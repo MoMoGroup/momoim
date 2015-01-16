@@ -14,6 +14,7 @@
 #include <pthread.h>
 #include <gtk/gtk.h>
 #include "yuv422_rgb.h"
+#include "video.h"
 
 #define SERVERPORT 5555
 
@@ -273,8 +274,6 @@ int primary_video(int argc,char *argv) {
         perror("recv socket\n");
         exit(1);
     }
-    int on = 1;
-    setsockopt(sock_recv, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
     ret = bind(sock_recv, (struct sockaddr *) &addr_my, sizeof(struct sockaddr_in));
     if (ret == -1) {
         perror("bind");
@@ -285,12 +284,25 @@ int primary_video(int argc,char *argv) {
         perror("listen\n");
         exit(1);
     }
+    int on = 1;
+    setsockopt(sock_recv, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+//    ret = bind(sock_recv, (struct sockaddr *) &addr_my, sizeof(struct sockaddr_in));
+//    if (ret == -1) {
+//        perror("bind");
+//        exit(1);
+//    }
+//    ret = listen(sock_recv, 1);
+//    if (ret == -1) {
+//        perror("listen\n");
+//        exit(1);
+//    }
     //////////////////////////////////////////////////////////////////
     ///////////////////////这里是连接设置的部分//////////////////////////
     /*根据参数写不写地址分成两个不同的进程，写地址的尝试连接对方的进程，不写地址的进程等待对方连接*/
     int newsd;
     if (argc >= 2) {
         ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
+
         if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
             perror("connect");
             close(sock_send);
@@ -299,9 +311,11 @@ int primary_video(int argc,char *argv) {
         }
         if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
             perror("accept");
+
     }
 
     else {
+
         if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
             perror("accept");
         addr_opposite.sin_port = htons(SERVERPORT);
@@ -345,9 +359,10 @@ int primary_video(int argc,char *argv) {
     return 0;
 }
 
+/*
 
 int main(int argc,char**argv){
-    gtk_init(&argc, &argv);
+    //gtk_init(&argc, &argv);
     if(argc==1)primary_video(1,NULL);
     if(argc==2)primary_video(2,argv[1]);
-}
+}*/

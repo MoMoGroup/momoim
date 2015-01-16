@@ -25,6 +25,13 @@ int kong()
     log_info("da", "da");
 }
 
+}
+
+int askd()
+{
+
+}
+
 
 int OnlineFileButtonEvent(uint8_t gid, uint32_t uid)
 {
@@ -32,8 +39,10 @@ int OnlineFileButtonEvent(uint8_t gid, uint32_t uid)
     uint32_t sessionid = CountSessionId();
     AddMessageNode(sessionid, kong, NULL);
 
-    CRPNETFriendDiscoverSend(sockfd, sessionid, gid, uid, CRPFDR_ONLINE_FILE);
+    session_id_t sid = CountSessionId();
+    AddMessageNode(sid, askd, NULL);//给sid注册一个函数，此sid
 
+    CRPNETFriendDiscoverSend(sockfd, sessionid, gid, uid, CRPFDR_ONLINE_FILE, sid);
 
     return 0;
 }
