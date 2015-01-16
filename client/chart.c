@@ -201,20 +201,14 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
                 }
             }
         }
-        friends->groups[i].friends[j];
+        //friends->groups[i].friends[j];
         session_id_t session_id_video_release=CountSessionId();
-        //struct Audio_Request_Info *audio_data_opposite;
-        //audio_data_opposite ->uid=info->user.uid;
-        //audio_data_opposite ->audio_data=NULL;
-        //audio_data_opposite ->audiocount=0;
-        //audio_data_opposite ->charlen=0;
-        //audio_data_opposite ->
 
 
         //同一时间只允许发起一个请求
-        if(the_log_request_friend_discover.uid!=-1){
-            g_idle_add(popup_request_num_limit, NULL);
-        }
+        //if(the_log_request_friend_discover.uid!=-1){
+          //  g_idle_add(popup_request_num_limit, NULL);
+        //}
         the_log_request_friend_discover.uid=info->user.uid;
         the_log_request_friend_discover.requset_reason=NET_DISCOVER_AUDIO;
         AddMessageNode(session_id_video_release , deal_dicover_send_feedback, NULL);
@@ -224,7 +218,8 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
                                  session_id_video_release,
                                  gid_audio,
                                  info->uid,
-                                 CRPFDR_AUDIO);
+                                 CRPFDR_AUDIO,session_id_video_release
+                                );
 
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
 
@@ -281,6 +276,39 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
+        uint8_t gid_video;
+        int quantity_group=friends->groupCount;
+        //用来找出gid
+        int i,j=0;
+        for(i=0;i<quantity_group;i++){
+            for(j=0;j<friends->groups[i].friendCount;j++){
+                if(friends->groups[i].friends[j]==info->user.uid){
+                    gid_video=friends->groups[i].groupId;
+                    break;
+                }
+            }
+        }
+        session_id_t session_id_video_send=CountSessionId();//SESSION用来处理请求送达与否
+        session_id_t session_id_video_feedback= CountSessionId();//这个SESSION用来处理请求同意的情况
+        //同一时间只允许发起一个请求
+        //if(the_log_request_friend_discover.uid!=-1){
+          //  g_idle_add(popup_request_num_limit, NULL);
+        //}
+        the_log_request_friend_discover.uid=info->user.uid;
+        the_log_request_friend_discover.requset_reason=NET_DISCOVER_VIDEO;
+
+        AddMessageNode(session_id_video_send , deal_dicover_send_feedback, NULL);
+        //AddMessageNode(session_id_video_feedback, initiative_video, NULL);
+
+        CRPNETFriendDiscoverSend(sockfd,
+                                 session_id_video_send,
+                                 gid_video,
+                                 info->uid,
+                                 CRPFDR_VEDIO,
+                                 session_id_video_feedback
+                                );
+
+
         gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1);
     }
     return 0;

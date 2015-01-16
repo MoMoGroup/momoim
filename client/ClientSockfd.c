@@ -230,7 +230,8 @@ gboolean treatment_request_audio_net_discover(gpointer user_data)
             }
             else
             {
-                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), header->uid);
+
+                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), header->uid, CountSessionId());
                 gtk_widget_destroy(dialog_request_audio_net_discover);
                 return 0;
             }
@@ -303,7 +304,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 case CRPFDR_VEDIO:
                 {
                     log_info("Serve Message", "视频请求\n");
-                    //g_idle_add(treatment_request_vedio_net_discover,audio_data);
+                    g_idle_add(treatment_request_video_net_discover,audio_data);
                     break;
                 };
                     //在线文件的包
@@ -323,6 +324,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //g_idle_add(Pretreatment_request_audio_net_discover,audio_data);
             break;
         };
+            /*
             //对方同意好友发现
         case CRP_PACKET_NET_DISCOVER_ACCEPT:
         {
@@ -336,7 +338,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             }
 
             break;
-        }
+        }*/
             //对方拒绝好友发现
         case CRP_PACKET_NET_DISCOVER_REFUSE:
         {
