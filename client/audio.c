@@ -88,9 +88,9 @@ int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid){
 
         log_info("UID", "%u\n",info->uid);
 
-        struct in_addr *addr;
-        addr->s_addr = info ->ipv4;
-        char *ip = inet_ntoa(*addr);
+        struct in_addr addr;
+        addr.s_addr = info ->ipv4;
+        char *ip = inet_ntoa(addr);
 
         //这里运行　视频函数，需要对方ip地址
         primary_video(2,ip);
