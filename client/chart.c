@@ -202,7 +202,8 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
             }
         }
         //friends->groups[i].friends[j];
-        session_id_t session_id_video_release=CountSessionId();
+        session_id_t session_id_audio_server_feedback=CountSessionId();//服务器返回处理函数的session
+        session_id_t session_id_audio_feedback= CountSessionId();//对方同意与否的处理函数session
 
 
         //同一时间只允许发起一个请求
@@ -211,14 +212,15 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
         //}
         the_log_request_friend_discover.uid=info->user.uid;
         the_log_request_friend_discover.requset_reason=NET_DISCOVER_AUDIO;
-        AddMessageNode(session_id_video_release , deal_dicover_send_feedback, NULL);
-        //CRPFriendDiscoverSend(sockfd , session_id_video_release, gid_audio, info->user.uid);
+        AddMessageNode(session_id_audio_server_feedback , deal_video_dicover_server_feedback, NULL);
+        AddMessageNode(session_id_audio_feedback, deal_audio_feedback, NULL);
 
         CRPNETFriendDiscoverSend(sockfd,
-                                 session_id_video_release,
+                                 session_id_audio_server_feedback,
                                  gid_audio,
                                  info->uid,
-                                 CRPFDR_AUDIO,session_id_video_release
+                                 CRPFDR_AUDIO,
+                                 session_id_audio_feedback
                                 );
 
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
@@ -288,7 +290,7 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
                 }
             }
         }
-        session_id_t session_id_video_send=CountSessionId();//SESSION用来处理请求送达与否
+        session_id_t session_id_video_server_feedback=CountSessionId();//SESSION用来处理请求送达与否
         session_id_t session_id_video_feedback= CountSessionId();//这个SESSION用来处理请求同意的情况
         //同一时间只允许发起一个请求
         //if(the_log_request_friend_discover.uid!=-1){
@@ -297,11 +299,11 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
         the_log_request_friend_discover.uid=info->user.uid;
         the_log_request_friend_discover.requset_reason=NET_DISCOVER_VIDEO;
 
-        AddMessageNode(session_id_video_send , deal_dicover_send_feedback, NULL);
-        //AddMessageNode(session_id_video_feedback, initiative_video, NULL);
+        AddMessageNode(session_id_video_server_feedback , deal_video_dicover_server_feedback, NULL);
+        AddMessageNode(session_id_video_feedback, deal_video_feedback, NULL);
 
         CRPNETFriendDiscoverSend(sockfd,
-                                 session_id_video_send,
+                                 session_id_video_server_feedback,
                                  gid_video,
                                  info->uid,
                                  CRPFDR_VEDIO,

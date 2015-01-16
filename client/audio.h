@@ -17,4 +17,9 @@ int  audio_request_refuse();
 int popup_request_num_limit(gpointer);
 int  audio_request_accept();
 int  video_request_accept();
-gboolean treatment_request_video_net_discover(gpointer );
+
+gboolean treatment_request_audio_discover(gpointer );
+gboolean treatment_request_video_discover(gpointer );
+int deal_video_dicover_server_feedback(CRPBaseHeader *, u_int32_t );
+int deal_video_feedback(CRPBaseHeader *, u_int32_t );
+int deal_audio_feedback(CRPBaseHeader *, u_int32_t );
