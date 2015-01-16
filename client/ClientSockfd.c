@@ -13,7 +13,6 @@
 #include "MainInterface.h"
 #include "common.h"
 #include "UpdataFriendList.h"
-#include "addfriend.h"
 #include "manage_friend/friend.h"
 #include "audio.h"
 #include "OnlineFile.h"
