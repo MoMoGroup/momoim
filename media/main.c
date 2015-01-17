@@ -39,7 +39,7 @@ pthread_t tid1, tid2, tid3;
 
 int is_jpeg_error = 1;
 
-int read_JPEG_file(char *buf1, char *buf2);
+int read_JPEG_file(char *buf1, char *buf2, size_t bufSize);
 
 //////////////////////循环队列/////////////////////////
 static pthread_mutex_t mutex_send, mutex_recv;
@@ -229,9 +229,7 @@ void *pthread_snd(void *socketsd)
 
         errno = 0;
         send(sd, &q_send->jpeglen, sizeof(int), MSG_MORE);
-        fprintf(stderr, "fd:%d,err:%s\n", sd, strerror(errno));
         send(sd, q_send->jpeg_buf, q_send->jpeglen, 0);
-        fprintf(stderr, "fd:%d,err:%s\n", sd, strerror(errno));
 
         free(q_send);
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -244,6 +242,7 @@ void *pthread_rev(void *socketrev)
 {
     int sd = (*(int *) socketrev);
     jpeg_str *p_recv;
+    ssize_t ret;
     while (1)
     {
         //pthread_mutex_lock(&g_lock_recv);
@@ -257,15 +256,13 @@ void *pthread_rev(void *socketrev)
         //////////////////////////////////////接受的循环队列/////////////////////////////////////////
         p_recv = (struct jpeg_str *) malloc(50000);
         errno = 0;
-        recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
-        perror("recv");
-        if (errno)
+        ret = recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
+        if (ret <= 0)
         {
-            return NULL;
+            perror("recv");
         }
         errno = 0;
         recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
-        perror("recv");
 
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
@@ -299,7 +296,7 @@ gboolean idleDraw(gpointer data)
     pthread_mutex_unlock(&mutex_recv);
 
     //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
-    if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf))
+    if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf, (size_t) q_recv->jpeglen))
     {
         log_error("Draw", "Frame\n");
         ////////////////////////////////////////////////////////////////////////////////////////////
