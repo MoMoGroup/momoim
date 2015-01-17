@@ -218,11 +218,11 @@ gint delete_event() {
     pthread_cancel(tid1);
     pthread_cancel(tid2);
     pthread_cancel(tid3);
+    free(rgbBuf);
     return FALSE;
 }
 
-void *guiMain(void *button) {
-    pthread_detach(pthread_self());
+int guiMain(void *button) {
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
     GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
@@ -231,8 +231,6 @@ void *guiMain(void *button) {
     g_idle_add(idleDraw, image);
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(image));
     gtk_widget_show_all(GTK_WIDGET(window));
-    gtk_main();
-    free(rgbBuf);
     return 0;
 }
 
@@ -344,8 +342,7 @@ void* primary_video(struct sockaddr_in*addr) {
     mark();
     localMem();
     ret = pthread_create(&tid1, NULL, pthread_video, NULL);
-    pthread_t tGui;
-    pthread_create(&tGui, NULL, guiMain, NULL);
+    g_idle_add(guiMain, NULL);
     ret = pthread_create(&tid3, NULL, pthread_rev, &newsd);
     ret = pthread_create(&tid2, NULL, pthread_snd, &sock_send);
     pthread_join(tid1, NULL);
