@@ -2,6 +2,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <logger.h>
 #include "run/natTraversal.h"
 
@@ -21,6 +22,12 @@ void NatHostFinalize()
 
 HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], void(*fn)(struct sockaddr_in *, void *), void *data)
 {
+    char hexKey[65] = {0};
+    for (int i = 0; i < 32; ++i)
+    {
+        sprintf(hexKey + i * 2, "%02x", key[i]);
+    }
+    log_info("NatDiscover", "Key:%s\n", hexKey);
     pthread_rwlock_wrlock(&lock);
     HostDiscoverEntry *entry = (HostDiscoverEntry *) malloc(sizeof(HostDiscoverEntry));
     entry->fn = fn;
@@ -66,13 +73,18 @@ int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
 
 void NatHostDiscoverNotify(struct sockaddr_in *address, const char key[32])
 {
+    char hexKey[65] = {0};
+    for (int i = 0; i < 32; ++i)
+    {
+        sprintf(hexKey + i * 2, "%02x", key[i]);
+    }
+    log_info("NatNotify", "Key:%s\n", hexKey);
     HostDiscoverEntry *entry = NULL;
     pthread_rwlock_rdlock(&lock);
     for (entry = table.first; entry != NULL; entry = entry->next)
     {
         if (memcmp(key, entry->key, 32) == 0)
         {
-            log_info("Detected", "\n");
             break;
         }
     }

@@ -222,6 +222,7 @@ static void *process(void *data)
                     pthread_cleanup_pop(1);
             pthread_cleanup_pop(1);
     pthread_cleanup_pop(1);
+    return 0;
 }
 
 void StartAudioChat_Recv(int sendSock)
