@@ -5,35 +5,31 @@
 #include<string.h>
 #include <pthread.h>
 #include <alsa/asoundlib.h>
-#include <semaphore.h>
 #include "sound.h"
-#include "../logger/include/logger.h"
 
-pthread_t mainThread;
-char *devicename = "default";
-WAVContainer_t wav;
-SNDPCMContainer_t record;
-SNDPCMContainer_t playback;
-int netSocket;
-struct sockaddr_in addr_my;
-unsigned int sem_send_number = 0;
-unsigned int sem_recv_number = 0;
-sem_t sem_send;
-sem_t sem_recv;
+static pthread_t mainThread;
+static int netSocket;
 
-struct sockaddr_in addr_sendto;
-socklen_t addr_sendto_len;
-int sendtoAssigned;//收到第一帧获得对面ip地址之后解开锁...如果这个文件被有对方地址的函数调用。这个flag_send=1
-
+static struct sockaddr_in addr_sendto;
+static socklen_t addr_sendto_len;
+static int sendtoAssigned;
 //////////////////////循环队列/////////////////////////
-pthread_mutex_t mutex_send, mutex_recv;
-pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
-char *circle_buf_send[8], *circle_buf_recv[8];
-char **head_send, **tail_send, **head_recv, **tail_recv;
+static pthread_mutex_t mutex_send, mutex_recv;
+static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
+static char *circle_buf_send[8], *circle_buf_recv[8];
+static char **head_send, **tail_send, **head_recv, **tail_recv;
 
 //////////////////////////////////////////////////////
 void *record_routine(void *data)
 {
+    SNDPCMContainer_t record;
+    WAVContainer_t wav;
+    char bincode[] = {
+            0x52, 0x49, 0x46, 0x46, 0x64, 0x1f, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
+            0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x40, 0x1f, 0x00, 0x00, 0x40, 0x1f, 0x00, 0x00,
+            0x10, 0x00, 0x08, 0x00, 0x64, 0x61, 0x74, 0x61, 0x40, 0x1f, 0x00, 0x00
+    };
+    memcpy(&wav, &bincode, 44);
     //////////////////////////////////////////////////////////////////////////////////
     //创造一个新的输出对象的指针h
     if (snd_output_stdio_attach(&record.log, stderr, 0) < 0)
@@ -42,9 +38,9 @@ void *record_routine(void *data)
         goto Err;
     }
     //打开一路pcm。刷新config配置
-    if (snd_pcm_open(&record.handle, devicename, SND_PCM_STREAM_CAPTURE, 0) < 0)
+    if (snd_pcm_open(&record.handle, "default", SND_PCM_STREAM_CAPTURE, 0) < 0)
     {
-        fprintf(stderr, "Error snd_pcm_open [ %s]\n", devicename);
+        fprintf(stderr, "Error snd_pcm_open [ default]\n");
         goto Err;
     }
     //设置参数
@@ -62,7 +58,6 @@ void *record_routine(void *data)
     {
         p_send = (char *) malloc(1000);
         snd_pcm_readi(record.handle, p_send, 1000);
-        log_info("record", "\n");
         pthread_mutex_lock(&mutex_send);
         while (*head_send) pthread_cond_wait(&send_idle, &mutex_send);
         *head_send = p_send;
@@ -88,7 +83,6 @@ void *send_routine(void *data)
         pthread_cond_signal(&send_idle);
         pthread_mutex_unlock(&mutex_send);
         sendto(netSocket, q_send, 1000, 0, (struct sockaddr *) &addr_sendto, sizeof(struct sockaddr_in));
-        perror("send");
         free(q_send);
     }
 }
@@ -106,7 +100,6 @@ void *recv_routine(void *data)
             sendtoAssigned = 0;
         }
 
-        log_info("recv", "\n");
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
         {
@@ -126,7 +119,8 @@ void *recv_routine(void *data)
 
 void *play_routine(void *data)
 {
-    ///////////////////////////////////////数据预处理///////////////////////////////////////////////
+    SNDPCMContainer_t playback;
+    WAVContainer_t wav;
     char bincode[] = {
             0x52, 0x49, 0x46, 0x46, 0x64, 0x1f, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
             0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x40, 0x1f, 0x00, 0x00, 0x40, 0x1f, 0x00, 0x00,
@@ -139,9 +133,9 @@ void *play_routine(void *data)
         goto Err;
     }
     //打开一路pcm。刷新config配置
-    if (snd_pcm_open(&playback.handle, devicename, SND_PCM_STREAM_PLAYBACK, 0) < 0)
+    if (snd_pcm_open(&playback.handle, "default", SND_PCM_STREAM_PLAYBACK, 0) < 0)
     {
-        fprintf(stderr, "Error snd_pcm_open [ %s]\n", devicename);
+        fprintf(stderr, "Error snd_pcm_open [ default ]\n");
         goto Err;
     }
     //设置参数
@@ -165,7 +159,6 @@ void *play_routine(void *data)
         playback.data_buf = q_recv;
         SNDWAV_WritePcm(&playback, 1000);
         //snd_pcm_writei(playback.handle, q_recv, 1000);
-        log_info("play", "\n");
         //SNDWAV_WritePcm(&playback, 1000);
         free(q_recv);
     }
@@ -175,9 +168,9 @@ void *play_routine(void *data)
 
 
     Err:
-    if (record.data_buf) free(record.data_buf);
-    if (record.log) snd_output_close(record.log);
-    if (record.handle) snd_pcm_close(record.handle);
+    if (playback.data_buf) free(playback.data_buf);
+    if (playback.log) snd_output_close(playback.log);
+    if (playback.handle) snd_pcm_close(playback.handle);
     return 0;
 }
 
@@ -226,7 +219,6 @@ static void *process(void *data)
 
 void StartAudioChat_Recv(int sendSock)
 {
-    log_info("Recv", "start\n");
     if (mainThread)
     {
         pthread_cancel(mainThread);
@@ -240,7 +232,6 @@ void StartAudioChat_Recv(int sendSock)
 
 void StartAudioChat_Send(struct sockaddr_in *addr)
 {
-    log_info("Send", "start\n");
     if (mainThread)
     {
         pthread_cancel(mainThread);
@@ -250,4 +241,10 @@ void StartAudioChat_Send(struct sockaddr_in *addr)
     addr_sendto = *addr;
     netSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     pthread_create(&mainThread, NULL, process, NULL);
+}
+
+void StopAudioChat(void)
+{
+    pthread_cancel(mainThread);
+    mainThread = 0;
 }

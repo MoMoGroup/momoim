@@ -108,3 +108,4 @@ int SNDWAV_SetParams(SNDPCMContainer_t *sndpcm, WAVContainer_t *wav);
 void StartAudioChat_Recv(int sendSock);
 
 void StartAudioChat_Send(struct sockaddr_in *addr);
+void StopAudioChat(void);
