@@ -229,8 +229,9 @@ void *pthread_snd(void *socketsd)
         pthread_cond_signal(&send_idle);
         pthread_mutex_unlock(&mutex_send);
 
-
-        send(sd, q_send->jpeglen, sizeof(int), MSG_MORE);
+        errno = 0;
+        send(sd, &q_send->jpeglen, sizeof(int), MSG_MORE);
+        fprintf(stderr, "fd:%d,err:%s\n",sd, strerror(errno));
         send(sd, q_send->jpeg_buf, q_send->jpeglen, 0);
         free(q_send);
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -243,7 +244,6 @@ void *pthread_rev(void *socketrev)
 {
     pthread_detach(pthread_self());
     int sd = (*(int *) socketrev);
-    uint64_t jpeg_size_opposite;
     jpeg_str *p_recv;
     while (1)
     {
@@ -257,8 +257,9 @@ void *pthread_rev(void *socketrev)
         //pthread_mutex_unlock(&g_lock_recv);
         //////////////////////////////////////接受的循环队列/////////////////////////////////////////
         p_recv = (struct jpeg_str *) malloc(50000);
+        errno = 0;
         recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
-        recv(sd, p_recv->jpeg_buf, p_recv->jpeglen, MSG_WAITALL);
+        recv(sd, p_recv->jpeg_buf, (size_t)p_recv->jpeglen, MSG_WAITALL);
 
 
         pthread_mutex_lock(&mutex_recv);
@@ -280,7 +281,12 @@ gboolean idleDraw(gpointer data)
 {
     jpeg_str *q_recv;
     pthread_mutex_lock(&mutex_recv);
-    while (!(*tail_recv)) pthread_cond_wait(&recv_busy, &mutex_recv);
+    if (!(*tail_recv))
+    {
+        pthread_mutex_unlock(&mutex_recv);
+        return 1;
+    }
+    //while (!(*tail_recv)) pthread_cond_wait(&recv_busy, &mutex_recv);
     q_recv = *tail_recv;
     *tail_recv = NULL;
     tail_recv = circle_buf_recv + (tail_recv - circle_buf_recv + 1) % (sizeof(circle_buf_recv) / sizeof(*circle_buf_recv));
