@@ -7,6 +7,7 @@
 #include <alsa/asoundlib.h>
 #include <semaphore.h>
 #include "sound.h"
+#include "../logger/include/logger.h"
 
 pthread_t mainThread;
 char *devicename = "default";
@@ -220,6 +221,7 @@ static void *process(void *data)
 
 void StartAudioChat_Recv(int sendSock)
 {
+    log_info("Recv", "start\n");
     if (mainThread)
     {
         pthread_cancel(mainThread);
@@ -233,6 +235,7 @@ void StartAudioChat_Recv(int sendSock)
 
 void StartAudioChat_Send(struct sockaddr_in *addr)
 {
+    log_info("Send", "start\n");
     if (mainThread)
     {
         pthread_cancel(mainThread);
