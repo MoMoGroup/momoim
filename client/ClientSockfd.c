@@ -15,7 +15,6 @@
 #include "UpdataFriendList.h"
 #include "manage_friend/friend.h"
 #include "audio.h"
-#include "OnlineFile.h"
 
 pthread_t ThreadKeepAlive;
 pthread_t ThreadListenOnLine;//监听在线传输文件的线程
@@ -183,7 +182,6 @@ int new_friend_info(CRPBaseHeader *header, void *data)
 }
 
 
-
 int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
 {
     switch (header->packetID)
@@ -215,7 +213,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
             log_info("Uid", "%u\n", info->uid);
 
-            Bbb(info->ipv4);
             struct in_addr addr;
             addr.s_addr = info->ipv4;
             char *ip = inet_ntoa(addr);
@@ -247,9 +244,9 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 case CRPFDR_VEDIO:
                 {
                     log_info("Serve Message", "视频请求\n");
-                    char *video_data_copy = (CRPPacketNETFriendDiscover *)malloc(sizeof(CRPPacketNETFriendDiscover));
-                    memcpy(video_data_copy,media_data,sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_video_discover,video_data_copy);
+                    char *video_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
+                    memcpy(video_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
+                    g_idle_add(treatment_request_video_discover, video_data_copy);
                     break;
                 };
                     //在线文件的包
@@ -313,6 +310,13 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
                     g_idle_add(OffLine, mem);
                     //free(mem);
+                    break;
+                };
+                case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
+                {
+//                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
+//                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
+
                     break;
                 };
                 case FNT_FRIEND_NEW://新好友
