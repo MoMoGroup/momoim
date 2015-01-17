@@ -36,11 +36,6 @@ int fd;
 
 pthread_t tid1, tid2, tid3;
 
-
-int is_jpeg_error = 1;
-
-int read_JPEG_file(char *buf1, char *buf2, size_t bufSize);
-
 //////////////////////循环队列/////////////////////////
 static pthread_mutex_t mutex_send, mutex_recv;
 static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
@@ -147,12 +142,12 @@ int video()
     memset(&buf, 0, sizeof(buf));
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
+    buf.index = 0;
 
 
     jpeg_str *p_send;
     while (1)
     {
-        buf.index = (buf.index + 1) % 4;
         if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1)
         {
             printf("ioctl未知情况\n");
@@ -169,6 +164,9 @@ int video()
         p_send = (jpeg_str *) malloc(50000);
         p_send->jpeglen = (int) jpegWrite(tempbuf, p_send->jpeg_buf);
         free(tempbuf);
+        if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+            return -1;
+        }
         /////////////////////////////////////////采集循环队列/////////////////////////////////////////／
         //这里用来给p_send写好帧数据
         //memcpy(p_send->jpeg_buf, tempbuf, jpeg_size_my);
