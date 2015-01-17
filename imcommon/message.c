@@ -59,6 +59,7 @@ MessageFile *MessageFileOpen(const char *path)
     {
         return NULL;
     }
+    sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
     MessageFile *file = (MessageFile *) malloc(sizeof(MessageFile));
     if (file == NULL)
     {

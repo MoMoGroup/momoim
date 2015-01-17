@@ -1,5 +1,8 @@
 #include<pthread.h>
 #include<protocol.h>
+#include<logger.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define CLIENT_COUNT 200
 

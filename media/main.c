@@ -18,7 +18,7 @@
 
 #define SERVERPORT 5555
 
-struct sockaddr_in addr_opposite;
+struct sockaddr_in addr_sendto;
 
 typedef struct VideoBuffer {
     void *start;
@@ -234,7 +234,8 @@ int guiMain(void *button) {
     return 0;
 }
 
-void* primary_video(struct sockaddr_in*addr) {
+void *primary_video(struct sockaddr_in *addr)
+{
 
     signal(SIGPIPE, SIG_IGN);
     //////////////////////////////////////////////////////////////////
@@ -248,10 +249,10 @@ void* primary_video(struct sockaddr_in*addr) {
     /*连接设置是指先发送数据还是先接受数据*/
 
 
-    //struct sockaddr_in addr_opposite;
+    //struct sockaddr_in addr_sendto;
     socklen_t addrlen;
-    addr_opposite.sin_family = AF_INET;
-    addr_opposite.sin_port = htons(SERVERPORT);
+    addr_sendto.sin_family = AF_INET;
+    addr_sendto.sin_port = htons(SERVERPORT);
 
     //addrlen = sizeof(struct sockaddr_in);
     int sock_send = socket(AF_INET, SOCK_STREAM, 0);
@@ -299,25 +300,27 @@ void* primary_video(struct sockaddr_in*addr) {
     /*根据参数写不写地址分成两个不同的进程，写地址的尝试连接对方的进程，不写地址的进程等待对方连接*/
     int newsd;
     if (addr!=NULL) {
-        //ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
-        addr_opposite=*addr;
-        if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
+        //ret = inet_pton(AF_INET, argv, &addr_sendto.sin_addr);
+        addr_sendto = *addr;
+        if (connect(sock_send, (struct sockaddr *) &addr_sendto, sizeof(addr_sendto)) == -1)
+        {
             //perror("connect");
             close(sock_send);
             close(sock_recv);
             return 1;
         }
-        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
+        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_sendto, &addrlen)) == -1)
             perror("accept");
 
     }
 
     else {
 
-        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
+        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_sendto, &addrlen)) == -1)
             //perror("accept");
-        addr_opposite.sin_port = htons(SERVERPORT);
-        if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
+            addr_sendto.sin_port = htons(SERVERPORT);
+        if (connect(sock_send, (struct sockaddr *) &addr_sendto, sizeof(addr_sendto)) == -1)
+        {
             //perror("connect");
             close(sock_send);
             close(sock_recv);

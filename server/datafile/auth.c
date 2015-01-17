@@ -16,6 +16,7 @@ int AuthInit()
     {
         return 0;
     }
+    sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
     return 1;
 }
 

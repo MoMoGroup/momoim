@@ -1,5 +1,5 @@
 rm -rf user/* temp/*
-rm auth.db info.db
+rm auth.db* info.db*
 sqlite3 auth.db <<-'EOF'
 CREATE TABLE users(
 id INTEGER PRIMARY KEY AUTOINCREMENT,

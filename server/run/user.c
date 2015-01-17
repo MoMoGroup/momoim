@@ -282,9 +282,13 @@ static int OnlineTableGC(POnlineUsersTableType table)
     int child = 0;
     for (int i = 0; i < 0x10; ++i)
     {
-        if (table->next[i] && !OnlineTableGC(table->next[i]))
+        if (table->next[i])
         {
-            child++;
+            if (OnlineTableGC(table->next[i]))
+            {
+                table->next[i] = NULL;
+                child++;
+            }
         }
     }
 
@@ -337,7 +341,7 @@ int OnlineUserHold(POnlineUser user)
 
 void UserDrop(POnlineUser user)
 {
-    if (user)
+    if (user && user->state == OUS_ONLINE)
     {
         pthread_rwlock_unlock(user->holdLock);
     }

@@ -2,6 +2,7 @@
 #include <asm-generic/errno-base.h>
 #include <run/natTraversal.h>
 #include <stdlib.h>
+#include <logger.h>
 #include "run/user.h"
 
 typedef struct
@@ -14,8 +15,11 @@ typedef struct
 static int DiscoverCancelHandler(POnlineUser user, PUserOperation op)
 {
     DiscoverOperation *discoverOperation = op->data;
-    NatHostDiscoverUnregister(discoverOperation->discoverEntry);
-    free(discoverOperation);
+    if (discoverOperation)
+    {
+        NatHostDiscoverUnregister(discoverOperation->discoverEntry);
+        free(discoverOperation);
+    }
     op->onCancel = NULL;
     UserOperationUnregister(user, op);
     return 0;
@@ -28,10 +32,12 @@ static void DiscoverDetected(struct sockaddr_in *addr, void *data)
     POnlineUser user = OnlineUserGet(discoverOperation->uid);
     if (user)
     {
+        log_info("Discover", "UID:%u,Session:%u\n", user->uid, discoverOperation->session);
         CRPNATDetectedSend(user->crp, discoverOperation->session, addr);
         UserDrop(user);
     }
     free(discoverOperation);
+    op->data = NULL;
     op->onCancel = NULL;
     UserOperationUnregister(user, op);
 }
@@ -43,8 +49,9 @@ int ProcessPacketNETNATDiscover(POnlineUser user, uint32_t session, CRPPacketNAT
         DiscoverOperation *discoverOperation = (DiscoverOperation *) malloc(sizeof(DiscoverOperation));
         discoverOperation->uid = user->uid;
         discoverOperation->session = session;
-        discoverOperation->discoverEntry = NatHostDiscoverRegister(packet->key, DiscoverDetected, discoverOperation);
+        log_info("Discover", "Register User:%u,Session:%u\n", user->uid, session);
         PUserOperation operation = UserOperationRegister(user, session, CUOT_NAT_DISCOVER, discoverOperation);
+        discoverOperation->discoverEntry = NatHostDiscoverRegister(packet->key, DiscoverDetected, operation);
         operation->onCancel = DiscoverCancelHandler;
         UserOperationDrop(user, operation);
         CRPOKSend(user->crp, session);

@@ -2,6 +2,7 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <logger.h>
 #include "run/natTraversal.h"
 
 static HostDiscoverTable table;
@@ -27,7 +28,7 @@ HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], void(*fn)(struct 
     memcpy(entry->key, key, 32);
     entry->prev = table.last;
     entry->next = NULL;
-    if (table.last)
+    if (table.last == NULL)
     {
         table.first = table.last = entry;
     }
@@ -50,8 +51,14 @@ int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
     {
         table.first = entry->next;
     }
-    if (table.last == entry)
+    if (entry->next)
+    {
+        entry->next->prev = entry->prev;
+    }
+    else if (table.last == entry)
+    {
         table.last = entry->prev;
+    }
     free(entry);
     pthread_rwlock_unlock(&lock);
     return 1;
@@ -65,6 +72,7 @@ void NatHostDiscoverNotify(struct sockaddr_in *address, const char key[32])
     {
         if (memcmp(key, entry->key, 32) == 0)
         {
+            log_info("Detected", "\n");
             break;
         }
     }

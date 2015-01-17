@@ -4,9 +4,7 @@
 #include <stdlib.h>
 #include <logger.h>
 #include <common.h>
-#include <protocol/net/InetAddress.h>
 #include <arpa/inet.h>
-#include <protocol/net/FriendDiscover.h>
 #include "PopupWinds.h"
 #include "audio.h"
 #include "ClientSockfd.h"
@@ -19,28 +17,37 @@
 struct log_request_friend_discover the_log_request_friend_discover;
 
 //服务器送达数据包错误时弹窗
-static int popup_audio(gpointer p){
-    popup("错误","无法建立连接");
+static int popup_audio(gpointer p)
+{
+    popup("错误", "无法建立连接");
     return 0;
 }
+
 //对方拒绝请求时的弹窗
-static int popup_audio_request_refuse(gpointer p){
-    popup("消息","对方已拒绝您的音频请求");
+static int popup_audio_request_refuse(gpointer p)
+{
+    popup("消息", "对方已拒绝您的音频请求");
     return 0;
 }
+
 //对方同意请求时的弹窗
-static int popup_audio_request_accept(gpointer p){
-    popup("消息","对方已接受了您的音频请求");
+static int popup_audio_request_accept(gpointer p)
+{
+    popup("消息", "对方已接受了您的音频请求");
     return 0;
 }
+
 //对方拒绝请求时的弹窗
-static int popup_video_request_refuse(gpointer p){
-    popup("消息","对方已拒绝您的视频请求");
+static int popup_video_request_refuse(gpointer p)
+{
+    popup("消息", "对方已拒绝您的视频请求");
     return 0;
 }
+
 //对方同意请求时的弹窗
-static int popup_video_request_accept(gpointer p){
-    popup("消息","对方已接受了您的视频请求");
+static int popup_video_request_accept(gpointer p)
+{
+    popup("消息", "对方已接受了您的视频请求");
     return 0;
 }
 ////提示弹窗
@@ -51,8 +58,10 @@ static int popup_video_request_accept(gpointer p){
 
 //处理服务器发送net_friend_discover这个包的反馈函数
 //貌似音视频都可以用这个函数啊
-int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid){
-    if(header->packetID==CRP_PACKET_FAILURE) {
+int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid)
+{
+    if (header->packetID == CRP_PACKET_FAILURE)
+    {
         g_idle_add(popup_audio, NULL);
         //the_log_request_friend_discover.uid=-1;
         //the_log_request_friend_discover.requset_reason=-1;
@@ -62,59 +71,61 @@ int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid){
 
 
 //处理发送音频请求后，对方是否同意的函数
-int deal_audio_feedback(CRPBaseHeader *header, u_int32_t uid){
-    if(header->packetID==CRP_PACKET_NET_DISCOVER_REFUSE) {
-        g_idle_add(popup_audio_request_refuse, NULL);
-        //the_log_request_friend_discover.uid=-1;
-        //the_log_request_friend_discover.requset_reason=-1;
-    }
-    if(header->packetID==CRP_PACKET_NET_INET_ADDRESS){
-        g_print("对方接受了您的请求");
-        CRPPacketNETInetAddress *info = CRPNETInetAddressCast(header);
+int processNatDiscovered(CRPBaseHeader *header, void *data)
+{
+    struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
+    if (header->packetID == CRP_PACKET_NET_DETECTED)
+    {
+        CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
+        StartAudioChat_Send(&packet->addr);
 
-        log_info("UID", "%u\n",info->uid);
-
-        struct in_addr addr;
-        addr.s_addr = info ->ipv4;
-        char *ip = inet_ntoa(addr);
-        struct sockaddr_in *audio_addr_opposite=(struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
-        audio_addr_opposite->sin_addr=addr;
-        audio_addr_opposite->sin_family= AF_INET;
-        audio_addr_opposite->sin_port =htons(7777);
-        //这里运行　音频函数，需要对方ip地址
-        pthread_t pthd_audio_send;
-        pthread_create(&pthd_audio_send,
-                       NULL,
-                       primary_audio,
-                       audio_addr_opposite);
-        //primary_audio(2,ip);
+        if ((void *) packet != header->data)
+        {
+            free(packet);
+        }
+        return 0;
     }
-    return 0;
+    if (header->packetID == CRP_PACKET_OK)
+    {
+        if (!entry->messageSent)
+        {
+            CRPMessageNormalSend(sockfd, header->sessionID, UMT_NAT_REQUEST, entry->uid, 32, entry->key);
+            entry->messageSent = 1;
+        }
+        else
+        {
+
+        }
+    }
+    return 1;
 }
 
 
 //处理发送视频请求后，对方是否同意的函数
-int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid){
-    if(header->packetID==CRP_PACKET_NET_DISCOVER_REFUSE) {
+int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid)
+{
+    if (header->packetID == CRP_PACKET_NET_DISCOVER_REFUSE)
+    {
         g_idle_add(popup_video_request_refuse, NULL);
         //the_log_request_friend_discover.uid=-1;
         //the_log_request_friend_discover.requset_reason=-1;
     }
-    if(header->packetID==CRP_PACKET_NET_INET_ADDRESS){
+    if (header->packetID == CRP_PACKET_NET_INET_ADDRESS)
+    {
         g_print("对方接受了您的请求");
         CRPPacketNETInetAddress *info = CRPNETInetAddressCast(header);
 
-        log_info("UID", "%u\n",info->uid);
+        log_info("UID", "%u\n", info->uid);
 
         struct in_addr addr;
-        addr.s_addr = info ->ipv4;
+        addr.s_addr = info->ipv4;
         char *ip = inet_ntoa(addr);
-        log_info("ip","%s\n",ip);
-        struct sockaddr_in *addr_opposite=(struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+        log_info("ip", "%s\n", ip);
+        struct sockaddr_in *addr_opposite = (struct sockaddr_in *) malloc(sizeof(struct sockaddr_in));
 
-        addr_opposite->sin_family=AF_INET;
-        addr_opposite->sin_port=htons(5555);
-        addr_opposite->sin_addr=addr;
+        addr_opposite->sin_family = AF_INET;
+        addr_opposite->sin_port = htons(5555);
+        addr_opposite->sin_addr = addr;
         //这里运行　视频函数，需要对方ip地址
         pthread_t pthd_video;
         pthread_create(&pthd_video,
@@ -138,7 +149,7 @@ int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid){
 //        the_log_request_friend_discover.requset_reason=-1;
 //    }else{
 //        //被动方开始运行音频程序，不需要对方的ip地址
-////        primary_audio();
+////        AudioChatRoutine();
 //    }
 //    return 0;
 //}
@@ -162,83 +173,11 @@ int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid){
 //}
 
 
-
-
-
-//接到语音请求后的处理函数
-//包含接受或者拒绝
-gboolean treatment_request_audio_discover(gpointer user_data)
-{
-    CRPPacketNETFriendDiscover *header = (CRPPacketNETFriendDiscover *) user_data;
-    //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
-    //找到这个好友
-    FriendInfo *userinfo = FriendInfoHead;
-    int uidfindflag = 0;
-    while (userinfo)
-    {
-        if (userinfo->user.uid == header->uid)
-        {
-            uidfindflag = 1;
-            break;
-        }
-        else
-        {
-            userinfo = userinfo->next;
-        }
-    }
-    //如果找到这个好友
-    if (uidfindflag == 1)
-    {
-        //打开聊天窗口或者置前聊天窗口
-        if (userinfo->chartwindow == NULL)
-        {
-            MainChart(userinfo);
-        }
-        else
-        {
-            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
-        }
-        if (userinfo->chartwindow != NULL)
-        {
-
-            GtkWidget *dialog_request_audio_net_discover;
-
-            dialog_request_audio_net_discover = gtk_message_dialog_new(userinfo->chartwindow, GTK_DIALOG_MODAL,
-                                                                       GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
-                                                                       "莫默询问您：\n您想与这位好友语音聊天吗？");
-            gtk_window_set_title(GTK_WINDOW (dialog_request_audio_net_discover), "Question");
-            gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_audio_net_discover));
-            g_print("the result is %d\n", result);
-            if (result == -5)
-            {
-                gtk_widget_destroy(dialog_request_audio_net_discover);
-                pthread_t pthd_audio_recv;
-                pthread_create(&pthd_audio_recv,
-                               NULL,
-                               primary_audio,
-                               NULL);
-                //被动方打开音频程序，不需要对面ip地址
-                //primary_audio(1,NULL);
-                session_id_t accept_session= CountSessionId();
-                //AddMessageNode(accept_session, deal_audio_accept_feedback, NULL);
-                CRPNETDiscoverAcceptSend(sockfd,accept_session, header->uid, header->session);
-                return 0;
-            }
-            else
-            {
-                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), header->uid, header->session);
-                gtk_widget_destroy(dialog_request_audio_net_discover);
-                return 0;
-            }
-        }
-    }
-}
-
 //接到视频请求后的处理函数
 //同意或者拒绝
 gboolean treatment_request_video_discover(gpointer user_data)
 {
-    CRPPacketNETFriendDiscover *video_data = (CRPPacketNETFriendDiscover *)user_data;
+    CRPPacketNETFriendDiscover *video_data = (CRPPacketNETFriendDiscover *) user_data;
     //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
     //找到这个好友
     FriendInfo *userinfo = FriendInfoHead;
@@ -267,7 +206,7 @@ gboolean treatment_request_video_discover(gpointer user_data)
         {
             gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
-        if(userinfo -> chartwindow != NULL)
+        if (userinfo->chartwindow != NULL)
         {
 
             GtkWidget *dialog_request_video_net_discover;
@@ -277,7 +216,7 @@ gboolean treatment_request_video_discover(gpointer user_data)
                                                                        "莫默询问您：\n您想与这位好友视频聊天吗？");
             gtk_window_set_title(GTK_WINDOW (dialog_request_video_net_discover), "Question");
             gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_video_net_discover));
-            g_print("the result is %d\n",result);
+            g_print("the result is %d\n", result);
             if (result == -5)
             {
                 //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址.先打开监听程序然后再发送同意接受包
@@ -285,16 +224,16 @@ gboolean treatment_request_video_discover(gpointer user_data)
                 pthread_t pthd_video_recv;
                 pthread_create(&pthd_video_recv,
                                NULL,
-                               primary_audio,
+                               primary_video,
                                NULL);
-                session_id_t sessionid_accept=CountSessionId();
+                session_id_t sessionid_accept = CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
-                CRPNETDiscoverAcceptSend(sockfd , sessionid_accept, video_data->uid,video_data->session);
+                CRPNETDiscoverAcceptSend(sockfd, sessionid_accept, video_data->uid, video_data->session);
                 gtk_widget_destroy(dialog_request_video_net_discover);
             }
             else
             {
-                CRPNETDiscoverRefuseSend(sockfd , CountSessionId(), video_data->uid, video_data->session);
+                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), video_data->uid, video_data->session);
                 gtk_widget_destroy(dialog_request_video_net_discover);
             }
         }
