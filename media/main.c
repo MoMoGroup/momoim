@@ -20,7 +20,8 @@
 
 struct sockaddr_in addr_opposite;
 
-typedef struct VideoBuffer {
+typedef struct VideoBuffer
+{
     void *start;
     size_t length;
 } VideoBuffer;
@@ -42,16 +43,19 @@ int is_jpeg_error = 1;
 
 int read_JPEG_file(char *buf1, char *buf2);
 
-int mark() {
+int mark()
+{
     int ret;
     struct v4l2_capability cap;//»ñÈ¡ÊÓÆµÉè±žµÄ¹ŠÄÜ
     struct v4l2_format fmt;
 
-    do {
+    do
+    {
         ret = ioctl(fd, VIDIOC_QUERYCAP, &cap);
     } while (ret == -1 && errno == EAGAIN);
 
-    if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE) {
+    if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)
+    {
         printf("capability is V4L2_CAP_VIDEO_CAPTURE\n");
     }
 
@@ -60,7 +64,8 @@ int mark() {
     fmt.fmt.pix.width = 640;//¿í£¬±ØÐëÊÇ16µÄ±¶Êý
     fmt.fmt.pix.height = 480;//žß£¬±ØÐëÊÇ16µÄ±¶Êý
     fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;// ÊÓÆµÊýŸÝŽæŽ¢ÀàÐÍ
-    if (ioctl(fd, VIDIOC_S_FMT, &fmt) < 0) {
+    if (ioctl(fd, VIDIOC_S_FMT, &fmt) < 0)
+    {
         printf("set format failed\n");
         return -1;
     }
@@ -68,7 +73,8 @@ int mark() {
 }
 
 //ÉêÇëÎïÀíÄÚŽæ
-int localMem() {
+int localMem()
+{
     int numBufs = 0;
     struct v4l2_requestbuffers req;//·ÖÅäÄÚŽæ
     struct v4l2_buffer buf;
@@ -80,11 +86,13 @@ int localMem() {
     req.memory = V4L2_MEMORY_MMAP;
     buffers = (VideoBuffer *) calloc(req.count, sizeof(VideoBuffer));
 
-    if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
+    if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1)
+    {
         return -1;
     }
 
-    for (numBufs = 0; numBufs < req.count; numBufs++) {
+    for (numBufs = 0; numBufs < req.count; numBufs++)
+    {
         memset(&buf, 0, sizeof(buf));
 
         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
@@ -98,9 +106,10 @@ int localMem() {
         }
         buffers[numBufs].length = buf.length;
         buffers[numBufs].start = mmap(NULL, buf.length,
-                PROT_READ | PROT_WRITE,
-                MAP_SHARED, fd, buf.m.offset);//×ª»»³ÉÏà¶ÔµØÖ·
-        if (buffers[numBufs].start == MAP_FAILED) {
+                                      PROT_READ | PROT_WRITE,
+                                      MAP_SHARED, fd, buf.m.offset);//×ª»»³ÉÏà¶ÔµØÖ·
+        if (buffers[numBufs].start == MAP_FAILED)
+        {
             return -1;
         }
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)//·ÅÈë»ºŽæ¶ÓÁÐ
@@ -110,24 +119,29 @@ int localMem() {
     }
 }
 
-void video_on() {
+void video_on()
+{
     enum v4l2_buf_type type;
     type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    if (ioctl(fd, VIDIOC_STREAMON, &type) < 0) {
+    if (ioctl(fd, VIDIOC_STREAMON, &type) < 0)
+    {
         printf("VIDIOC_STREAMON error\n");
         // return -1;
     }
 }
 
-int video() {
+int video()
+{
     struct v4l2_buffer buf;
     memset(&buf, 0, sizeof(buf));
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = 0;
 
-    while (1) {
-        if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1) {
+    while (1)
+    {
+        if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1)
+        {
             return -1;
         }
         /////////////////////这里将yuv转化为jpeg///////////////////////////////////////////////////////
@@ -139,18 +153,17 @@ int video() {
         pthread_cond_signal(&g_cond_send);
         pthread_mutex_unlock(&g_lock_send);
         free(tempbuf);
-        if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
-            return -1;
-        }
     }
     return 0;
 }
 
-void *pthread_video(void *arg) {
+void *pthread_video(void *arg)
+{
     pthread_detach(pthread_self());
     video_on();
     /////////////////////
-    while (1) {
+    while (1)
+    {
         video();
     }
     /////////////////////
@@ -158,19 +171,21 @@ void *pthread_video(void *arg) {
 }
 
 
-
-void *pthread_snd(void *socketsd) {
+void *pthread_snd(void *socketsd)
+{
     pthread_detach(pthread_self());
     int sd = (*(int *) socketsd);
     int ret;
-    while (1) {
+    while (1)
+    {
         pthread_mutex_lock(&g_lock_send);
         pthread_cond_wait(&g_cond_send, &g_lock_send);
         send(sd, &(jpeg_size_my), sizeof(unsigned long), 0);
         //perror("send1");
         send(sd, jpegbuf_my, jpeg_size_my, O_NONBLOCK);
         //perror("send2");
-        if (ret == -1) {
+        if (ret == -1)
+        {
             printf("client is out\n");
         }
         pthread_mutex_unlock(&g_lock_send);
@@ -179,11 +194,13 @@ void *pthread_snd(void *socketsd) {
 }
 
 
-void *pthread_rev(void *socketrev) {
+void *pthread_rev(void *socketrev)
+{
     pthread_detach(pthread_self());
     int sd = (*(int *) socketrev);
     uint64_t jpeg_size_opposite;
-    while (1) {
+    while (1)
+    {
         pthread_mutex_lock(&g_lock_recv);
         recv(sd, &(jpeg_size_opposite), sizeof(uint64_t), 0);
         //perror("recv1");
@@ -197,13 +214,15 @@ void *pthread_rev(void *socketrev) {
 }
 
 
-gboolean idleDraw(gpointer data) {
+gboolean idleDraw(gpointer data)
+{
 
     pthread_mutex_lock(&g_lock_recv);
     pthread_cond_wait(&g_cond_recv, &g_lock_recv);
     //////////////////////////////在这里将jpeg数据转化为rgb数据////////////////////////////////////
 
-    if (read_JPEG_file(jpegbuf_opposite, rgbBuf)) {
+    if (read_JPEG_file(jpegbuf_opposite, rgbBuf))
+    {
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(rgbBuf, GDK_COLORSPACE_RGB, 0, 8, 640, 480, 640 * 3, NULL, NULL);
@@ -215,7 +234,8 @@ gboolean idleDraw(gpointer data) {
     return 1;
 }
 
-gint delete_event() {
+gint delete_event()
+{
     gtk_main_quit();
     pthread_cancel(tid1);
     pthread_cancel(tid2);
@@ -224,7 +244,8 @@ gint delete_event() {
     return FALSE;
 }
 
-int guiMain(void *button) {
+int guiMain(void *button)
+{
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
     GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
@@ -236,7 +257,8 @@ int guiMain(void *button) {
     return 0;
 }
 
-void* primary_video(struct sockaddr_in*addr) {
+void *primary_video(struct sockaddr_in *addr)
+{
 
     signal(SIGPIPE, SIG_IGN);
     //////////////////////////////////////////////////////////////////
@@ -257,48 +279,54 @@ void* primary_video(struct sockaddr_in*addr) {
 
     addrlen = sizeof(struct sockaddr_in);
     int netSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (netSocket == -1) {
+    if (netSocket == -1)
+    {
         perror("socket\n");
         return -1;
     }
 
-    if (addr!=NULL) {
+    if (addr != NULL)
+    {
         //ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
-        addr_opposite=*addr;
-        if (connect(netSocket, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
+        addr_opposite = *addr;
+        if (connect(netSocket, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1)
+        {
             perror("connect");
             close(netSocket);
             return 1;
         }
     }
-
-    else {
-
+    else
+    {
         struct sockaddr_in addr_my;
         bzero(&addr_my.sin_zero, sizeof(struct sockaddr));
         addr_my.sin_family = AF_INET;
         addr_my.sin_addr.s_addr = htons(INADDR_ANY);
         addr_my.sin_port = htons(SERVERPORT);
-        int listener= socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        int listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         int on = 1;
         setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
         ret = bind(listener, (struct sockaddr *) &addr_my, sizeof(struct sockaddr_in));
-        if (ret == -1) {
+        if (ret == -1)
+        {
             perror("bind");
             exit(1);
         }
         ret = listen(listener, 1);
-        if (ret == -1) {
+        if (ret == -1)
+        {
             perror("listen\n");
             exit(1);
         }
 
 
-        if ((netSocket = accept(listener, (struct sockaddr *) &addr_opposite, &addrlen)) == -1){
+        if ((netSocket = accept(listener, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
+        {
             perror("accept");
             close(listener);
             return 1;
         }
+        close(listener);
     }
     //////////////////////////////////////////////////////////////////
     ////////////////////////////////两个锁用来同步不同线程///////////////
@@ -308,7 +336,8 @@ void* primary_video(struct sockaddr_in*addr) {
     pthread_cond_init(&g_cond_recv, NULL);
     //////////////////////////////////////////////////////////////////
     fd = open("/dev/video0", O_RDWR, 0);
-    if (fd == -1) {
+    if (fd == -1)
+    {
         perror("open");
         close(fd);
         return 0;
