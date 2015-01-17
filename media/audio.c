@@ -62,6 +62,7 @@ void *record_routine(void *data)
     {
         p_send = (char *) malloc(1000);
         snd_pcm_readi(record.handle, p_send, 1000);
+        log_info("record", "\n");
         printf(".");
         pthread_mutex_lock(&mutex_send);
         while (*head_send) pthread_cond_wait(&send_idle, &mutex_send);
@@ -88,6 +89,7 @@ void *send_routine(struct sockaddr_in *addr_opposite)
         pthread_cond_signal(&send_idle);
         pthread_mutex_unlock(&mutex_send);
         sendto(netSocket, q_send, 1000, 0, (struct sockaddr *) addr_opposite, sizeof(struct sockaddr_in));
+        log_info("send", "\n");
         free(q_send);
     }
 }
@@ -102,7 +104,10 @@ void *recv_routine(void *data)
         if (!sendtoAssigned)
         {
             pthread_mutex_unlock(&mutex_send);
+            sendtoAssigned = 0;
         }
+
+        log_info("recv", "\n");
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
         {
@@ -161,7 +166,7 @@ void *play_routine(void *data)
         playback.data_buf = q_recv;
         SNDWAV_WritePcm(&playback, 1000);
         //snd_pcm_writei(playback.handle, q_recv, 1000);
-        printf("*");
+        log_info("play", "\n");
         //SNDWAV_WritePcm(&playback, 1000);
         free(q_recv);
     }
@@ -179,7 +184,7 @@ void *play_routine(void *data)
 
 static int InitAudioChat()
 {
-    if (head_send == NULL)
+    if (head_send != NULL)
     {
         return 0;
     }

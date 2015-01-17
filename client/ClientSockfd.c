@@ -224,15 +224,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             CRPPacketNETFriendDiscover *media_data = CRPNETFriendDiscoverCast(header);
             switch (media_data->reason)
             {
-                //分离语音请求的包
-                case CRPFDR_AUDIO:
-                {
-                    log_info("Serve Message", "语音请求\n");
-                    char *audio_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
-                    memcpy(audio_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_audio_discover, audio_data_copy);
-                    break;
-                };
                     //视频请求
                 case CRPFDR_VEDIO:
                 {
