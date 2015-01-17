@@ -765,8 +765,8 @@ static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event
             int fd = socket(AF_INET, SOCK_STREAM, 0);
             struct sockaddr_in server_addr = {
                     .sin_family=AF_INET,
-                    .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
-                    //.sin_addr.s_addr=inp.s_addr,
+                    //.sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+                    .sin_addr.s_addr=inp.s_addr,
                     .sin_port=htons(8014)
             };
             if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
