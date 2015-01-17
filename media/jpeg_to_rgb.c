@@ -51,7 +51,7 @@ int read_JPEG_file (char *buf1,char *buf2)
 
     if (setjmp(jerr.setjmp_buffer))
     {
-        printf("Eror\n");
+        //printf("Eror\n");
         jpeg_destroy_decompress(&cinfo);
 //        fclose(infile);
         return 0;

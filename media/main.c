@@ -8,7 +8,7 @@
 #include <sys/ioctl.h>
 #include <signal.h>
 #include <linux/videodev2.h>
-
+#include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
@@ -231,8 +231,10 @@ void *pthread_snd(void *socketsd)
 
         errno = 0;
         send(sd, &q_send->jpeglen, sizeof(int), MSG_MORE);
-        fprintf(stderr, "fd:%d,err:%s\n",sd, strerror(errno));
+        fprintf(stderr, "fd:%d,err:%s\n", sd, strerror(errno));
         send(sd, q_send->jpeg_buf, q_send->jpeglen, 0);
+        fprintf(stderr, "fd:%d,err:%s\n", sd, strerror(errno));
+
         free(q_send);
         ///////////////////////////////////////////////////////////////////////////////////////////
     }
@@ -259,8 +261,10 @@ void *pthread_rev(void *socketrev)
         p_recv = (struct jpeg_str *) malloc(50000);
         errno = 0;
         recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
-        recv(sd, p_recv->jpeg_buf, (size_t)p_recv->jpeglen, MSG_WAITALL);
-
+        perror("recv");
+        errno = 0;
+        recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
+        perror("recv");
 
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
@@ -366,15 +370,17 @@ void *primary_video(struct sockaddr_in *addr)
     addr_opposite.sin_port = htons(SERVERPORT);
 
     addrlen = sizeof(struct sockaddr_in);
-    int netSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (netSocket == -1)
-    {
-        perror("socket\n");
-        return -1;
-    }
-
+    int netSocket;
+    int on = 1;
     if (addr != NULL)
     {
+        netSocket = socket(AF_INET, SOCK_STREAM, 0);
+        if (netSocket == -1)
+        {
+            perror("socket\n");
+            return -1;
+        }setsockopt(netSocket, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof(int));
+
         //ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
         addr_opposite = *addr;
         if (connect(netSocket, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1)
@@ -392,7 +398,6 @@ void *primary_video(struct sockaddr_in *addr)
         addr_my.sin_addr.s_addr = htons(INADDR_ANY);
         addr_my.sin_port = htons(SERVERPORT);
         int listener = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-        int on = 1;
         setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
         ret = bind(listener, (struct sockaddr *) &addr_my, sizeof(struct sockaddr_in));
         if (ret == -1)
