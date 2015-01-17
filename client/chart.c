@@ -11,8 +11,6 @@
 #include "ChartRecord.h"
 #include <sys/stat.h>
 #include "audio.h"
-#include <imcommon/friends.h>
-#include <imcommon/user.h>
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
@@ -190,39 +188,39 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         uint8_t gid_audio;
-        int quantity_group=friends->groupCount;
+        int quantity_group = friends->groupCount;
         //用来找出gid
-        int i,j=0;
-        for(i=0;i<quantity_group;i++){
-            for(j=0;j<friends->groups[i].friendCount;j++){
-                if(friends->groups[i].friends[j]==info->user.uid){
-                    gid_audio=friends->groups[i].groupId;
+        int i, j = 0;
+        for (i = 0; i < quantity_group; i++)
+        {
+            for (j = 0; j < friends->groups[i].friendCount; j++)
+            {
+                if (friends->groups[i].friends[j] == info->user.uid)
+                {
+                    gid_audio = friends->groups[i].groupId;
                     break;
                 }
             }
         }
         //friends->groups[i].friends[j];
-        session_id_t session_id_audio_server_feedback=CountSessionId();//服务器返回处理函数的session
-        session_id_t session_id_audio_feedback= CountSessionId();//对方同意与否的处理函数session
-
+        session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
 
         //同一时间只允许发起一个请求
         //if(the_log_request_friend_discover.uid!=-1){
-          //  g_idle_add(popup_request_num_limit, NULL);
+        //  g_idle_add(popup_request_num_limit, NULL);
         //}
-        the_log_request_friend_discover.uid=info->user.uid;
-        the_log_request_friend_discover.requset_reason=NET_DISCOVER_AUDIO;
-        AddMessageNode(session_id_audio_server_feedback , deal_video_dicover_server_feedback, NULL);
-        AddMessageNode(session_id_audio_feedback, deal_audio_feedback, NULL);
+        struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) malloc(sizeof(struct AudioDiscoverProcessEntry));
+        int randNum;
+        for (int randi = 0; randi < 32 / sizeof(int); ++randi)
+        {
+            randNum = rand();
+            memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
+        }
+        entry->uid = info->uid;
+        entry->messageSent = 0;
+        AddMessageNode(sessionNatDiscover, processNatDiscovered, entry);
 
-        CRPNETFriendDiscoverSend(sockfd,
-                                 session_id_audio_server_feedback,
-                                 gid_audio,
-                                 info->uid,
-                                 CRPFDR_AUDIO,
-                                 session_id_audio_feedback
-                                );
-
+        CRPNATDiscoverSend(sockfd, sessionNatDiscover, entry->key);
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
 
     }
@@ -279,27 +277,30 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         uint8_t gid_video;
-        int quantity_group=friends->groupCount;
+        int quantity_group = friends->groupCount;
         //用来找出gid
-        int i,j=0;
-        for(i=0;i<quantity_group;i++){
-            for(j=0;j<friends->groups[i].friendCount;j++){
-                if(friends->groups[i].friends[j]==info->user.uid){
-                    gid_video=friends->groups[i].groupId;
+        int i, j = 0;
+        for (i = 0; i < quantity_group; i++)
+        {
+            for (j = 0; j < friends->groups[i].friendCount; j++)
+            {
+                if (friends->groups[i].friends[j] == info->user.uid)
+                {
+                    gid_video = friends->groups[i].groupId;
                     break;
                 }
             }
         }
-        session_id_t session_id_video_server_feedback=CountSessionId();//SESSION用来处理请求送达与否
-        session_id_t session_id_video_feedback= CountSessionId();//这个SESSION用来处理请求同意的情况
+        session_id_t session_id_video_server_feedback = CountSessionId();//SESSION用来处理请求送达与否
+        session_id_t session_id_video_feedback = CountSessionId();//这个SESSION用来处理请求同意的情况
         //同一时间只允许发起一个请求
         //if(the_log_request_friend_discover.uid!=-1){
-          //  g_idle_add(popup_request_num_limit, NULL);
+        //  g_idle_add(popup_request_num_limit, NULL);
         //}
-        the_log_request_friend_discover.uid=info->user.uid;
-        the_log_request_friend_discover.requset_reason=NET_DISCOVER_VIDEO;
+        the_log_request_friend_discover.uid = info->user.uid;
+        the_log_request_friend_discover.requset_reason = NET_DISCOVER_VIDEO;
 
-        AddMessageNode(session_id_video_server_feedback , deal_video_dicover_server_feedback, NULL);
+        AddMessageNode(session_id_video_server_feedback, deal_video_dicover_server_feedback, NULL);
         AddMessageNode(session_id_video_feedback, deal_video_feedback, NULL);
 
         CRPNETFriendDiscoverSend(sockfd,
@@ -1144,7 +1145,7 @@ int MainChart(FriendInfo *friendinfonode)
 //表情
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(look_event_box), 80, 405);
 //截图
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(jietu_event_box), 210, 405);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(jietu_event_box), 210, 412);
 //文件
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(file_event_box), 165, 405);
 //图片
@@ -1190,8 +1191,8 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 2, 438);//文本框位置
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 3, 89);
 
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 75);
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 320);//大小
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 495, 75);
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 495, 320);//大小
 
     GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
     gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明

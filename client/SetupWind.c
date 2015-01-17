@@ -12,7 +12,7 @@
 static GtkWidget *SetupWind, *SetupLayout;
 static GtkWidget *SetupBackground, *SetupSave, *SetupCancel, *SetupGuanbi;
 static cairo_surface_t *SurSetBack, *SurSetSave, *SurSetSave1, *SurSetCancel, *SurSetCancel1, *SurSetEnd, *SurSetEnd1, *SurSetEnd2;
-static GtkWidget *OldPasswd, *NewPasswd1, *Newpasswd2;
+static GtkWidget *OldPasswd, *NewPasswd1, *NewPasswd2;
 
 static void create_setfaces()
 {
@@ -96,7 +96,7 @@ int change_password()
     const gchar *oldstrs, *newstrs1, *newstrs2;
     oldstrs = gtk_entry_get_text(GTK_ENTRY(OldPasswd));//获取输入内容
     newstrs1 = gtk_entry_get_text(GTK_ENTRY(NewPasswd1));
-    newstrs2 = gtk_entry_get_text(GTK_ENTRY(Newpasswd2));
+    newstrs2 = gtk_entry_get_text(GTK_ENTRY(NewPasswd2));
 
     /*当三个文本输入框都不为空时*/
     if ((strlen(oldstrs) != 0) && (strlen(newstrs1) != 0) && (strlen(newstrs2) != 0))
@@ -318,19 +318,19 @@ int SetupFace()
 
     OldPasswd = gtk_entry_new();//原密码
     NewPasswd1 = gtk_entry_new();//新密码1
-    Newpasswd2 = gtk_entry_new();//新密码2
+    NewPasswd2 = gtk_entry_new();//新密码2
     gtk_entry_set_max_length(GTK_ENTRY(OldPasswd), 20);//设置可输入的最大长度
     gtk_entry_set_max_length(GTK_ENTRY(NewPasswd1), 20);//设置可输入的最大长度
-    gtk_entry_set_max_length(GTK_ENTRY(Newpasswd2), 20);//设置可输入的最大长度
+    gtk_entry_set_max_length(GTK_ENTRY(NewPasswd2), 20);//设置可输入的最大长度
     gtk_entry_set_visibility(GTK_ENTRY(OldPasswd), FALSE);//设置密码不可见
     gtk_entry_set_invisible_char(GTK_ENTRY(OldPasswd), '*');//不可见成*
     gtk_entry_set_visibility(GTK_ENTRY(NewPasswd1), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(NewPasswd1), '*');
-    gtk_entry_set_visibility(GTK_ENTRY(Newpasswd2), FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(Newpasswd2), '*');
+    gtk_entry_set_visibility(GTK_ENTRY(NewPasswd2), FALSE);
+    gtk_entry_set_invisible_char(GTK_ENTRY(NewPasswd2), '*');
     gtk_fixed_put(GTK_FIXED(SetupLayout), OldPasswd, 100, 192);//将密码出入框放到窗体中
     gtk_fixed_put(GTK_FIXED(SetupLayout), NewPasswd1, 100, 262);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), Newpasswd2, 100, 332);
+    gtk_fixed_put(GTK_FIXED(SetupLayout), NewPasswd2, 100, 332);
 
     gtk_widget_show_all(SetupWind);
     return 0;

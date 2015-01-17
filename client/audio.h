@@ -12,6 +12,13 @@ struct log_request_friend_discover{
     int uid;
     int requset_reason;
 };
+
+typedef struct AudioDiscoverProcessEntry
+{
+    char key[32];
+    uint32_t uid;
+    uint8_t messageSent;
+};
 extern struct log_request_friend_discover the_log_request_friend_discover;
 int  audio_request_refuse();
 int popup_request_num_limit(gpointer);
@@ -22,4 +29,5 @@ gboolean treatment_request_audio_discover(gpointer );
 gboolean treatment_request_video_discover(gpointer );
 int deal_video_dicover_server_feedback(CRPBaseHeader *, u_int32_t );
 int deal_video_feedback(CRPBaseHeader *, u_int32_t );
-int deal_audio_feedback(CRPBaseHeader *, u_int32_t );
+
+int processNatDiscovered(CRPBaseHeader *, void *);

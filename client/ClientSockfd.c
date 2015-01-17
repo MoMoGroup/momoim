@@ -15,7 +15,7 @@
 #include "UpdataFriendList.h"
 #include "manage_friend/friend.h"
 #include "audio.h"
-#include "OnlineFile.h"
+#include "../media/sound.h"
 
 pthread_t ThreadKeepAlive;
 pthread_t ThreadListenOnLine;//监听在线传输文件的线程
@@ -104,10 +104,6 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
-        case UMT_FILE_ONLINE:
-        {
-            break;
-        }
         case UMT_TEXT:
         {
             char *message = (char *) malloc(packet->messageLen);
@@ -135,9 +131,23 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
+        case UMT_NAT_REQUEST:
+        {
+            int audioSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            struct sockaddr_in addr;
+            socklen_t addrLen = sizeof(addr);
+            getpeername(sockfd->fd, (struct sockaddr *) &addr, &addrLen);
+            addr.sin_port = htons(8015);
+            for (int j = 0; j < 10; ++j)//UDP不稳定,发现包多次发送增加连接成功几率
+            {
+                sendto(audioSock, packet->message, 32, 0, (struct sockaddr *) &addr, addrLen);
+            }
+            StartAudioChat_Recv(audioSock);
+            break;
+        };
     }
 
-
+    free(user_data);
     return 0;
 }
 
@@ -183,7 +193,6 @@ int new_friend_info(CRPBaseHeader *header, void *data)
 }
 
 
-
 int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
 {
     switch (header->packetID)
@@ -209,47 +218,19 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             g_idle_add(postMessage, dup);
             return 1;
         }
-        case CRP_PACKET_NET_INET_ADDRESS://收到ip地址
-        {
-            CRPPacketNETInetAddress *info = CRPNETInetAddressCast(header);
-
-            log_info("Uid", "%u\n", info->uid);
-
-            Bbb(info->ipv4);
-            struct in_addr addr;
-            addr.s_addr = info->ipv4;
-            char *ip = inet_ntoa(addr);
-            log_info("IP", "%s\n", ip);
-
-//            if((void *)info!=header)
-//            {
-//                free(info);
-//            }
-            break;
-        };
-
             //用来分离收到语言视频在线文件请求的包
         case CRP_PACKET_NET_FRIEND_DISCOVER:
         {
             CRPPacketNETFriendDiscover *media_data = CRPNETFriendDiscoverCast(header);
             switch (media_data->reason)
             {
-                //分离语音请求的包
-                case CRPFDR_AUDIO:
-                {
-                    log_info("Serve Message", "语音请求\n");
-                    char *audio_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
-                    memcpy(audio_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_audio_discover, audio_data_copy);
-                    break;
-                };
                     //视频请求
                 case CRPFDR_VEDIO:
                 {
                     log_info("Serve Message", "视频请求\n");
-                    char *video_data_copy = (CRPPacketNETFriendDiscover *)malloc(sizeof(CRPPacketNETFriendDiscover));
-                    memcpy(video_data_copy,media_data,sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_video_discover,video_data_copy);
+                    char *video_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
+                    memcpy(video_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
+                    g_idle_add(treatment_request_video_discover, video_data_copy);
                     break;
                 };
                     //在线文件的包
@@ -313,6 +294,16 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
                     g_idle_add(OffLine, mem);
                     //free(mem);
+                    break;
+                };
+                case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
+                {
+                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
+                    log_info("好友资料更改", "uid%d\n", data->uid);
+                    session_id_t sessionid = CountSessionId();
+                    AddMessageNode(sessionid, FriendFriendInfoChange, data);//注册
+                    CRPInfoRequestSend(sockfd, sessionid, data->uid);//请求这个用户的资料
                     break;
                 };
                 case FNT_FRIEND_NEW://新好友
@@ -383,10 +374,10 @@ int mysockfd()
     char mulu2[80] = {0};
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     FILE *ipfp1;
-    char myip[80];
+    char myip[32];
     struct in_addr inp;
     ipfp1 = fopen(checkmulu_ip, "r");
-    fread(myip, 1, 80, ipfp1);
+    fread(myip, 1, 32, ipfp1);
     inet_aton(myip, &inp);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
