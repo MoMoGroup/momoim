@@ -316,7 +316,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 {
                     char *mem = malloc(sizeof(CRPPacketFriendNotify));
                     memcpy(mem, data, sizeof(CRPPacketFriendNotify));
-
+                    log_info("好友资料更改", "uid%d\n", data->uid);
                     session_id_t sessionid = CountSessionId();
                     AddMessageNode(sessionid, FriendFriendInfoChange, data);//注册
                     CRPInfoRequestSend(sockfd, sessionid, data->uid);//请求这个用户的资料

@@ -2,6 +2,7 @@
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
 #include <stdlib.h>
+#include <string.h>
 #include "common.h"
 
 //enum {
@@ -120,6 +121,7 @@ int OnLine(void *data)//好友上线。图标变亮
                        PIXBUF_COL, pixbuf,
                        PRIORITY_COL, 1,
                        -1);
+    g_object_unref(pixbuf);
     return 0;
 }
 
@@ -148,7 +150,7 @@ int OffLine(void *data)//好友下线。图标变暗
                        PIXBUF_COL, pixbuf,
                        PRIORITY_COL, -1,
                        -1);
-
+    g_object_unref(pixbuf);
     return 0;
 }
 
@@ -167,7 +169,7 @@ int gengxinjiemian(void *data)
                        PIXBUF_COL, pixbuf,
                        PRIORITY_COL, infodata->isOnline,
                        -1);
-
+    g_object_unref(pixbuf);
     return 0;
 }
 
@@ -176,9 +178,25 @@ int FriendFriendInfoChange(CRPBaseHeader *header, void *data)
     if (header->packetID == CRP_PACKET_INFO_DATA)
     {
         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-        infodata->info.nickName;
+
+
+
+
+
         //仅仅是为了建立那个文件
         FindImage(infodata->info.icon, NULL, NULL);
+
+        FriendInfo *p = FriendInfoHead;//更新链表里的资料
+        while (p->next)
+        {
+            p = p->next;
+            if (infodata->info.uid == p->user.uid)
+            {
+                memcpy(p->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));
+                memcpy(p->user.icon, infodata->info.icon, sizeof(infodata->info.icon));
+                break;
+            }
+        }
 
         g_idle_add(gengxinjiemian, infodata);
 
