@@ -112,9 +112,9 @@ int AddGroupButtonPressEvent()
     gtk_window_set_decorated(GTK_WINDOW(add_group_window), FALSE);//去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(add_group_window), 250, 235);
 //资源
-    surface_back = cairo_image_surface_create_from_png("提示框.png");
-    surfacedone = cairo_image_surface_create_from_png("确定.png");
-    surfaceclose = cairo_image_surface_create_from_png("关闭按钮1.png");
+    surface_back = ChangeThem_png("提示框.png");
+    surfacedone = ChangeThem_png("确定.png");
+    surfaceclose = ChangeThem_png("关闭按钮1.png");
 
     done = gtk_image_new_from_surface(surfacedone);
     background = gtk_image_new_from_surface(surface_back);

@@ -9,4 +9,4 @@ extern int RemoveFriend(void *data);
 
 extern int AddFriendFun();
 
-extern int Friend_Fequest_Popup(uint32_t uid, const char *verification_message);
+extern int Friend_Request_Popup(uint32_t uid, const char *verification_message);

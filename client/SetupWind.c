@@ -8,17 +8,16 @@
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 
+//设置界面的控件
 static GtkWidget *SetupWind, *SetupLayout;
-static GtkWidget *SetupBackground, *SetupSave, *SetupCancel, *SetupGuanbi, *JibenSet, *SafeSet, *QuanxianSet;
+static GtkWidget *SetupBackground, *SetupSave, *SetupCancel, *SetupGuanbi;
 static cairo_surface_t *SurSetBack, *SurSetSave, *SurSetSave1, *SurSetCancel, *SurSetCancel1, *SurSetEnd, *SurSetEnd1, *SurSetEnd2;
-static cairo_surface_t *SurSetJiben, *SurSetSafe, *SurSetQuanxian;
-static GtkWidget *OldPasswd, *NewPasswd1, *Newpasswd2;
+static GtkWidget *OldPasswd, *NewPasswd1, *NewPasswd2;
 
-//int MarkNewpasswd;
 static void create_setfaces()
 {
 
-    SurSetBack = ChangeThem_png("安全设置背景.png");
+    SurSetBack = ChangeThem_png("设置.png");
     SurSetSave = ChangeThem_png("保存.png");
     SurSetSave1 = ChangeThem_png("保存2.png");
     SurSetCancel = ChangeThem_png("资料取消.png");
@@ -32,19 +31,12 @@ static void create_setfaces()
     SetupCancel = gtk_image_new_from_surface(SurSetCancel);
     SetupGuanbi = gtk_image_new_from_surface(SurSetEnd);
 
-    SurSetJiben = ChangeThem_png("基本设置.png");
-    SurSetSafe = ChangeThem_png("安全设置.png");
-    SurSetQuanxian = ChangeThem_png("权限设置.png");
-    JibenSet = gtk_image_new_from_surface(SurSetJiben);
-    SafeSet = gtk_image_new_from_surface(SurSetSafe);
-    QuanxianSet = gtk_image_new_from_surface(SurSetQuanxian);
-
     gtk_widget_set_size_request(GTK_WIDGET(SetupBackground), 570, 500);
 }
 
 static void destroy_setsurfaces()
 {
-    g_print("destroying infoface");
+    g_print("destroying setface");
     cairo_surface_destroy(SurSetBack);
     cairo_surface_destroy(SurSetSave);
     cairo_surface_destroy(SurSetSave1);
@@ -53,29 +45,27 @@ static void destroy_setsurfaces()
     cairo_surface_destroy(SurSetEnd);
     cairo_surface_destroy(SurSetEnd1);
     cairo_surface_destroy(SurSetEnd2);
-    cairo_surface_destroy(SurSetJiben);
-    cairo_surface_destroy(SurSetSafe);
-    cairo_surface_destroy(SurSetQuanxian);
 }
 
 int chenggong(void *data)
 {
     popup("莫默告诉你：", "恭喜你修改成功");
+    /*修改成功关闭修改界面*/
     destroy_setsurfaces();
     gtk_widget_destroy(SetupWind);
-
-    MarkNewpasswd = 0;
+    MarkNewpasswd = 0;//并将设置按钮标志置为0即可打开状态
     return 0;
 }
 
 int shibai(void *reason)
 {
-    log_info("FAILURe reason2", reason);
+    /*修改密码失败的原因*/
     popup("莫默告诉你：", reason);
     free(reason);
     return 0;
 }
 
+/*处理服务端的回复信息函数*/
 int dealwith_passwd(CRPBaseHeader *header, void *data)
 {
     switch (header->packetID)
@@ -88,11 +78,9 @@ int dealwith_passwd(CRPBaseHeader *header, void *data)
         case CRP_PACKET_FAILURE:
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
-            log_info("FAILURe reason", infodata->reason);
             char *failreason = (char *) malloc(strlen(infodata->reason));
             memcpy(failreason, infodata->reason, strlen(infodata->reason - 1));
             g_idle_add(shibai, failreason);
-            log_info("FAILURe reason1", failreason);
             if ((void *) infodata != header->data)
             {
                 free(infodata);
@@ -106,12 +94,14 @@ int dealwith_passwd(CRPBaseHeader *header, void *data)
 int change_password()
 {
     const gchar *oldstrs, *newstrs1, *newstrs2;
-    oldstrs = gtk_entry_get_text(GTK_ENTRY(OldPasswd));
+    oldstrs = gtk_entry_get_text(GTK_ENTRY(OldPasswd));//获取输入内容
     newstrs1 = gtk_entry_get_text(GTK_ENTRY(NewPasswd1));
-    newstrs2 = gtk_entry_get_text(GTK_ENTRY(Newpasswd2));
+    newstrs2 = gtk_entry_get_text(GTK_ENTRY(NewPasswd2));
 
+    /*当三个文本输入框都不为空时*/
     if ((strlen(oldstrs) != 0) && (strlen(newstrs1) != 0) && (strlen(newstrs2) != 0))
     {
+        /*判断两次密码输入是否相同*/
         if (strcmp(newstrs1, newstrs2) != 0)
         {
             popup("莫默告诉你：", "两次密码不一致");
@@ -120,10 +110,11 @@ int change_password()
         else
         {
             unsigned char hash1[16], hash2[16];
-            MD5((unsigned char *) oldstrs, strlen(oldstrs), hash1);
+            MD5((unsigned char *) oldstrs, strlen(oldstrs), hash1);//哈希加密
             MD5((unsigned char *) newstrs2, strlen(newstrs2), hash2);
+            /*向服务端发送修改密码请求*/
             session_id_t passid = CountSessionId();
-            AddMessageNode(passid, dealwith_passwd, NULL);
+            AddMessageNode(passid, dealwith_passwd, NULL);//处理服务端回复函数
             CRPInfoPasswordChangeSend(sockfd, passid, hash1, hash2);
         }
     }
@@ -208,7 +199,7 @@ static gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event
     {
         destroy_setsurfaces();
         gtk_widget_destroy(SetupWind);
-        MarkNewpasswd = 0;
+        MarkNewpasswd = 0;//设置按钮可点击标志
     }
     return 0;
 }
@@ -251,7 +242,7 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
     {
         destroy_setsurfaces();
         gtk_widget_destroy(SetupWind);
-        MarkNewpasswd = 0;
+        MarkNewpasswd = 0;//设置按钮可点击标志
     }
     return 0;
 }
@@ -261,7 +252,7 @@ static gint guanxx_button_release_event(GtkWidget *widget, GdkEventButton *event
 static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(SetupWind), gdk_cursor_new(GDK_HAND2));
-    gtk_image_set_from_surface((GtkImage *) SetupGuanbi, SurSetEnd2);
+    gtk_image_set_from_surface((GtkImage *) SetupGuanbi, SurSetEnd2);//换图片
     return 0;
 }
 
@@ -270,23 +261,24 @@ static gint guanxx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, 
 static gint guanxx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(SetupWind), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) SetupGuanbi, SurSetEnd);
+    gtk_image_set_from_surface((GtkImage *) SetupGuanbi, SurSetEnd);//换图片
     return 0;
 }
 
 
 int SetupFace()
 {
+    /*设置界面的按钮事件*/
     static GtkEventBox *Setbackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
-    SetupWind = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    SetupWind = gtk_window_new(GTK_WINDOW_TOPLEVEL);//创建新窗口
     gtk_window_set_position(GTK_WINDOW(SetupWind), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW(SetupWind), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(SetupWind), FALSE);//去掉边框
-    gtk_widget_set_size_request(GTK_WIDGET(SetupWind), 570, 500);
+    gtk_widget_set_size_request(GTK_WIDGET(SetupWind), 570, 500);//设置窗口大小
 
-    SetupLayout = gtk_fixed_new();
+    SetupLayout = gtk_fixed_new();//创建布局容纳控件
     create_setfaces();
-    gtk_container_add(GTK_CONTAINER(SetupWind), SetupLayout);
+    gtk_container_add(GTK_CONTAINER(SetupWind), SetupLayout);//将layout加入到窗体中
 
     Setbackg_event_box = BuildEventBox(SetupBackground,
                                        G_CALLBACK(setbackg_button_press_event),
@@ -324,25 +316,21 @@ int SetupFace()
                                      NULL);
     gtk_fixed_put(GTK_FIXED(SetupLayout), Guanxx_event_box, 531, 0);
 
-    gtk_fixed_put(GTK_FIXED(SetupLayout), JibenSet, 10, 70);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), SafeSet, 200, 70);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), QuanxianSet, 380, 65);
-
     OldPasswd = gtk_entry_new();//原密码
     NewPasswd1 = gtk_entry_new();//新密码1
-    Newpasswd2 = gtk_entry_new();//新密码2
-    gtk_entry_set_max_length(GTK_ENTRY(OldPasswd), 20);//设置输入的最大长度
-    gtk_entry_set_max_length(GTK_ENTRY(NewPasswd1), 20);
-    gtk_entry_set_max_length(GTK_ENTRY(Newpasswd2), 20);
-    gtk_entry_set_visibility(GTK_ENTRY(OldPasswd), FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(OldPasswd), '*');
+    NewPasswd2 = gtk_entry_new();//新密码2
+    gtk_entry_set_max_length(GTK_ENTRY(OldPasswd), 20);//设置可输入的最大长度
+    gtk_entry_set_max_length(GTK_ENTRY(NewPasswd1), 20);//设置可输入的最大长度
+    gtk_entry_set_max_length(GTK_ENTRY(NewPasswd2), 20);//设置可输入的最大长度
+    gtk_entry_set_visibility(GTK_ENTRY(OldPasswd), FALSE);//设置密码不可见
+    gtk_entry_set_invisible_char(GTK_ENTRY(OldPasswd), '*');//不可见成*
     gtk_entry_set_visibility(GTK_ENTRY(NewPasswd1), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(NewPasswd1), '*');
-    gtk_entry_set_visibility(GTK_ENTRY(Newpasswd2), FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(Newpasswd2), '*');
-    gtk_fixed_put(GTK_FIXED(SetupLayout), OldPasswd, 240, 200);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), NewPasswd1, 240, 240);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), Newpasswd2, 240, 282);
+    gtk_entry_set_visibility(GTK_ENTRY(NewPasswd2), FALSE);
+    gtk_entry_set_invisible_char(GTK_ENTRY(NewPasswd2), '*');
+    gtk_fixed_put(GTK_FIXED(SetupLayout), OldPasswd, 100, 192);//将密码出入框放到窗体中
+    gtk_fixed_put(GTK_FIXED(SetupLayout), NewPasswd1, 100, 262);
+    gtk_fixed_put(GTK_FIXED(SetupLayout), NewPasswd2, 100, 332);
 
     gtk_widget_show_all(SetupWind);
     return 0;

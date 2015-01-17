@@ -4,6 +4,7 @@
 #include "MainInterface.h"
 #include "managegroup/ManageGroup.h"
 
+
 int changeOnlineRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_OK)
@@ -21,6 +22,7 @@ int changeHideLineRecv(CRPBaseHeader *header, void *data)
     if (header->packetID == CRP_PACKET_OK)
     {
         g_idle_add(Status, NULL);
+
         g_idle_add(ShowStatus, "隐身");
     }
     return 0;

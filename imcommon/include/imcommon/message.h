@@ -8,13 +8,12 @@
 
 typedef enum
 {
-    UMT_UNKNOW = 0, //未知消息(数据错误)
-    UMT_TEXT = 1,   //文本消息
-    UMT_NEW_FRIEND,  //添加好友请求
-    UMT_FRIEND_ACCEPT,
-    UMT_FILE_OFFLINE,
-    UMT_FILE_ONLINE,
-    UMT_AUDIO_REQUEST,//请求好友视频
+    UMT_UNKNOW = 0,     //未知消息(数据错误)
+    UMT_TEXT = 1,       //文本消息
+    UMT_NEW_FRIEND,     //添加好友请求
+    UMT_FRIEND_ACCEPT,  //接受好友请求
+    UMT_FILE_OFFLINE,   //离线文件
+    UMT_NAT_REQUEST,    //NAT穿透请求
 } USER_MESSAGE_TYPE;
 typedef struct __attribute__ ((packed)) strucUserMessage
 {

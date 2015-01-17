@@ -1,5 +1,6 @@
 #include <protocol/CRPPackets.h>
 #include <asm-generic/errno-base.h>
+#include <logger.h>
 #include "run/user.h"
 
 int ProcessPacketNetDiscoverAccept(POnlineUser user, uint32_t session, CRPPacketNETDiscoverAccept *packet)
@@ -17,7 +18,8 @@ int ProcessPacketNetDiscoverAccept(POnlineUser user, uint32_t session, CRPPacket
         socklen_t addrLen = sizeof(addr);
         if (getpeername(user->crp->fd, (struct sockaddr *) &addr, &addrLen) == 0)
         {
-            CRPNETInetAddressSend(duser->crp, 0, user->uid, addr.sin_addr.s_addr);
+            log_info("FriendDiscover", "Sent\n");
+            CRPNETInetAddressSend(duser->crp, packet->session, user->uid, addr.sin_addr.s_addr, addr.sin_port);
             UserDrop(duser);
             CRPOKSend(user->crp, session);
         }

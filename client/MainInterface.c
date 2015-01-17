@@ -8,6 +8,7 @@
 #include <math.h>
 #include <cairo-script-interpreter.h>
 #include "common.h"
+//#include "addfriend.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "managegroup/ManageGroup.h"
@@ -77,6 +78,9 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
             unlink(mulu_thempath);
             sprintf(mulu_themnewpath, "theme/cartoon/");
             symlink(mulu_themnewpath, mulu_thempath);
+
+            DestoryMainInterface();
+            MainInterFace();
         }
 
         if (FlagChange == 2)
@@ -88,6 +92,9 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
             unlink(mulu_thempath);
             sprintf(mulu_themnewpath, "theme/flower/");
             symlink(mulu_themnewpath, mulu_thempath);
+
+            DestoryMainInterface();
+            MainInterFace();
         }
 
         if (FlagChange == 3)
@@ -99,8 +106,10 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
             unlink(mulu_thempath);
             sprintf(mulu_themnewpath, "theme/lol/");
             symlink(mulu_themnewpath, mulu_thempath);
-        }
 
+            DestoryMainInterface();
+            MainInterFace();
+        }
         gtk_widget_destroy(huanfuwindow);
     }
 
@@ -141,6 +150,8 @@ static gint ipic1_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)
     {
         gtk_image_set_from_surface((GtkImage *) ipic1, spic12);
+        gtk_image_set_from_surface((GtkImage *) ipic2, spic21);
+        gtk_image_set_from_surface((GtkImage *) ipic3, spic31);
         FlagChange = 1;
     }
 
@@ -154,6 +165,8 @@ static gint ipic2_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)
     {
         gtk_image_set_from_surface((GtkImage *) ipic2, spic22);
+        gtk_image_set_from_surface((GtkImage *) ipic1, spic11);
+        gtk_image_set_from_surface((GtkImage *) ipic3, spic31);
         FlagChange = 2;
     }
 
@@ -167,6 +180,8 @@ static gint ipic3_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)
     {
         gtk_image_set_from_surface((GtkImage *) ipic3, spic32);
+        gtk_image_set_from_surface((GtkImage *) ipic1, spic11);
+        gtk_image_set_from_surface((GtkImage *) ipic2, spic21);
         FlagChange = 3;
     }
 
@@ -193,11 +208,11 @@ int changethemeface()
     scancel1 = ChangeThem_png("资料取消.png");
     scancel2 = ChangeThem_png("资料取消2.png");
     spic11 = ChangeThem_png("卡通.png");
-    spic12 = ChangeThem_png("图片2.png");
+    spic12 = ChangeThem_png("卡通2.png");
     spic21 = ChangeThem_png("小清新.png");
-    spic22 = ChangeThem_png("文件2.png");
+    spic22 = ChangeThem_png("小清新2.png");
     spic31 = ChangeThem_png("LOL.png");
-    spic32 = ChangeThem_png("图片2.png");
+    spic32 = ChangeThem_png("LOL2.png");
 
 
     iback = gtk_image_new_from_surface(sbackground);
@@ -1213,7 +1228,7 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
 
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    //OnlineFileButtonEvent(1, 10001);
+
     if (AddFriendflag)//判断是否打开搜索窗口
     {
         AddFriendFun();
@@ -1354,12 +1369,7 @@ int MainInterFace()
                                     NULL);
     gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
 
-    cairo_surface_t *surface_online, *surface_hideline;
     GtkWidget *online, *hideline;
-    surface_online = ChangeThem_png("在线.png");
-    surface_hideline = ChangeThem_png("隐身.png");
-    online = gtk_image_new_from_surface(surface_online);
-    hideline = gtk_image_new_from_surface(surface_hideline);
 
     surface_status = ChangeThem_png("状态.png");
     surface_status2 = ChangeThem_png("状态2.png");
@@ -1373,7 +1383,7 @@ int MainInterFace()
                                      G_CALLBACK(status_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(MainLayout), status_event_box, 220, 0);//起始坐标
+    gtk_fixed_put(GTK_FIXED(MainLayout), status_event_box, 220, 3);//起始坐标
 
 
     GtkWidget *changeMenu;

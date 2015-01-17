@@ -1,6 +1,5 @@
 #include <gtk/gtk.h>
 #include <imcommon/friends.h>
-#include <pwd.h>
 #include <string.h>
 #include <stdlib.h>
 #include <imcommon/user.h>
@@ -19,7 +18,7 @@ static const char *constellations[] = {
         "天秤座", "天蝎座", "射手座", "摩羯座"
 };
 
-static void create_infofaces(FriendInfo *information)
+static void create_infofaces()
 {
     if (Surfaceback == NULL) {
         Surfaceback = ChangeThem_png("资料.png");
@@ -199,18 +198,18 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
 
     GtkEventBox *Infobackg_event_box, *Cancel_event_box, *Guanxx_event_box, *Change_event_box;
 
-    friendinfonode->Infowind = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    friendinfonode->Infowind = gtk_window_new(GTK_WINDOW_TOPLEVEL);//创建新窗口
     gtk_window_set_position(GTK_WINDOW(friendinfonode->Infowind), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (friendinfonode->Infowind), FALSE);//固定窗口大小
     gtk_window_set_decorated(GTK_WINDOW(friendinfonode->Infowind), FALSE);//去掉边框
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->Infowind), 550, 488);
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->Infowind), 550, 488);//设置窗口大小
 
-    friendinfonode->Infolayout = gtk_fixed_new();
+    friendinfonode->Infolayout = gtk_fixed_new();//创建布局容纳控件
     friendinfonode->Infolayout1 = gtk_layout_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(friendinfonode->Infowind), friendinfonode->Infolayout1);
     gtk_container_add(GTK_CONTAINER (friendinfonode->Infolayout1), friendinfonode->Infolayout);
 
-    create_infofaces(friendinfonode);
+    create_infofaces();
 
     friendinfonode->Infobackground = gtk_image_new_from_surface(Surfaceback);
     friendinfonode->Infocancel = gtk_image_new_from_surface(Surfacecancel);
@@ -259,7 +258,6 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
     GtkWidget *itel, *imail;
     GtkWidget *headicon, *imotto;
-    GtkScrolledWindow *showimotto;
 
     char idstring[80] = {0};
     sprintf(idstring, "%d", friendinfonode->user.uid);

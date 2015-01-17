@@ -19,6 +19,7 @@ int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData 
             }
             else
             {
+                UserBroadcastNotify(user, FNT_FRIEND_INFO_CHANGED);
                 CRPOKSend(user->crp, session);
             }
         }

@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <alsa/asoundlib.h>
-#include "sound.h"
+#include <netinet/in.h>
 
 typedef unsigned char  uint8_t;
 typedef unsigned short uint16_t;
@@ -105,3 +105,7 @@ ssize_t SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount);
 
 int SNDWAV_SetParams(SNDPCMContainer_t *sndpcm, WAVContainer_t *wav);
 
+void StartAudioChat_Recv(int sendSock);
+
+void StartAudioChat_Send(struct sockaddr_in *addr);
+void StopAudioChat(void);

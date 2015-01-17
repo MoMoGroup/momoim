@@ -9,9 +9,10 @@
 CRP_STRUCTURE
 {
     uint32_t uid;
+    session_id_t session;
 } CRPPacketNETDiscoverAccept;
 
 __attribute_malloc__
 CRPPacketNETDiscoverAccept *CRPNETDiscoverAcceptCast(CRPBaseHeader *base);
 
-int CRPNETDiscoverAcceptSend(CRPContext context, uint32_t sessionID, uint32_t uid);
+int CRPNETDiscoverAcceptSend(CRPContext context, uint32_t sessionID, uint32_t uid, session_id_t session);

@@ -7,6 +7,7 @@
 #include <imcommon/user.h>
 #include <math.h>
 #include <protocol/base.h>
+#include <pwd.h>
 #include "ClientSockfd.h"
 #include "common.h"
 #include "MainInterface.h"
@@ -635,6 +636,49 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             }
             while (!(groupid == 1));
         }
+
+        /**********保存修改后的头像至本地***********/
+        typedef struct cunchu
+        {
+            char cunchu_name[40];
+            char cunchu_pwd[16];
+            uint32_t cunchu_uid;
+            char cunchu_lujing[16];
+        };
+        struct cunchu str_cunchu[20];
+        char mulu_username[80] = "", mulu_benji[80] = "";
+        FILE *passwdfp;
+        int i = 0, y = 0;
+
+//从本地读取账号记录
+        sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+        mkdir(mulu_benji, 0700);
+        sprintf(mulu_username, "%s/username", mulu_benji);
+        // 读取并用结构体数组存储
+        if ((passwdfp = fopen(mulu_username, "r")) != NULL)
+        {
+            y = fread(str_cunchu, sizeof(struct cunchu), 20, passwdfp);
+            fclose(passwdfp);
+        }
+        //重新写入头像路径
+        for (i = 0; i < y; ++i)
+        {
+            if (CurrentUserInfo->uid == str_cunchu[i].cunchu_uid)//在数组中查找
+            {
+                memcpy(str_cunchu[i].cunchu_lujing, CurrentUserInfo->icon, 16);
+                int fd = open(mulu_username, O_RDWR);
+                if (fd == -1)
+                {
+                    log_error("User", "Cannot read user friends file %s.\n", mulu_username);
+                    break;
+                }
+                lseek(fd, 0, SEEK_SET);
+                write(fd, str_cunchu, sizeof(struct cunchu)*y);
+                close(fd);
+                break;
+            }
+        }
+/*****************保存头像END*****************/
 
         gtk_tree_model_iter_children(TreeViewListStore, &useriter, &group_iter);
         gtk_tree_store_set(TreeViewListStore, &useriter,

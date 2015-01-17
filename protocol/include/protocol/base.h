@@ -50,7 +50,7 @@ extern ssize_t CRPSend(CRPContext context,
                        packet_id_t packetID,
                        session_id_t sessionID,
                        void const *data,
-                       CRP_LENGTH_TYPE dataLength);
+                       CRP_LENGTH_TYPE length);
 
 //用于接收一个CRP包
 extern CRPBaseHeader *CRPRecv(CRPContext context);

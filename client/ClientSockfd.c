@@ -15,7 +15,7 @@
 #include "UpdataFriendList.h"
 #include "manage_friend/friend.h"
 #include "audio.h"
-#include "OnlineFile.h"
+#include "../media/sound.h"
 
 pthread_t ThreadKeepAlive;
 pthread_t ThreadListenOnLine;//监听在线传输文件的线程
@@ -104,10 +104,6 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
-        case UMT_FILE_ONLINE:
-        {
-            break;
-        }
         case UMT_TEXT:
         {
             char *message = (char *) malloc(packet->messageLen);
@@ -123,9 +119,11 @@ gboolean postMessage(gpointer user_data)
         }
         case UMT_NEW_FRIEND:
         {
-            char *mes = calloc(1, 100);
+            char *mes = malloc(packet->messageLen + 1);
+            mes[packet->messageLen] = 0;
+            log_info("验证消息", "%s", mes);
             memcpy(mes, packet->message, packet->messageLen);
-            Friend_Fequest_Popup(packet->uid, mes);
+            Friend_Request_Popup(packet->uid, mes);
 
             if ((void *) packet != header->data)
             {
@@ -133,9 +131,23 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
+        case UMT_NAT_REQUEST:
+        {
+            int audioSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+            struct sockaddr_in addr;
+            socklen_t addrLen = sizeof(addr);
+            getpeername(sockfd->fd, (struct sockaddr *) &addr, &addrLen);
+            addr.sin_port = htons(8015);
+            for (int j = 0; j < 10; ++j)//UDP不稳定,发现包多次发送增加连接成功几率
+            {
+                sendto(audioSock, packet->message, 32, 0, (struct sockaddr *) &addr, addrLen);
+            }
+            StartAudioChat_Recv(audioSock);
+            break;
+        };
     }
 
-
+    free(user_data);
     return 0;
 }
 
@@ -180,63 +192,6 @@ int new_friend_info(CRPBaseHeader *header, void *data)
     }
 }
 
-gboolean treatment_request_audio_net_discover(gpointer user_data)
-{
-    CRPPacketNETFriendDiscover *header = (CRPPacketNETFriendDiscover *) user_data;
-    //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
-    //找到这个好友
-    FriendInfo *userinfo = FriendInfoHead;
-    int uidfindflag = 0;
-    while (userinfo)
-    {
-        if (userinfo->user.uid == header->uid)
-        {
-            uidfindflag = 1;
-            break;
-        }
-        else
-        {
-            userinfo = userinfo->next;
-        }
-    }
-    //如果找到这个好友
-    if (uidfindflag == 1)
-    {
-        //打开聊天窗口或者置前聊天窗口
-        if (userinfo->chartwindow == NULL)
-        {
-            MainChart(userinfo);
-        }
-        else
-        {
-            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
-        }
-        if (userinfo->chartwindow != NULL)
-        {
-
-            GtkWidget *dialog_request_audio_net_discover;
-
-            dialog_request_audio_net_discover = gtk_message_dialog_new(userinfo->chartwindow, GTK_DIALOG_MODAL,
-                                                                       GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
-                                                                       "莫默询问您：\n您想与这位好友语音聊天吗？");
-            gtk_window_set_title(GTK_WINDOW (dialog_request_audio_net_discover), "Question");
-            gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_audio_net_discover));
-            g_print("the result is %d\n", result);
-            if (result == -5)
-            {
-                CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), header->uid);
-                return 0;
-            }
-            else
-            {
-                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), header->uid);
-                gtk_widget_destroy(dialog_request_audio_net_discover);
-                return 0;
-            }
-        }
-    }
-}
-
 
 int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来的消息
 {
@@ -263,64 +218,39 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             g_idle_add(postMessage, dup);
             return 1;
         }
-        case CRP_PACKET_NET_INET_ADDRESS://收到ip地址
-        {
-            CRPPacketNETInetAddress *info = CRPNETInetAddressCast(header);
-
-            log_info("Uid", "%u\n", info->uid);
-
-            Bbb(info->ipv4);
-            struct in_addr *addr;
-            addr->s_addr = info->ipv4;
-            char *ip = inet_ntoa(*addr);
-            log_info("IP", "%s\n", ip);
-
-//            if((void *)info!=header)
-//            {
-//                free(info);
-//            }
-            break;
-        };
-
             //用来分离收到语言视频在线文件请求的包
         case CRP_PACKET_NET_FRIEND_DISCOVER:
         {
-            CRPPacketNETFriendDiscover *audio_data = CRPNETFriendDiscoverCast(header);
-            switch (audio_data->reason)
+            CRPPacketNETFriendDiscover *media_data = CRPNETFriendDiscoverCast(header);
+            switch (media_data->reason)
             {
-                //分离语音请求的包
-                case CRPFDR_AUDIO:
-                {
-                    log_info("Serve Message", "语音请求\n");
-                    char *audio_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
-                    memcpy(audio_data_copy, audio_data, sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_audio_net_discover, audio_data_copy);
-                    break;
-                };
                     //视频请求
                 case CRPFDR_VEDIO:
                 {
                     log_info("Serve Message", "视频请求\n");
-                    //g_idle_add(treatment_request_vedio_net_discover,audio_data);
+                    char *video_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
+                    memcpy(video_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
+                    g_idle_add(treatment_request_video_discover, video_data_copy);
                     break;
                 };
                     //在线文件的包
                 case CRPFDR_ONLINE_FILE:
                 {
-                    log_info("Serve Message", "文件请求\n");
-                    CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), audio_data->uid);
+                    //log_info("Serve Message", "文件请求\n");
+                    //CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), media_data->uid, media_data->session);
                     break;
                 };
             }
-            if (audio_data != header->data)
+            if (media_data != header->data)
             {
-                free(audio_data);
+                free(media_data);
             }
             //memcpy(audio_data,header,header->totalLength);
 
             //g_idle_add(Pretreatment_request_audio_net_discover,audio_data);
             break;
         };
+            /*
             //对方同意好友发现
         case CRP_PACKET_NET_DISCOVER_ACCEPT:
         {
@@ -334,13 +264,13 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             }
 
             break;
-        }
-            //对方拒绝好友发现
-        case CRP_PACKET_NET_DISCOVER_REFUSE:
-        {
-            g_idle_add(audio_request_refuse, NULL);
-            break;
-        };
+        }*/
+//            //对方拒绝好友发现
+//        case CRP_PACKET_NET_DISCOVER_REFUSE:
+//        {
+//            g_idle_add(audio_request_refuse, NULL);
+//            break;
+//        };
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
             CRPPacketFriendNotify *data = CRPFriendNotifyCast(header);
@@ -364,6 +294,16 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
                     g_idle_add(OffLine, mem);
                     //free(mem);
+                    break;
+                };
+                case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
+                {
+                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
+                    log_info("好友资料更改", "uid%d\n", data->uid);
+                    session_id_t sessionid = CountSessionId();
+                    AddMessageNode(sessionid, FriendFriendInfoChange, data);//注册
+                    CRPInfoRequestSend(sockfd, sessionid, data->uid);//请求这个用户的资料
                     break;
                 };
                 case FNT_FRIEND_NEW://新好友
@@ -433,15 +373,19 @@ int mysockfd()
     char mulu[80] = {0};
     char mulu2[80] = {0};
     int fd = socket(AF_INET, SOCK_STREAM, 0);
+    FILE *ipfp1;
+    char myip[32];
+    struct in_addr inp;
+    ipfp1 = fopen(checkmulu_ip, "r");
+    fread(myip, 1, 32, ipfp1);
+    inet_aton(myip, &inp);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
-            .sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+            //.sin_addr.s_addr=htonl(INADDR_LOOPBACK),
+            .sin_addr.s_addr=inp.s_addr,
             .sin_port=htons(8014)
     };
 
-//    .sin_port=htons(8014)
-//};
-//inet_aton("192.168.8.143",&server_addr.sin_addr);
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
         perror("Connect");
@@ -451,7 +395,7 @@ int mysockfd()
     CRPHelloSend(sockfd, 0, 1, 1, 1, 1);
     CRPBaseHeader *header;
     header = CRPRecv(sockfd);
-    if (header->packetID != CRP_PACKET_OK)
+    if (header == NULL || header->packetID != CRP_PACKET_OK)
     {
         log_error("Hello", "Recv Packet:%d\n", header->packetID);
         return 0;
@@ -506,19 +450,6 @@ int mysockfd()
     {
         // log_info("登录成功", "登录成功\n");
         sleep(1);//登录动画
-        //将记住的密码保存本地
-        if ((FlagRemember == 1) && (FirstPwd == 1))
-        {
-            FILE *passwdfp;
-            char mulu_benji[80], mulu_username[80];
-            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
-            mkdir(mulu_benji, 0700);
-            sprintf(mulu_username, "%s/username", mulu_benji);
-            passwdfp = fopen(mulu_username, "a+");
-            fwrite(name, 1, 40, passwdfp);
-            fwrite(pwd, 1, 16, passwdfp);
-            fclose(passwdfp);
-        }
 
         //登陆成功之后开始请求资料
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
@@ -720,6 +651,23 @@ int mysockfd()
 
 
         }
+
+        //按下记住密码的，保存用户名、密码、uid、头像路径至本地
+        if ((FlagRemember == 1) && (FirstPwd == 1))
+        {
+            FILE *passwdfp;
+            char mulu_benji[80], mulu_username[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            mkdir(mulu_benji, 0700);
+            sprintf(mulu_username, "%s/username", mulu_benji);
+            passwdfp = fopen(mulu_username, "a+");
+            fwrite(name, 1, 40, passwdfp);
+            fwrite(pwd, 1, 16, passwdfp);
+            fwrite(&uid, 1, 4, passwdfp);
+            fwrite(CurrentUserInfo->icon, 1, 16, passwdfp);
+            fclose(passwdfp);
+        }
+
         AddMessageNode(0, servemessage, "");//注册服务器发来的消息
 
         pthread_create(&ThreadKeepAlive, NULL, keepalive, NULL);

@@ -282,9 +282,13 @@ static int OnlineTableGC(POnlineUsersTableType table)
     int child = 0;
     for (int i = 0; i < 0x10; ++i)
     {
-        if (table->next[i] && !OnlineTableGC(table->next[i]))
+        if (table->next[i])
         {
-            child++;
+            if (OnlineTableGC(table->next[i]))
+            {
+                table->next[i] = NULL;
+                child++;
+            }
         }
     }
 
@@ -295,7 +299,7 @@ static int OnlineTableGC(POnlineUsersTableType table)
             free(table);
             return 1;
         }
-        else
+        else if (table->user != (void *) -1)
         {
             OnlineUserHold(table->user);
             if (difftime(table->user->lastUpdateTime, now) > 120)//Online用户最小宽限时间为120秒
@@ -327,7 +331,7 @@ void UserGC()
 
     pthread_mutex_lock(&OnlineUserTableLock);
     OnlineTableGC(&OnlineUserTable);
-    pthread_mutex_unlock(&PendingUserTableLock);
+    pthread_mutex_unlock(&OnlineUserTableLock);
 }
 
 int OnlineUserHold(POnlineUser user)
@@ -337,7 +341,7 @@ int OnlineUserHold(POnlineUser user)
 
 void UserDrop(POnlineUser user)
 {
-    if (user)
+    if (user && user->state == OUS_ONLINE)
     {
         pthread_rwlock_unlock(user->holdLock);
     }
@@ -386,10 +390,7 @@ int PendingUserDelete(PPendingUser user)
         return 0;
     }
     UserSetState((POnlineUser) user, OUS_PENDING_CLEAN, 0);
-    pthread_rwlock_unlock(user->holdLock);
-    pthread_rwlock_wrlock(user->holdLock);
     PendingUserTableRemove(user);
-    pthread_rwlock_unlock(user->holdLock);
     pthread_rwlock_destroy(user->holdLock);
     free(user->holdLock);
     free(user);
@@ -408,7 +409,7 @@ int OnlineUserDelete(POnlineUser user)
     }
     if (user->state != OUS_ONLINE)
     {
-        log_error("UserManager", "Trying to delete online user on illegal user state.\n");
+        log_warning("UserManager", "Trying to delete online user on illegal user state.\n");
         return 0;
     }
     if (UserSetState(user, OUS_PENDING_CLEAN, 0) == NULL)
@@ -510,9 +511,10 @@ POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid)
         user->info = info;
         bzero(&user->operations, sizeof(UserOperationTable));
         //初始化用户操作锁
-        pthread_mutexattr_t attr;
-        pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-        pthread_mutex_init(&user->operations.lock, &attr);
+        pthread_mutexattr_t recursiveAttr;
+        pthread_mutexattr_init(&recursiveAttr);
+        pthread_mutexattr_settype(&recursiveAttr, PTHREAD_MUTEX_RECURSIVE);
+        pthread_mutex_init(&user->operations.lock, &recursiveAttr);
         user->state = OUS_ONLINE;
         UserBroadcastNotify(user, FNT_FRIEND_ONLINE);           //向好友们广播上线消息
         return OnlineUserTableSet(user);
