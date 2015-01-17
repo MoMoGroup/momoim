@@ -32,8 +32,6 @@ unsigned char *jpegbuf_my, *jpegbuf_opposite;
 unsigned char *rgbBuf;
 unsigned long jpeg_size_my;
 
-pthread_mutex_t g_lock_send, g_lock_recv;
-pthread_cond_t g_cond_send, g_cond_recv;
 int fd;
 
 pthread_t tid1, tid2, tid3;
@@ -42,6 +40,19 @@ pthread_t tid1, tid2, tid3;
 int is_jpeg_error = 1;
 
 int read_JPEG_file(char *buf1, char *buf2);
+
+//////////////////////循环队列/////////////////////////
+static pthread_mutex_t mutex_send, mutex_recv;
+static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
+typedef struct
+{
+    int jpeglen;
+    char jpeg_buf[0];
+} jpeg_str;
+static jpeg_str *circle_buf_send[8], *circle_buf_recv[8];
+static jpeg_str **head_send, **tail_send, **head_recv, **tail_recv;
+//////////////////////////////////////////////////////
+
 
 int mark()
 {
@@ -138,21 +149,39 @@ int video()
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = 0;
 
+
+    jpeg_str *p_send;
     while (1)
     {
         if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1)
         {
+            printf("ioctl未知情况\n");
             return -1;
         }
         /////////////////////这里将yuv转化为jpeg///////////////////////////////////////////////////////
         unsigned char *tempbuf = (unsigned char *) malloc(640 * 480 * 3);
         yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);   //tempbuf是用来保存yuv转化为rgb的数据
 
-        pthread_mutex_lock(&g_lock_send);
-        jpeg_size_my = jpegWrite(tempbuf, jpegbuf_my);            //这里把tempbuf中的数据转化为jpeg数据
-        pthread_cond_signal(&g_cond_send);
-        pthread_mutex_unlock(&g_lock_send);
-        free(tempbuf);
+        //pthread_mutex_lock(&g_lock_send);
+        //jpeg_size_my = jpegWrite(tempbuf, jpegbuf_my);            //这里把tempbuf中的数据转化为jpeg数据
+        //pthread_cond_signal(&g_cond_send);
+        //pthread_mutex_unlock(&g_lock_send);
+        //free(tempbuf);
+        p_send = (jpeg_str *) malloc(50000);
+        p_send->jpeglen = (int) jpegWrite(tempbuf, p_send->jpeg_buf);
+        /////////////////////////////////////////采集循环队列/////////////////////////////////////////／
+        //这里用来给p_send写好帧数据
+        //memcpy(p_send->jpeg_buf, tempbuf, jpeg_size_my);
+        //snd_pcm_readi(record.handle, p_send, 1000);
+
+
+        pthread_mutex_lock(&mutex_send);
+        while (*head_send) pthread_cond_wait(&send_idle, &mutex_send);
+        *head_send = p_send;
+        head_send = circle_buf_send + (head_send - circle_buf_send + 1) % (sizeof(circle_buf_send) / sizeof(*circle_buf_send));
+        pthread_cond_signal(&send_busy);
+        pthread_mutex_unlock(&mutex_send);
+        /////////////////////////////////////////////////////////////////////////////////////////////
     }
     return 0;
 }
@@ -176,19 +205,35 @@ void *pthread_snd(void *socketsd)
     pthread_detach(pthread_self());
     int sd = (*(int *) socketsd);
     int ret;
+    jpeg_str *q_send;
     while (1)
     {
-        pthread_mutex_lock(&g_lock_send);
-        pthread_cond_wait(&g_cond_send, &g_lock_send);
-        send(sd, &(jpeg_size_my), sizeof(unsigned long), 0);
+        //pthread_mutex_lock(&g_lock_send);
+        //pthread_cond_wait(&g_cond_send, &g_lock_send);
+        //send(sd, &(jpeg_size_my), sizeof(unsigned long), 0);
         //perror("send1");
-        send(sd, jpegbuf_my, jpeg_size_my, O_NONBLOCK);
+        //send(sd, jpegbuf_my, jpeg_size_my, O_NONBLOCK);
         //perror("send2");
-        if (ret == -1)
-        {
-            printf("client is out\n");
-        }
-        pthread_mutex_unlock(&g_lock_send);
+        //if (ret == -1)
+        // {
+        //   printf("client is out\n");
+        //}
+        //pthread_mutex_unlock(&g_lock_send);
+
+        //////////////////////////////////发送的循环队列/////////////////////////////////////////////
+        pthread_mutex_lock(&mutex_send);
+        while (!(*tail_send))pthread_cond_wait(&send_busy, &mutex_send);
+        q_send = *tail_send;
+        *tail_send = NULL;
+        tail_send = circle_buf_send + (tail_send - circle_buf_send + 1) % (sizeof(circle_buf_send) / sizeof(*circle_buf_send));
+        pthread_cond_signal(&send_idle);
+        pthread_mutex_unlock(&mutex_send);
+
+
+        send(sd, q_send->jpeglen, sizeof(int), MSG_MORE);
+        send(sd, q_send->jpeg_buf, q_send->jpeglen, 0);
+        free(q_send);
+        ///////////////////////////////////////////////////////////////////////////////////////////
     }
     return NULL;
 }
@@ -199,16 +244,33 @@ void *pthread_rev(void *socketrev)
     pthread_detach(pthread_self());
     int sd = (*(int *) socketrev);
     uint64_t jpeg_size_opposite;
+    jpeg_str *p_recv;
     while (1)
     {
-        pthread_mutex_lock(&g_lock_recv);
-        recv(sd, &(jpeg_size_opposite), sizeof(uint64_t), 0);
+        //pthread_mutex_lock(&g_lock_recv);
+        //recv(sd, &(jpeg_size_opposite), sizeof(uint64_t), 0);
         //perror("recv1");
         //perror("recv2");
-        recv(sd, jpegbuf_opposite, jpeg_size_opposite, MSG_WAITALL);
+        //recv(sd, jpegbuf_opposite, jpeg_size_opposite, MSG_WAITALL);
 
-        pthread_cond_signal(&g_cond_recv);
-        pthread_mutex_unlock(&g_lock_recv);
+        //pthread_cond_signal(&g_cond_recv);
+        //pthread_mutex_unlock(&g_lock_recv);
+        //////////////////////////////////////接受的循环队列/////////////////////////////////////////
+        p_recv = (struct jpeg_str *) malloc(50000);
+        recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
+        recv(sd, p_recv->jpeg_buf, p_recv->jpeglen, MSG_WAITALL);
+
+
+        pthread_mutex_lock(&mutex_recv);
+        while (*head_recv)
+        {
+            pthread_cond_wait(&recv_idle, &mutex_recv);
+        }
+        *head_recv = p_recv;
+        head_recv = circle_buf_recv + (head_recv - circle_buf_recv + 1) % (sizeof(circle_buf_recv) / sizeof(*circle_buf_recv));
+        pthread_cond_signal(&recv_busy);
+        pthread_mutex_unlock(&mutex_recv);
+        ///////////////////////////////////////////////////////////////////////////////////////////
     }
     return NULL;
 }
@@ -216,12 +278,17 @@ void *pthread_rev(void *socketrev)
 
 gboolean idleDraw(gpointer data)
 {
+    jpeg_str *q_recv;
+    pthread_mutex_lock(&mutex_recv);
+    while (!(*tail_recv)) pthread_cond_wait(&recv_busy, &mutex_recv);
+    q_recv = *tail_recv;
+    *tail_recv = NULL;
+    tail_recv = circle_buf_recv + (tail_recv - circle_buf_recv + 1) % (sizeof(circle_buf_recv) / sizeof(*circle_buf_recv));
+    pthread_cond_signal(&recv_idle);
+    pthread_mutex_unlock(&mutex_recv);
 
-    pthread_mutex_lock(&g_lock_recv);
-    pthread_cond_wait(&g_cond_recv, &g_lock_recv);
-    //////////////////////////////在这里将jpeg数据转化为rgb数据////////////////////////////////////
-
-    if (read_JPEG_file(jpegbuf_opposite, rgbBuf))
+    //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
+    if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf))
     {
 
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -230,7 +297,12 @@ gboolean idleDraw(gpointer data)
         gtk_image_set_from_pixbuf(image, pixbuf);
         g_object_unref(pixbuf);
     }
-    pthread_mutex_unlock(&g_lock_recv);
+    //playback.data_buf = q_recv;
+    //SNDWAV_WritePcm(&playback, 1000);
+    //snd_pcm_writei(playback.handle, q_recv, 1000);
+    //SNDWAV_WritePcm(&playback, 1000);
+    free(q_recv);
+    ///////////////////////////////////////////////////////////////////////////////////////////
     return 1;
 }
 
@@ -260,6 +332,16 @@ int guiMain(void *button)
 void *primary_video(struct sockaddr_in *addr)
 {
 
+    head_send = circle_buf_send;
+    tail_send = circle_buf_send;
+    head_recv = circle_buf_recv;
+    tail_recv = circle_buf_recv;
+    pthread_mutex_init(&mutex_send, 0); //记得摧毁锁
+    pthread_cond_init(&send_idle, NULL);
+    pthread_cond_init(&send_busy, NULL);
+    pthread_mutex_init(&mutex_recv, 0); //记得摧毁锁
+    pthread_cond_init(&recv_idle, NULL);
+    pthread_cond_init(&recv_busy, NULL);
     signal(SIGPIPE, SIG_IGN);
     //////////////////////////////////////////////////////////////////
     int ret;
@@ -328,13 +410,6 @@ void *primary_video(struct sockaddr_in *addr)
         }
         close(listener);
     }
-    //////////////////////////////////////////////////////////////////
-    ////////////////////////////////两个锁用来同步不同线程///////////////
-    pthread_mutex_init(&g_lock_send, NULL);
-    pthread_cond_init(&g_cond_send, NULL);
-    pthread_mutex_init(&g_lock_recv, NULL);
-    pthread_cond_init(&g_cond_recv, NULL);
-    //////////////////////////////////////////////////////////////////
     fd = open("/dev/video0", O_RDWR, 0);
     if (fd == -1)
     {
