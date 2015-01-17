@@ -8,7 +8,6 @@ static const char sqlAuth[] = "SELECT id FROM users WHERE name = ? AND key = ?;"
 static const char sqlReg[] = "INSERT INTO users (name,key) VALUES ( ? , ? );";
 static const char sqlPwd[] = "UPDATE users SET key = ? WHERE id = ? AND key = ? LIMIT 1;";
 
-//static pthread_mutex_t lock;        //认证模块单线程执行
 int AuthInit()
 {
     int ret;
@@ -17,14 +16,12 @@ int AuthInit()
     {
         return 0;
     }
-    //pthread_mutex_init(&lock, NULL);
     return 1;
 }
 
 void AuthFinalize()
 {
     sqlite3_close(db);
-    //pthread_mutex_destroy(&lock);
 }
 
 int AuthUser(const char *user, const unsigned char *hashKey, uint32_t *uid)
@@ -38,11 +35,9 @@ int AuthUser(const char *user, const unsigned char *hashKey, uint32_t *uid)
     }
     hashText[32] = 0;
 
-    //pthread_mutex_lock(&lock);
     sqlite3_stmt *authStmt;
     if (sqlite3_prepare_v2(db, sqlAuth, sizeof(sqlAuth), &authStmt, NULL) != SQLITE_OK)
     {
-        //pthread_mutex_unlock(&lock);
         return 0;
     }
     sqlite3_bind_text(authStmt, 1, user, (int) strlen(user), NULL);
@@ -54,7 +49,6 @@ int AuthUser(const char *user, const unsigned char *hashKey, uint32_t *uid)
         *uid = (uint32_t) sqlite3_column_int(authStmt, 0);
     }
     sqlite3_finalize(authStmt);
-    //pthread_mutex_unlock(&lock);
     return ret;
 }
 
@@ -79,7 +73,7 @@ int AuthPasswordChange(uint32_t uid, const unsigned char *oldKey, const unsigned
     oldText[32] = 0;
     newText[32] = 0;
     sqlite3_stmt *cpStmt;
-    if (sqlite3_prepare_v2(db, sqlAuth, sizeof(sqlPwd), &cpStmt, NULL) != SQLITE_OK)
+    if (sqlite3_prepare_v2(db, sqlPwd, sizeof(sqlPwd), &cpStmt, NULL) != SQLITE_OK)
     {
         return -1;
     }

@@ -295,7 +295,7 @@ static int OnlineTableGC(POnlineUsersTableType table)
             free(table);
             return 1;
         }
-        else
+        else if (table->user != (void *) -1)
         {
             OnlineUserHold(table->user);
             if (difftime(table->user->lastUpdateTime, now) > 120)//Online用户最小宽限时间为120秒
@@ -327,7 +327,7 @@ void UserGC()
 
     pthread_mutex_lock(&OnlineUserTableLock);
     OnlineTableGC(&OnlineUserTable);
-    pthread_mutex_unlock(&PendingUserTableLock);
+    pthread_mutex_unlock(&OnlineUserTableLock);
 }
 
 int OnlineUserHold(POnlineUser user)
@@ -405,7 +405,7 @@ int OnlineUserDelete(POnlineUser user)
     }
     if (user->state != OUS_ONLINE)
     {
-        log_error("UserManager", "Trying to delete online user on illegal user state.\n");
+        log_warning("UserManager", "Trying to delete online user on illegal user state.\n");
         return 0;
     }
     if (UserSetState(user, OUS_PENDING_CLEAN, 0) == NULL)

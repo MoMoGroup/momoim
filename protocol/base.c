@@ -245,11 +245,11 @@ ssize_t CRPSend(CRPContext context,
                 packet_id_t packetID,
                 session_id_t sessionID,
                 void const *data,
-                CRP_LENGTH_TYPE dataLength)
+                CRP_LENGTH_TYPE length)
 {
     void *packet;
     CRPBaseHeader *header;
-    CRP_LENGTH_TYPE protocolLength = (CRP_LENGTH_TYPE) (sizeof(CRPBaseHeader) + dataLength),
+    CRP_LENGTH_TYPE protocolLength = (CRP_LENGTH_TYPE) (sizeof(CRPBaseHeader) + length),
             encryptedLength = protocolLength,
             fullLength;
     ssize_t ret = 0;
@@ -278,9 +278,9 @@ ssize_t CRPSend(CRPContext context,
     header->totalLength = (CRP_LENGTH_TYPE) protocolLength;
     header->packetID = packetID;
     header->sessionID = sessionID;
-    if (dataLength)
+    if (length)
     {
-        memcpy(header->data, data, dataLength);
+        memcpy(header->data, data, length);
     }
 
     if (context->sendTd)
