@@ -29,7 +29,7 @@ typedef struct VideoBuffer {
 static VideoBuffer *buffers = NULL;
 unsigned char *jpegbuf_my, *jpegbuf_opposite;
 unsigned char *rgbBuf;
-unsigned long jpeg_size_my, jpeg_size_opposite;
+unsigned long jpeg_size_my;
 
 pthread_mutex_t g_lock_send, g_lock_recv;
 pthread_cond_t g_cond_send, g_cond_recv;
@@ -133,13 +133,12 @@ int video() {
         /////////////////////这里将yuv转化为jpeg///////////////////////////////////////////////////////
         unsigned char *tempbuf = (unsigned char *) malloc(640 * 480 * 3);
         yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);   //tempbuf是用来保存yuv转化为rgb的数据
+
+        pthread_mutex_lock(&g_lock_send);
         jpeg_size_my = jpegWrite(tempbuf, jpegbuf_my);            //这里把tempbuf中的数据转化为jpeg数据
-        free(tempbuf);
-        //FILE *fp = fopen("/tmp/2.jpg", "w");
-        //fwrite(jpegbuf, jpeg_size, 1, fp);
-        //fclose(fp);
-        //////////////////////////////////////////////////////////////////
         pthread_cond_signal(&g_cond_send);
+        pthread_mutex_unlock(&g_lock_send);
+        free(tempbuf);
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
             return -1;
         }
@@ -183,13 +182,16 @@ void *pthread_snd(void *socketsd) {
 void *pthread_rev(void *socketrev) {
     pthread_detach(pthread_self());
     int sd = (*(int *) socketrev);
+    uint64_t jpeg_size_opposite;
     while (1) {
-        recv(sd, &(jpeg_size_opposite), sizeof(unsigned long), 0);
+        pthread_mutex_lock(&g_lock_recv);
+        recv(sd, &(jpeg_size_opposite), sizeof(uint64_t), 0);
         //perror("recv1");
         //perror("recv2");
         recv(sd, jpegbuf_opposite, jpeg_size_opposite, MSG_WAITALL);
 
         pthread_cond_signal(&g_cond_recv);
+        pthread_mutex_unlock(&g_lock_recv);
     }
     return NULL;
 }
@@ -254,73 +256,47 @@ void* primary_video(struct sockaddr_in*addr) {
     addr_opposite.sin_port = htons(SERVERPORT);
 
     addrlen = sizeof(struct sockaddr_in);
-    int sock_send = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock_send == -1) {
+    int netSocket = socket(AF_INET, SOCK_STREAM, 0);
+    if (netSocket == -1) {
         perror("socket\n");
         return -1;
     }
-    //////////////////////////////////////////////////////////////////
 
-    ///////////////////////这里设置接受套接字///////////////////////////
-    struct sockaddr_in addr_my;
-    bzero(&addr_my.sin_zero, sizeof(struct sockaddr));
-    addr_my.sin_family = AF_INET;
-    addr_my.sin_addr.s_addr = htons(INADDR_ANY);
-    addr_my.sin_port = htons(SERVERPORT);
-    int sock_recv = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock_recv == -1) {
-        perror("recv socket\n");
-        exit(1);
-    }
-    ret = bind(sock_recv, (struct sockaddr *) &addr_my, sizeof(struct sockaddr_in));
-    if (ret == -1) {
-        perror("bind");
-        exit(1);
-    }
-    ret = listen(sock_recv, 1);
-    if (ret == -1) {
-        perror("listen\n");
-        exit(1);
-    }
-    int on = 1;
-    setsockopt(sock_recv, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-//    ret = bind(sock_recv, (struct sockaddr *) &addr_my, sizeof(struct sockaddr_in));
-//    if (ret == -1) {
-//        perror("bind");
-//        exit(1);
-//    }
-//    ret = listen(sock_recv, 1);
-//    if (ret == -1) {
-//        perror("listen\n");
-//        exit(1);
-//    }
-    //////////////////////////////////////////////////////////////////
-    ///////////////////////这里是连接设置的部分//////////////////////////
-    /*根据参数写不写地址分成两个不同的进程，写地址的尝试连接对方的进程，不写地址的进程等待对方连接*/
-    int newsd;
     if (addr!=NULL) {
         //ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
         addr_opposite=*addr;
-        if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
+        if (connect(netSocket, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
             perror("connect");
-            close(sock_send);
-            close(sock_recv);
+            close(netSocket);
             return 1;
         }
-        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
-            perror("accept");
-
     }
 
     else {
 
-        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
+        struct sockaddr_in addr_my;
+        bzero(&addr_my.sin_zero, sizeof(struct sockaddr));
+        addr_my.sin_family = AF_INET;
+        addr_my.sin_addr.s_addr = htons(INADDR_ANY);
+        addr_my.sin_port = htons(SERVERPORT);
+        int listener= socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        int on = 1;
+        setsockopt(listener, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+        ret = bind(listener, (struct sockaddr *) &addr_my, sizeof(struct sockaddr_in));
+        if (ret == -1) {
+            perror("bind");
+            exit(1);
+        }
+        ret = listen(listener, 1);
+        if (ret == -1) {
+            perror("listen\n");
+            exit(1);
+        }
+
+
+        if ((netSocket = accept(listener, (struct sockaddr *) &addr_opposite, &addrlen)) == -1){
             perror("accept");
-        addr_opposite.sin_port = htons(SERVERPORT);
-        if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
-            perror("connect");
-            close(sock_send);
-            close(sock_recv);
+            close(listener);
             return 1;
         }
     }
@@ -343,14 +319,12 @@ void* primary_video(struct sockaddr_in*addr) {
     localMem();
     ret = pthread_create(&tid1, NULL, pthread_video, NULL);
     g_idle_add(guiMain, NULL);
-    ret = pthread_create(&tid3, NULL, pthread_rev, &newsd);
-    ret = pthread_create(&tid2, NULL, pthread_snd, &sock_send);
+    ret = pthread_create(&tid3, NULL, pthread_rev, &netSocket);
+    ret = pthread_create(&tid2, NULL, pthread_snd, &netSocket);
     pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
     pthread_join(tid3, NULL);
-    close(sock_recv);
-    close(sock_send);
-    close(newsd);
+    close(netSocket);
     free(jpegbuf_my);
     free(jpegbuf_opposite);
     return 0;
