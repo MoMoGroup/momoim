@@ -74,11 +74,11 @@ int localMem() {
     struct v4l2_buffer buf;
     ////////////////////////////////////////////////////////////////////////
     //这个req.count的大小是多少呢
-    buffers = (VideoBuffer *) calloc(req.count, sizeof(VideoBuffer));
     /////////////////////////////////////////////////////////////////////////
     req.count = 4;
     req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     req.memory = V4L2_MEMORY_MMAP;
+    buffers = (VideoBuffer *) calloc(req.count, sizeof(VideoBuffer));
 
     if (ioctl(fd, VIDIOC_REQBUFS, &req) == -1) {
         return -1;
@@ -302,7 +302,7 @@ void* primary_video(struct sockaddr_in*addr) {
         //ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
         addr_opposite=*addr;
         if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
-            //perror("connect");
+            perror("connect");
             close(sock_send);
             close(sock_recv);
             return 1;

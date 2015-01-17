@@ -285,7 +285,7 @@ gboolean treatment_request_video_discover(gpointer user_data)
                 pthread_t pthd_video_recv;
                 pthread_create(&pthd_video_recv,
                                NULL,
-                               primary_audio,
+                               primary_video,
                                NULL);
                 session_id_t sessionid_accept=CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
