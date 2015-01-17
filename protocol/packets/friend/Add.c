@@ -7,7 +7,7 @@ CRPPacketFriendAdd *CRPFriendAddCast(CRPBaseHeader *base)
 {
     CRPPacketFriendAdd *data = (CRPPacketFriendAdd *) malloc(base->totalLength - sizeof(CRPBaseHeader) + 1);
     memcpy(data, base->data, base->totalLength - sizeof(CRPBaseHeader));
-    data->note[base->totalLength - sizeof(CRPBaseHeader)] = 0;
+    data->note[base->totalLength - sizeof(CRPBaseHeader) - 4] = 0;
     return data;
 }
 

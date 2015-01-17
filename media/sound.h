@@ -104,5 +104,5 @@ ssize_t SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount);
 
 int SNDWAV_SetParams(SNDPCMContainer_t *sndpcm, WAVContainer_t *wav);
 
-int primary_audio(struct sockaddr_in );
+int primary_audio(int argc,char *argv);
 

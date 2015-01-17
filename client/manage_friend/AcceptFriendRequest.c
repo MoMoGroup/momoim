@@ -1,5 +1,6 @@
 #include <common.h>
 #include <stdlib.h>
+#include <string.h>
 #include "friend.h"
 
 //以下函数为添加好友提示框，同意或者或略。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。
@@ -7,6 +8,8 @@ typedef struct tongyi
 {
     uint32_t uid;
     GtkWidget *win;
+    char *verification_message;
+    char nickname[32];
 } tongyi;
 
 //取消的话直接销毁
@@ -40,9 +43,9 @@ static gint pop_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
     return 0;
 }
 
-
-int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
+int put(void *data)
 {
+    tongyi *info = data;
     GtkEventBox *popup_accept_eventbox, *popup_cancel_eventbox, *pop_mov_event;
     GtkWidget *popupwindow, *popupframelayout, *popuplayout;
     cairo_surface_t *popupsurfacecancel, *popupsurfacedone;
@@ -51,6 +54,7 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
     GtkWidget *popupcancel, *popupdone, *popupbackground;
 
 
+//        popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     popupframelayout = gtk_layout_new(NULL, NULL);
     popuplayout = gtk_fixed_new();
@@ -63,7 +67,6 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
 
     popupsurfacecancel = ChangeThem_png("忽略1.png");
     popupsurfacedone = ChangeThem_png("同意1.png");
-
     popupsurfacebackground = ChangeThem_png("提示框.png");
     //获得
     popupcancel = gtk_image_new_from_surface(popupsurfacecancel);
@@ -72,8 +75,8 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
 
     popupbackground = gtk_image_new_from_surface(popupsurfacebackground);
 
-    tongyi *info = malloc(sizeof(struct tongyi));
-    info->uid = uid;
+//    tongyi *info = malloc(sizeof(struct tongyi));
+//    info->uid = uid;
     info->win = popupwindow;
 
     // 设置窗体获取鼠标事件
@@ -107,26 +110,23 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
             info);
 
 
-    GtkTextView *text, *yanzheng;
-    // GtkWidget *text,*yanzheng;
-    // text = gtk_text_view_new();
-    yanzheng = gtk_text_view_new();
-    char mes[80];
-    sprintf(mes, "用户%d请求添加你为好友", uid);
-    // gtk_test_text_set(text, mes);
-    text = gtk_label_new(mes);
-    yanzheng = gtk_label_new(verification_message);
-//    sprintf(mes, "系统消息");
-    //   gtk_test_text_set(yanzheng, verification_message);
+    char buf[80], mes[256];
 
-//    GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
-//    gtk_widget_override_background_color(text, GTK_STATE_NORMAL, &rgba);//设置透明
-    //gtk_widget_override_background_color(title, GTK_STATE_NORMAL, &rgba);//设置透明
+    GtkWidget *yanzheng, *text, *xitong;
 
-    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(text), 30, 70);
-    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(yanzheng), 40, 120);
+    sprintf(buf, "用户%d,昵称:%s\n请求添加你为好友。", info->uid, info->nickname);
+    sprintf(mes, "验证消息:%s", info->verification_message);
 
 
+    xitong = gtk_label_new("系统消息");
+    text = gtk_label_new(buf);
+
+    yanzheng = gtk_label_new(mes);
+
+
+    gtk_fixed_put(GTK_FIXED(popuplayout), xitong, 14, 10);//标题
+    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(text), 30, 50);//添加信息
+    gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(yanzheng), 30, 100);//验证信息
     gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(popup_cancel_eventbox), 30, 170);
     gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(popup_accept_eventbox), 150, 170);
 
@@ -135,7 +135,39 @@ int Friend_Fequest_Popup(uint32_t uid, const char *verification_message)
     gtk_container_add(GTK_CONTAINER (popupframelayout), popuplayout);
 
     gtk_widget_show_all(popupwindow);
-
-
     return 0;
+}
+
+//给一个uid，拿到昵称的函数
+int get_nicheng(CRPBaseHeader *header, void *data)
+{
+    tongyi *aaaa;
+    aaaa = (tongyi *) data;
+
+    if (header->packetID == CRP_PACKET_INFO_DATA)//查询到资料，防到通知框
+    {
+        CRPPacketInfoData *infodata = CRPInfoDataCast(header);
+        memcpy(aaaa->nickname, infodata->info.nickName, sizeof(infodata->info.nickName));
+        g_idle_add(put, aaaa);
+
+        if ((void *) infodata == header)
+        {
+            free(infodata);
+        }
+        return 0;
+    }
+
+
+}
+
+int Friend_Request_Popup(uint32_t uid, const char *verification_message)
+{
+    tongyi *info = malloc(sizeof(struct tongyi));
+    info->uid = uid;
+    info->verification_message = verification_message;
+    session_id_t sessionid = CountSessionId();
+    AddMessageNode(sessionid, get_nicheng, info);
+    CRPInfoRequestSend(sockfd, sessionid, uid);//请求添加方资料
+    return 0;
+
 }
