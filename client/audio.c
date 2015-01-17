@@ -6,6 +6,7 @@
 #include <common.h>
 #include <protocol/net/InetAddress.h>
 #include <arpa/inet.h>
+#include <protocol/net/FriendDiscover.h>
 #include "PopupWinds.h"
 #include "audio.h"
 #include "ClientSockfd.h"
@@ -220,12 +221,12 @@ gboolean treatment_request_audio_discover(gpointer user_data)
                 //primary_audio(1,NULL);
                 session_id_t accept_session= CountSessionId();
                 //AddMessageNode(accept_session, deal_audio_accept_feedback, NULL);
-                CRPNETDiscoverAcceptSend(sockfd, accept_session, header->uid, accept_session);
+                CRPNETDiscoverAcceptSend(sockfd,accept_session, header->uid, header->session);
                 return 0;
             }
             else
             {
-                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), header->uid, CountSessionId());
+                CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), header->uid, header->session);
                 gtk_widget_destroy(dialog_request_audio_net_discover);
                 return 0;
             }
@@ -288,12 +289,12 @@ gboolean treatment_request_video_discover(gpointer user_data)
                                NULL);
                 session_id_t sessionid_accept=CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
-                CRPNETDiscoverAcceptSend(sockfd , sessionid_accept, video_data->uid,sessionid_accept);
+                CRPNETDiscoverAcceptSend(sockfd , sessionid_accept, video_data->uid,video_data->session);
                 gtk_widget_destroy(dialog_request_video_net_discover);
             }
             else
             {
-                CRPNETDiscoverRefuseSend(sockfd , CountSessionId(), video_data->uid, CountSessionId());
+                CRPNETDiscoverRefuseSend(sockfd , CountSessionId(), video_data->uid, video_data->session);
                 gtk_widget_destroy(dialog_request_video_net_discover);
             }
         }
