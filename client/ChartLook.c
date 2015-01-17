@@ -38,7 +38,7 @@ static gint face_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     return 0;
 }
 
-void ChartLook(FriendInfo *info)
+void ChartLook(FriendInfo *info, gdouble event_x, gdouble event_y)
 {
     GtkWidget *smile, *goodbye, *lovely, *angry, *cry, *poor;
     GtkWidget *shy, *nose, *laughter;
@@ -47,7 +47,7 @@ void ChartLook(FriendInfo *info)
 
     GdkColor color;
     info->look_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_position(GTK_WINDOW(info->look_window), GTK_WIN_POS_CENTER);
+    gtk_window_move(GTK_WINDOW(info->look_window), event_x, event_y);
     gtk_window_set_decorated(GTK_WINDOW(info->look_window), FALSE);   // 去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(info->look_window), 100, 100);
 
