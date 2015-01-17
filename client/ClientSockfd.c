@@ -390,10 +390,12 @@ int mysockfd()
     char mulu2[80] = {0};
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     FILE *ipfp1;
-    char myip[32];
+    char myip[20];
     struct in_addr inp;
     ipfp1 = fopen(checkmulu_ip, "r");
-    fread(myip, 1, 32, ipfp1);
+    int n = fread(myip, 1, 20, ipfp1);
+    myip[n] = 0;
+    log_info("IP", myip);
     inet_aton(myip, &inp);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,

@@ -953,6 +953,8 @@ void infotv()
     gtk_widget_show(isex);
 
     iconstellation = gtk_combo_box_text_new();//星座
+    gtk_combo_box_set_wrap_width((GtkComboBox *) iconstellation, 4);
+    //gtkcomboboxset
     for (int i = 0; i < 12; ++i)
     {
         gtk_combo_box_text_append(iconstellation, NULL, constellations[i]);

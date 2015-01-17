@@ -68,10 +68,12 @@ int newsockfd()
             }
             int fd = socket(AF_INET, SOCK_STREAM, 0);
             FILE *ipfp2;
-            char myip1[32];
+            char myip1[20];
             struct in_addr inp;
             ipfp2 = fopen(checkmulu_ip, "r");//checkmulu_ip为全局变量的文件名，存放首次启动时输入的IP地址
-            fread(myip1, 1, 32, ipfp2);
+            int n = fread(myip1, 1, 20, ipfp2);
+            myip1[n] = 0;
+            log_info("IP", myip1);
             inet_aton(myip1, &inp);//字符串IP地址转换为一个32位的网络序列IP地址
             struct sockaddr_in server_addr = {
                     .sin_family=AF_INET,

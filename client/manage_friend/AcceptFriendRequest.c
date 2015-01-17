@@ -3,7 +3,12 @@
 #include <string.h>
 #include "friend.h"
 
-//以下函数为添加好友提示框，同意或者或略。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。
+//以下函数为添加好友提示框，同意或者忽略。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。。
+cairo_surface_t *popupsurfacecancel, *popupsurfacecancel2, *popupsurfacedone, *popupsurfacedone2;
+cairo_surface_t *popupsurfacebackground;
+GtkWidget *popupcancel, *popupdone, *popupbackground;
+
+
 typedef struct tongyi
 {
     uint32_t uid;
@@ -13,7 +18,7 @@ typedef struct tongyi
 } tongyi;
 
 //取消的话直接销毁
-gint popup_cancel(GtkWidget *widget, GdkEventButton *event, gpointer data)
+gint cancel_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     GtkWidget *win = GTK_WIDGET(data);
 
@@ -21,7 +26,68 @@ gint popup_cancel(GtkWidget *widget, GdkEventButton *event, gpointer data)
     return 0;
 }
 
-gint popup_done(GtkWidget *widget, GdkEventButton *event, gpointer data)
+static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    GtkWidget *win = GTK_WIDGET(data);
+    if (event->button == 1)
+    {
+        gdk_window_set_cursor(gtk_widget_get_window(win), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+    }
+    return 0;
+}
+
+//取消
+//鼠标移动事件
+static gint cancel_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    GtkWidget *win = GTK_WIDGET(data);
+    gdk_window_set_cursor(gtk_widget_get_window(win), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) popupcancel, popupsurfacecancel2); //置换图标
+    return 0;
+}
+
+//取消
+//鼠标离开事件
+static gint cancel_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    GtkWidget *win = GTK_WIDGET(data);
+    gdk_window_set_cursor(gtk_widget_get_window(win), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) popupcancel, popupsurfacecancel);
+    return 0;
+}
+
+static gint accept_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    tongyi *info = data;
+    if (event->button == 1)
+    {
+        gdk_window_set_cursor(gtk_widget_get_window(info->win), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+        gtk_image_set_from_surface((GtkImage *) popupdone, popupsurfacedone); //置换图标
+    }
+    return 0;
+}
+
+//关闭
+//鼠标移动事件
+static gint accept_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    tongyi *info = data;
+    gdk_window_set_cursor(gtk_widget_get_window(info->win), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) popupdone, popupsurfacedone2);//换图片
+    return 0;
+}
+
+//关闭
+//鼠标离开事件
+static gint accept_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    tongyi *info = data;
+    gdk_window_set_cursor(gtk_widget_get_window(info->win), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) popupdone, popupsurfacedone);//换图片
+    return 0;
+}
+
+gint accept_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     tongyi *info = data;
     CRPFriendAcceptSend(sockfd, 1, info->uid);//同意的话发送Accept
@@ -48,11 +114,6 @@ int put(void *data)
     tongyi *info = data;
     GtkEventBox *popup_accept_eventbox, *popup_cancel_eventbox, *pop_mov_event;
     GtkWidget *popupwindow, *popupframelayout, *popuplayout;
-    cairo_surface_t *popupsurfacecancel, *popupsurfacedone;
-    cairo_surface_t *popupsurfacebackground;
-
-    GtkWidget *popupcancel, *popupdone, *popupbackground;
-
 
 //        popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -66,7 +127,9 @@ int put(void *data)
 
 
     popupsurfacecancel = ChangeThem_png("忽略1.png");
+    popupsurfacecancel2 = ChangeThem_png("忽略2.png");
     popupsurfacedone = ChangeThem_png("同意1.png");
+    popupsurfacedone2 = ChangeThem_png("同意2.png");
     popupsurfacebackground = ChangeThem_png("提示框.png");
     //获得
     popupcancel = gtk_image_new_from_surface(popupsurfacecancel);
@@ -94,18 +157,18 @@ int put(void *data)
 
     popup_cancel_eventbox = BuildEventBox(
             popupcancel,
-            NULL,
-            NULL,
-            NULL,
-            G_CALLBACK(popup_cancel),
+            G_CALLBACK(cancel_button_press_event),
+            G_CALLBACK(cancel_enter_notify_event),
+            G_CALLBACK(cancel_leave_notify_event),
+            G_CALLBACK(cancel_button_release_event),
             NULL,
             popupwindow);
     popup_accept_eventbox = BuildEventBox(
             popupdone,
-            NULL,
-            NULL,
-            NULL,
-            G_CALLBACK(popup_done),
+            G_CALLBACK(accept_button_press_event),
+            G_CALLBACK(accept_enter_notify_event),
+            G_CALLBACK(accept_leave_notify_event),
+            G_CALLBACK(accept_button_release_event),
             NULL,
             info);
 

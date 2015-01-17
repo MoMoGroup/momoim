@@ -1028,7 +1028,10 @@ gboolean loadloginLayout(gpointer user_data)
         flag_cunchu = i;
         fclose(passwdfp);
     }
-    gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
+    if (flag_cunchu != 0)
+    {
+        gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
+    }
 
 //放置组件的相对位置
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(backgroundevent_box), 0, 0);//起始坐标
