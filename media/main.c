@@ -9,12 +9,12 @@
 #include <signal.h>
 #include <linux/videodev2.h>
 #include <netinet/tcp.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <gtk/gtk.h>
 #include "yuv422_rgb.h"
 #include "video.h"
+#include "../logger/include/logger.h"
 
 #define SERVERPORT 5555
 
@@ -147,12 +147,12 @@ int video()
     memset(&buf, 0, sizeof(buf));
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
-    buf.index = 0;
 
 
     jpeg_str *p_send;
     while (1)
     {
+        buf.index = (buf.index + 1) % 4;
         if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1)
         {
             printf("ioctl未知情况\n");
@@ -161,14 +161,14 @@ int video()
         /////////////////////这里将yuv转化为jpeg///////////////////////////////////////////////////////
         unsigned char *tempbuf = (unsigned char *) malloc(640 * 480 * 3);
         yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);   //tempbuf是用来保存yuv转化为rgb的数据
-
+        fprintf(stderr, "yuv422_rgb24\n");
         //pthread_mutex_lock(&g_lock_send);
         //jpeg_size_my = jpegWrite(tempbuf, jpegbuf_my);            //这里把tempbuf中的数据转化为jpeg数据
         //pthread_cond_signal(&g_cond_send);
         //pthread_mutex_unlock(&g_lock_send);
-        //free(tempbuf);
         p_send = (jpeg_str *) malloc(50000);
         p_send->jpeglen = (int) jpegWrite(tempbuf, p_send->jpeg_buf);
+        free(tempbuf);
         /////////////////////////////////////////采集循环队列/////////////////////////////////////////／
         //这里用来给p_send写好帧数据
         //memcpy(p_send->jpeg_buf, tempbuf, jpeg_size_my);
@@ -188,7 +188,6 @@ int video()
 
 void *pthread_video(void *arg)
 {
-    pthread_detach(pthread_self());
     video_on();
     /////////////////////
     while (1)
@@ -202,7 +201,6 @@ void *pthread_video(void *arg)
 
 void *pthread_snd(void *socketsd)
 {
-    pthread_detach(pthread_self());
     int sd = (*(int *) socketsd);
     int ret;
     jpeg_str *q_send;
@@ -244,7 +242,6 @@ void *pthread_snd(void *socketsd)
 
 void *pthread_rev(void *socketrev)
 {
-    pthread_detach(pthread_self());
     int sd = (*(int *) socketrev);
     jpeg_str *p_recv;
     while (1)
@@ -262,6 +259,10 @@ void *pthread_rev(void *socketrev)
         errno = 0;
         recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
         perror("recv");
+        if (errno)
+        {
+            return NULL;
+        }
         errno = 0;
         recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
         perror("recv");
@@ -285,7 +286,7 @@ gboolean idleDraw(gpointer data)
 {
     jpeg_str *q_recv;
     pthread_mutex_lock(&mutex_recv);
-    if (!(*tail_recv))
+    if (!*tail_recv)
     {
         pthread_mutex_unlock(&mutex_recv);
         return 1;
@@ -300,7 +301,7 @@ gboolean idleDraw(gpointer data)
     //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
     if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf))
     {
-
+        log_error("Draw", "Frame\n");
         ////////////////////////////////////////////////////////////////////////////////////////////
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(rgbBuf, GDK_COLORSPACE_RGB, 0, 8, 640, 480, 640 * 3, NULL, NULL);
         GtkImage *image = (GtkImage *) data;
@@ -355,10 +356,6 @@ void *primary_video(struct sockaddr_in *addr)
     signal(SIGPIPE, SIG_IGN);
     //////////////////////////////////////////////////////////////////
     int ret;
-    //databuf_opposite = (buf_t *) malloc(640*480*4);
-    //jpegbuf =(JPEG_t *)malloc(640*480*4);
-    jpegbuf_my = (unsigned char *) malloc(50000);
-    jpegbuf_opposite = (unsigned char *) malloc(50000);
     //////////////////////////////////////////////////////////////////
     ////////////////////////////这里设置发送套接字//////////////////////
     /*连接设置是指先发送数据还是先接受数据*/
@@ -379,7 +376,8 @@ void *primary_video(struct sockaddr_in *addr)
         {
             perror("socket\n");
             return -1;
-        }setsockopt(netSocket, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof(int));
+        }
+        setsockopt(netSocket, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof(int));
 
         //ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
         addr_opposite = *addr;
@@ -440,8 +438,6 @@ void *primary_video(struct sockaddr_in *addr)
     pthread_join(tid2, NULL);
     pthread_join(tid3, NULL);
     close(netSocket);
-    free(jpegbuf_my);
-    free(jpegbuf_opposite);
     return 0;
 }
 
