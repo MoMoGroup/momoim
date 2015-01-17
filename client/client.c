@@ -1023,6 +1023,7 @@ gboolean loadloginLayout(gpointer user_data)
         while ((fread(str_cunchu + i, 1, 76, passwdfp) != NULL) && (i < 20))
         {
             gtk_combo_box_text_append(GTK_COMBO_BOX_TEXT(LoginWindowUserNameBox), NULL, str_cunchu[i].cunchu_name);
+
             ++i;
         }
         flag_cunchu = i;
