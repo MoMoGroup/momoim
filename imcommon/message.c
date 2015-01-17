@@ -3,6 +3,7 @@
 #include <malloc.h>
 #include <stdlib.h>
 #include <string.h>
+#include "../logger/include/logger.h"
 
 static const char SQLCreateTable[] = ""
         "CREATE TABLE msg("
@@ -59,6 +60,7 @@ MessageFile *MessageFileOpen(const char *path)
     {
         return NULL;
     }
+    sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
     MessageFile *file = (MessageFile *) malloc(sizeof(MessageFile));
     if (file == NULL)
     {
@@ -213,6 +215,7 @@ UserMessage **MessageFileQuery(MessageFile *file, MessageQueryCondition *conditi
             zSQLTail += sprintf(zSQLTail, "ORDER BY %s ", zSQLOrder);
         }
         zSQLTail += sprintf(zSQLTail, "LIMIT %d;", (int) condition->limit);
+        log_info("query message", "%s\n", zSQLPreBuild);
         int rc;
         if (SQLITE_OK != (rc = sqlite3_prepare_v2(file->db,
                                                   zSQLPreBuild,

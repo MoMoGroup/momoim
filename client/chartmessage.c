@@ -7,6 +7,7 @@
 #include "common.h"
 #include <logger.h>
 #include <sys/stat.h>
+#include <cairo-script-interpreter.h>
 #include "chartmessage.h"
 
 //解码
@@ -233,10 +234,15 @@ gboolean progress_bar_crcle(void *data)
         p = localtime(&timep);
         sprintf(nicheng_times, " %s  %d : %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
         gchar char_text[100];
-        sprintf(char_text, " 文件 %s 已经成功发送 ", bar_crcle->image_message_data->message_data);
+        gchar *file_name = malloc(256);
+        memcpy(file_name,
+               bar_crcle->image_message_data->message_data,
+               (size_t) bar_crcle->image_message_data->charlen - 20);
+        file_name[bar_crcle->image_message_data->charlen - 20] = '\0';
+        sprintf(char_text, " 文件 %s 已经成功发送 ", file_name);
 
-        show_local_text(char_text, bar_crcle->info, nicheng_times, strlen(char_text));
-
+        show_local_text(char_text, bar_crcle->info, nicheng_times, (int) strlen(char_text));
+        free(file_name);
         free(bar_crcle->image_message_data->message_data);
         free(bar_crcle->image_message_data);
         free(bar_crcle);
@@ -337,6 +343,7 @@ void UploadingFile(gchar *filename, FriendInfo *info)
 
     file_messge->file_size = stat_buf.st_size;
     char strdest[17] = {0};
+    Md5Coding(filename, strdest);  //获得MD5值存在strdest
 
     //截取最后的文件名
     int filename_len = strlen(filename);
@@ -353,15 +360,15 @@ void UploadingFile(gchar *filename, FriendInfo *info)
     if (i < 0)
     {
         memcpy(file_messge->image_message_data->message_data, filename, filename_len);
-        Md5Coding(file_messge->image_message_data->message_data, strdest);  //获得MD5值存在strdest
+
         memcpy(file_messge->image_message_data->message_data + filename_len, &file_messge->file_size, 4);
     }
     else
     {
-        Md5Coding(file_messge->image_message_data->message_data, strdest);  //获得MD5值存在strdest
         memcpy(file_messge->image_message_data->message_data + filename_len - i - 1, &file_messge->file_size, 4);
     }
-    file_messge->image_message_data->charlen = filename_len - i + 4;
+    memcpy(file_messge->image_message_data->message_data + filename_len - i + 3, strdest, 16);
+    file_messge->image_message_data->charlen = filename_len - i + 3 + 16;
 
     if (stat_buf.st_size / 1048576.0 > 0)
     {
@@ -477,15 +484,18 @@ int deal_with_message(CRPBaseHeader *header, void *data)
                                          photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data);
-                    ret = 0;
                 }
+                ret = 0;
                 free(photomessage);
             }
         }
     }
     else if (header->packetID == CRP_PACKET_FILE_DATA_END)
     {
-        fclose(photomessage->fp);
+        if (photomessage->fp != NULL)
+        {
+            fclose(photomessage->fp);
+        }
         photomessage->image_message_data->imagecount--;
         if (photomessage->image_message_data->imagecount == 0)
         {

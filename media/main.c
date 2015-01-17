@@ -18,7 +18,7 @@
 
 #define SERVERPORT 5555
 
-struct sockaddr_in addr_opposite;
+struct sockaddr_in addr_sendto;
 
 typedef struct VideoBuffer {
     void *start;
@@ -218,11 +218,11 @@ gint delete_event() {
     pthread_cancel(tid1);
     pthread_cancel(tid2);
     pthread_cancel(tid3);
+    free(rgbBuf);
     return FALSE;
 }
 
-void *guiMain(void *button) {
-    pthread_detach(pthread_self());
+int guiMain(void *button) {
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
     GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
@@ -231,12 +231,11 @@ void *guiMain(void *button) {
     g_idle_add(idleDraw, image);
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(image));
     gtk_widget_show_all(GTK_WIDGET(window));
-    gtk_main();
-    free(rgbBuf);
     return 0;
 }
 
-int primary_video(int argc,char *argv) {
+void *primary_video(struct sockaddr_in *addr)
+{
 
     signal(SIGPIPE, SIG_IGN);
     //////////////////////////////////////////////////////////////////
@@ -250,10 +249,10 @@ int primary_video(int argc,char *argv) {
     /*连接设置是指先发送数据还是先接受数据*/
 
 
-    //struct sockaddr_in addr_opposite;
+    //struct sockaddr_in addr_sendto;
     socklen_t addrlen;
-    addr_opposite.sin_family = AF_INET;
-    addr_opposite.sin_port = htons(SERVERPORT);
+    addr_sendto.sin_family = AF_INET;
+    addr_sendto.sin_port = htons(SERVERPORT);
 
     //addrlen = sizeof(struct sockaddr_in);
     int sock_send = socket(AF_INET, SOCK_STREAM, 0);
@@ -300,26 +299,28 @@ int primary_video(int argc,char *argv) {
     ///////////////////////这里是连接设置的部分//////////////////////////
     /*根据参数写不写地址分成两个不同的进程，写地址的尝试连接对方的进程，不写地址的进程等待对方连接*/
     int newsd;
-    if (argc >= 2) {
-        ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
-
-        if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
+    if (addr!=NULL) {
+        //ret = inet_pton(AF_INET, argv, &addr_sendto.sin_addr);
+        addr_sendto = *addr;
+        if (connect(sock_send, (struct sockaddr *) &addr_sendto, sizeof(addr_sendto)) == -1)
+        {
             //perror("connect");
             close(sock_send);
             close(sock_recv);
             return 1;
         }
-        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
+        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_sendto, &addrlen)) == -1)
             perror("accept");
 
     }
 
     else {
 
-        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
+        if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_sendto, &addrlen)) == -1)
             //perror("accept");
-        addr_opposite.sin_port = htons(SERVERPORT);
-        if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
+            addr_sendto.sin_port = htons(SERVERPORT);
+        if (connect(sock_send, (struct sockaddr *) &addr_sendto, sizeof(addr_sendto)) == -1)
+        {
             //perror("connect");
             close(sock_send);
             close(sock_recv);
@@ -344,8 +345,7 @@ int primary_video(int argc,char *argv) {
     mark();
     localMem();
     ret = pthread_create(&tid1, NULL, pthread_video, NULL);
-    pthread_t tGui;
-    pthread_create(&tGui, NULL, guiMain, NULL);
+    g_idle_add(guiMain, NULL);
     ret = pthread_create(&tid3, NULL, pthread_rev, &newsd);
     ret = pthread_create(&tid2, NULL, pthread_snd, &sock_send);
     pthread_join(tid1, NULL);

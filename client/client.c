@@ -15,7 +15,7 @@
 #include "common.h"
 #include "chart.h"
 
-static GtkWidget *imageremember, *imagehead,*ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
+static GtkWidget *imageremember, *imagehead, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
 const gchar *name, *pwd;
 static pthread_t threadMainLoop;
@@ -864,6 +864,8 @@ int main(int argc, char *argv[])
 {
     //初始化GTK+程序
     gtk_init(&argc, &argv);
+    time_t now = time(NULL);
+    srand((unsigned int) now);
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
     char checkmulu[80], minglingcp[256], checkmulu_theme[80];
     sprintf(checkmulu, "%s/.momo", getpwuid(getuid())->pw_dir);

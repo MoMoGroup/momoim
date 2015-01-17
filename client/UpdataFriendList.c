@@ -2,6 +2,8 @@
 #include <protocol/info/Data.h>
 #include "MainInterface.h"
 #include <stdlib.h>
+#include <string.h>
+#include <logger.h>
 #include "common.h"
 
 //enum {
@@ -84,6 +86,16 @@ GtkTreeIter getUserIter(uint32_t frienduid)//参数为匹配需要的uid
 
         if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &iterGroup))
         {
+            log_warning("GetUserIter", "Friend %u Not Found\n", frienduid);
+            for (int gi = 0; gi < friends->groupCount; ++gi)
+            {
+                UserGroup *group = friends->groups + gi;
+                log_info("Info", "Group:%s(%u)\n", group->groupName, group->groupId);
+                for (int fi = 0; fi < group->friendCount; ++fi)
+                {
+                    log_info("Friend", "%u\n", group->friends[fi]);
+                }
+            }
             break;
         }
 
@@ -110,7 +122,7 @@ int OnLine(void *data)//好友上线。图标变亮
         head = head->next;
         if (p->uid == head->user.uid)
         {
-
+            head->isonline = 1;
             pixbuf = DrawFriend(&head->user, 1);
             break;
         }
@@ -120,6 +132,8 @@ int OnLine(void *data)//好友上线。图标变亮
                        PIXBUF_COL, pixbuf,
                        PRIORITY_COL, 1,
                        -1);
+    g_object_unref(pixbuf);
+    free(data);
     return 0;
 }
 
@@ -138,8 +152,9 @@ int OffLine(void *data)//好友下线。图标变暗
         head = head->next;
         if (p->uid == head->user.uid)
         {
-
+            head->isonline = 0;
             pixbuf = DrawFriend(&head->user, 0);
+
             break;
         }
     }
@@ -148,26 +163,29 @@ int OffLine(void *data)//好友下线。图标变暗
                        PIXBUF_COL, pixbuf,
                        PRIORITY_COL, -1,
                        -1);
-
+    g_object_unref(pixbuf);
+    free(data);
     return 0;
 }
 
 
-int gengxinjiemian(void *data)
+int gengxin_ziliao(void *data)
 {
-    CRPPacketInfoData *infodata = data;
+    FriendInfo *infodata = data;
 
     GtkTreeIter iterUser;
 
-    iterUser = getUserIter(infodata->info.uid);
+    iterUser = getUserIter(infodata->uid);
 
     GdkPixbuf *pixbuf;
-    pixbuf = DrawFriend(&infodata->info, infodata->isOnline);
+    pixbuf = DrawFriend(&infodata->user, infodata->isonline);
+
     gtk_tree_store_set(TreeViewListStore, &iterUser,
                        PIXBUF_COL, pixbuf,
-                       PRIORITY_COL, infodata->isOnline,
+                       PRIORITY_COL, infodata->isonline,
                        -1);
 
+    g_object_unref(pixbuf);
     return 0;
 }
 
@@ -176,11 +194,30 @@ int FriendFriendInfoChange(CRPBaseHeader *header, void *data)
     if (header->packetID == CRP_PACKET_INFO_DATA)
     {
         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-        infodata->info.nickName;
+
+
         //仅仅是为了建立那个文件
         FindImage(infodata->info.icon, NULL, NULL);
 
-        g_idle_add(gengxinjiemian, infodata);
+        FriendInfo *p = FriendInfoHead;//更新链表里的资料
+        while (p->next)
+        {
+            p = p->next;
+            if (infodata->info.uid == p->user.uid)
+            {
+                memcpy(p->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));
+                memcpy(p->user.icon, infodata->info.icon, sizeof(infodata->info.icon));
+
+                break;
+            }
+        }
+
+        if ((void *) infodata != header->data)
+        {
+            free(infodata);
+        }
+
+        g_idle_add(gengxin_ziliao, p);
 
 
     }

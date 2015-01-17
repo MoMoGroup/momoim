@@ -22,3 +22,6 @@ GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color);
 extern cairo_surface_t *ChangeThem_png(char *picname);
 
 extern GtkWidget *ChangeThem_file(char *picname);
+
+extern GtkWidget *ChangeFace_file(char *picname);
+

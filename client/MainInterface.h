@@ -56,6 +56,7 @@ struct RECVFileMessagedata
     int charlen;
     char *filename;
     FILE *Wfp;
+    gchar filemulu[100];
     FriendInfo *userinfo;
 };
 
@@ -77,3 +78,5 @@ extern int Status(void *data);
 extern int MarkNewpasswd;
 //标记主界面修改密码按钮的状态
 extern int MarkUpdateInfo;//标记主界面头像（修改资料）的状态
+
+

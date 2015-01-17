@@ -2,6 +2,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <logger.h>
 #include "run/natTraversal.h"
 
 static HostDiscoverTable table;
@@ -20,6 +22,12 @@ void NatHostFinalize()
 
 HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], void(*fn)(struct sockaddr_in *, void *), void *data)
 {
+    char hexKey[65] = {0};
+    for (int i = 0; i < 32; ++i)
+    {
+        sprintf(hexKey + i * 2, "%02x", key[i]);
+    }
+    log_info("NatDiscover", "Key:%s\n", hexKey);
     pthread_rwlock_wrlock(&lock);
     HostDiscoverEntry *entry = (HostDiscoverEntry *) malloc(sizeof(HostDiscoverEntry));
     entry->fn = fn;
@@ -27,7 +35,7 @@ HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], void(*fn)(struct 
     memcpy(entry->key, key, 32);
     entry->prev = table.last;
     entry->next = NULL;
-    if (table.last)
+    if (table.last == NULL)
     {
         table.first = table.last = entry;
     }
@@ -50,8 +58,14 @@ int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
     {
         table.first = entry->next;
     }
-    if (table.last == entry)
+    if (entry->next)
+    {
+        entry->next->prev = entry->prev;
+    }
+    else if (table.last == entry)
+    {
         table.last = entry->prev;
+    }
     free(entry);
     pthread_rwlock_unlock(&lock);
     return 1;
@@ -59,6 +73,12 @@ int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
 
 void NatHostDiscoverNotify(struct sockaddr_in *address, const char key[32])
 {
+    char hexKey[65] = {0};
+    for (int i = 0; i < 32; ++i)
+    {
+        sprintf(hexKey + i * 2, "%02x", key[i]);
+    }
+    log_info("NatNotify", "Key:%s\n", hexKey);
     HostDiscoverEntry *entry = NULL;
     pthread_rwlock_rdlock(&lock);
     for (entry = table.first; entry != NULL; entry = entry->next)
