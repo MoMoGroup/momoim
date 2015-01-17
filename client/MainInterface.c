@@ -108,7 +108,6 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
             DestoryMainInterface();
             MainInterFace();
         }
-
         gtk_widget_destroy(huanfuwindow);
     }
 
