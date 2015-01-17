@@ -16,3 +16,12 @@ struct UserTextInformation
     int codinglen;
 };
 extern struct UserTextInformation UserWordInfo;
+
+typedef struct
+{
+    gdouble x;
+    gdouble y;
+    gdouble width;
+    gdouble height;
+    gboolean press;
+} DATA; //保存鼠标坐标位置的数据结构

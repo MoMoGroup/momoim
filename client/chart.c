@@ -11,6 +11,9 @@
 #include "ChartRecord.h"
 #include <sys/stat.h>
 #include "audio.h"
+#include "ScreenShot.h"
+#include "ChartLook.h"
+
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
@@ -69,7 +72,7 @@ static void create_surfaces(FriendInfo *information)
     //缩放
     cairo_arc(cr, 36, 36, 36, 0, M_PI * 2);
     cairo_clip(cr);
-    cairo_scale(cr, 72.0 / w, 72.0 / h);
+    cairo_scale(cr, 76.0 / w, 76.0 / h);
     //把画笔和图片相结合。
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_paint(cr);
@@ -87,6 +90,12 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
     {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                                    (gint) event->x_root, (gint) event->y_root, event->time);
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+
     }
     return 0;
 
@@ -119,6 +128,11 @@ static gint send_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     {
 
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
         SendText(info);
 
     }
@@ -157,6 +171,12 @@ gboolean key_value(GtkWidget *widget, GdkEventKey *event, gpointer data)
     guint keyvalue = event->keyval;
     if (keyvalue == GDK_KEY_Return || ((keyvalue == GDK_KEY_Alt_L || keyvalue == GDK_KEY_Alt_R) && (keyvalue == GDK_KEY_Return)))
     {
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+
         SendText(info);
         return 1;
     }
@@ -365,6 +385,16 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+        if (info->record_window != NULL)
+        {
+            gtk_widget_destroy(info->record_window);
+            info->record_window = NULL;
+        }
     }
     return 0;
 }
@@ -416,6 +446,17 @@ static gint close_but_button_release_event(GtkWidget *widget, GdkEventButton *ev
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
+
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+        if (info->record_window != NULL)
+        {
+            gtk_widget_destroy(info->record_window);
+            info->record_window = NULL;
+        }
     }
     return 0;
 
@@ -460,7 +501,17 @@ static gint look_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
+
         gtk_image_set_from_surface((GtkImage *) info->imagelook, surfacelook1);
+        if (info->look_window == NULL)
+        {
+            ChartLook(info, event->x_root, event->y_root - 130);
+        }
+        else
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
     }
     return 0;
 
@@ -487,6 +538,7 @@ static gint look_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 }
 
 //jietu
+
 //鼠标点击事件
 static gint jietu_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -506,6 +558,13 @@ static gint jietu_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu1);
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+
+        ScreenShot(info);
     }
     return 0;
 
@@ -553,6 +612,12 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+
         gtk_image_set_from_surface((GtkImage *) info->imagefile, surfacefile1);
         GtkWidget *dialog;
         gchar *filename;
@@ -562,7 +627,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
                                              "_Open", GTK_RESPONSE_ACCEPT,
                                              NULL);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-        if (result == GTK_RESPONSE_ACCEPT)
+        while (result == GTK_RESPONSE_ACCEPT)
         {
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
             struct stat buf;
@@ -571,6 +636,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             {
                 gtk_widget_destroy(dialog);
                 UploadingFile(filename, info);
+                break;
             }
             else
             {
@@ -581,9 +647,10 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
                 gtk_window_set_title(GTK_WINDOW (cue_dialog), "Information");
                 gtk_dialog_run(GTK_DIALOG (cue_dialog));
                 gtk_widget_destroy(cue_dialog);
+                result = gtk_dialog_run(GTK_DIALOG(dialog));
             }
         }
-        else if (result == GTK_RESPONSE_CANCEL)
+        if (result == GTK_RESPONSE_CANCEL)
         {
             gtk_widget_destroy(dialog);
         }
@@ -635,6 +702,12 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
         GtkWidget *dialog;
         gchar *filename;
@@ -735,45 +808,47 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart1);
-    }
-
-
-    GtkWidget *dialog;
-    dialog = gtk_font_chooser_dialog_new("choose a font", GTK_WINDOW(event->window));
-
-    if (UserWordInfo.description != NULL)
-    {
-        gtk_font_chooser_set_font_desc(GTK_FONT_CHOOSER(dialog), UserWordInfo.description);
-    }
-    gtk_widget_show_all(dialog);
-    gint response = gtk_dialog_run(GTK_DIALOG(dialog));
-    switch (response)
-    {
-        case (GTK_RESPONSE_APPLY):
-        case (GTK_RESPONSE_OK):
+        if (info->look_window != NULL)
         {
-            PangoFontFamily *fontFamily;
-            UserWordInfo.codinglen = 0;
-            fontFamily = gtk_font_chooser_get_font_family(GTK_FONT_CHOOSER(dialog));
-            UserWordInfo.description = gtk_font_chooser_get_font_desc(GTK_FONT_CHOOSER(dialog));
-            UserWordInfo.size = gtk_font_chooser_get_font_size(GTK_FONT_CHOOSER(dialog)); //大小
-            UserWordInfo.size = UserWordInfo.size / 1024;
-            UserWordInfo.style = pango_font_description_get_style(UserWordInfo.description); //斜体
-            UserWordInfo.weight = pango_font_description_get_weight(UserWordInfo.description); //宽度
-            gtk_widget_override_font(info->input_text, UserWordInfo.description); //设置输入框的字体
-            UserWordInfo.font = pango_font_family_get_name(fontFamily);
-            handle_font_color(info);
-            break;
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
         }
-        default:
-            gtk_widget_destroy(GTK_WIDGET (dialog));
-    }
-    if (response == GTK_RESPONSE_OK)
-    {
-        gtk_widget_destroy(GTK_WIDGET (dialog));
-    }
+        gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart1);
+        GtkWidget *dialog;
+        dialog = gtk_font_chooser_dialog_new("choose a font", GTK_WINDOW(event->window));
 
+        if (UserWordInfo.description != NULL)
+        {
+            gtk_font_chooser_set_font_desc(GTK_FONT_CHOOSER(dialog), UserWordInfo.description);
+        }
+        gtk_widget_show_all(dialog);
+        gint response = gtk_dialog_run(GTK_DIALOG(dialog));
+        switch (response)
+        {
+            case (GTK_RESPONSE_APPLY):
+            case (GTK_RESPONSE_OK):
+            {
+                PangoFontFamily *fontFamily;
+                UserWordInfo.codinglen = 0;
+                fontFamily = gtk_font_chooser_get_font_family(GTK_FONT_CHOOSER(dialog));
+                UserWordInfo.description = gtk_font_chooser_get_font_desc(GTK_FONT_CHOOSER(dialog));
+                UserWordInfo.size = gtk_font_chooser_get_font_size(GTK_FONT_CHOOSER(dialog)); //大小
+                UserWordInfo.size = UserWordInfo.size / 1024;
+                UserWordInfo.style = pango_font_description_get_style(UserWordInfo.description); //斜体
+                UserWordInfo.weight = pango_font_description_get_weight(UserWordInfo.description); //宽度
+                gtk_widget_override_font(info->input_text, UserWordInfo.description); //设置输入框的字体
+                UserWordInfo.font = pango_font_family_get_name(fontFamily);
+                handle_font_color(info);
+                break;
+            }
+            default:
+                gtk_widget_destroy(GTK_WIDGET (dialog));
+        }
+        if (response == GTK_RESPONSE_OK)
+        {
+            gtk_widget_destroy(GTK_WIDGET (dialog));
+        }
+    }
     return 0;
 
 }
@@ -827,6 +902,11 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
         GtkColorSelectionDialog *dialog;
         GtkColorSelection *colorsel;
@@ -915,13 +995,19 @@ static gint chartrecord_button_release_event(GtkWidget *widget, GdkEventButton *
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+
         if (info->record_window == NULL)
         {
             ChartRecord(info);
         }
         else
         {
-            gtk_window_set_keep_above(GTK_WINDOW(info->record_window), TRUE);
+            gtk_window_present(GTK_WINDOW(info->record_window));
         }
 
     }

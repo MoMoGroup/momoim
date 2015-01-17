@@ -6,6 +6,7 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
+#include <cairo-script-interpreter.h>
 #include "common.h"
 //#include "addfriend.h"
 #include "chartmessage.h"
@@ -13,6 +14,7 @@
 #include "managegroup/ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
+#include "OnlineFile.h"
 
 static GtkWidget *status;
 
@@ -632,7 +634,6 @@ gboolean recv_progress_bar_crcle(void *data)
     {
         gdouble pvalue;
         pvalue = (gdouble) recv_file_bar_crcle->file_count / (gdouble) recv_file_bar_crcle->file_size;
-        log_info("Progress", "%lf\n", pvalue);
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(recv_file_bar_crcle->progressbar), pvalue);
         return 1;
     }
@@ -641,7 +642,7 @@ gboolean recv_progress_bar_crcle(void *data)
         gtk_widget_destroy(recv_file_bar_crcle->file);
         gtk_widget_destroy(recv_file_bar_crcle->progressbar);
         gchar filemulu[200] = {0};
-        sprintf(filemulu, "文件保存地址为%s/.momo/files/%s", getpwuid(getuid())->pw_dir, recv_file_bar_crcle->filename);
+        sprintf(filemulu, "文件保存地址为%s", recv_file_bar_crcle->filemulu);
         ShoweRmoteText(filemulu, recv_file_bar_crcle->userinfo,
                        strlen(filemulu));
         free(recv_file_bar_crcle->filename);
@@ -697,11 +698,18 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
 {
     if (info->chartwindow != NULL)
     {
-
         GtkWidget *dialog;
+        struct RECVFileMessagedata *file_message_data = (struct RECVFileMessagedata *) malloc(sizeof(struct RECVFileMessagedata));
+        file_message_data->charlen = charlen;
+        file_message_data->filename = (gchar *) malloc(100);
+        memcpy(file_message_data->filename, recv_text, charlen - 20); //获取文件名
+        file_message_data->filename[charlen - 20] = '\0';
+        gchar file_info[256];
+        sprintf(file_info, "莫默询问您：\n您想接收 %s 这份文件吗？", file_message_data->filename);
+
         dialog = gtk_message_dialog_new(info->chartwindow, GTK_DIALOG_MODAL,
                                         GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
-                                        "莫默询问您：\n您想接收这份文件吗？");
+                                        file_info);
         gtk_window_set_title(GTK_WINDOW (dialog), "Question");
         gint result = gtk_dialog_run(GTK_DIALOG (dialog));
         g_print("%the result is %d\n", result);
@@ -709,19 +717,45 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
         {
             gtk_widget_destroy(dialog);
             //文件的信息初始化
-            struct RECVFileMessagedata *file_message_data = (struct RECVFileMessagedata *) malloc(sizeof(struct RECVFileMessagedata));
-            file_message_data->charlen = charlen;
-            file_message_data->filename = (gchar *) malloc(100);
-            memcpy(file_message_data->filename, recv_text, charlen - 4); //获取文件名
+            char strdest[17] = {0};
             size_t filename_len = strlen(file_message_data->filename);
             memcpy(&file_message_data->file_size, recv_text + filename_len, 4);//获取文件大小
+            memcpy(strdest, recv_text + filename_len + 4, 16);
             file_message_data->file_loading_end = 0;
             file_message_data->file_count = 0;
             file_message_data->userinfo = info;
             gchar sendfile_size[100];
             PangoFontDescription *font;
-            char strdest[17] = {0};
+
             session_id_t session_id;
+
+            //写文件
+            GtkWidget *save_dialog;
+//            gchar *file =(gchar *) malloc(100);
+//            sprintf(file, "%s/文档",getpwuid(getuid())->pw_dir);
+            save_dialog = gtk_file_chooser_dialog_new("将文件保存在...", GTK_WINDOW(info->chartwindow),
+                                                      GTK_FILE_CHOOSER_ACTION_SAVE,
+                                                      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+                                                      GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+                                                      NULL);
+            // gtk_file_chooser_set_current_folder(save_dialog, file);
+            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(save_dialog), file_message_data->filename);
+            gint save_result = gtk_dialog_run(GTK_DIALOG (save_dialog));
+//            free(file);
+            if (save_result == GTK_RESPONSE_ACCEPT)
+            {
+                gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (save_dialog));
+                memcpy(file_message_data->filemulu, filename, strlen(filename));
+                g_free(filename);
+            }
+            else
+            {
+                sprintf(file_message_data->filemulu,
+                        "%s/.momo/files/%s",
+                        getpwuid(getuid())->pw_dir,
+                        file_message_data->filename);
+            }
+            gtk_widget_destroy(save_dialog);
 
             if (file_message_data->file_size / 1048576.0 > 0)
             {
@@ -747,24 +781,23 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
             gtk_widget_show(file_message_data->progressbar);
             g_idle_add(recv_progress_bar_crcle, file_message_data);  //用来更新进度条
 
-            //写文件
-            gchar filemulu[100] = {0};
-            sprintf(filemulu, "%s/.momo/files/%s", getpwuid(getuid())->pw_dir, file_message_data->filename);
-            file_message_data->Wfp = (fopen(filemulu, "w"));
+
+            file_message_data->Wfp = (fopen(file_message_data->filemulu, "w"));
 
             session_id = CountSessionId();
-            Md5Coding(file_message_data->filename, strdest);  //获得MD5值存在strdest
             AddMessageNode(session_id, deal_with_recv_file, file_message_data);
             CRPFileRequestSend(sockfd, session_id, 0, strdest);
-            return 1;
+
         }
         else
         {
+            free(file_message_data->filename);
+            free(file_message_data);
             gtk_widget_destroy(dialog);
-            return 0;
         }
 
     }
+    return 0;
 }
 
 //文件接收函数
@@ -872,19 +905,16 @@ int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
                 {
 
                     isimageflag = 1;
-                    char filename[256] = {0};
                     char strdest[17] = {0};
                     i += 2;
                     image_message_data->imagecount++;
                     memcpy(strdest, &recv_text[i], 16);
-                    HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
                     FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
                     i = i + 16;
                     break;
                 }
                 default:
                 {
-//                        i += 2;
                     break;
                 };
             }
@@ -1131,7 +1161,7 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
             }
             else
             {
-                gtk_window_set_keep_above(GTK_WINDOW(friendinforear->chartwindow), TRUE);
+                gtk_window_present(GTK_WINDOW(friendinforear->chartwindow));
             }
         }
     }
@@ -1181,7 +1211,7 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
             }
             else
             {
-                gtk_window_set_keep_above(GTK_WINDOW(friendinforear->Infowind), TRUE);
+                gtk_window_present(GTK_WINDOW(friendinforear->Infowind));
             }
         }
     }
@@ -1198,7 +1228,6 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
 
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-   // OnlineFileButtonEvent(1, 10001);
 
     if (AddFriendflag)//判断是否打开搜索窗口
     {

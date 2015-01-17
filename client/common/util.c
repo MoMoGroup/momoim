@@ -7,6 +7,7 @@
 #include "../MainInterface.h"
 #include <string.h>
 #include <pwd.h>
+#include <imcommon/user.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 typedef struct
@@ -61,6 +62,15 @@ GtkWidget *ChangeThem_file(char *picname)
     sprintf(path_pic, "%s/%s", path_theme, picname);
     return gtk_image_new_from_file(path_pic);
 }
+
+GtkWidget *ChangeFace_file(char *picname)
+{
+    char path_theme[80] = "", path_pic[80] = "";
+    sprintf(path_theme, "%s/.momo/face", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    sprintf(path_pic, "%s/%s", path_theme, picname);
+    return gtk_image_new_from_file(path_pic);
+}
+
 
 GtkEventBox *BuildEventBox(GtkWidget *warp, GCallback press, GCallback enter, GCallback leave, GCallback release,
                            GCallback click, void *data)
