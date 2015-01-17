@@ -12,6 +12,7 @@
 #include "MainInterface.h"
 //#include "../media/sound.h"
 #include "../media/video.h"
+#include "../media/sound.h"
 
 //这个结构体用来保存请求音视频的记录
 struct log_request_friend_discover the_log_request_friend_discover;
@@ -68,8 +69,15 @@ int deal_audio_feedback(CRPBaseHeader *header, u_int32_t uid){
     }
     if(header->packetID==CRP_PACKET_NET_INET_ADDRESS){
         g_print("对方接受了您的请求");
+        CRPPacketNETInetAddress *info = CRPNETInetAddressCast(header);
+
+        log_info("UID", "%u\n",info->uid);
+
+        struct in_addr addr;
+        addr.s_addr = info ->ipv4;
+        char *ip = inet_ntoa(addr);
         //这里运行　音频函数，需要对方ip地址
-        //primary_audio();
+        primary_audio(2,ip);
     }
     return 0;
 }
@@ -103,35 +111,35 @@ int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid){
 
 //处理服务器发送accept_net_friend_discover的函数
 //包括　发送accept失败，或者发送accept成功，成功的话运行音频程序
-int deal_audio_accept_feedback(CRPBaseHeader *header){
-    if(header->packetID==CRP_PACKET_FAILURE) {
-        g_idle_add(popup_audio, NULL);
-        the_log_request_friend_discover.uid=-1;
-        the_log_request_friend_discover.requset_reason=-1;
-    }else{
-        //被动方开始运行音频程序，不需要对方的ip地址
-//        primary_audio();
-    }
-    return 0;
-}
+//int deal_audio_accept_feedback(CRPBaseHeader *header){
+//    if(header->packetID==CRP_PACKET_FAILURE) {
+//        g_idle_add(popup_audio, NULL);
+//        the_log_request_friend_discover.uid=-1;
+//        the_log_request_friend_discover.requset_reason=-1;
+//    }else{
+//        //被动方开始运行音频程序，不需要对方的ip地址
+////        primary_audio();
+//    }
+//    return 0;
+//}
 
 
 
 
 
-//处理服务器发送accept_net_friend_discover的函数
-//包括　发送accept失败，或者发送accept成功，成功的话运行视频程序
-int deal_video_accept_feedback(CRPBaseHeader *header){
-    if(header->packetID==CRP_PACKET_FAILURE) {
-        g_idle_add(popup_audio, NULL);
-        the_log_request_friend_discover.uid=-1;
-        the_log_request_friend_discover.requset_reason=-1;
-    }else{
-        //被动方进行视频程序 ，不需要需要对方的ip地址
-        primary_video(1,NULL);
-    }
-    return 0;
-}
+////处理服务器发送accept_net_friend_discover的函数
+////包括　发送accept失败，或者发送accept成功，成功的话运行视频程序
+//int deal_video_accept_feedback(CRPBaseHeader *header){
+//    if(header->packetID==CRP_PACKET_FAILURE) {
+//        g_idle_add(popup_audio, NULL);
+//        the_log_request_friend_discover.uid=-1;
+//        the_log_request_friend_discover.requset_reason=-1;
+//    }else{
+//        //被动方进行视频程序 ，不需要需要对方的ip地址
+//        primary_video(1,NULL);
+//    }
+//    return 0;
+//}
 
 
 
@@ -183,8 +191,11 @@ gboolean treatment_request_audio_discover(gpointer user_data)
             g_print("the result is %d\n", result);
             if (result == -5)
             {
+                gtk_widget_destroy(dialog_request_audio_net_discover);
+                //被动方打开音频程序，不需要对面ip地址
+                primary_audio(1,NULL);
                 session_id_t accept_session= CountSessionId();
-                AddMessageNode(accept_session, deal_audio_accept_feedback, NULL);
+                //AddMessageNode(accept_session, deal_audio_accept_feedback, NULL);
                 CRPNETDiscoverAcceptSend(sockfd, accept_session, header->uid, accept_session);
                 return 0;
             }
@@ -244,8 +255,10 @@ gboolean treatment_request_video_discover(gpointer user_data)
             g_print("the result is %d\n",result);
             if (result == -5)
             {
+                //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址
+                primary_video(1,NULL);
                 session_id_t sessionid_accept=CountSessionId();
-                AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
+                //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
                 CRPNETDiscoverAcceptSend(sockfd , sessionid_accept, video_data->uid,sessionid_accept);
                 gtk_widget_destroy(dialog_request_video_net_discover);
             }
