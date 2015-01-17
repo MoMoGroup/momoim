@@ -14,11 +14,11 @@ static GtkWidget *addwindow, *addframelayout;
 static GtkWidget *addlayout2, *addlayout1, *addlayout31;
 //layout
 static GtkWidget *addtext;
-static cairo_surface_t *surfacebiaoji, *surfacenext, *surfacenext_press, *surfaceclose;
+static cairo_surface_t *surfacenext, *surfacenext_press, *surfaceclose;
 static cairo_surface_t *surfacebackground1, *surfacebackground3, *surfacebackground2, *surfacedone, *surfacedone2;
 static cairo_surface_t *surfacehead;
 //资源
-static GtkWidget *background1, *background2, *background3, *biaoji1, *biaoji2, *next, *addclose;    //引用
+static GtkWidget *background1, *background2, *background3, *next, *addclose;    //引用
 static GtkWidget *smallhead, *done, *done2;
 static GtkEventBox *next_enent_box, *close_event_box;
 static GtkEventBox *next_enent_box2, *close_event_box2, *add_mov_event;
@@ -45,7 +45,6 @@ void create_surface()
     surfacebackground1 = ChangeThem_png("查找背景1.png");
     surfacebackground2 = ChangeThem_png("查找背景2.png");
     surfacebackground3 = ChangeThem_png("查找背景3.png");
-    surfacebiaoji = ChangeThem_png("标记.png");
     surfacenext = ChangeThem_png("下一步.png");
     surfacenext_press = ChangeThem_png("下一步2.png");
     surfaceclose = ChangeThem_png("关闭按钮1.png");
@@ -55,8 +54,6 @@ void create_surface()
     //获得
     background1 = gtk_image_new_from_surface(surfacebackground1);
     background2 = gtk_image_new_from_surface(surfacebackground2);
-    biaoji1 = gtk_image_new_from_surface(surfacebiaoji);
-    biaoji2 = gtk_image_new_from_surface(surfacebiaoji);
     next = gtk_image_new_from_surface(surfacenext);
     addclose = gtk_image_new_from_surface(surfaceclose);
     done = gtk_image_new_from_surface(surfacedone);
@@ -429,9 +426,6 @@ int AddFriendFun()
 
     //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
     gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(add_mov_event), 0, 0);
-
-    gtk_fixed_put(GTK_FIXED(addlayout1), biaoji1, 6, 75);
-    gtk_fixed_put(GTK_FIXED(addlayout1), biaoji2, 6, 118);
 
     gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(next_enent_box), 400, 200);
     gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(close_event_box), 519, 0);

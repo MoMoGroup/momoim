@@ -13,7 +13,6 @@
 #include "managegroup/ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
-#include "OnlineFile.h"
 
 static GtkWidget *status;
 
@@ -109,7 +108,6 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
             DestoryMainInterface();
             MainInterFace();
         }
-
         gtk_widget_destroy(huanfuwindow);
     }
 

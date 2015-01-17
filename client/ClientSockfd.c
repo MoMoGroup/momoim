@@ -305,6 +305,16 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     //free(mem);
                     break;
                 };
+                case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
+                {
+                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
+                    log_info("好友资料更改", "uid%d\n", data->uid);
+                    session_id_t sessionid = CountSessionId();
+                    AddMessageNode(sessionid, FriendFriendInfoChange, data);//注册
+                    CRPInfoRequestSend(sockfd, sessionid, data->uid);//请求这个用户的资料
+                    break;
+                };
                 case FNT_FRIEND_NEW://新好友
                 {
                     UserGroup *grou = UserFriendsGroupGet(friends, data->toGid);//friends,好友分组信息
@@ -373,10 +383,10 @@ int mysockfd()
     char mulu2[80] = {0};
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     FILE *ipfp1;
-    char myip[80];
+    char myip[32];
     struct in_addr inp;
     ipfp1 = fopen(checkmulu_ip, "r");
-    fread(myip, 1, 80, ipfp1);
+    fread(myip, 1, 32, ipfp1);
     inet_aton(myip, &inp);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,

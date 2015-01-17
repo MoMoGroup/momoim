@@ -62,6 +62,7 @@ static gint ok_button_release_event(GtkWidget *widget, GdkEventButton *event, gp
     if (event->button == 1)
     {
         gtk_dialog_response((GtkDialog *) popupwindow, 1);
+        /*执行到这里就可以执行gtk_dialog_run(GTK_DIALOG(popupwindow));下面的语句了*/
     }
     return 0;
 }
@@ -71,7 +72,7 @@ static gint ok_button_release_event(GtkWidget *widget, GdkEventButton *event, gp
 static gint ok_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_HAND2));
-    gtk_image_set_from_surface((GtkImage *) popanniu, anniuface1);
+    gtk_image_set_from_surface((GtkImage *) popanniu, anniuface1);//置换确定按钮图片
     return 0;
 }
 
@@ -80,7 +81,7 @@ static gint ok_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpoi
 static gint ok_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(popupwindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) popanniu, anniuface);
+    gtk_image_set_from_surface((GtkImage *) popanniu, anniuface);//置换确定按钮图片
     return 0;
 }
 
@@ -147,6 +148,7 @@ int popup(const char *title, const char *tell)
     gtk_widget_show_all(popupwindow);
     gtk_widget_hide(action);//隐藏留白的action
 
+    /*监控gtk_dialog_response((GtkDialog *) popupwindow, 1);的信号*/
     gtk_dialog_run(GTK_DIALOG(popupwindow));
 
     destroy_popfaces();

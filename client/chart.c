@@ -1144,7 +1144,7 @@ int MainChart(FriendInfo *friendinfonode)
 //表情
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(look_event_box), 80, 405);
 //截图
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(jietu_event_box), 210, 405);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(jietu_event_box), 210, 412);
 //文件
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(file_event_box), 165, 405);
 //图片
@@ -1190,8 +1190,8 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw1), 2, 438);//文本框位置
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(friendinfonode->sw2), 3, 89);
 
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 500, 75);
-    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 500, 320);//大小
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw1), 495, 75);
+    gtk_widget_set_size_request(GTK_WIDGET(friendinfonode->sw2), 495, 320);//大小
 
     GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
     gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
