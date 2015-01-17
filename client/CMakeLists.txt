@@ -36,6 +36,8 @@ SET(CLIENT_SOURCE_FILE
     manage_friend/AddFriend.c
     ChartRecord.c
     OnlineFile.c
+    ScreenShot.c
+    ChartLook.c
     )
 add_executable(client ${CLIENT_SOURCE_FILE})
 target_link_libraries(client protocol)

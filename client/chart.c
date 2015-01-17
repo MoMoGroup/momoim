@@ -11,8 +11,9 @@
 #include "ChartRecord.h"
 #include <sys/stat.h>
 #include "audio.h"
-#include <imcommon/friends.h>
-#include <imcommon/user.h>
+#include "ScreenShot.h"
+#include "ChartLook.h"
+
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
@@ -66,12 +67,12 @@ static void create_surfaces(FriendInfo *information)
     int h = cairo_image_surface_get_height(surface);
     //创建画布
     surfacehead3 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 72, 72);
-    //创建画笔
+    //创建画笔fl
     cr = cairo_create(surfacehead3);
     //缩放
     cairo_arc(cr, 36, 36, 36, 0, M_PI * 2);
     cairo_clip(cr);
-    cairo_scale(cr, 72.0 / w, 72.0 / h);
+    cairo_scale(cr, 76.0 / w, 76.0 / h);
     //把画笔和图片相结合。
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_paint(cr);
@@ -190,19 +191,22 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         uint8_t gid_audio;
-        int quantity_group=friends->groupCount;
+        int quantity_group = friends->groupCount;
         //用来找出gid
-        int i,j=0;
-        for(i=0;i<quantity_group;i++){
-            for(j=0;j<friends->groups[i].friendCount;j++){
-                if(friends->groups[i].friends[j]==info->user.uid){
-                    gid_audio=friends->groups[i].groupId;
+        int i, j = 0;
+        for (i = 0; i < quantity_group; i++)
+        {
+            for (j = 0; j < friends->groups[i].friendCount; j++)
+            {
+                if (friends->groups[i].friends[j] == info->user.uid)
+                {
+                    gid_audio = friends->groups[i].groupId;
                     break;
                 }
             }
         }
         friends->groups[i].friends[j];
-        session_id_t session_id_video_release=CountSessionId();
+        session_id_t session_id_video_release = CountSessionId();
         //struct Audio_Request_Info *audio_data_opposite;
         //audio_data_opposite ->uid=info->user.uid;
         //audio_data_opposite ->audio_data=NULL;
@@ -212,12 +216,13 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
 
         //同一时间只允许发起一个请求
-        if(the_log_request_friend_discover.uid!=-1){
+        if (the_log_request_friend_discover.uid != -1)
+        {
             g_idle_add(popup_request_num_limit, NULL);
         }
-        the_log_request_friend_discover.uid=info->user.uid;
-        the_log_request_friend_discover.requset_reason=NET_DISCOVER_AUDIO;
-        AddMessageNode(session_id_video_release , deal_dicover_send_feedback, NULL);
+        the_log_request_friend_discover.uid = info->user.uid;
+        the_log_request_friend_discover.requset_reason = NET_DISCOVER_AUDIO;
+        AddMessageNode(session_id_video_release, deal_dicover_send_feedback, NULL);
         //CRPFriendDiscoverSend(sockfd , session_id_video_release, gid_audio, info->user.uid);
 
         CRPNETFriendDiscoverSend(sockfd,
@@ -334,6 +339,16 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+        if (info->record_window != NULL)
+        {
+            gtk_widget_destroy(info->record_window);
+            info->record_window = NULL;
+        }
     }
     return 0;
 }
@@ -385,6 +400,17 @@ static gint close_but_button_release_event(GtkWidget *widget, GdkEventButton *ev
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
+
+        if (info->look_window != NULL)
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
+        if (info->record_window != NULL)
+        {
+            gtk_widget_destroy(info->record_window);
+            info->record_window = NULL;
+        }
     }
     return 0;
 
@@ -430,6 +456,15 @@ static gint look_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagelook, surfacelook1);
+        if (info->look_window == NULL)
+        {
+            ChartLook(info);
+        }
+        else
+        {
+            gtk_widget_destroy(info->look_window);
+            info->look_window = NULL;
+        }
     }
     return 0;
 
@@ -456,6 +491,7 @@ static gint look_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 }
 
 //jietu
+
 //鼠标点击事件
 static gint jietu_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -475,6 +511,7 @@ static gint jietu_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu1);
+        ScreenShot(info);
     }
     return 0;
 
@@ -531,7 +568,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
                                              "_Open", GTK_RESPONSE_ACCEPT,
                                              NULL);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-        if (result == GTK_RESPONSE_ACCEPT)
+        while (result == GTK_RESPONSE_ACCEPT)
         {
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
             struct stat buf;
@@ -540,6 +577,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             {
                 gtk_widget_destroy(dialog);
                 UploadingFile(filename, info);
+                break;
             }
             else
             {
@@ -550,9 +588,10 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
                 gtk_window_set_title(GTK_WINDOW (cue_dialog), "Information");
                 gtk_dialog_run(GTK_DIALOG (cue_dialog));
                 gtk_widget_destroy(cue_dialog);
+                result = gtk_dialog_run(GTK_DIALOG(dialog));
             }
         }
-        else if (result == GTK_RESPONSE_CANCEL)
+        if (result == GTK_RESPONSE_CANCEL)
         {
             gtk_widget_destroy(dialog);
         }

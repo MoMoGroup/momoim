@@ -4,7 +4,7 @@
 #include <protocol/info/Data.h>
 #include <imcommon/message.h>
 #include "client.h"
-
+#include "chart.h"
 extern int mysockfd();
 
 typedef struct FriendInfo
@@ -15,8 +15,8 @@ typedef struct FriendInfo
     UserInfo user;
     FILE *fp;
     int inonline;
-    GtkWidget *chartwindow;
-    GtkWidget *chartlayout;
+    GtkWidget *chartwindow, *look_window;
+    GtkWidget *chartlayout, *look_layout;
     GtkWidget *chartlayout2;
     GtkWidget *imageflowerbackgroud, *imagesend, *imagehead3, *imagevoice, *imagevideo;
     GtkWidget *imageclose, *imageclosebut;
@@ -24,6 +24,7 @@ typedef struct FriendInfo
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;
+    DATA *data;
     //聊天记录界面
     GtkWidget *record_window;
     GtkWidget *record_layout;
@@ -35,7 +36,6 @@ typedef struct FriendInfo
     GtkTextBuffer *record_buffer;
     GtkScrolledWindow *record_sw;
     session_id_t session_id;
-    int record_end_flag;
 
     //查看资料所需控件
     GtkWidget *Infowind;
