@@ -250,7 +250,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
 int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
 {
     char filename[256];
-    HexadecimalConversion(filename, key);//计算一个文件名
+    HexadecimalConversion(filename, key);//根据icon,计算一个文件名,
     //0存在，1不存在
     if (access(filename, F_OK))//不存在，先加载图片
     {

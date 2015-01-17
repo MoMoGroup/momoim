@@ -314,9 +314,12 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 };
                 case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
                 {
-//                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
-//                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
+                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
 
+                    session_id_t sessionid = CountSessionId();
+                    AddMessageNode(sessionid, FriendFriendInfoChange, data);//注册
+                    CRPInfoRequestSend(sockfd, sessionid, data->uid);//请求这个用户的资料
                     break;
                 };
                 case FNT_FRIEND_NEW://新好友
