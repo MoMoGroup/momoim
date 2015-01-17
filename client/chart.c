@@ -219,6 +219,7 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
         entry->uid = info->uid;
         entry->messageSent = 0;
         AddMessageNode(sessionNatDiscover, processNatDiscovered, entry);
+
         CRPNATDiscoverSend(sockfd, sessionNatDiscover, entry->key);
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
 

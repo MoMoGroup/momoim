@@ -89,6 +89,12 @@ int processNatDiscovered(CRPBaseHeader *header, void *data)
     {
         if (!entry->messageSent)
         {
+            char hexKey[65] = {0};
+            for (int i = 0; i < 32; ++i)
+            {
+                sprintf(hexKey + i * 2, "%02x", entry->key[i]);
+            }
+            log_info("NatDiscover", "Key:%s\n", hexKey);
             CRPMessageNormalSend(sockfd, header->sessionID, UMT_NAT_REQUEST, entry->uid, 32, entry->key);
             entry->messageSent = 1;
         }
