@@ -304,7 +304,7 @@ int primary_video(int argc,char *argv) {
         ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
 
         if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
-            perror("connect");
+            //perror("connect");
             close(sock_send);
             close(sock_recv);
             return 1;
@@ -317,10 +317,10 @@ int primary_video(int argc,char *argv) {
     else {
 
         if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
-            perror("accept");
+            //perror("accept");
         addr_opposite.sin_port = htons(SERVERPORT);
         if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
-            perror("connect");
+            //perror("connect");
             close(sock_send);
             close(sock_recv);
             return 1;
