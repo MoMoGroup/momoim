@@ -257,7 +257,7 @@ void* primary_video(struct sockaddr_in*addr) {
     int sock_send = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_send == -1) {
         perror("socket\n");
-        exit(1);
+        return -1;
     }
     //////////////////////////////////////////////////////////////////
 
