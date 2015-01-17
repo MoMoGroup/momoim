@@ -79,9 +79,7 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                 socklen_t addr_len = sizeof addr;
                 while (1)
                 {
-                    fd = accept(sockListener,
-                                (struct sockaddr *) &addr,
-                                &addr_len);  //尝试接受一个客户端
+                    fd = accept(sockListener, (struct sockaddr *) &addr, &addr_len);  //尝试接受一个客户端
                     if (-1 == fd)
                     {
 
@@ -107,8 +105,9 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                     EpollAdd((POnlineUser) user);//将其加入事务池
                 }
             }
-            else if (events[i].data.ptr == (void *) -1) //P2P发现
+            else if (events[i].data.ptr == (void *) -1) //NAT发现
             {
+                log_info("Listener", "Index data arrived.\n");
                 addrLen = sizeof(idxSock);
                 if (32 == recvfrom(sockIdx,
                                    keyBuffer,
