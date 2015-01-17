@@ -156,7 +156,6 @@ int video()
         /////////////////////这里将yuv转化为jpeg///////////////////////////////////////////////////////
         unsigned char *tempbuf = (unsigned char *) malloc(640 * 480 * 3);
         yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);   //tempbuf是用来保存yuv转化为rgb的数据
-        fprintf(stderr, "yuv422_rgb24\n");
         //pthread_mutex_lock(&g_lock_send);
         //jpeg_size_my = jpegWrite(tempbuf, jpegbuf_my);            //这里把tempbuf中的数据转化为jpeg数据
         //pthread_cond_signal(&g_cond_send);
@@ -296,7 +295,6 @@ gboolean idleDraw(gpointer data)
     //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
     if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf, (size_t) q_recv->jpeglen))
     {
-        log_error("Draw", "Frame\n");
         ////////////////////////////////////////////////////////////////////////////////////////////
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(rgbBuf, GDK_COLORSPACE_RGB, 0, 8, 640, 480, 640 * 3, NULL, NULL);
         GtkImage *image = (GtkImage *) data;
