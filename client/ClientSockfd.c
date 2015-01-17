@@ -138,15 +138,9 @@ gboolean postMessage(gpointer user_data)
             socklen_t addrLen = sizeof(addr);
             getpeername(sockfd->fd, (struct sockaddr *) &addr, &addrLen);
             addr.sin_port = htons(8015);
-            for (int j = 0; j < 5; ++j)//UDP不稳定,发现包多次发送增加连接成功几率
+            for (int j = 0; j < 10; ++j)//UDP不稳定,发现包多次发送增加连接成功几率
             {
-                char hexKey[65] = {0};
-                for (int i = 0; i < 32; ++i)
-                {
-                    sprintf(hexKey + i * 2, "%02x", packet->message[i]);
-                }
-                log_info("SocketSent", "Key:%s\n", hexKey);
-                sendto(audioSock, packet->message, packet->messageLen, 0, (struct sockaddr *) &addr, addrLen);
+                sendto(audioSock, packet->message, 32, 0, (struct sockaddr *) &addr, addrLen);
             }
             StartAudioChat_Recv(audioSock);
             break;

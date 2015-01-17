@@ -63,7 +63,6 @@ void *record_routine(void *data)
         p_send = (char *) malloc(1000);
         snd_pcm_readi(record.handle, p_send, 1000);
         log_info("record", "\n");
-        printf(".");
         pthread_mutex_lock(&mutex_send);
         while (*head_send) pthread_cond_wait(&send_idle, &mutex_send);
         *head_send = p_send;
@@ -76,7 +75,7 @@ void *record_routine(void *data)
     return 0;
 }
 
-void *send_routine(struct sockaddr_in *addr_opposite)
+void *send_routine(void *data)
 {
     char *q_send;
     while (1)
@@ -88,8 +87,8 @@ void *send_routine(struct sockaddr_in *addr_opposite)
         tail_send = circle_buf_send + (tail_send - circle_buf_send + 1) % (sizeof(circle_buf_send) / sizeof(*circle_buf_send));
         pthread_cond_signal(&send_idle);
         pthread_mutex_unlock(&mutex_send);
-        sendto(netSocket, q_send, 1000, 0, (struct sockaddr *) addr_opposite, sizeof(struct sockaddr_in));
-        log_info("send", "\n");
+        sendto(netSocket, q_send, 1000, 0, (struct sockaddr *) &addr_sendto, sizeof(struct sockaddr_in));
+        perror("send");
         free(q_send);
     }
 }
@@ -205,7 +204,7 @@ static void *process(void *data)
 {
     pthread_t t_record, t_send, t_recv, t_play;
     /////////////////////////////////////////////////////////////////////////////////////////////////
-    pthread_create(&t_send, NULL, send_routine, &addr_sendto);
+    pthread_create(&t_send, NULL, send_routine, NULL);
     pthread_create(&t_recv, NULL, recv_routine, NULL);
     pthread_create(&t_record, NULL, record_routine, NULL);
     pthread_create(&t_play, NULL, play_routine, NULL);
@@ -249,5 +248,6 @@ void StartAudioChat_Send(struct sockaddr_in *addr)
     InitAudioChat();
     sendtoAssigned = 1;
     addr_sendto = *addr;
+    netSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     pthread_create(&mainThread, NULL, process, NULL);
 }
