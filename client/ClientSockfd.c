@@ -175,7 +175,7 @@ int new_friend_info(CRPBaseHeader *header, void *data)
             //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
             node->uid = infodata->info.uid;//添加id到结构提
             node->user = infodata->info;
-            node->inonline = 0;//是否在线
+            node->isonline = 0;//是否在线
             memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
             add_node(node);             //添加新节点
 
@@ -224,6 +224,15 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             CRPPacketNETFriendDiscover *media_data = CRPNETFriendDiscoverCast(header);
             switch (media_data->reason)
             {
+//                //分离语音请求的包
+//                case CRPFDR_AUDIO:
+//                {
+//                    log_info("Serve Message", "语音请求\n");
+//                    char *audio_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
+//                    memcpy(audio_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
+//                    g_idle_add(treatment_request_audio_discover, audio_data_copy);
+//                    break;
+//                };
                     //视频请求
                 case CRPFDR_VEDIO:
                 {
@@ -300,7 +309,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 {
                     char *mem = malloc(sizeof(CRPPacketFriendNotify));
                     memcpy(mem, data, sizeof(CRPPacketFriendNotify));
-                    log_info("好友资料更改", "uid%d\n", data->uid);
+                    log_info("好友资料需要更新", "UID:%u\n", data->uid);
                     session_id_t sessionid = CountSessionId();
                     AddMessageNode(sessionid, FriendFriendInfoChange, data);//注册
                     CRPInfoRequestSend(sockfd, sessionid, data->uid);//请求这个用户的资料
@@ -499,13 +508,13 @@ int mysockfd()
                     //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
                     node->uid = header->sessionID;//添加id到结构提
                     node->user = infodata->info;
-                    node->inonline = infodata->isOnline;//是否在线
+                    node->isonline = infodata->isOnline;//是否在线
                     memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
                     add_node(node);             //添加新节点
                     if (node->uid == uid)//用户自己
                     {
                         CurrentUserInfo = &node->user;
-                        node->inonline = 1;
+                        node->isonline = 1;
                         log_info("user nickname:", "%s\n", infodata->info.nickName);
                     }
 

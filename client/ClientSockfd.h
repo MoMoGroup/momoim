@@ -14,7 +14,7 @@ typedef struct FriendInfo
     //用来判断是否接受成功
     UserInfo user;
     FILE *fp;
-    int inonline;
+    int isonline;
     GtkWidget *chartwindow;
     GtkWidget *chartlayout;
     GtkWidget *chartlayout2;

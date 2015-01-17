@@ -1,4 +1,5 @@
 #include <math.h>
+#include <logger.h>
 #include "common.h"
 
 GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
@@ -48,6 +49,7 @@ GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
     cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
 
     cairo_show_text(cr, userInfo->nickName);
+    log_info("更改资料", "昵称%s\n", userInfo->nickName);
 
     cairo_destroy(cr);
     cairo_surface_destroy(new_friend_surface);

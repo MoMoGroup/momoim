@@ -346,7 +346,7 @@ GtkTreeModel *createModel()
                 continue;
             }
 
-            pixbuf = DrawFriend(&rear->user, rear->inonline);
+            pixbuf = DrawFriend(&rear->user, rear->isonline);
 
             gtk_tree_store_append(TreeViewListStore, &iter2, &iter1);//
             if (CurrentUserInfo->uid == friends->groups[i].friends[j])//说明是自己
@@ -354,7 +354,7 @@ GtkTreeModel *createModel()
 
                 priority = 5256000;//10年
             }
-            else if (rear->inonline)
+            else if (rear->isonline)
             {
                 priority = 1;
             }
@@ -1226,7 +1226,7 @@ void set_position(GtkMenu *menu, gint *px, gint *py, gboolean *push_in, gpointer
 {
 
     gdk_window_get_origin(window, px, py);
-    *py += 20;
+    *py += 10;
 
 }
 
