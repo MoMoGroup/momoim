@@ -123,9 +123,11 @@ gboolean postMessage(gpointer user_data)
         }
         case UMT_NEW_FRIEND:
         {
-            char *mes = calloc(1, 100);
+            char *mes = malloc(packet->messageLen + 1);
+            mes[packet->messageLen] = 0;
+            log_info("验证消息", "%s", mes);
             memcpy(mes, packet->message, packet->messageLen);
-            Friend_Fequest_Popup(packet->uid, mes);
+            Friend_Request_Popup(packet->uid, mes);
 
             if ((void *) packet != header->data)
             {

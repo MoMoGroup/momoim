@@ -14,8 +14,6 @@
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
-#include "audio.h"
-#include "OnlineFile.h"
 
 static GtkWidget *imageremember, *imagehead,*ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
@@ -140,11 +138,6 @@ void open_setting_file(FILE *fp)
 
 gboolean MyThread(gpointer user_data)//合并
 {
-    pthread_create(&ThreadListenOnLine,
-                   NULL,
-                   ListenOnLineTrans,
-                   NULL);
-
 
     //这里是高铭的代码。用来初始化音视频的数据
     //the_log_request_friend_discover.uid=-1;
