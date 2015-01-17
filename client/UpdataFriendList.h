@@ -7,3 +7,5 @@ extern int FriendListInsertEntry(void *data);
 extern int OnLine(void *data);
 
 extern int OffLine(void *data);
+
+extern int FriendFriendInfoChange(CRPBaseHeader *header, void *data);
