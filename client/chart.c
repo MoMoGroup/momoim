@@ -3,13 +3,13 @@
 #include "MainInterface.h"
 #include <stdlib.h>
 #include <ftadvanc.h>
-#include "chart.h"
 #include "common.h"
 #include <pwd.h>
 #include <math.h>
 #include "chartmessage.h"
 #include "ChartRecord.h"
 #include <sys/stat.h>
+#include <logger.h>
 #include "audio.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
@@ -55,14 +55,15 @@ static void create_surfaces(FriendInfo *information)
     }
 
     static cairo_t *cr;
-    char mulu[80] = {0};
+//    char mulu[80] = {0};
     cairo_surface_t *surface;
+//    sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, information->user.uid);
 
-
-    sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, information->user.uid);
-
+    char filename[256];
+    HexadecimalConversion(filename, information->user.icon);
+    log_info("头像路径", "%s\n", filename);
     //加载一个图片
-    surface = cairo_image_surface_create_from_png(mulu);
+    surface = cairo_image_surface_create_from_png(filename);
     int w = cairo_image_surface_get_width(surface);
     int h = cairo_image_surface_get_height(surface);
     //创建画布

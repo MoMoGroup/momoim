@@ -6,9 +6,7 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
-#include <cairo-script-interpreter.h>
 #include "common.h"
-//#include "addfriend.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "managegroup/ManageGroup.h"

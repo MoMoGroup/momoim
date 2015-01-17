@@ -110,9 +110,9 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
 
     cairo_surface_t *surface_delete_cancel, *surface_delete_done, *surface_delete_background;
     GtkEventBox *delete_cancel_eventbox, *delete_done_eventbox;
-
+    char str[80];
     GtkTreeIter itergroup, iteruser;
-    GtkWidget *show;
+    GtkWidget *show, *txt, *xitong;
 //    GtkTreeIter itergroup, iteruser;
 //首先拿到选中好友所在分组id,和好友uid
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
@@ -163,13 +163,15 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
             NULL,
             NULL);
 //
-    GtkWidget *txt;
-    char str[80];
+
+
     sprintf(str, "确定删除%u吗", delete_uid);
     txt = gtk_label_new(str);
 
+    xitong = gtk_label_new("系统消息");
 
     gtk_fixed_put(GTK_FIXED(delete_layout), delete_background, 0, 0);
+    gtk_fixed_put(GTK_FIXED(delete_layout), xitong, 14, 10);//标题
     gtk_fixed_put(GTK_FIXED(delete_layout), txt, 70, 90);
     gtk_fixed_put(GTK_FIXED(delete_layout), GTK_WIDGET(delete_cancel_eventbox), 30, 170);
     gtk_fixed_put(GTK_FIXED(delete_layout), GTK_WIDGET(delete_done_eventbox), 150, 170);
