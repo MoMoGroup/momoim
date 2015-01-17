@@ -253,7 +253,7 @@ void* primary_video(struct sockaddr_in*addr) {
     addr_opposite.sin_family = AF_INET;
     addr_opposite.sin_port = htons(SERVERPORT);
 
-    //addrlen = sizeof(struct sockaddr_in);
+    addrlen = sizeof(struct sockaddr_in);
     int sock_send = socket(AF_INET, SOCK_STREAM, 0);
     if (sock_send == -1) {
         perror("socket\n");
@@ -315,10 +315,10 @@ void* primary_video(struct sockaddr_in*addr) {
     else {
 
         if ((newsd = accept(sock_recv, (struct sockaddr *) &addr_opposite, &addrlen)) == -1)
-            //perror("accept");
+            perror("accept");
         addr_opposite.sin_port = htons(SERVERPORT);
         if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
-            //perror("connect");
+            perror("connect");
             close(sock_send);
             close(sock_recv);
             return 1;
