@@ -14,7 +14,6 @@
 #include "managegroup/ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
-#include "OnlineFile.h"
 
 static GtkWidget *status;
 

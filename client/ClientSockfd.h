@@ -15,8 +15,8 @@ typedef struct FriendInfo
     UserInfo user;
     FILE *fp;
     int isonline;
-    GtkWidget *chartwindow;
-    GtkWidget *chartlayout;
+    GtkWidget *chartwindow, *look_window;
+    GtkWidget *chartlayout, *look_layout;
     GtkWidget *chartlayout2;
     GtkWidget *imageflowerbackgroud, *imagesend, *imagehead3, *imagevoice, *imagevideo;
     GtkWidget *imageclose, *imageclosebut;
@@ -24,7 +24,7 @@ typedef struct FriendInfo
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;
-    DATA *data;
+    JieTuDATA *data;
     //聊天记录界面
     GtkWidget *record_window;
     GtkWidget *record_layout;

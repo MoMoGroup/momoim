@@ -24,4 +24,4 @@ typedef struct
     gdouble width;
     gdouble height;
     gboolean press;
-} DATA; //保存鼠标坐标位置的数据结构
+} JieTuDATA; //保存鼠标坐标位置的数据结构

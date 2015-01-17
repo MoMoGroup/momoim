@@ -219,7 +219,6 @@ gboolean progress_bar_crcle(void *data)
     {
         gdouble pvalue;
         pvalue = (gdouble) bar_crcle->file_count / (gdouble) bar_crcle->file_size;
-        log_info("Progress", "%lf\n", pvalue);
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar_crcle->progressbar), pvalue);
         return 1;
     }

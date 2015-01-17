@@ -44,7 +44,7 @@ void show_picture(GdkWindow *window, FriendInfo *info) //显示截图函数
     //  free(filename);
 }
 
-static gint select_area_press(GtkWidget *widget, GdkEventButton *event, DATA *data)  //鼠标按下时的操作
+static gint select_area_press(GtkWidget *widget, GdkEventButton *event, JieTuDATA *data)  //鼠标按下时的操作
 {
     if (data->press == TRUE)
     {
@@ -60,7 +60,7 @@ static gint select_area_press(GtkWidget *widget, GdkEventButton *event, DATA *da
     return 0;
 }
 
-static gint select_area_release(GtkWidget *widget, GdkEventButton *event, DATA *data)  //鼠标释放时操作
+static gint select_area_release(GtkWidget *widget, GdkEventButton *event, JieTuDATA *data)  //鼠标释放时操作
 {
     if (!data->press)
     {
@@ -78,7 +78,7 @@ static gint select_area_release(GtkWidget *widget, GdkEventButton *event, DATA *
     return 0;
 }
 
-static gint select_area_move(GtkWidget *widget, GdkEventMotion *event, DATA *data) //鼠标移动时操作
+static gint select_area_move(GtkWidget *widget, GdkEventMotion *event, JieTuDATA *data) //鼠标移动时操作
 {
     GdkRectangle draw;
     if (!data->press)
@@ -110,7 +110,7 @@ void ScreenShot(FriendInfo *info)
     screen = gdk_screen_get_default();
     win = gtk_window_new(GTK_WINDOW_POPUP);
     gtk_widget_set_app_paintable(win, TRUE);
-    info->data = (DATA *) malloc(sizeof(DATA));
+    info->data = (JieTuDATA *) malloc(sizeof(JieTuDATA));
     info->data->press = FALSE;
     gtk_widget_add_events(win, GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK); //添加信号
     g_signal_connect(G_OBJECT(win), "button_press_event",
