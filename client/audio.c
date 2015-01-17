@@ -76,8 +76,17 @@ int deal_audio_feedback(CRPBaseHeader *header, u_int32_t uid){
         struct in_addr addr;
         addr.s_addr = info ->ipv4;
         char *ip = inet_ntoa(addr);
+        struct sockaddr_in *audio_addr_opposite=(struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+        audio_addr_opposite->sin_addr=addr;
+        audio_addr_opposite->sin_family= AF_INET;
+        audio_addr_opposite->sin_port =htons(7777);
         //这里运行　音频函数，需要对方ip地址
-        primary_audio(2,ip);
+        pthread_t pthd_audio_send;
+        pthread_create(&pthd_audio_send,
+                       NULL,
+                       primary_audio,
+                       audio_addr_opposite);
+        //primary_audio(2,ip);
     }
     return 0;
 }
@@ -100,8 +109,18 @@ int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid){
         addr.s_addr = info ->ipv4;
         char *ip = inet_ntoa(addr);
         log_info("ip","%s\n",ip);
+        struct sockaddr_in *addr_opposite=(struct sockaddr_in*)malloc(sizeof(struct sockaddr_in));
+
+        addr_opposite->sin_family=AF_INET;
+        addr_opposite->sin_port=htons(5555);
+        addr_opposite->sin_addr=addr;
         //这里运行　视频函数，需要对方ip地址
-        primary_video(2,ip);
+        pthread_t pthd_video;
+        pthread_create(&pthd_video,
+                       NULL,
+                       primary_video,
+                       addr_opposite);
+        //primary_video(2,ip);
     }
     return 0;
 }
@@ -192,8 +211,13 @@ gboolean treatment_request_audio_discover(gpointer user_data)
             if (result == -5)
             {
                 gtk_widget_destroy(dialog_request_audio_net_discover);
+                pthread_t pthd_audio_recv;
+                pthread_create(&pthd_audio_recv,
+                               NULL,
+                               primary_audio,
+                               NULL);
                 //被动方打开音频程序，不需要对面ip地址
-                primary_audio(1,NULL);
+                //primary_audio(1,NULL);
                 session_id_t accept_session= CountSessionId();
                 //AddMessageNode(accept_session, deal_audio_accept_feedback, NULL);
                 CRPNETDiscoverAcceptSend(sockfd, accept_session, header->uid, accept_session);
@@ -255,8 +279,13 @@ gboolean treatment_request_video_discover(gpointer user_data)
             g_print("the result is %d\n",result);
             if (result == -5)
             {
-                //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址
-                primary_video(1,NULL);
+                //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址.先打开监听程序然后再发送同意接受包
+                //primary_video(1,NULL);
+                pthread_t pthd_video_recv;
+                pthread_create(&pthd_video_recv,
+                               NULL,
+                               primary_audio,
+                               NULL);
                 session_id_t sessionid_accept=CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
                 CRPNETDiscoverAcceptSend(sockfd , sessionid_accept, video_data->uid,sessionid_accept);

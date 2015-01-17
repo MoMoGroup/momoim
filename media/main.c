@@ -236,7 +236,7 @@ void *guiMain(void *button) {
     return 0;
 }
 
-int primary_video(int argc,char *argv) {
+void* primary_video(struct sockaddr_in*addr) {
 
     signal(SIGPIPE, SIG_IGN);
     //////////////////////////////////////////////////////////////////
@@ -300,9 +300,9 @@ int primary_video(int argc,char *argv) {
     ///////////////////////这里是连接设置的部分//////////////////////////
     /*根据参数写不写地址分成两个不同的进程，写地址的尝试连接对方的进程，不写地址的进程等待对方连接*/
     int newsd;
-    if (argc >= 2) {
-        ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
-
+    if (addr!=NULL) {
+        //ret = inet_pton(AF_INET, argv, &addr_opposite.sin_addr);
+        addr_opposite=*addr;
         if (connect(sock_send, (struct sockaddr *) &addr_opposite, sizeof(addr_opposite)) == -1) {
             //perror("connect");
             close(sock_send);

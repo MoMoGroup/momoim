@@ -1,3 +1,3 @@
 #pragma once
 
-extern int primary_video(int ,char *);
+extern void* primary_video(struct sockaddr_in*);

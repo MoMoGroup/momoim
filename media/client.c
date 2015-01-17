@@ -102,7 +102,7 @@ void *pthread_recv() {
     }
 }
 
-int primary_audio(int num_argc,char *argv) {
+void*  primary_audio(struct sockaddr_in*addr) {
     /////////////////////////////////////////初始化本地地址//////////////////////////////////////////
     bzero(&addr_my.sin_zero, sizeof(struct sockaddr));//清空
     addr_my.sin_family = AF_INET;//初始化网络协议
@@ -147,15 +147,16 @@ int primary_audio(int num_argc,char *argv) {
     pthread_cond_init(&recv_idle, NULL);
     pthread_cond_init(&recv_busy, NULL);
     //因为没写一地址的方没有对面的IP地址。所以在收到对面的第一帧后才开始给对面发送数据。因此一开始锁住发送线程的send
-    if(num_argc==1) {
+    if(addr==NULL) {
         pthread_mutex_lock(&mutex_send);
         flag_send=0;
     }
     else{
         flag_send=1;
-        addr_opposite.sin_family = AF_INET;
-        addr_opposite.sin_port = htons(7777);
-        inet_pton(AF_INET,argv,&addr_opposite.sin_addr);
+        //addr_opposite.sin_family = AF_INET;
+        //addr_opposite.sin_port = htons(7777);
+        //inet_pton(AF_INET,argv,&addr_opposite.sin_addr);
+        addr_opposite=*addr;
     }
     /////////////////////////////////////////////////////////////////////////////////////////////////
     pthread_create(&pthd_send, NULL, pthread_send,&addr_opposite);
