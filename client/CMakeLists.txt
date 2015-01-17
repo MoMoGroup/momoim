@@ -35,7 +35,6 @@ SET(CLIENT_SOURCE_FILE
     manage_friend/AcceptFriendRequest.c
     manage_friend/AddFriend.c
     ChartRecord.c
-    OnlineFile.c
     ScreenShot.c
     ChartLook.c
     )
