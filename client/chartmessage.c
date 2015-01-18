@@ -3,11 +3,9 @@
 #include "MainInterface.h"
 #include <stdlib.h>
 #include <ftadvanc.h>
-#include "chart.h"
 #include "common.h"
 #include <logger.h>
 #include <sys/stat.h>
-#include <cairo-script-interpreter.h>
 #include "chartmessage.h"
 
 //解码
@@ -377,7 +375,7 @@ void UploadingFile(gchar *filename, FriendInfo *info)
         sprintf(sendfile_size, "\t %s \n 大小为：%d byte", filename + i + 1, stat_buf.st_size);
     }
     file_messge->file = gtk_label_new(sendfile_size);
-    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(file_messge->file, font);
     gtk_fixed_put(GTK_FIXED(info->chartlayout), file_messge->file, 160, 5);
@@ -582,9 +580,9 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                     imagemessge->seq = 0;
                     imagemessge->fp = (fopen(filename, "r"));
                     imagemessge->image_message_data = image_message_data_state;
+                    imagemessge->image_message_data->imagecount++;
                     AddMessageNode(session_id, deal_with_message, imagemessge);
                     CRPFileStoreRequestSend(sockfd, session_id, stat_buf.st_size, 0, char_text + i);
-                    imagemessge->image_message_data->imagecount++;
                     i = i + 16;
                 };
                 default:
@@ -599,7 +597,14 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
     }
     if (isimageflag == 1)
     {
-        image_message_data_state->image_find_end = 1;
+        if (image_message_data_state->imagecount == 0)
+        {
+            isimageflag = 0;
+        }
+        else
+        {
+            image_message_data_state->image_find_end = 1;
+        }
     }
 
     if (isimageflag == 0)
