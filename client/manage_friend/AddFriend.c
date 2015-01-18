@@ -320,7 +320,7 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
         case CRP_PACKET_FAILURE:
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
-            log_info("FAILURe reason", infodata->reason);
+            g_idle_add(GroupPop, "查无此人");
             if ((void *) infodata != header->data)
             {
                 free(data);
