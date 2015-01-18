@@ -1455,7 +1455,7 @@ int MainInterFace()
     GtkWidget *Refresh;
     GtkWidget *sendmsg;
     GtkWidget *deletefriend;
-    GtkWidget *remark;
+    //GtkWidget *remark;
     GtkWidget *sendfile;
     GtkWidget *lookinfo;
     //分组菜单
@@ -1522,9 +1522,9 @@ int MainInterFace()
     deletefriend = gtk_menu_item_new_with_mnemonic("删除好友");
     gtk_container_add(GTK_CONTAINER(menu2), deletefriend);
     gtk_widget_show(deletefriend);
-    remark = gtk_menu_item_new_with_mnemonic("修改备注");
-    gtk_container_add(GTK_CONTAINER(menu2), remark);
-    gtk_widget_show(remark);
+    //remark = gtk_menu_item_new_with_mnemonic("修改备注");
+    //gtk_container_add(GTK_CONTAINER(menu2), remark);
+    //gtk_widget_show(remark);
     sendfile = gtk_menu_item_new_with_mnemonic("发送文件");
     gtk_container_add(GTK_CONTAINER(menu2), sendfile);
     gtk_widget_show(sendfile);
