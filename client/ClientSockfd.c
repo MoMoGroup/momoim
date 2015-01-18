@@ -14,7 +14,7 @@
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "manage_friend/friend.h"
-#include "audio.h"
+#include "media.h"
 #include "../media/sound.h"
 
 pthread_t ThreadKeepAlive;

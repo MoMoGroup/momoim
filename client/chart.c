@@ -10,7 +10,7 @@
 #include "ChartRecord.h"
 #include <sys/stat.h>
 #include <logger.h>
-#include "audio.h"
+#include "media.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
 
