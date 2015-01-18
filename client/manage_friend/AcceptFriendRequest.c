@@ -92,6 +92,7 @@ gint accept_button_release_event(GtkWidget *widget, GdkEventButton *event, gpoin
     tongyi *info = data;
     CRPFriendAcceptSend(sockfd, 1, info->uid);//同意的话发送Accept
     gtk_widget_destroy(info->win);
+    free(info);
     return 0;
 }
 
