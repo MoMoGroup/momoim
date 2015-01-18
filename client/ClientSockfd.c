@@ -490,6 +490,8 @@ int mysockfd()
         mkdir(mulu, 0700);
         sprintf(mulu, "%s/.momo/files", getpwuid(getuid())->pw_dir);
         mkdir(mulu, 0700);
+        sprintf(mulu, "%s/.momo/screen", getpwuid(getuid())->pw_dir);
+        mkdir(mulu, 0700);
         int loop = 1;
         while (loop)
         {

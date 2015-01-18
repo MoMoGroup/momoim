@@ -20,7 +20,6 @@ static const char *constellations[] = {
 
 static void create_infofaces()
 {
-    if (Surfaceback == NULL) {
         Surfaceback = ChangeThem_png("资料.png");
         Surfacecancel = ChangeThem_png("关闭1.png");
         Surfacecancel1 = ChangeThem_png("关闭2.png");
@@ -29,8 +28,9 @@ static void create_infofaces()
         Surfaceend2 = ChangeThem_png("关闭按钮3.png");
         Surfacechange = ChangeThem_png("更新.png");
         Surfacechange1 = ChangeThem_png("更新2.png");
-    }
 }
+
+
 
 //背景的eventbox拖曳窗口
 static gint Infobackg_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
