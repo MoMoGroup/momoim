@@ -1,31 +1,31 @@
 #include <stdio.h>
 #include <setjmp.h>
-#include <unistd.h>
 #include <string.h>
 //#include <jpegint.h>
 #include "jpeglib.h"
 
 struct my_error_mgr
 {
-    struct jpeg_error_mgr pub;    /* "public" fields */
+    struct jpeg_error_mgr pub;
+    /* "public" fields */
 
     jmp_buf setjmp_buffer;    /* for return to caller */
 };
 
-typedef struct my_error_mgr * my_error_ptr;
+typedef struct my_error_mgr *my_error_ptr;
 
 
-void my_error_exit (j_common_ptr cinfo)
+void my_error_exit(j_common_ptr cinfo)
 {
     my_error_ptr myerr = (my_error_ptr) cinfo->err;
 
-    (*cinfo->err->output_message) (cinfo);
+    (*cinfo->err->output_message)(cinfo);
 
     longjmp(myerr->setjmp_buffer, 1);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-int read_JPEG_file (char *buf1,char *buf2)
+int read_JPEG_file(char *buf1, char *buf2, size_t bufSize)
 ////////////////////////////////////////////////////////////////////////////////
 {
     struct jpeg_decompress_struct cinfo;
@@ -51,7 +51,7 @@ int read_JPEG_file (char *buf1,char *buf2)
 
     if (setjmp(jerr.setjmp_buffer))
     {
-        printf("Eror\n");
+        //printf("Eror\n");
         jpeg_destroy_decompress(&cinfo);
 //        fclose(infile);
         return 0;
@@ -60,8 +60,8 @@ int read_JPEG_file (char *buf1,char *buf2)
     jpeg_create_decompress(&cinfo);
 ////////////////////////////////////////////////////////////////////////////////
 //    jpeg_stdio_src(&cinfo, infile);
-    unsigned long bufsize;
-    jpeg_mem_src(&cinfo,buf1,bufsize);
+
+    jpeg_mem_src(&cinfo, buf1, bufSize);
 ////////////////////////////////////////////////////////////////////////////////
     jpeg_read_header(&cinfo, TRUE);
 
@@ -78,7 +78,7 @@ int read_JPEG_file (char *buf1,char *buf2)
 ////////////////////////////////////////////////////////////////////////////////
 //        fwrite(buffer[0], 1, row_stride, outfile);
         memcpy(buf2, *buffer, row_stride);
-        buf2+=row_stride;
+        buf2 += row_stride;
 
 ////////////////////////////////////////////////////////////////////////////////
 

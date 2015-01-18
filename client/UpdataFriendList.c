@@ -144,6 +144,12 @@ int OffLine(void *data)//好友下线。图标变暗
     GtkTreeIter iterUser;
     GdkPixbuf *pixbuf = NULL;
 
+    int wavfd = open("a.wav", O_RDONLY);//有的系统只允许O_RDONLY,O_WRONLY
+    if (wavfd < 0)
+    {
+        printf("open of wav failed");
+        exit(1);
+    }
     iterUser = getUserIter(p->uid);//拿到iter
 
     FriendInfo *head = FriendInfoHead;

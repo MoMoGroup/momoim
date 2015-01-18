@@ -57,13 +57,50 @@ int RemoveFriend(void *data)
 //如果服务区发来FAILURE包，说明删除失败，弹窗提醒
 int delete_friend_recv_fun(CRPBaseHeader *header, void *data)
 {
+
     if (header->packetID == CRP_PACKET_FAILURE)//删除成功
     {
         g_idle_add(GroupPop, "删除失败");
         return 0;
     }
+    else
+    {
+
+        UserFriendsUserDelete(UserFriendsGroupGet(friends, delete_gid), delete_uid);
+//        FriendInfo *p = FriendInfoHead;//更新链表里的资料
+//        while (p->next)
+//        {
+//            if (uid == p->next->user.uid)//p的下一个节点需要删除
+//            {
+//                FriendInfo *a = p->next;
+//                p->next = a->next;
+//                free(a);
+//
+//                break;
+//            }
+//        }
+    }
 }
 
+//忽略按钮放上去
+static gint delete_cancel_notify_event(GtkWidget *widget, GdkEventButton *event,
+                                       gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(delete_window), gdk_cursor_new(GDK_HAND2));
+    cairo_surface_t *surface_cancel2 = ChangeThem_png("忽略2.png");
+    gtk_image_set_from_surface((GtkImage *) delete_cancel, surface_cancel2);
+    return 0;
+}
+
+//忽略按钮移走
+static gint delete_cancel_leave_event(GtkWidget *widget, GdkEventButton *event,
+                                      gpointer data)         // 鼠标移动事件
+{
+    gdk_window_set_cursor(gtk_widget_get_window(delete_window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *surface_cancel1 = ChangeThem_png("忽略1.png");
+    gtk_image_set_from_surface((GtkImage *) delete_cancel, surface_cancel1);
+    return 0;
+}
 
 //如果取消删除
 int delete_cancle_event_fun()
@@ -147,8 +184,8 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
     delete_cancel_eventbox = BuildEventBox(
             delete_cancel,
             NULL,
-            NULL,
-            NULL,
+            G_CALLBACK(delete_cancel_notify_event),
+            G_CALLBACK(delete_cancel_leave_event),
             G_CALLBACK(delete_cancle_event_fun),
             NULL,
             NULL);
