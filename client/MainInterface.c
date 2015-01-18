@@ -1324,6 +1324,9 @@ static gint status_button_leave_event(GtkWidget *widget, GdkEventButton *event,
 
 int MainInterFace()
 {
+    //一个关闭语音按钮的标志位。为１时表示语音已经打开，为０表示没有人在语音。
+    flag_audio_close=0;
+
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
     vbox = gtk_box_new(TRUE, 5);
