@@ -2,7 +2,7 @@ include_directories(include)
 include_directories(../imcommon/include)
 
 SET(LIBPROTOCOL_SRC
-    base.c
+    init.c
     packets/friend/Request.c
     packets/friend/Data.c
     packets/friend/SearchByNickname.c

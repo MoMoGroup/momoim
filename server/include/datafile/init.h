@@ -1,7 +1,5 @@
 #pragma once
-
-#include "auth.h"
-
+void InitServerDataDirectory();
 int DataModuleInit();
 
 void DataModuleFinalize();

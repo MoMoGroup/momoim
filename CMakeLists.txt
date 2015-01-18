@@ -4,6 +4,11 @@ add_definitions ("-Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=gnu99")
 
+#SET(CMAKE_SKIP_BUILD_RPATH FALSE)
+#SET(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+#SET(CMAKE_INSTALL_RPATH ".")
+#SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 #add_subdirectory(1)
 add_subdirectory(logger)
 add_subdirectory(imcommon)
@@ -14,4 +19,3 @@ add_subdirectory(server)
 add_subdirectory(server_test)
 add_subdirectory(p2p)
 add_subdirectory(media)
-

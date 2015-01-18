@@ -52,11 +52,6 @@ void EpollRemove(POnlineUser user)
     }
 }
 
-static void closeHandler(void *fd)
-{
-    close(*(int *) fd);
-}
-
 static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events)
 {
     char keyBuffer[32];
@@ -68,7 +63,10 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
         int n = epoll_wait(ServerIOPool, events, CONFIG_EPOLL_QUEUE, -1);
         if (n == -1)
         {
-            log_warning("Listener", "epoll_wait failure.\n");
+            if (errno != EINTR)
+            {
+                log_warning("Listener", "epoll_wait:%s.\n", strerror(errno));
+            }
             continue;
         }
         for (int i = 0; i < n; i++)
@@ -107,7 +105,6 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
             }
             else if (events[i].data.ptr == (void *) -1) //NAT发现
             {
-                log_info("Listener", "Index data arrived.\n");
                 addrLen = sizeof(idxSock);
                 if (32 == recvfrom(sockIdx,
                                    keyBuffer,
@@ -219,7 +216,7 @@ static int prepareIndexer()
 
 }
 
-void *ListenMain(void *listenSocket)
+void *ListenMain(void *nouse)
 {
     int sockListener, sockIdx;
     sockListener = prepareListener();
@@ -227,28 +224,31 @@ void *ListenMain(void *listenSocket)
     {
         return NULL;
     }
-    pthread_cleanup_push(closeHandler, &sockListener);
+    pthread_cleanup_push(close, sockListener);
             sockIdx = prepareIndexer();
             if (sockIdx < 0)
             {
-                break;//跳出本层pthread_cleanup_push
+                break;//跳出本层pthread_cleanup_push,会执行cleanup_pop
             }
-            pthread_cleanup_push(closeHandler, &sockIdx);
+            pthread_cleanup_push(close, sockIdx);
 
-                    log_info("Listener", "Main Listenning on TCP %d\n", CONFIG_LISTEN_PORT);
-                    log_info("Listener", "Host Discover on UDP %d\n", CONFIG_HOST_DISCOVER_PORT);
+                    log_info("Listener", "主服务正在监听TCP %d\n", CONFIG_LISTEN_PORT);
+                    log_info("Listener", "NAT穿透服务正在等待UDP %d.\n", CONFIG_HOST_DISCOVER_PORT);
 
-                    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);    //创建epoll,在服务端fork时关闭
+                    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);
                     {
                         struct epoll_event event = {
                                 .data.ptr=NULL,
-                                .events=EPOLLET | EPOLLIN               //EPOLLET-边沿触发.
+                                .events=EPOLLET | EPOLLIN                               //EPOLLET-边沿触发. EPOLLIN-数据传入时触发
                         };
-                        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockListener, &event); //将监听socket加入epoll(data.ptr==NULL)
+                        epoll_ctl(ServerIOPool,
+                                  EPOLL_CTL_ADD,
+                                  sockListener,
+                                  &event);   //将监听socket加入epoll(data.ptr==NULL)
 
                         event.data.ptr = (void *) -1;
                         event.events = EPOLLERR | EPOLLIN | EPOLLET;
-                        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);//P2P索引SOCKET
+                        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);        //NAT发现索引SOCKET
                     }
                     struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
                     pthread_cleanup_push(free, events);

@@ -23,11 +23,41 @@ int UserInit()
         return 0;
     }
 
+
     int ret;
-    ret = sqlite3_open("info.db", &db);
-    if (ret != SQLITE_OK)
+    if (access("info.db", R_OK | W_OK) != 0)
     {
-        return 0;
+        createDB:
+        log_warning("UserData", "Cannot access info.db. Trying to create...\n");
+        ret = sqlite3_open("info.db", &db);
+        if (ret != SQLITE_OK)
+        {
+            log_error("UserData", "Cannot create info.db!\n");
+            return 0;
+        }
+        if (SQLITE_OK != sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL) ||
+            SQLITE_OK != sqlite3_exec(db, "CREATE TABLE info(\n"
+                    "uid INTEGER PRIMARY KEY,\n"
+                    "nick varchar\n"
+                    ");",
+                                      NULL,
+                                      NULL,
+                                      NULL))
+        {
+
+            log_error("UserData", "Cannot initialize info.db!\n");
+            return 0;
+        }
+    }
+    else
+    {
+        ret = sqlite3_open("info.db", &db);
+        if (ret != SQLITE_OK)
+        {
+            log_warning("UserData", "Fail to open info.db\n");
+            unlink("info.db");
+            goto createDB;
+        }
     }
     return 1;
 }

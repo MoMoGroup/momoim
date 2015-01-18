@@ -1,6 +1,8 @@
 #include <sqlite3.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <logger.h>
 #include "datafile/auth.h"
 
 static sqlite3 *db = 0;
@@ -11,12 +13,42 @@ static const char sqlPwd[] = "UPDATE users SET key = ? WHERE id = ? AND key = ? 
 int AuthInit()
 {
     int ret;
-    ret = sqlite3_open("auth.db", &db);
-    if (ret != SQLITE_OK)
+    if (access("auth.db", R_OK | W_OK) != 0)
     {
-        return 0;
+        createDB:
+        log_warning("Auth", "Cannot access auth.db. Trying to create...\n");
+        ret = sqlite3_open("auth.db", &db);
+        if (ret != SQLITE_OK)
+        {
+            log_error("Auth", "Cannot create auth.db!\n");
+            return 0;
+        }
+        if (SQLITE_OK != sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL) ||
+            SQLITE_OK != sqlite3_exec(db, "CREATE TABLE users(\n"
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT,\n"
+                    "name varchar UNIQUE,\n"
+                    "key varchar\n"
+                    ");\n"
+                    "INSERT INTO sqlite_sequence VALUES('users',9999);",
+                                      NULL,
+                                      NULL,
+                                      NULL))
+        {
+
+            log_error("Auth", "Cannot initialize auth.db!\n");
+            return 0;
+        }
     }
-    sqlite3_exec(db, "PRAGMA journal_mode=WAL;", NULL, NULL, NULL);
+    else
+    {
+        ret = sqlite3_open("auth.db", &db);
+        if (ret != SQLITE_OK)
+        {
+            log_warning("Auth", "Fail to open auth.db\n");
+            unlink("auth.db");
+            goto createDB;
+        }
+    }
     return 1;
 }
 
