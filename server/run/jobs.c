@@ -91,7 +91,6 @@ void JobManagerInitialize(void)
 
 void JobManagerFinalize(void)
 {
-    pthread_mutex_lock(&jobLock);
     pthread_mutex_unlock(&jobLock);
     pthread_mutex_destroy(&jobLock);
     pthread_cond_destroy(&cond);

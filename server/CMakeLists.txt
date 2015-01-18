@@ -12,7 +12,6 @@ SET(SERVER_SOURCE_FILE
     run/user.c
     run/worker.c
     run/natTraversal.c
-    run/gc.c
     run/operation.c
 
     datafile/init.c

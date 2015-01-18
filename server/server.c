@@ -3,24 +3,14 @@
 #include <logger.h>
 #include <signal.h>
 #include <stdio.h>
-#include <run/gc.h>
 #include <unistd.h>
-#include <sys/stat.h>
-#include <pwd.h>
-#include <linux/limits.h>
 #include <datafile/init.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
-WorkerType worker[CONFIG_WORKER_COUNT];
+WorkerType PacketWorker[CONFIG_WORKER_COUNT];
 
 pthread_t ThreadListener;
-
-static void initWorker(int id, WorkerType *worker)
-{
-    worker->workerId = id;
-    pthread_create(&worker->WorkerThread, NULL, WorkerMain, worker);
-}
 
 static void sigInterupt(int sig)
 {
@@ -38,15 +28,16 @@ int main(int argc, char **argv)
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
     InitServerDataDirectory();
-    struct sigaction act = {
-            .sa_flags=0
-    };
-    sigemptyset(&act.sa_mask);
-    act.sa_handler = sigInterupt;
-    sigaction(SIGINT, &act, NULL);
-    act.sa_handler = SIG_IGN;
-    sigaction(SIGPIPE, &act, NULL);//忽略Socket PIPE Error 信号
-
+    {
+        struct sigaction act = {
+                .sa_flags=0
+        };
+        sigemptyset(&act.sa_mask);
+        act.sa_handler = sigInterupt;
+        sigaction(SIGINT, &act, NULL);
+        act.sa_handler = SIG_IGN;
+        sigaction(SIGPIPE, &act, NULL);//忽略Socket PIPE Error 信号
+    }
 
     if (!DataModuleInit())
     {
@@ -56,14 +47,14 @@ int main(int argc, char **argv)
 
     JobManagerInitialize();
 
+    InitUserManager();
     for (int i = 0; i < CONFIG_WORKER_COUNT; i++)
     {
-        initWorker(i, worker + i);
+        PacketWorker[i].workerId = i;
+        pthread_create(&PacketWorker[i].WorkerThread, NULL, WorkerMain, PacketWorker + i);
     }
-    InitUserManager();
 
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
-    GarbageCollectorInitialize();
     while (IsServerRunning)
     {
         pause();
@@ -74,15 +65,15 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < CONFIG_WORKER_COUNT; ++i)
     {
-        log_info("MAIN", "Stopping Worker %d\n", worker[i].workerId);
-        pthread_cancel(worker[i].WorkerThread);
-        pthread_join(worker[i].WorkerThread, NULL);
+        log_info("MAIN", "Stopping Worker %d\n", PacketWorker[i].workerId);
+        pthread_cancel(PacketWorker[i].WorkerThread);
+        //pthread_join(PacketWorker[i].WorkerThread, NULL);
     }
-    log_info("MAIN", "Cleanup Modules\n");
-
-    GarbageCollectorFinalize();
+    log_info("MAIN", "UserManagerFinalize\n");
     UserManagerFinalize();
+    log_info("MAIN", "JobManagerFinalize\n");
     JobManagerFinalize();
+    log_info("MAIN", "DataModuleFinalize\n");
     DataModuleFinalize();
     return EXIT_SUCCESS;
 }

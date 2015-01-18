@@ -49,6 +49,9 @@ void DataModuleFinalize()
 
 void InitServerDataDirectory()
 {
+#ifndef NDEBUG
+    return;
+#endif
     char *path = (char *) malloc(PATH_MAX);
     sprintf(path, "%s/momo-server/", getpwuid(getuid())->pw_dir);
     struct stat dirStat;
@@ -71,7 +74,7 @@ void InitServerDataDirectory()
             log_info("Initialization", "成功创建数据目录%s\n", path);
         }
     }
-    log_info("Initialization", "切换当前目录至%s\n",path);
+    log_info("Initialization", "切换当前目录至%s\n", path);
     chdir(path);
     if (access("temp", F_OK))
     {
@@ -82,7 +85,7 @@ void InitServerDataDirectory()
         mkdir("files", 0700);
         mkdir("files/00", 0700);
         mkdir("files/00/00", 0700);
-        int fdRead = open("/opt/momo/server/default_icon.png", O_RDONLY),
+        int fdRead = open("/opt/momo-server/default_icon.png", O_RDONLY),
                 fdWrite = open("files/00/00/0000000000000000000000000001", O_WRONLY);
 
         if (fdRead < 0)

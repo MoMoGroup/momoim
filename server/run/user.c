@@ -93,7 +93,10 @@ static void cleanupUserTable(POnlineUsersTableType table)
         }
         free(table->next[i]);
     }
-    free(table);
+    if (table->user != (POnlineUser) -1)
+    {
+        free(table);
+    }
 }
 
 static void deleteAllUser()

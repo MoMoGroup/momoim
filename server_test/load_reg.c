@@ -1,3 +1,11 @@
+#include <pthread.h>
+#include <protocol/base.h>
+#include <logger.h>
+#include <protocol/CRPPackets.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <openssl/md5.h>
+
 #define CLIENT_COUNT 200
 
 pthread_t child[CLIENT_COUNT];

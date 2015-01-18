@@ -30,9 +30,10 @@ void *WorkerMain(void *arg)
         }
         isPendingUser = 0;
         user = JobManagerPop();
-        if (!user && !IsServerRunning)
+        if (!user)
         {
-            break;
+            log_warning(workerName, "Interuptted!\n");
+            continue;
         }
         header = CRPRecv(user->crp);
         pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);//正在处理数据,此时不允许被取消
@@ -52,11 +53,22 @@ void *WorkerMain(void *arg)
             {
                 isPendingUser = 1;
             }
+            struct timespec start, end;
+            clock_gettime(CLOCK_MONOTONIC, &start);
             if (ProcessUser(user, header) == 0)
             {
                 OnlineUserDelete(user);
                 free(header);
                 continue;
+            }
+            clock_gettime(CLOCK_MONOTONIC, &end);
+            if (end.tv_sec - start.tv_sec > 0 || end.tv_nsec - start.tv_nsec > 1000000)
+            {
+                log_warning("PerfMonitor",
+                            "Slow Packet %02x,using %ds%dns\n",
+                            header->packetID,
+                            end.tv_sec - start.tv_sec,
+                            end.tv_nsec - start.tv_nsec);
             }
             free(header);
         }

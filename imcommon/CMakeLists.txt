@@ -5,5 +5,6 @@ SET(LIBCOMMON_SRC
     message.c
     user.c
     sqlite3.c
+    fileutil.c
     )
 ADD_LIBRARY(imcommon SHARED ${LIBCOMMON_SRC})
