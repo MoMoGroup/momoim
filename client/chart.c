@@ -23,8 +23,6 @@ static cairo_surface_t *surfacewordart1, *surfacewordart2, *surfacecolor, *surfa
 
 static void create_surfaces(FriendInfo *information)
 {
-    if (schartbackgroud == NULL)
-    {
         schartbackgroud = ChangeThem_png("聊天背景.png");
         surfacesend1 = ChangeThem_png("发送1.png");
         surfacesend2 = ChangeThem_png("发送2.png");
@@ -52,7 +50,6 @@ static void create_surfaces(FriendInfo *information)
         surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
         surfacecolor = ChangeThem_png("颜色.png");
         surfacechartrecord = ChangeThem_png("消息记录.png");
-    }
 
     static cairo_t *cr;
     char mulu[80] = {0};
@@ -79,6 +76,8 @@ static void create_surfaces(FriendInfo *information)
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 }
+
+
 
 //背景的eventbox
 static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -370,6 +369,7 @@ static gint close_button_press_event(GtkWidget *widget, GdkEventButton *event, g
     {          //设置右下关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose2); //置换图标
+
     }
     return 0;
 }
@@ -395,6 +395,7 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
             gtk_widget_destroy(info->record_window);
             info->record_window = NULL;
         }
+
     }
     return 0;
 }
@@ -457,6 +458,7 @@ static gint close_but_button_release_event(GtkWidget *widget, GdkEventButton *ev
             gtk_widget_destroy(info->record_window);
             info->record_window = NULL;
         }
+
     }
     return 0;
 
@@ -1060,6 +1062,7 @@ int MainChart(FriendInfo *friendinfonode)
     //gtk_window_set_resizable (GTK_WINDOW (window), FALSE);//窗口不可改变
 
     gtk_window_set_decorated(GTK_WINDOW(friendinfonode->chartwindow), FALSE);   // 去掉边框
+
     create_surfaces(friendinfonode);
 
     friendinfonode->imageflowerbackgroud = gtk_image_new_from_surface(schartbackgroud);
