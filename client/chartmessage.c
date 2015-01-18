@@ -122,6 +122,10 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
+    gtk_text_buffer_get_end_iter(info->input_buffer, &end);
+    GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(info->input_buffer, NULL, &end, 1);
+    gtk_text_buffer_move_mark(info->input_buffer, text_mark_log, &end);
+    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->input_text), text_mark_log, 0, 1, 1, 1);
     gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->show_text),
                                        gtk_text_buffer_get_insert(show_buffer));//实现自动滚屏的效果
 }
