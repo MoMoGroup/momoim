@@ -1,11 +1,14 @@
 #include "server.h"
-#include "datafile/base.h"
 #include <stdlib.h>
 #include <logger.h>
 #include <signal.h>
 #include <stdio.h>
 #include <run/gc.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <pwd.h>
+#include <linux/limits.h>
+#include <datafile/init.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
@@ -29,10 +32,12 @@ static void sigInterupt(int sig)
     sigaction(sig, &act, NULL);
 }
 
+
 int main(int argc, char **argv)
 {
     setbuf(stdout, NULL);
     setbuf(stderr, NULL);
+    InitServerDataDirectory();
     struct sigaction act = {
             .sa_flags=0
     };
@@ -41,6 +46,8 @@ int main(int argc, char **argv)
     sigaction(SIGINT, &act, NULL);
     act.sa_handler = SIG_IGN;
     sigaction(SIGPIPE, &act, NULL);//忽略Socket PIPE Error 信号
+
+
     if (!DataModuleInit())
     {
         log_error("MAIN", "Fail to initliaze data module.\n");

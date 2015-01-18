@@ -7,7 +7,7 @@
 #include "run/user.h"
 
 //socket监听线程主函数
-void *ListenMain(void *listenSocket);
+void *ListenMain(void *);
 
 //服务端是否正在退出
 extern int IsServerRunning;

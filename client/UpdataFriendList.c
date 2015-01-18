@@ -6,11 +6,6 @@
 #include <logger.h>
 #include "common.h"
 
-//enum {
-//    PIXBUF_COL = 0,
-//    FRIENDUID_COL = 1,
-//};
-
 
 //新添加好友
 int FriendListInsertEntry(void *data)
@@ -45,8 +40,6 @@ int FriendListInsertEntry(void *data)
                        -1);
 
     g_object_unref(pixbuf);
-
-    // return GTK_TREE_MODEL(TreeViewListStore);
 
     free(data);
     return 0;
@@ -144,12 +137,6 @@ int OffLine(void *data)//好友下线。图标变暗
     GtkTreeIter iterUser;
     GdkPixbuf *pixbuf = NULL;
 
-    int wavfd = open("a.wav", O_RDONLY);//有的系统只允许O_RDONLY,O_WRONLY
-    if (wavfd < 0)
-    {
-        printf("open of wav failed");
-        exit(1);
-    }
     iterUser = getUserIter(p->uid);//拿到iter
 
     FriendInfo *head = FriendInfoHead;
