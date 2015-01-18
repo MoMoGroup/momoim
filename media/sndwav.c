@@ -209,7 +209,7 @@ int SNDWAV_SetParams(SNDPCMContainer_t *sndpcm, WAVContainer_t *wav)
         goto ERR_SET_PARAMS;
     }
 
-    sndpcm->bits_per_sample = snd_pcm_format_physical_width(format);
+    sndpcm->bits_per_sample =(size_t) snd_pcm_format_physical_width(format);
     sndpcm->bits_per_frame = sndpcm->bits_per_sample * LE_SHORT(wav->format.channels);
 
     sndpcm->chunk_bytes = sndpcm->chunk_size * sndpcm->bits_per_frame / 8;

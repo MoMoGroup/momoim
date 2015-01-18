@@ -14,24 +14,24 @@ static struct sockaddr_in addr_sendto;
 static socklen_t addr_sendto_len;
 static int sendtoAssigned;
 
-
-//////////////////////循环队列/////////////////////////
+/*循环队列甬道的全局变量*/
 static pthread_mutex_t mutex_send, mutex_recv;
 static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
 static char *circle_buf_send[8], *circle_buf_recv[8];
 static char **head_send, **tail_send, **head_recv, **tail_recv;
-//////////////////////////////////////////////////////
 
 
 void *record_routine(void *data)
 {
     SNDPCMContainer_t record;
     WAVContainer_t wav;
+    /*将要录制的音频格式设置好*/
     char bincode[] = {
             0x52, 0x49, 0x46, 0x46, 0x64, 0x1f, 0x00, 0x00, 0x57, 0x41, 0x56, 0x45, 0x66, 0x6d, 0x74, 0x20,
             0x10, 0x00, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x40, 0x1f, 0x00, 0x00, 0x40, 0x1f, 0x00, 0x00,
             0x10, 0x00, 0x08, 0x00, 0x64, 0x61, 0x74, 0x61, 0x40, 0x1f, 0x00, 0x00
     };
+    /*将设置好的数据导入wav*/
     memcpy(&wav, &bincode, 44);
     //////////////////////////////////////////////////////////////////////////////////
     //创造一个新的输出对象的指针h
@@ -55,8 +55,8 @@ void *record_routine(void *data)
     //sendtoAssigned = 0;
     //head = (char *) malloc(sizeof(char *));
     //tail = (char *) malloc(sizeof(char *));
-    ///////////////////////////////////////////////////////////////////////////////////
     char *p_send;
+    /*循环录制自己的音频数据*/
     while (1)
     {
         p_send = (char *) malloc(1000);
@@ -68,7 +68,6 @@ void *record_routine(void *data)
         pthread_cond_signal(&send_busy);
         pthread_mutex_unlock(&mutex_send);
     }
-    ///////////////////////////////////////////////////////////////////////////////////
     Err:
     return 0;
 }
@@ -76,6 +75,7 @@ void *record_routine(void *data)
 void *send_routine(void *data)
 {
     char *q_send;
+    /*循环发送自己录制好的音频数据*/
     while (1)
     {
         pthread_mutex_lock(&mutex_send);
@@ -93,6 +93,7 @@ void *send_routine(void *data)
 void *recv_routine(void *data)
 {
     char *p_recv;
+    /*用来循环接受对方发来的音频数据*/
     while (1)
     {
         p_recv = (char *) malloc(1000);
@@ -142,9 +143,9 @@ void *play_routine(void *data)
         fprintf(stderr, "Error set_snd_pcm_params\n");
         goto Err;
     }
-    socklen_t i = sizeof(struct sockaddr_in);
-    ///////////////////////////////////////////////////////////////////////////////////
+    //socklen_t i = sizeof(struct sockaddr_in);
     char *q_recv;
+    /*用来循环播音*/
     while (1)
     {
         pthread_mutex_lock(&mutex_recv);
@@ -154,13 +155,12 @@ void *play_routine(void *data)
         tail_recv = circle_buf_recv + (tail_recv - circle_buf_recv + 1) % (sizeof(circle_buf_recv) / sizeof(*circle_buf_recv));
         pthread_cond_signal(&recv_idle);
         pthread_mutex_unlock(&mutex_recv);
-        playback.data_buf = q_recv;
+        playback.data_buf =(uint8_t*) q_recv;
         SNDWAV_WritePcm(&playback, 1000);
         //snd_pcm_writei(playback.handle, q_recv, 1000);
         //SNDWAV_WritePcm(&playback, 1000);
         free(q_recv);
     }
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     return 0;
 
@@ -194,7 +194,6 @@ static int InitAudioChat()
 static void *process(void *data)
 {
     pthread_t t_record, t_send, t_recv, t_play;
-    /////////////////////////////////////////////////////////////////////////////////////////////////
     pthread_create(&t_send, NULL, send_routine, NULL);
     pthread_create(&t_recv, NULL, recv_routine, NULL);
     pthread_create(&t_record, NULL, record_routine, NULL);

@@ -15,7 +15,7 @@ SET(CLIENT_SOURCE_FILE
     ClientSockfd.c
     MainInterface.c
     newuser.c
-    audio.c
+    media.c
     PopupWinds.c
     MessageLoop.c
     common/util.c

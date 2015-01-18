@@ -14,7 +14,6 @@
 #include <gtk/gtk.h>
 #include "yuv422_rgb.h"
 #include "video.h"
-#include "../logger/include/logger.h"
 
 #define SERVERPORT 5555
 
@@ -28,15 +27,13 @@ typedef struct VideoBuffer
 
 
 static VideoBuffer *buffers = NULL;
-unsigned char *jpegbuf_my, *jpegbuf_opposite;
 unsigned char *rgbBuf;
-unsigned long jpeg_size_my;
 
 int fd;
 
 pthread_t tid1, tid2, tid3;
 
-//////////////////////循环队列/////////////////////////
+/*下面的代码用来做循环队列*/
 static pthread_mutex_t mutex_send, mutex_recv;
 static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
 typedef struct
@@ -46,13 +43,12 @@ typedef struct
 } jpeg_str;
 static jpeg_str *circle_buf_send[8], *circle_buf_recv[8];
 static jpeg_str **head_send, **tail_send, **head_recv, **tail_recv;
-//////////////////////////////////////////////////////
 
 
 int mark()
 {
     int ret;
-    struct v4l2_capability cap;//»ñÈ¡ÊÓÆµÉè±žµÄ¹ŠÄÜ
+    struct v4l2_capability cap;
     struct v4l2_format fmt;
 
     do
@@ -66,27 +62,25 @@ int mark()
     }
 
     memset(&fmt, 0, sizeof(fmt));
-    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;//ÊýŸÝÁ÷ÀàÐÍ
-    fmt.fmt.pix.width = 640;//¿í£¬±ØÐëÊÇ16µÄ±¶Êý
-    fmt.fmt.pix.height = 480;//žß£¬±ØÐëÊÇ16µÄ±¶Êý
-    fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;// ÊÓÆµÊýŸÝŽæŽ¢ÀàÐÍ
+    fmt.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    fmt.fmt.pix.width = 640;
+    fmt.fmt.pix.height = 480;
+    fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_YUYV;
     if (ioctl(fd, VIDIOC_S_FMT, &fmt) < 0)
     {
         printf("set format failed\n");
         return -1;
     }
+    return 0;
 
 }
 
-//ÉêÇëÎïÀíÄÚŽæ
+
 int localMem()
 {
     int numBufs = 0;
-    struct v4l2_requestbuffers req;//·ÖÅäÄÚŽæ
+    struct v4l2_requestbuffers req;
     struct v4l2_buffer buf;
-    ////////////////////////////////////////////////////////////////////////
-    //这个req.count的大小是多少呢
-    /////////////////////////////////////////////////////////////////////////
     req.count = 4;
     req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     req.memory = V4L2_MEMORY_MMAP;
@@ -105,7 +99,7 @@ int localMem()
         buf.memory = V4L2_MEMORY_MMAP;
         buf.index = numBufs;
 
-        if (ioctl(fd, VIDIOC_QUERYBUF, &buf) == -1)//¶ÁÈ¡»ºŽæÐÅÏ¢
+        if (ioctl(fd, VIDIOC_QUERYBUF, &buf) == -1)
         {
             printf("VIDIOC_QUERYBUF error\n");
             return -1;
@@ -113,16 +107,17 @@ int localMem()
         buffers[numBufs].length = buf.length;
         buffers[numBufs].start = mmap(NULL, buf.length,
                                       PROT_READ | PROT_WRITE,
-                                      MAP_SHARED, fd, buf.m.offset);//×ª»»³ÉÏà¶ÔµØÖ·
+                                      MAP_SHARED, fd, buf.m.offset);
         if (buffers[numBufs].start == MAP_FAILED)
         {
             return -1;
         }
-        if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)//·ÅÈë»ºŽæ¶ÓÁÐ
+        if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)
         {
             return -1;
         }
     }
+    return 0;
 }
 
 void video_on()
@@ -132,7 +127,6 @@ void video_on()
     if (ioctl(fd, VIDIOC_STREAMON, &type) < 0)
     {
         printf("VIDIOC_STREAMON error\n");
-        // return -1;
     }
 }
 
@@ -153,25 +147,18 @@ int video()
             printf("ioctl未知情况\n");
             return -1;
         }
-        /////////////////////这里将yuv转化为jpeg///////////////////////////////////////////////////////
         unsigned char *tempbuf = (unsigned char *) malloc(640 * 480 * 3);
-        yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);   //tempbuf是用来保存yuv转化为rgb的数据
-        //pthread_mutex_lock(&g_lock_send);
-        //jpeg_size_my = jpegWrite(tempbuf, jpegbuf_my);            //这里把tempbuf中的数据转化为jpeg数据
-        //pthread_cond_signal(&g_cond_send);
-        //pthread_mutex_unlock(&g_lock_send);
+        /*tempbuf是用来保存yuv转化为rgb的数据*/
+        yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);
         p_send = (jpeg_str *) malloc(50000);
+        /*将tempbuf中的数据转换成jpeg放入p->send中*/
         p_send->jpeglen = (int) jpegWrite(tempbuf, p_send->jpeg_buf);
         free(tempbuf);
-        if (ioctl(fd, VIDIOC_QBUF, &buf) == -1) {
+        if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)
+        {
             return -1;
         }
         /////////////////////////////////////////采集循环队列/////////////////////////////////////////／
-        //这里用来给p_send写好帧数据
-        //memcpy(p_send->jpeg_buf, tempbuf, jpeg_size_my);
-        //snd_pcm_readi(record.handle, p_send, 1000);
-
-
         pthread_mutex_lock(&mutex_send);
         while (*head_send) pthread_cond_wait(&send_idle, &mutex_send);
         *head_send = p_send;
@@ -186,12 +173,10 @@ int video()
 void *pthread_video(void *arg)
 {
     video_on();
-    /////////////////////
     while (1)
     {
         video();
     }
-    /////////////////////
     return NULL;
 }
 
@@ -199,22 +184,9 @@ void *pthread_video(void *arg)
 void *pthread_snd(void *socketsd)
 {
     int sd = (*(int *) socketsd);
-    int ret;
     jpeg_str *q_send;
     while (1)
     {
-        //pthread_mutex_lock(&g_lock_send);
-        //pthread_cond_wait(&g_cond_send, &g_lock_send);
-        //send(sd, &(jpeg_size_my), sizeof(unsigned long), 0);
-        //perror("send1");
-        //send(sd, jpegbuf_my, jpeg_size_my, O_NONBLOCK);
-        //perror("send2");
-        //if (ret == -1)
-        // {
-        //   printf("client is out\n");
-        //}
-        //pthread_mutex_unlock(&g_lock_send);
-
         //////////////////////////////////发送的循环队列/////////////////////////////////////////////
         pthread_mutex_lock(&mutex_send);
         while (!(*tail_send))pthread_cond_wait(&send_busy, &mutex_send);
@@ -242,16 +214,8 @@ void *pthread_rev(void *socketrev)
     ssize_t ret;
     while (1)
     {
-        //pthread_mutex_lock(&g_lock_recv);
-        //recv(sd, &(jpeg_size_opposite), sizeof(uint64_t), 0);
-        //perror("recv1");
-        //perror("recv2");
-        //recv(sd, jpegbuf_opposite, jpeg_size_opposite, MSG_WAITALL);
-
-        //pthread_cond_signal(&g_cond_recv);
-        //pthread_mutex_unlock(&g_lock_recv);
         //////////////////////////////////////接受的循环队列/////////////////////////////////////////
-        p_recv = (struct jpeg_str *) malloc(50000);
+        p_recv = (jpeg_str *) malloc(50000);
         errno = 0;
         ret = recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
         if (ret <= 0)
@@ -291,7 +255,6 @@ gboolean idleDraw(gpointer data)
     tail_recv = circle_buf_recv + (tail_recv - circle_buf_recv + 1) % (sizeof(circle_buf_recv) / sizeof(*circle_buf_recv));
     pthread_cond_signal(&recv_idle);
     pthread_mutex_unlock(&mutex_recv);
-
     //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
     if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf, (size_t) q_recv->jpeglen))
     {
@@ -301,10 +264,6 @@ gboolean idleDraw(gpointer data)
         gtk_image_set_from_pixbuf(image, pixbuf);
         g_object_unref(pixbuf);
     }
-    //playback.data_buf = q_recv;
-    //SNDWAV_WritePcm(&playback, 1000);
-    //snd_pcm_writei(playback.handle, q_recv, 1000);
-    //SNDWAV_WritePcm(&playback, 1000);
     free(q_recv);
     ///////////////////////////////////////////////////////////////////////////////////////////
     return 1;
@@ -340,21 +299,18 @@ void *primary_video(struct sockaddr_in *addr)
     tail_send = circle_buf_send;
     head_recv = circle_buf_recv;
     tail_recv = circle_buf_recv;
-    pthread_mutex_init(&mutex_send, 0); //记得摧毁锁
+    /*设置四个环境变量和四个锁，用来做循环队列*/
+    pthread_mutex_init(&mutex_send, 0);
     pthread_cond_init(&send_idle, NULL);
     pthread_cond_init(&send_busy, NULL);
-    pthread_mutex_init(&mutex_recv, 0); //记得摧毁锁
+    pthread_mutex_init(&mutex_recv, 0);
     pthread_cond_init(&recv_idle, NULL);
     pthread_cond_init(&recv_busy, NULL);
     signal(SIGPIPE, SIG_IGN);
-    //////////////////////////////////////////////////////////////////
     int ret;
-    //////////////////////////////////////////////////////////////////
     ////////////////////////////这里设置发送套接字//////////////////////
-    /*连接设置是指先发送数据还是先接受数据*/
 
 
-    //struct sockaddr_in addr_opposite;
     socklen_t addrlen;
     addr_opposite.sin_family = AF_INET;
     addr_opposite.sin_port = htons(SERVERPORT);
@@ -368,7 +324,7 @@ void *primary_video(struct sockaddr_in *addr)
         if (netSocket == -1)
         {
             perror("socket\n");
-            return -1;
+            return NULL;
         }
         setsockopt(netSocket, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof(int));
 
@@ -378,7 +334,7 @@ void *primary_video(struct sockaddr_in *addr)
         {
             perror("connect");
             close(netSocket);
-            return 1;
+            return NULL;
         }
     }
     else
@@ -408,7 +364,7 @@ void *primary_video(struct sockaddr_in *addr)
         {
             perror("accept");
             close(listener);
-            return 1;
+            return NULL;
         }
         close(listener);
     }

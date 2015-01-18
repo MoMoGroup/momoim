@@ -25,3 +25,6 @@ extern GtkWidget *ChangeThem_file(char *picname);
 
 extern GtkWidget *ChangeFace_file(char *picname);
 
+extern void PlayMusic(const char *data);
+
+
