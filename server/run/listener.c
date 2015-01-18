@@ -25,7 +25,7 @@ void EpollAdd(POnlineUser user)
     };
     if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
-        perror("epoll_add");
+        perror("epoll_ctl EPOLL_CTL_ADD");
     }
 }
 
@@ -37,7 +37,7 @@ void EpollModify(POnlineUser user)
     };
     if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
-        perror("epoll modify");
+        perror("epoll_ctl EPOLL_CTL_MOD");
     }
 }
 
@@ -46,8 +46,8 @@ void EpollRemove(POnlineUser user)
     if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->crp->fd, NULL))
     {
         if (errno != ENOENT)
-        {//如果fd已经移除,不要报错
-            perror("epoll_remove");
+        {
+            perror("epoll_ctl EPOLL_CTL_DEL");
         }
     }
 }
@@ -106,12 +106,7 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
             else if (events[i].data.ptr == (void *) -1) //NAT发现
             {
                 addrLen = sizeof(idxSock);
-                if (32 == recvfrom(sockIdx,
-                                   keyBuffer,
-                                   sizeof(keyBuffer),
-                                   0,
-                                   (struct sockaddr *) &idxSock,
-                                   &addrLen))
+                if (32 == recvfrom(sockIdx, keyBuffer, sizeof(keyBuffer), 0, (struct sockaddr *) &idxSock, &addrLen))
                 {
                     NatHostDiscoverNotify(&idxSock, keyBuffer);
                 }
@@ -122,7 +117,6 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                 JobManagerPush((POnlineUser) events[i].data.ptr);//将用户加入到事务管理器(可能会阻塞)
             }
         }
-
     }
 }
 
@@ -161,24 +155,24 @@ static int prepareListener()
         close(fd);
         return -1;
     }
-    {
-        int flags = fcntl(fd, F_GETFL, 0);
-        if (flags == -1)
-        {
-            perror("fcntl");
-            close(fd);
-            return -1;
-        }
 
-        flags |= O_NONBLOCK;
-        flags = fcntl(fd, F_SETFL, flags);
-        if (flags == -1)
-        {
-            perror("fcntl");
-            close(fd);
-            return -1;
-        }
+    int flags = fcntl(fd, F_GETFL, 0);
+    if (flags == -1)
+    {
+        perror("fcntl");
+        close(fd);
+        return -1;
     }
+
+    flags |= O_NONBLOCK;
+    flags = fcntl(fd, F_SETFL, flags);
+    if (flags == -1)
+    {
+        perror("fcntl");
+        close(fd);
+        return -1;
+    }
+
     return fd;
 }
 
