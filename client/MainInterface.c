@@ -553,6 +553,7 @@ gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpoint
             {
                 if (friendinforear->chartwindow == NULL)
                 {
+
                     MainChart(friendinforear);
                 }
                 else
@@ -748,16 +749,19 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
             if (save_result == GTK_RESPONSE_ACCEPT)
             {
                 gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (save_dialog));
-                memcpy(file_message_data->filemulu, filename, strlen(filename));
+                size_t len_filename = strlen(filename);
+                memcpy(file_message_data->filemulu, filename, len_filename);
+                file_message_data->filemulu[len_filename] = 0;
                 g_free(filename);
             }
-            else
+/*            else
             {
                 sprintf(file_message_data->filemulu,
                         "%s/.momo/files/%s",
                         getpwuid(getuid())->pw_dir,
                         file_message_data->filename);
-            }
+
+            }*/
             gtk_widget_destroy(save_dialog);
 
             if (file_message_data->file_size / 1048576.0 > 0)

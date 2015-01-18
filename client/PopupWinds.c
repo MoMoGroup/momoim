@@ -99,6 +99,9 @@ int popup(const char *title, const char *tell)
     popupLayout = gtk_fixed_new();//创建布局容纳控件
     create_popupfaces();
 
+    //声音
+    PlayMusic("提示音.wav");
+
     GtkWidget *telltitle, *tellyou;
     gtk_container_add(GTK_CONTAINER(box), popupLayout);//将layout放入dialog的box中
 

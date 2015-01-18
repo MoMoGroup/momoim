@@ -187,6 +187,8 @@ int put(void *data)
 
     yanzheng = gtk_label_new(mes);
 
+    //好友添加声音好友添加
+    PlayMusic("好友添加.wav");
 
     gtk_fixed_put(GTK_FIXED(popuplayout), xitong, 14, 10);//标题
     gtk_fixed_put(GTK_FIXED(popuplayout), GTK_WIDGET(text), 30, 50);//添加信息

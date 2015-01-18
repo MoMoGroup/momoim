@@ -6,6 +6,7 @@
 #include <glib-unix.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
+#include <protocol/base.h>
 #include "friend.h"
 #include "common.h"
 #include "../managegroup/ManageGroup.h"
@@ -121,13 +122,23 @@ static gint done_button_leave_event(GtkWidget *widget, GdkEventButton *event,
     return 0;
 }
 
+static int addfriendRecv(CRPBaseHeader *header, void *data)
+{
+    if(header->packetID==CRP_PACKET_FAILURE)
+    {
+        g_idle_add(GroupPop, "添加失败");
+    }
+    return 0;
+}
+
 //完成按下
 static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
     struct add_friend_info *p = data;
-
-    CRPFriendAddSend(sockfd, p->sessionid, p->uid, p->note);//发送添加请求
+    session_id_t sessionid = CountSessionId();
+    AddMessageNode(sessionid, addfriendRecv, NULL);
+    CRPFriendAddSend(sockfd, sessionid, p->uid, p->note);//发送添加请求
     AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
 
@@ -315,7 +326,7 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
         case CRP_PACKET_FAILURE:
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
-            //g_idle_add(GroupPop, "查无此人");
+            g_idle_add(GroupPop, "查无此人");
             if ((void *) infodata != header->data)
             {
                 free(data);

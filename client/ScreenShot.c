@@ -124,12 +124,12 @@ void ScreenShot(FriendInfo *info)
     g_signal_connect(G_OBJECT(win), "motion_notify_event",
                      G_CALLBACK(select_area_move), info->data);
 
-    color.blue = 0;
-    color.green = 0;
-    color.red = 0;
+    color.red = 0xffff;
+    color.green = 0xffff;
+    color.blue = 0xffff;
     gtk_widget_modify_bg(win, GTK_STATE_NORMAL, &color); //设置背景
 
-    gtk_window_set_opacity(GTK_WINDOW(win), 0.2); //设置窗口全透明
+    gtk_window_set_opacity(GTK_WINDOW(win), 0); //设置窗口全透明
     gtk_window_resize(GTK_WINDOW(win),
                       gdk_screen_get_width(screen),
                       gdk_screen_get_height(screen)); //设置窗口大小为全屏
