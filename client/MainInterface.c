@@ -553,6 +553,7 @@ gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpoint
             {
                 if (friendinforear->chartwindow == NULL)
                 {
+
                     MainChart(friendinforear);
                 }
                 else
