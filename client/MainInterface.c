@@ -754,13 +754,14 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
                 file_message_data->filemulu[len_filename] = 0;
                 g_free(filename);
             }
-            else
+/*            else
             {
                 sprintf(file_message_data->filemulu,
                         "%s/.momo/files/%s",
                         getpwuid(getuid())->pw_dir,
                         file_message_data->filename);
-            }
+
+            }*/
             gtk_widget_destroy(save_dialog);
 
             if (file_message_data->file_size / 1048576.0 > 0)
