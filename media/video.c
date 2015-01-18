@@ -97,7 +97,7 @@ int localMem()
 
         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         buf.memory = V4L2_MEMORY_MMAP;
-        buf.index = numBufs;
+        buf.index = (__u32)numBufs;
 
         if (ioctl(fd, VIDIOC_QUERYBUF, &buf) == -1)
         {
@@ -221,10 +221,14 @@ void *pthread_rev(void *socketrev)
         if (ret <= 0)
         {
             perror("recv");
+            delete_event();
         }
         errno = 0;
-        recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
-
+        ret = recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
+        if(ret<=0){
+            perror("recv");
+            delete_event();
+        };
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
         {
