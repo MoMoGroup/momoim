@@ -213,6 +213,8 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //消息
         case CRP_PACKET_MESSAGE_NORMAL://不会丢的
         {
+            //好友消息声音
+            PlayMusic("好友消息.wav");
             CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
             memcpy(dup, header, header->totalLength);
             g_idle_add(postMessage, dup);
@@ -288,6 +290,9 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             {
                 case FNT_FRIEND_ONLINE://好友上线
                 {
+                    //好友上线声音
+                    PlayMusic("好友上线.wav");
+
                     log_info("Serve Message", "好友上线\n");
                     char *mem = malloc(sizeof(CRPPacketFriendNotify));
                     memcpy(mem, data, sizeof(CRPPacketFriendNotify));
@@ -466,6 +471,10 @@ int mysockfd()
         sleep(1);//登录动画
 
         //登陆成功之后开始请求资料
+
+//        ca_gtk_play_for_widget(<#(GtkWidget*)w#>, <#(uint32_t)id, ...#>);
+//        ca_gtk_proplist_set_for_event(<#(ca_proplist*)p#>, <#(GdkEvent*)e#>);
+
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
 

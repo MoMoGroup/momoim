@@ -882,6 +882,7 @@ int main(int argc, char *argv[])
     }
     else
     {
+        PlayMusic("开始.wav");
         loadloginLayout("ad");//加载登陆界面
     }
     gtk_main();
