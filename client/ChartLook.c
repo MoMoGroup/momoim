@@ -22,7 +22,7 @@ static gint face_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     GtkWidget *image;
     image = gtk_image_new_from_file(filename);
     GtkTextMark *mark;
-    GtkTextIter iter;
+    GtkTextIter iter, end;
     GtkTextChildAnchor *anchor;
     mark = gtk_text_buffer_get_insert(info->input_buffer);
     gtk_text_buffer_get_iter_at_mark(info->input_buffer, &iter, mark);
@@ -35,6 +35,15 @@ static gint face_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     gtk_widget_show_all(image);
     gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->input_text), image, anchor);
     gtk_widget_grab_focus(info->input_text);
+    gtk_text_buffer_get_end_iter(info->input_buffer, &end);
+    GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(info->input_buffer, NULL, &iter, 1);
+    gtk_text_buffer_move_mark(info->input_buffer, text_mark_log, &end);
+    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->input_text), text_mark_log, 0, 1, 1, 1);
+    if (info->look_window != NULL)
+    {
+        gtk_widget_destroy(info->look_window);
+        info->look_window = NULL;
+    }
     return 0;
 }
 

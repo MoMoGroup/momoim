@@ -27,7 +27,7 @@ void show_picture(GdkWindow *window, FriendInfo *info) //显示截图函数
     gdk_pixbuf_save(pixbuf, filename, "png", NULL, NULL);
     image = gtk_image_new_from_pixbuf(pixbuf);
     GtkTextMark *mark;
-    GtkTextIter iter;
+    GtkTextIter iter, end;
     GtkTextChildAnchor *anchor;
     size_t filenamelen;
     mark = gtk_text_buffer_get_insert(info->input_buffer);
@@ -41,6 +41,10 @@ void show_picture(GdkWindow *window, FriendInfo *info) //显示截图函数
     gtk_widget_show_all(image);
     gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->input_text), image, anchor);
     gtk_widget_grab_focus(info->input_text);
+    gtk_text_buffer_get_end_iter(info->input_buffer, &end);
+    GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(info->input_buffer, NULL, &iter, 1);
+    gtk_text_buffer_move_mark(info->input_buffer, text_mark_log, &end);
+    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->input_text), text_mark_log, 0, 1, 1, 1);
     //  free(filename);
 }
 
