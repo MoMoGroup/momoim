@@ -1229,9 +1229,29 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
 //    return 0;
 //}
 
+//搜索放上去
+static gint search_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *search2 = ChangeThem_png("搜索2.png");
+    gtk_image_set_from_surface((GtkImage *) search, search2);
+    return 0;
+}
+
+//搜索移走
+static gint search_button_leave_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *search1 = ChangeThem_png("搜索.png");
+    gtk_image_set_from_surface((GtkImage *) search, search1);
+    return 0;
+}
+
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *search1 = ChangeThem_png("搜索.png");
+    gtk_image_set_from_surface((GtkImage *) search, search1);
     if (AddFriendflag)//判断是否打开搜索窗口
     {
         AddFriendFun();
@@ -1344,7 +1364,15 @@ int MainInterFace()
                                      NULL);
 
     search = gtk_image_new_from_surface(surfaceresearch);
-    search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
+
+    search_event_box = BuildEventBox(search,
+                                     NULL,
+                                     G_CALLBACK(search_button_notify_event),
+                                     G_CALLBACK(search_button_leave_event),
+                                     G_CALLBACK(search_button_release_event),
+                                     NULL,
+                                     NULL);
+
 
     setup_event_box = BuildEventBox(SetUp,
                                     G_CALLBACK(setup_button_press_event),
@@ -1513,7 +1541,8 @@ int MainInterFace()
     //重命名分组事件
     g_signal_connect(G_OBJECT(rename), "button_press_event",
                      G_CALLBACK(RenameGroupButtonPressEvent), treeView);
-    //添加好友
+    //添加好友按钮
+
     g_signal_connect(G_OBJECT(addpeople), "button_release_event",
                      G_CALLBACK(search_button_release_event), treeView);
 //    //添加好友鼠标放上去

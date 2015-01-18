@@ -198,7 +198,7 @@ int put(void *data)
     gtk_container_add(GTK_CONTAINER (popupframelayout), popuplayout);
 
     gtk_widget_show_all(popupwindow);
-    free(data);
+    //free(data);//不能释放
     return 0;
 }
 
