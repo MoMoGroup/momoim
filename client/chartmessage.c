@@ -81,16 +81,11 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
                     memcpy(&colorred, ptext, 2);
                     memcpy(&colorgreen, ptext + 2, 2);
                     memcpy(&colorblue, ptext + 4, 2);
-                    g_print("the red is %u\n", colorred);
-                    g_print("the green is %u\n", colorgreen);
-                    g_print("the blue is %u\n", colorblue);
                     rgba.alpha = 1;
                     rgba.red = colorred / 65535.0;
                     rgba.green = colorgreen / 65535.0;
                     rgba.blue = colorblue / 65535.0;
-                    g_print("the red rgba is %lf\n", rgba.red);
-                    g_print("the green rgba is %lf\n", rgba.green);
-                    g_print("the blue is rgba %lf\n", rgba.blue);
+
                     g_object_set(wordtag, "foreground-rgba", &rgba, NULL);
                     ptext = ptext + 6;
                     break;
@@ -128,7 +123,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
     gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->show_text),
-                                       gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
+                                       gtk_text_buffer_get_insert(show_buffer));//实现自动滚屏的效果
 }
 
 //将输入的文本框输出在显示的文本框中
@@ -474,7 +469,7 @@ int deal_with_message(CRPBaseHeader *header, void *data)
                 fclose(photomessage->fp);
                 CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
                 photomessage->image_message_data->imagecount--;
-                if (photomessage->image_message_data->imagecount == 0)
+                if (photomessage->image_message_data->imagecount == 0 && photomessage->image_message_data->image_find_end == 1)
                 {
                     session_id_t sessionID = CountSessionId();
                     CRPMessageNormalSend(sockfd, sessionID, UMT_TEXT,
@@ -496,7 +491,8 @@ int deal_with_message(CRPBaseHeader *header, void *data)
             fclose(photomessage->fp);
         }
         photomessage->image_message_data->imagecount--;
-        if (photomessage->image_message_data->imagecount == 0)
+        log_info("sdaos", "%d pictures remaining\n", photomessage->image_message_data->imagecount);
+        if (photomessage->image_message_data->imagecount == 0 && photomessage->image_message_data->image_find_end == 1)
         {
             CRPMessageNormalSend(sockfd, photomessage->image_message_data->uid, UMT_TEXT,
                                  photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
@@ -523,6 +519,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
     image_message_data_state->message_data = char_text;
     image_message_data_state->uid = info->user.uid;
     image_message_data_state->charlen = charlen;
+    image_message_data_state->image_find_end = 0;
     while (i < charlen)
     {
         if (char_text[i] != '\0')
@@ -595,6 +592,10 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
 
         }
 
+    }
+    if (isimageflag == 1)
+    {
+        image_message_data_state->image_find_end = 1;
     }
 
     if (isimageflag == 0)

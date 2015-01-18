@@ -418,8 +418,6 @@ static void loadinfo()
     gtk_fixed_put(GTK_FIXED(MainLayout), StatusShowText, 140, 65);
 
 
-
-
     //加载用户头像
     int finduidflag = 0;
     FriendInfo *rear = FriendInfoHead;
@@ -660,6 +658,10 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
             log_info("FAILURE reason", infodata->reason);
             fclose(recv_message->Wfp);
             recv_message->file_loading_end = 1;
+            if ((void *) infodata != header->data)
+            {
+                free(infodata);
+            }
             return 0;
         };
         case  CRP_PACKET_FILE_DATA_START:
@@ -675,6 +677,10 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
             fwrite(packet->data, 1, packet->length, recv_message->Wfp);
             recv_message->file_count = recv_message->file_count + packet->length;
             CRPOKSend(sockfd, header->sessionID);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
             break;
         };
         case CRP_PACKET_FILE_DATA_END:
