@@ -8,7 +8,7 @@
 static sqlite3 *db = 0;
 static const char sqlAuth[] = "SELECT id FROM users WHERE name = ? AND key = ?;";
 static const char sqlReg[] = "INSERT INTO users (name,key) VALUES ( ? , ? );";
-static const char sqlPwd[] = "UPDATE users SET key = ? WHERE id = ? AND key = ? LIMIT 1;";
+static const char sqlPwd[] = "UPDATE users SET key = ? WHERE id = ? AND key = ?;";
 
 int AuthInit()
 {

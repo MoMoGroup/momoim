@@ -827,7 +827,7 @@ int FillinIp(char *filename)
     gtk_widget_set_size_request(GTK_WIDGET(IpFillinWind), 432, 238);
 
     IpLayout = gtk_fixed_new();
-    IpFillBackgface = cairo_image_surface_create_from_png("首次登陆.png");
+    IpFillBackgface = ChangeThem_png("首次登陆.png");
     IpAnniuface = ChangeThem_png("提示框按钮1.png");
     IpAnniuface1 = ChangeThem_png("提示框按钮2.png");
 

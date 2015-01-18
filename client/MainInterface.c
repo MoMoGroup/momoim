@@ -324,7 +324,7 @@ GtkTreeModel *createModel()
 
         for (j = 0; j < friends->groups[i].friendCount; j++)
         {
-            char friendname[20] = {0};
+            //char friendname[32] = {0};
             char mulu[80] = {0};
             sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, friends->groups[i].friends[j]);
             pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
@@ -335,7 +335,7 @@ GtkTreeModel *createModel()
             {
                 if (rear->uid == friends->groups[i].friends[j])
                 {
-                    memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
+                    //memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
                     break;
                 }
                 rear = rear->next;
@@ -1590,7 +1590,6 @@ int MainInterFace()
 
     g_signal_connect(G_OBJECT(lookinfo), "button_press_event",
                      G_CALLBACK(lookinfo_button_press_event), (gpointer) treeView);
-
 
     gtk_widget_show_all(window);
     //隐藏水平滚动条

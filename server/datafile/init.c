@@ -49,9 +49,9 @@ void DataModuleFinalize()
 
 void InitServerDataDirectory()
 {
-#ifndef NDEBUG
+/*#ifndef NDEBUG
     return;
-#endif
+#endif*/
     char *path = (char *) malloc(PATH_MAX);
     sprintf(path, "%s/momo-server/", getpwuid(getuid())->pw_dir);
     struct stat dirStat;
@@ -86,7 +86,7 @@ void InitServerDataDirectory()
         mkdir("files/00", 0700);
         mkdir("files/00/00", 0700);
         int fdRead = open("/opt/momo-server/default_icon.png", O_RDONLY),
-                fdWrite = open("files/00/00/0000000000000000000000000001", O_WRONLY);
+                fdWrite = creat("files/00/00/0000000000000000000000000001",0400);
 
         if (fdRead < 0)
         {
@@ -96,6 +96,7 @@ void InitServerDataDirectory()
         else if (fdWrite < 0)
         {
             log_error("Initialization", "files目录不可写!\n");
+            perror("open");
             close(fdRead);
             exit(1);
         }
