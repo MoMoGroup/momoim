@@ -7,7 +7,6 @@
 #include "../MainInterface.h"
 #include <string.h>
 #include <pwd.h>
-#include <imcommon/user.h>
 
 pthread_rwlock_t onllysessionidlock = PTHREAD_RWLOCK_INITIALIZER;
 typedef struct
@@ -66,7 +65,7 @@ GtkWidget *ChangeThem_file(char *picname)
 GtkWidget *ChangeFace_file(char *picname)
 {
     char path_theme[80] = "", path_pic[80] = "";
-    sprintf(path_theme, "%s/.momo/face", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    sprintf(path_theme, "/opt/momo/face");//获取本机主题目录
     sprintf(path_pic, "%s/%s", path_theme, picname);
     return gtk_image_new_from_file(path_pic);
 }
@@ -278,4 +277,44 @@ int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
         g_idle_add(fn, data);//执行更新函数
     }
 
+}
+
+void *playMusicRoutine(void *data)
+{
+    char *filename = (char *) malloc(PATH_MAX);
+    {
+        char path_theme[PATH_MAX] = "", path_music[PATH_MAX] = "";
+        sprintf(path_theme, "%s/.momo/current_theme", getpwuid(getuid())->pw_dir);//获取本机主题目录
+        sprintf(path_music, "%s/%s", path_theme, data);
+        if (access(path_music, F_OK) != 0)
+        {
+            sprintf(path_theme, "%s/.momo/theme/images", getpwuid(getuid())->pw_dir);
+            sprintf(path_music, "%s/%s", path_theme, data);
+        }
+
+        sprintf(filename, "play -q \"%s\"", path_music);
+    }
+    system(filename);
+    free(data);
+    free(filename);
+    return 0;
+}
+
+//创建一个线程，播放音乐的
+void PlayMusic(const char *data)
+{
+    size_t n = strlen(data);
+    char *music_data = malloc(n + 1);
+    memcpy(music_data, data, n);
+    music_data[n] = 0;
+
+    pthread_t music_thread;
+    pthread_attr_t attr;
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    pthread_create(&music_thread,
+                   &attr,
+                   playMusicRoutine,
+                   music_data);
+    pthread_attr_destroy(&attr);
 }

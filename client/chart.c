@@ -10,46 +10,50 @@
 #include "ChartRecord.h"
 #include <sys/stat.h>
 #include <logger.h>
-#include "audio.h"
+#include "media.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
+#include "../media/sound.h"
 
+int flag_audio_close;
 
 struct UserTextInformation UserWordInfo;
-static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevideo1, *surfacevideo2;
+static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevoice3, *surfacevideo1, *surfacevideo2;
 static cairo_surface_t *surfaceclose1, *surfaceclose2, *surfaceclosebut1, *surfaceclosebut2, *surfaceclosebut3;
 static cairo_surface_t *surfacelook1, *surfacelook2, *surfacejietu1, *surfacejietu2, *surfacefile1, *surfacefile2, *surfaceimage1, *surfaceimage2;
 static cairo_surface_t *surfacewordart1, *surfacewordart2, *surfacecolor, *surfacechartrecord;
 
 static void create_surfaces(FriendInfo *information)
 {
-        schartbackgroud = ChangeThem_png("聊天背景.png");
-        surfacesend1 = ChangeThem_png("发送1.png");
-        surfacesend2 = ChangeThem_png("发送2.png");
+    schartbackgroud = ChangeThem_png("聊天背景.png");
+    surfacesend1 = ChangeThem_png("发送1.png");
+    surfacesend2 = ChangeThem_png("发送2.png");
 
-        surfacevoice1 = ChangeThem_png("语音1.png");
-        surfacevoice2 = ChangeThem_png("语音2.png");
-        surfacevideo1 = ChangeThem_png("视频1.png");
-        surfacevideo2 = ChangeThem_png("视频2.png");
+    surfacevoice1 = ChangeThem_png("语音1.png");
+    surfacevoice2 = ChangeThem_png("语音2.png");
+    surfacevoice3 = ChangeThem_png("语音停止.png");
 
-        surfacelook1 = ChangeThem_png("表情.png");
-        surfacelook2 = ChangeThem_png("表情2.png");
-        surfacejietu1 = ChangeThem_png("截图.png");
-        surfacejietu2 = ChangeThem_png("截图2.png");
-        surfacefile1 = ChangeThem_png("文件.png");
-        surfacefile2 = ChangeThem_png("文件2.png");
-        surfaceimage1 = ChangeThem_png("图片.png");
-        surfaceimage2 = ChangeThem_png("图片2.png");
-        surfacewordart1 = ChangeThem_png("字体.png");
-        surfacewordart2 = ChangeThem_png("字体2.png");
+    surfacevideo1 = ChangeThem_png("视频1.png");
+    surfacevideo2 = ChangeThem_png("视频2.png");
 
-        surfaceclose1 = ChangeThem_png("关闭1.png");
-        surfaceclose2 = ChangeThem_png("关闭2.png");
-        surfaceclosebut1 = ChangeThem_png("关闭按钮1.png");
-        surfaceclosebut2 = ChangeThem_png("关闭按钮2.png");
-        surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
-        surfacecolor = ChangeThem_png("颜色.png");
-        surfacechartrecord = ChangeThem_png("消息记录.png");
+    surfacelook1 = ChangeThem_png("表情.png");
+    surfacelook2 = ChangeThem_png("表情2.png");
+    surfacejietu1 = ChangeThem_png("截图.png");
+    surfacejietu2 = ChangeThem_png("截图2.png");
+    surfacefile1 = ChangeThem_png("文件.png");
+    surfacefile2 = ChangeThem_png("文件2.png");
+    surfaceimage1 = ChangeThem_png("图片.png");
+    surfaceimage2 = ChangeThem_png("图片2.png");
+    surfacewordart1 = ChangeThem_png("字体.png");
+    surfacewordart2 = ChangeThem_png("字体2.png");
+
+    surfaceclose1 = ChangeThem_png("关闭1.png");
+    surfaceclose2 = ChangeThem_png("关闭2.png");
+    surfaceclosebut1 = ChangeThem_png("关闭按钮1.png");
+    surfaceclosebut2 = ChangeThem_png("关闭按钮2.png");
+    surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
+    surfacecolor = ChangeThem_png("颜色.png");
+    surfacechartrecord = ChangeThem_png("消息记录.png");
 
     static cairo_t *cr;
 //    char mulu[80] = {0};
@@ -77,7 +81,6 @@ static void create_surfaces(FriendInfo *information)
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 }
-
 
 
 //背景的eventbox
@@ -205,43 +208,48 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
 {
     FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
-
     {
-        uint8_t gid_audio;
-        int quantity_group = friends->groupCount;
-        //用来找出gid
-        int i, j = 0;
-        for (i = 0; i < quantity_group; i++)
+//        uint8_t gid_audio;
+//        int quantity_group = friends->groupCount;
+//        //用来找出gid
+//        int i, j = 0;
+//        for (i = 0; i < quantity_group; i++)
+//        {
+//            for (j = 0; j < friends->groups[i].friendCount; j++)
+//            {
+//                if (friends->groups[i].friends[j] == info->user.uid)
+//                {
+//                    gid_audio = friends->groups[i].groupId;
+//                    break;
+//                }
+//            }
+//        }
+        //标志位为0 表示没人在语音这时可以打开语音
+        if (flag_audio_close == 0)
         {
-            for (j = 0; j < friends->groups[i].friendCount; j++)
+            session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
+
+            struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) malloc(sizeof(struct AudioDiscoverProcessEntry));
+            int randNum;
+            for (int randi = 0; randi < 32 / sizeof(int); ++randi)
             {
-                if (friends->groups[i].friends[j] == info->user.uid)
-                {
-                    gid_audio = friends->groups[i].groupId;
-                    break;
-                }
+                randNum = rand();
+                memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
             }
-        }
-        //friends->groups[i].friends[j];
-        session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
+            entry->uid = info->uid;
+            entry->messageSent = 0;
+            AddMessageNode(sessionNatDiscover, processNatDiscovered, entry);
 
-        //同一时间只允许发起一个请求
-        //if(the_log_request_friend_discover.uid!=-1){
-        //  g_idle_add(popup_request_num_limit, NULL);
-        //}
-        struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) malloc(sizeof(struct AudioDiscoverProcessEntry));
-        int randNum;
-        for (int randi = 0; randi < 32 / sizeof(int); ++randi)
+            CRPNATDiscoverSend(sockfd, sessionNatDiscover, entry->key);
+            gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
+            flag_audio_close = 1;
+        }
+        else//如果标志位不为０表示此时应该关掉语音.
         {
-            randNum = rand();
-            memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
+            flag_audio_close = 0;
+            StopAudioChat();
+            gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
         }
-        entry->uid = info->uid;
-        entry->messageSent = 0;
-        AddMessageNode(sessionNatDiscover, processNatDiscovered, entry);
-
-        CRPNATDiscoverSend(sockfd, sessionNatDiscover, entry->key);
-        gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
 
     }
     return 0;

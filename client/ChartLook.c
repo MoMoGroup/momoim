@@ -18,7 +18,7 @@ static gint face_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     const char *path = g_object_get_data(G_OBJECT(widget), "ImageSrc");
     char *filename = (gchar *) malloc(256);
     size_t filenamelen;
-    sprintf(filename, "%s/.momo/face/%s", getpwuid(getuid())->pw_dir, path);
+    sprintf(filename, "/opt/momo/face/%s", path);
     GtkWidget *image;
     image = gtk_image_new_from_file(filename);
     GtkTextMark *mark;

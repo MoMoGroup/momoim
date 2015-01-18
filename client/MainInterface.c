@@ -289,13 +289,12 @@ GtkTreeModel *createModel()
     int64_t priority;
     gint i, j;
     cairo_surface_t *surface;
-    cairo_surface_t *surfaceIcon;
 
     GtkTreeIter iter1, iter2;
 
     TreeViewListStore = gtk_tree_store_new(3, GDK_TYPE_PIXBUF, G_TYPE_UINT, G_TYPE_INT64);
-    gtk_tree_sortable_set_default_sort_func(GTK_TREE_MODEL(TreeViewListStore), friendListStoreFunc, NULL, NULL);
-    gtk_tree_sortable_set_sort_column_id(GTK_TREE_MODEL(TreeViewListStore),
+    gtk_tree_sortable_set_default_sort_func(GTK_TREE_SORTABLE(TreeViewListStore), friendListStoreFunc, NULL, NULL);
+    gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(TreeViewListStore),
                                          GTK_TREE_SORTABLE_DEFAULT_SORT_COLUMN_ID,
                                          GTK_SORT_DESCENDING);
 
@@ -324,7 +323,7 @@ GtkTreeModel *createModel()
 
         for (j = 0; j < friends->groups[i].friendCount; j++)
         {
-            char friendname[20] = {0};
+            //char friendname[20] = {0};
             char mulu[80] = {0};
             sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, friends->groups[i].friends[j]);
             pixbuf = gdk_pixbuf_new_from_file(mulu, NULL);
@@ -335,7 +334,7 @@ GtkTreeModel *createModel()
             {
                 if (rear->uid == friends->groups[i].friends[j])
                 {
-                    memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
+                    // memcpy(friendname, rear->user.nickName, sizeof(rear->user.nickName));
                     break;
                 }
                 rear = rear->next;
@@ -553,6 +552,7 @@ gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpoint
             {
                 if (friendinforear->chartwindow == NULL)
                 {
+
                     MainChart(friendinforear);
                 }
                 else
@@ -748,16 +748,19 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
             if (save_result == GTK_RESPONSE_ACCEPT)
             {
                 gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (save_dialog));
-                memcpy(file_message_data->filemulu, filename, strlen(filename));
+                size_t len_filename = strlen(filename);
+                memcpy(file_message_data->filemulu, filename, len_filename);
+                file_message_data->filemulu[len_filename] = 0;
                 g_free(filename);
             }
-            else
+/*            else
             {
                 sprintf(file_message_data->filemulu,
                         "%s/.momo/files/%s",
                         getpwuid(getuid())->pw_dir,
                         file_message_data->filename);
-            }
+
+            }*/
             gtk_widget_destroy(save_dialog);
 
             if (file_message_data->file_size / 1048576.0 > 0)
@@ -1324,6 +1327,9 @@ static gint status_button_leave_event(GtkWidget *widget, GdkEventButton *event,
 
 int MainInterFace()
 {
+    //一个关闭语音按钮的标志位。为１时表示语音已经打开，为０表示没有人在语音。
+    flag_audio_close=0;
+
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
     vbox = gtk_box_new(TRUE, 5);
@@ -1586,7 +1592,6 @@ int MainInterFace()
 
     g_signal_connect(G_OBJECT(lookinfo), "button_press_event",
                      G_CALLBACK(lookinfo_button_press_event), (gpointer) treeView);
-
 
     gtk_widget_show_all(window);
     //隐藏水平滚动条
