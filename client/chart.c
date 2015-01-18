@@ -3,13 +3,13 @@
 #include "MainInterface.h"
 #include <stdlib.h>
 #include <ftadvanc.h>
-#include "chart.h"
 #include "common.h"
 #include <pwd.h>
 #include <math.h>
 #include "chartmessage.h"
 #include "ChartRecord.h"
 #include <sys/stat.h>
+#include <logger.h>
 #include "audio.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
@@ -52,14 +52,15 @@ static void create_surfaces(FriendInfo *information)
         surfacechartrecord = ChangeThem_png("消息记录.png");
 
     static cairo_t *cr;
-    char mulu[80] = {0};
+//    char mulu[80] = {0};
     cairo_surface_t *surface;
+//    sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, information->user.uid);
 
-
-    sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, information->user.uid);
-
+    char filename[256];
+    HexadecimalConversion(filename, information->user.icon);
+    log_info("头像路径", "%s\n", filename);
     //加载一个图片
-    surface = cairo_image_surface_create_from_png(mulu);
+    surface = cairo_image_surface_create_from_png(filename);
     int w = cairo_image_surface_get_width(surface);
     int h = cairo_image_surface_get_height(surface);
     //创建画布
@@ -727,7 +728,7 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
             // GtkTextBuffer *buffer;
             GtkTextMark *mark;
-            GtkTextIter iter;
+            GtkTextIter iter, end;
             GtkTextChildAnchor *anchor;
 
             size_t filenamelen;
@@ -743,7 +744,10 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
             gtk_widget_show_all(image);
             gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->input_text), image, anchor);
             gtk_widget_grab_focus(info->input_text);
-
+            gtk_text_buffer_get_end_iter(info->input_buffer, &end);
+            GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(info->input_buffer, NULL, &iter, 1);
+            gtk_text_buffer_move_mark(info->input_buffer, text_mark_log, &end);
+            gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->input_text), text_mark_log, 0, 1, 1, 1);
         }
         gtk_widget_destroy(dialog);
     }
@@ -1037,6 +1041,16 @@ static gint chartrecord_leave_notify_event(GtkWidget *widget, GdkEventButton *ev
     return 0;
 }
 
+static gint text_view_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+    if (info->look_window != NULL)
+    {
+        gtk_widget_destroy(info->look_window);
+        info->look_window = NULL;
+    }
+    return 0;
+}
 
 int MainChart(FriendInfo *friendinfonode)
 {
@@ -1253,6 +1267,8 @@ int MainChart(FriendInfo *friendinfonode)
     //创建发送文本框，和接受文本框
     friendinfonode->input_text = gtk_text_view_new();
     friendinfonode->show_text = gtk_text_view_new();
+    g_signal_connect(friendinfonode->input_text, "clicked", G_CALLBACK(text_view_click), friendinfonode);
+    g_signal_connect(friendinfonode->show_text, "clicked", G_CALLBACK(text_view_click), friendinfonode);
 
     friendinfonode->input_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->input_text));
     friendinfonode->show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->show_text));
@@ -1267,7 +1283,12 @@ int MainChart(FriendInfo *friendinfonode)
     //创建滚动窗口
     friendinfonode->sw1 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
     friendinfonode->sw2 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
-
+//    gtk_text_view_scroll_to_iter(<#(GtkTextView*)text_view#>,
+//                                 <#(GtkTextIter*)iter#>,
+//                                 <#(gdouble)within_margin#>,
+//                                 <#(gboolean)use_align#>,
+//                                 <#(gdouble)xalign#>,
+//                                 <#(gdouble)yalign#>)
     gtk_container_add(GTK_CONTAINER(friendinfonode->sw1), friendinfonode->input_text);
     gtk_container_add(GTK_CONTAINER(friendinfonode->sw2), friendinfonode->show_text);
 
@@ -1300,6 +1321,7 @@ int MainChart(FriendInfo *friendinfonode)
     rgbacolor.blue = UserWordInfo.color_blue / 65535.0;
     gtk_widget_override_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgbacolor);
     gtk_widget_show_all(friendinfonode->chartwindow);
+
 
     // gtk_main();
 

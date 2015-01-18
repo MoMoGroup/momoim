@@ -6,9 +6,7 @@
 #include <pwd.h>
 #include <string.h>
 #include <math.h>
-#include <cairo-script-interpreter.h>
 #include "common.h"
-//#include "addfriend.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "managegroup/ManageGroup.h"
@@ -420,8 +418,6 @@ static void loadinfo()
     gtk_fixed_put(GTK_FIXED(MainLayout), StatusShowText, 140, 65);
 
 
-
-
     //加载用户头像
     int finduidflag = 0;
     FriendInfo *rear = FriendInfoHead;
@@ -662,6 +658,10 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
             log_info("FAILURE reason", infodata->reason);
             fclose(recv_message->Wfp);
             recv_message->file_loading_end = 1;
+            if ((void *) infodata != header->data)
+            {
+                free(infodata);
+            }
             return 0;
         };
         case  CRP_PACKET_FILE_DATA_START:
@@ -677,6 +677,10 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
             fwrite(packet->data, 1, packet->length, recv_message->Wfp);
             recv_message->file_count = recv_message->file_count + packet->length;
             CRPOKSend(sockfd, header->sessionID);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
             break;
         };
         case CRP_PACKET_FILE_DATA_END:
@@ -1225,9 +1229,29 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
 //    return 0;
 //}
 
+//搜索放上去
+static gint search_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *search2 = ChangeThem_png("搜索2.png");
+    gtk_image_set_from_surface((GtkImage *) search, search2);
+    return 0;
+}
+
+//搜索移走
+static gint search_button_leave_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *search1 = ChangeThem_png("搜索.png");
+    gtk_image_set_from_surface((GtkImage *) search, search1);
+    return 0;
+}
+
 static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-
+    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *search1 = ChangeThem_png("搜索.png");
+    gtk_image_set_from_surface((GtkImage *) search, search1);
     if (AddFriendflag)//判断是否打开搜索窗口
     {
         AddFriendFun();
@@ -1340,7 +1364,15 @@ int MainInterFace()
                                      NULL);
 
     search = gtk_image_new_from_surface(surfaceresearch);
-    search_event_box = BuildEventBox(search, NULL, NULL, NULL, G_CALLBACK(search_button_release_event), NULL, NULL);
+
+    search_event_box = BuildEventBox(search,
+                                     NULL,
+                                     G_CALLBACK(search_button_notify_event),
+                                     G_CALLBACK(search_button_leave_event),
+                                     G_CALLBACK(search_button_release_event),
+                                     NULL,
+                                     NULL);
+
 
     setup_event_box = BuildEventBox(SetUp,
                                     G_CALLBACK(setup_button_press_event),
@@ -1457,7 +1489,7 @@ int MainInterFace()
     GtkWidget *Refresh;
     GtkWidget *sendmsg;
     GtkWidget *deletefriend;
-    GtkWidget *remark;
+    //GtkWidget *remark;
     GtkWidget *sendfile;
     GtkWidget *lookinfo;
     //分组菜单
@@ -1509,7 +1541,8 @@ int MainInterFace()
     //重命名分组事件
     g_signal_connect(G_OBJECT(rename), "button_press_event",
                      G_CALLBACK(RenameGroupButtonPressEvent), treeView);
-    //添加好友
+    //添加好友按钮
+
     g_signal_connect(G_OBJECT(addpeople), "button_release_event",
                      G_CALLBACK(search_button_release_event), treeView);
 //    //添加好友鼠标放上去
@@ -1524,9 +1557,9 @@ int MainInterFace()
     deletefriend = gtk_menu_item_new_with_mnemonic("删除好友");
     gtk_container_add(GTK_CONTAINER(menu2), deletefriend);
     gtk_widget_show(deletefriend);
-    remark = gtk_menu_item_new_with_mnemonic("修改备注");
-    gtk_container_add(GTK_CONTAINER(menu2), remark);
-    gtk_widget_show(remark);
+    //remark = gtk_menu_item_new_with_mnemonic("修改备注");
+    //gtk_container_add(GTK_CONTAINER(menu2), remark);
+    //gtk_widget_show(remark);
     sendfile = gtk_menu_item_new_with_mnemonic("发送文件");
     gtk_container_add(GTK_CONTAINER(menu2), sendfile);
     gtk_widget_show(sendfile);

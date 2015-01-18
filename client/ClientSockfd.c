@@ -397,6 +397,9 @@ int mysockfd()
             .sin_port=htons(8014)
     };
 
+//    .sin_port=htons(8014)
+//};
+//inet_aton("192.168.8.167",&server_addr.sin_addr);
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
         perror("Connect");

@@ -13,13 +13,16 @@ static int netSocket;
 static struct sockaddr_in addr_sendto;
 static socklen_t addr_sendto_len;
 static int sendtoAssigned;
+
+
 //////////////////////循环队列/////////////////////////
 static pthread_mutex_t mutex_send, mutex_recv;
 static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
 static char *circle_buf_send[8], *circle_buf_recv[8];
 static char **head_send, **tail_send, **head_recv, **tail_recv;
-
 //////////////////////////////////////////////////////
+
+
 void *record_routine(void *data)
 {
     SNDPCMContainer_t record;
@@ -109,11 +112,6 @@ void *recv_routine(void *data)
         head_recv = circle_buf_recv + (head_recv - circle_buf_recv + 1) % (sizeof(circle_buf_recv) / sizeof(*circle_buf_recv));
         pthread_cond_signal(&recv_busy);
         pthread_mutex_unlock(&mutex_recv);
-        if (sendtoAssigned == 0)
-        {
-            pthread_mutex_unlock(&mutex_send);
-            sendtoAssigned++;
-        }
     }
 }
 
