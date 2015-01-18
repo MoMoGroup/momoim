@@ -92,6 +92,7 @@ gint accept_button_release_event(GtkWidget *widget, GdkEventButton *event, gpoin
     tongyi *info = data;
     CRPFriendAcceptSend(sockfd, 1, info->uid);//同意的话发送Accept
     gtk_widget_destroy(info->win);
+    free(info);
     return 0;
 }
 
@@ -198,6 +199,7 @@ int put(void *data)
     gtk_container_add(GTK_CONTAINER (popupframelayout), popuplayout);
 
     gtk_widget_show_all(popupwindow);
+    //free(data);//不能释放
     return 0;
 }
 
@@ -227,7 +229,7 @@ int Friend_Request_Popup(uint32_t uid, const char *verification_message)
 {
     tongyi *info = malloc(sizeof(struct tongyi));
     info->uid = uid;
-    info->verification_message = verification_message;
+    info->verification_message = (char *) verification_message;//复制验证消息内容
     session_id_t sessionid = CountSessionId();
     AddMessageNode(sessionid, get_nicheng, info);
     CRPInfoRequestSend(sockfd, sessionid, uid);//请求添加方资料

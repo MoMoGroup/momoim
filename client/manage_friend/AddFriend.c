@@ -286,11 +286,6 @@ gboolean putimage(gpointer user_data)
             p);
 
 
-//    cairo_surface_t *surfaceback;
-//    GtkWidget *back;
-//    surfaceback= ChangeThem_png("上一步.png");
-//    back= gtk_image_new_from_surface(surfaceback);
-
 
     //gtk_fixed_put(GTK_FIXED(addlayout2), back, 230, 200);
     gtk_fixed_put(GTK_FIXED(addlayout2), (GtkWidget *) next_enent_box2, 400, 200);
@@ -320,7 +315,7 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
         case CRP_PACKET_FAILURE:
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
-            log_info("FAILURe reason", infodata->reason);
+            //g_idle_add(GroupPop, "查无此人");
             if ((void *) infodata != header->data)
             {
                 free(data);

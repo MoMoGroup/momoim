@@ -27,5 +27,5 @@ struct ImageMessageFileData
     int charlen;
     char *message_data;
     uint32_t uid;
-
+    int image_find_end;
 };
