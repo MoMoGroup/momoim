@@ -10,7 +10,6 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <arpa/inet.h>
-#include <canberra-gtk.h>
 #include "MainInterface.h"
 #include "common.h"
 #include "UpdataFriendList.h"

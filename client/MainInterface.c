@@ -749,7 +749,9 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
             if (save_result == GTK_RESPONSE_ACCEPT)
             {
                 gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (save_dialog));
-                memcpy(file_message_data->filemulu, filename, strlen(filename));
+                size_t len_filename = strlen(filename);
+                memcpy(file_message_data->filemulu, filename, len_filename);
+                file_message_data->filemulu[len_filename] = 0;
                 g_free(filename);
             }
             else
