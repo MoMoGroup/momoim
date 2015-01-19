@@ -336,9 +336,9 @@ void closewindow(){
         free(circle_buf_send[i]);
         circle_buf_send[i]=NULL;
     }
-    free(tail_recv);
+    free(*tail_recv);
     (*tail_recv)=NULL;
-    free(tail_send);
+    free(*tail_send);
     (*tail_send)=NULL;
 
     //gtk_widget_destroy(window);
