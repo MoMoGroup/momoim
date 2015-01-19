@@ -103,12 +103,15 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             n = (int) recvfrom(sockSender, buffer, 32, 0, (struct sockaddr *) &opaddr, &opAddrLen);
             if (n == 32)
             {
-                if (memcmp(buffer, entry->key, 32) == 0)//与本地key相等是服务器返回数据
+                if (memcmp(buffer, entry->key, 32) == 0//与本地key相等是服务器返回数据
+                    || memcmp(buffer, (uint8_t[32]) {0}, 32))
                 {
+                    log_info("Discover", "Server Found\n");
                     isServerDetected = 1;
                 }
                 else if (memcmp(buffer, entry->peerKey, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
                 {
+                    log_info("Discover", "Peer Found\n");
                     isPeerDetected = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                 }
