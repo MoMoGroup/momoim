@@ -163,6 +163,7 @@ int video()
         /*将tempbuf中的数据转换成jpeg放入p->send中*/
         p_send->jpeglen = (int) jpegWrite(tempbuf,(unsigned char*) p_send->jpeg_buf);
         free(tempbuf);
+        tempbuf=NULL;
         //应用程序将该帧缓冲区重新排入输入队列
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)
         {
@@ -232,6 +233,7 @@ void *pthread_snd(void *socketsd)
         send(sd, q_send->jpeg_buf, q_send->jpeglen, 0);
 
         free(q_send);
+        q_send=NULL;
         ///////////////////////////////////////////////////////////////////////////////////////////
     }
     return NULL;
@@ -305,6 +307,7 @@ gboolean idleDraw(gpointer data)
     }
     fprintf(stderr,".");
     free(q_recv);
+    q_recv=NULL;
     ///////////////////////////////////////////////////////////////////////////////////////////
     return 1;
 }
