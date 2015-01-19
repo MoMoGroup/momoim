@@ -5,6 +5,7 @@
 #include <logger.h>
 #include <common.h>
 #include <arpa/inet.h>
+#include <protocol/status/Failure.h>
 #include "PopupWinds.h"
 #include "media.h"
 #include "ClientSockfd.h"
@@ -146,7 +147,13 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
     {
         case CRP_PACKET_FAILURE:
         {
-            log_error("NatDiscover", "error\n");
+            CRPPacketFailure *packet = CRPFailureCast(header);
+            log_error("NatDiscover", "error%s\n",packet->reason);
+            if ((void*)packet != header->data)
+            {
+                free(packet);
+            }
+            pthread_cancel(entry->workerThread);
             free(entry);
             return 0;
         };
@@ -167,8 +174,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             }
             if (entry->addr.sin_port)
             {
-                pthread_t t;
-                pthread_create(&t, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
+                pthread_create(&entry->workerThread, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
             }
             break;
         };
@@ -185,8 +191,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             }
             if (entry->peerKeySet)
             {
-                pthread_t t;
-                pthread_create(&t, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
+                pthread_create(&entry->workerThread, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
             }
             break;
         };
@@ -324,6 +329,7 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
     {
         case CRP_PACKET_FAILURE:
         {
+
             log_error("NatDiscover", "error\n");
             free(entry);
             return 0;
@@ -337,8 +343,7 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
         {
             if (!entry->messageSent)
             {
-                pthread_t tid;
-                pthread_create(&tid, NULL, (void *(*)(void *)) AudioWaitDiscover, entry);
+                pthread_create(&entry->workerThread, NULL, (void *(*)(void *)) AudioWaitDiscover, entry);
                 CRPNETNATAcceptSend(sockfd, header->sessionID, entry->peerUid, entry->peerSession, entry->key);
                 entry->messageSent = 1;
             }

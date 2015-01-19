@@ -25,6 +25,7 @@ typedef struct AudioDiscoverProcessEntry
     uint8_t messageSent;
     struct sockaddr_in addr;
     session_id_t localSession, peerSession;
+    pthread_t workerThread;
 };
 extern struct log_request_friend_discover the_log_request_friend_discover;
 
