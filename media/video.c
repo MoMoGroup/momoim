@@ -330,7 +330,7 @@ void closewindow(){
 
 
     int i;
-    for(i=0;i<7;i++){
+    for(i=0;i<8;i++){
         free(circle_buf_recv[i]);
         circle_buf_recv[i]=NULL;
         free(circle_buf_send[i]);
