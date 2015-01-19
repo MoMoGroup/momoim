@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <logger.h>
+#include <arpa/inet.h>
 #include "run/natTraversal.h"
 
 static HostDiscoverTable table;
@@ -71,7 +72,7 @@ int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
     return 1;
 }
 
-int NatHostDiscoverNotify(struct sockaddr_in const *address, const char key[32])
+int NatHostDiscoverNotify(struct sockaddr_in const *address, const uint8_t key[32])
 {
     char hexKey[65] = {0};
     for (int i = 0; i < 32; ++i)
@@ -91,7 +92,7 @@ int NatHostDiscoverNotify(struct sockaddr_in const *address, const char key[32])
     int ret = 0;
     if (entry)
     {
-        log_info("NatNotify", "Key:%s\n", hexKey);
+        log_info("NatNotify", "Key:%s,IP:%s\n", hexKey, inet_ntoa(address->sin_addr));
         ret = entry->fn(address, entry->data);
         NatHostDiscoverUnregister(entry);
     }

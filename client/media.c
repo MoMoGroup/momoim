@@ -230,7 +230,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        if (entry->addr.sin_port)
+        if (!entry->addr.sin_port)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
         }
