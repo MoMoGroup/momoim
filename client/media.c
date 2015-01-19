@@ -1,5 +1,4 @@
-#include <protocol/base.h>
-#include <protocol/CRPPackets.h>
+#include <protocol.h>
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <logger.h>
@@ -10,7 +9,6 @@
 #include "media.h"
 #include "ClientSockfd.h"
 #include "MainInterface.h"
-//#include "../media/sound.h"
 #include "../media/video.h"
 #include "../media/sound.h"
 
