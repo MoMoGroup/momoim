@@ -195,16 +195,19 @@ void video_off() {
 void *pthread_video(void *arg)
 {
     video_on();
+    int times_err=0;
     while (1)
     {
         if(video()==-1)
-        {
-            video_off();
-            mark();
-            localMem();
-            video_on();
-        }
+            times_err++;
+        if(times_err==3) break;
+        video_off();
+        mark();
+        localMem();
+        video_on();
+
     }
+    closewindow();
     return NULL;
 }
 
@@ -316,9 +319,20 @@ void closewindow(){
     ioctl(fd, VIDIOC_STREAMOFF,&type);//停止视频采集
     close(fd);//释放缓冲区，关闭设备文件
 
+
+
     pthread_cancel(tid1);
     pthread_cancel(tid2);
     pthread_cancel(tid3);
+
+
+    int i;
+    for(i=0;i<7;i++){
+        free(circle_buf_recv[i]);
+        free(circle_buf_send[i]);
+    }
+    free(tail_recv);
+    free(tail_send);
 
     //gtk_widget_destroy(window);
     gtk_window_get_destroy_with_parent(window);
@@ -389,6 +403,8 @@ void *primary_video(struct sockaddr_in *addr)
     addrlen = sizeof(struct sockaddr_in);
     int netSocket;
     int on = 1;
+    //两个视频聊天的进程接受到的参数不一样。一方拿到对方的ip，一方参数为空
+    //根据收到的参数判断是先连接对方，还是先监听对方
     if (addr != NULL)
     {
         netSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -456,10 +472,10 @@ void *primary_video(struct sockaddr_in *addr)
 
     mark();
     localMem();
-    ret = pthread_create(&tid1, NULL, pthread_video, NULL);
+    pthread_create(&tid1, NULL, pthread_video, NULL);
     g_idle_add(guiMain, NULL);
-    ret = pthread_create(&tid3, NULL, pthread_rev, &netSocket);
-    ret = pthread_create(&tid2, NULL, pthread_snd, &netSocket);
+    pthread_create(&tid3, NULL, pthread_rev, &netSocket);
+    pthread_create(&tid2, NULL, pthread_snd, &netSocket);
     pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
     pthread_join(tid3, NULL);
