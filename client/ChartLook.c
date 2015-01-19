@@ -47,6 +47,17 @@ static gint face_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     return 0;
 }
 
+static gboolean look_window_focus_in_handler(GtkWidget *widget, GdkEventFocus *event, gpointer user_data)
+{
+    FriendInfo *info = (FriendInfo *) user_data;
+    if (info->look_window != NULL)
+    {
+        gtk_widget_destroy(info->look_window);
+        info->look_window = NULL;
+    }
+    return FALSE;
+}
+
 void ChartLook(FriendInfo *info, gdouble event_x, gdouble event_y)
 {
     GtkWidget *smile, *goodbye, *lovely, *angry, *cry, *poor;
@@ -58,7 +69,7 @@ void ChartLook(FriendInfo *info, gdouble event_x, gdouble event_y)
     gtk_window_move(GTK_WINDOW(info->look_window), event_x, event_y);
     gtk_window_set_decorated(GTK_WINDOW(info->look_window), FALSE);   // 去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(info->look_window), 100, 100);
-
+    g_signal_connect(info->look_window, "focus-out-event", G_CALLBACK(look_window_focus_in_handler), info);
     info->look_layout = gtk_fixed_new();
     gtk_container_add(GTK_CONTAINER(info->look_window), info->look_layout);
 
