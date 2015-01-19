@@ -7,5 +7,5 @@ CRPPacketNETNATRegister *CRPNETNATRegisterCast(CRPBaseHeader *base)
 
 int CRPNETNATRegisterSend(CRPContext context, uint32_t sessionID, uint8_t key[32])
 {
-    return CRPSend(context, CRP_PACKET_NET_NAT_REGISTER, sessionID, key, sizeof(CRPPacketNETNATRegister)) != -1;
+    return CRPSend(context, CRP_PACKET_NET_NAT_REGISTER, sessionID, key, 32) != -1;
 }

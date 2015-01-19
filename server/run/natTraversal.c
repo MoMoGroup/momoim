@@ -20,12 +20,12 @@ void NatHostFinalize()
     pthread_rwlock_destroy(&lock);
 }
 
-HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], int(*fn)(struct sockaddr_in const *, void *), void *data)
+HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32], int(*fn)(struct sockaddr_in const *, void *), void *data)
 {
     char hexKey[65] = {0};
     for (int i = 0; i < 32; ++i)
     {
-        sprintf(hexKey + i * 2, "%02x", key[i]);
+        sprintf(hexKey + i * 2, "%02x",(int) key[i]);
     }
     log_info("NatDiscover", "Register:%s\n", hexKey);
     pthread_rwlock_wrlock(&lock);
@@ -76,7 +76,7 @@ int NatHostDiscoverNotify(struct sockaddr_in const *address, const char key[32])
     char hexKey[65] = {0};
     for (int i = 0; i < 32; ++i)
     {
-        sprintf(hexKey + i * 2, "%02x", key[i]);
+        sprintf(hexKey + i * 2, "%02x", (int)key[i]);
     }
     HostDiscoverEntry *entry = NULL;
     pthread_rwlock_rdlock(&lock);

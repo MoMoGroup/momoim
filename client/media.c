@@ -190,9 +190,9 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
                 char hexKey[65] = {0};
                 for (int i = 0; i < 32; ++i)
                 {
-                    sprintf(hexKey + i * 2, "%02x", entry->key[i]);
+                    sprintf(hexKey + i * 2, "%02x", (int)entry->key[i]);
                 }
-                log_info("NatDiscover", "Key:%s\n", hexKey);
+                log_info("NATRequest", "Key:%s\n", hexKey);
                 CRPNETNATRequestSend(sockfd,
                                      header->sessionID,
                                      entry->key,
@@ -335,7 +335,7 @@ int AcceptNatDiscover(CRPPacketNETNATRequest *request)
     char hexKey[65] = {0};
     for (int i = 0; i < 32; ++i)
     {
-        sprintf(hexKey + i * 2, "%02x", entry->key[i]);
+        sprintf(hexKey + i * 2, "%02x", (int)entry->key[i]);
     }
     log_info("Discover", "Try to register key %s\n", hexKey);
     CRPNETNATRegisterSend(sockfd, sid, entry->key);
