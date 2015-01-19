@@ -36,7 +36,7 @@ static int DiscoverDetected(const struct sockaddr_in *addr, void *data)
         struct sockaddr_in fromAddr;
         socklen_t len = sizeof(fromAddr);
         getpeername(user->crp->fd, &fromAddr, &len);
-        log_info("Discover",
+        log_info("Detect",
                  "UID:%u,Session:%u,From:%s,To:%s\n",
                  user->uid,
                  discoverOperation->session,
@@ -59,7 +59,7 @@ int ProcessPacketNETNATRegister(POnlineUser user, uint32_t session, CRPPacketNET
         DiscoverOperation *discoverOperation = (DiscoverOperation *) malloc(sizeof(DiscoverOperation));
         discoverOperation->uid = user->uid;
         discoverOperation->session = session;
-        log_info("Discover", "Register User:%u,Session:%u\n", user->uid, session);
+        log_info("NATRegister", "User:%u,Session:%u\n", user->uid, session);
         PUserOperation operation = UserOperationRegister(user, session, CUOT_NAT_DISCOVER, discoverOperation);
         discoverOperation->discoverEntry = NatHostDiscoverRegister(packet->key, DiscoverDetected, operation);
         operation->onCancel = DiscoverCancelHandler;

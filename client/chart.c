@@ -240,6 +240,14 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
             entry->peerUid = info->uid;
             entry->messageSent = 0;
             AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
+
+            char hexKey[65] = {0};
+            for (int i = 0; i < 32; ++i)
+            {
+                sprintf(hexKey + i * 2, "%02x", entry->key[i]);
+            }
+            log_info("Discover", "Try to register key %s\n", hexKey);
+
             CRPNETNATRegisterSend(sockfd, sessionNatDiscover, entry->key);
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
             flag_audio_close = 1;

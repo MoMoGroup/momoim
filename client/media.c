@@ -86,7 +86,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
         sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
-        log_info("SendKey", "To %s%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
+        log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
         fd_set set;
         FD_ZERO(&set);
         FD_SET(sockSender, &set);
@@ -104,7 +104,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             if (n == 32)
             {
                 if (memcmp(buffer, entry->peerKey, 32) == 0//与本地key相等是服务器返回数据
-                    || memcmp(buffer, (uint8_t[32]) {0}, 32))
+                    || memcmp(buffer, (uint8_t[32]) {0}, 32) == 0)
                 {
                     log_info("Discover", "Server Found\n");
                     isServerDetected = 1;
@@ -115,7 +115,9 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
                     isPeerDetected = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                 }
-            }else{
+            }
+            else
+            {
                 perror("recv");
             }
         }
@@ -271,6 +273,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
     StartAudioChat_Send(sockSender, &entry->addr);
     free(entry);
 }
+
 //接受语音聊天方
 int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
 {
@@ -328,6 +331,13 @@ int AcceptNatDiscover(CRPPacketNETNATRequest *request)
     entry->peerKeySet = 1;
     entry->peerSession = request->session;
     AddMessageNode(sid, AcceptNATDiscoverProcess, entry);
+
+    char hexKey[65] = {0};
+    for (int i = 0; i < 32; ++i)
+    {
+        sprintf(hexKey + i * 2, "%02x", entry->key[i]);
+    }
+    log_info("Discover", "Try to register key %s\n", hexKey);
     CRPNETNATRegisterSend(sockfd, sid, entry->key);
     return 1;
 }
