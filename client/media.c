@@ -261,7 +261,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
             if (n == 32)
             {
                 if (memcmp(buffer, entry->peerKey, 32) == 0
-                    || memcmp(buffer, (uint8_t[32]) {0}, 32))//与本地key相等是服务器返回数据
+                    || memcmp(buffer, (uint8_t[32]) {0}, 32) == 0)//与本地key相等是服务器返回数据
                 {
                     isServerDetected = 1;
                 }
@@ -270,6 +270,10 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                     isRecvPipeOK = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                     CRPNETNATReadySend(sockfd, entry->localSession, entry->peerUid, entry->peerSession);
+                }
+                else
+                {
+                    log_info("Key", "WrongKey\n");
                 }
 
             }
