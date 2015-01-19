@@ -282,23 +282,23 @@ gboolean idleDraw(gpointer data)
 }
 
 void closewindow(){
-    gtk_widget_destroy(window);
-
-    enum v4l2_buf_type type;
-    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-
-    ioctl(fd, VIDIOC_STREAMOFF,&type);//停止视频采集
-    close(fd);//释放缓冲区，关闭设备文件
-
     pthread_detach(tid1);
     pthread_detach(tid2);
     pthread_detach(tid3);
 
     pthread_cancel(tid1);
-    pthread_join(tid1, NULL);
     pthread_cancel(tid2);
-    pthread_join(tid2, NULL);
     pthread_cancel(tid3);
+
+    gtk_widget_destroy(window);
+    enum v4l2_buf_type type;
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    ioctl(fd, VIDIOC_STREAMOFF,&type);//停止视频采集
+    close(fd);//释放缓冲区，关闭设备文件
+
+
+    pthread_join(tid1, NULL);
+    pthread_join(tid2, NULL);
     pthread_join(tid3, NULL);
     free(rgbBuf);
 }
