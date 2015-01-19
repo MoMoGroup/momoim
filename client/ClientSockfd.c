@@ -15,7 +15,7 @@
 #include "UpdataFriendList.h"
 #include "manage_friend/friend.h"
 #include "media.h"
-#include "../media/sound.h"
+#include "../media/audio.h"
 
 pthread_t ThreadKeepAlive;
 pthread_t ThreadListenOnLine;//监听在线传输文件的线程
