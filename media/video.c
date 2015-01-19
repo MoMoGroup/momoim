@@ -426,6 +426,7 @@ void *primary_video(struct sockaddr_in *addr)
     if(sigaction(SIGPIPE, &act , NULL)==-1)
         perror("sign error");
 
+
     fd = open("/dev/video0", O_RDWR, 0);
     if (fd == -1)
     {
