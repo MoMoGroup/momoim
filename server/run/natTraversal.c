@@ -78,7 +78,6 @@ int NatHostDiscoverNotify(struct sockaddr_in const *address, const char key[32])
     {
         sprintf(hexKey + i * 2, "%02x", key[i]);
     }
-    log_info("NatNotify", "Key:%s\n", hexKey);
     HostDiscoverEntry *entry = NULL;
     pthread_rwlock_rdlock(&lock);
     for (entry = table.first; entry != NULL; entry = entry->next)
@@ -92,6 +91,7 @@ int NatHostDiscoverNotify(struct sockaddr_in const *address, const char key[32])
     int ret = 0;
     if (entry)
     {
+        log_info("NatNotify", "Key:%s\n", hexKey);
         ret = entry->fn(address, entry->data);
         NatHostDiscoverUnregister(entry);
     }

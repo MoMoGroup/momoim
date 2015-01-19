@@ -86,7 +86,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
         sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
-
+        log_info("SendKey", "To %s%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
         fd_set set;
         FD_ZERO(&set);
         FD_SET(sockSender, &set);
