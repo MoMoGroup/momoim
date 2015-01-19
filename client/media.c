@@ -167,6 +167,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             CRPPacketNETNATAccept *packet = CRPNETNATAcceptCast(header);
             memcpy(entry->peerKey, packet->key, 32);
             entry->peerKeySet = 1;
+            entry->peerSession = packet->session;
             if ((void *) packet != header->data)
             {
                 free(packet);
@@ -241,7 +242,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         if (entry->addr.sin_port && !isRecvPipeOK)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
-            log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr),ntohs(entry->addr.sin_port));
+            log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), ntohs(entry->addr.sin_port));
         }
 
         fd_set set;
