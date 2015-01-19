@@ -13,7 +13,7 @@
 #include "media.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
-#include "../media/sound.h"
+#include "../media/audio.h"
 
 int flag_audio_close;
 

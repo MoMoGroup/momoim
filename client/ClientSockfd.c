@@ -15,7 +15,7 @@
 #include "UpdataFriendList.h"
 #include "manage_friend/friend.h"
 #include "media.h"
-#include "../media/sound.h"
+#include "../media/audio.h"
 
 pthread_t ThreadKeepAlive;
 pthread_t ThreadListenOnLine;//监听在线传输文件的线程
@@ -454,7 +454,7 @@ int mysockfd()
         log_info("登录失败", "登录失败\n");
         CRPPacketFailure *f = CRPFailureCast(header);
         char *mem = malloc(strlen(f->reason) + 1);
-        memcpy(mem, f->reason, strlen(f->reason));
+        memcpy(mem, f->reason, strlen(f->reason) - 1);
         mem[strlen(f->reason)] = 0;
         g_idle_add(DestroyLayout, mem);
 

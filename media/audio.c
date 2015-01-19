@@ -5,7 +5,7 @@
 #include<string.h>
 #include <pthread.h>
 #include <alsa/asoundlib.h>
-#include "sound.h"
+#include "audio.h"
 
 static pthread_t mainThread;
 static int netSocket;
