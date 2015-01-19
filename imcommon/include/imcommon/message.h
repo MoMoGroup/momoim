@@ -13,7 +13,6 @@ typedef enum
     UMT_NEW_FRIEND,     //添加好友请求
     UMT_FRIEND_ACCEPT,  //接受好友请求
     UMT_FILE_OFFLINE,   //离线文件
-    UMT_NAT_REQUEST,    //NAT穿透请求
 } USER_MESSAGE_TYPE;
 typedef struct __attribute__ ((packed)) strucUserMessage
 {

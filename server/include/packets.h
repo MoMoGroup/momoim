@@ -81,7 +81,15 @@ int ProcessPacketFileDataEnd(POnlineUser user, uint32_t session, CRPPacketFileDa
 int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketFileStoreRequest *packet);
 
 //NAT穿透
-int ProcessPacketNETNATDiscover(POnlineUser user, uint32_t session, CRPPacketNATDiscover *packet);
+int ProcessPacketNETNATRegister(POnlineUser user, uint32_t session, CRPPacketNETNATRegister *packet);
+
+int ProcessPacketNETNATRequest(POnlineUser user, uint32_t session, CRPPacketNETNATRequest *packet);
+
+int ProcessPacketNETNATAccept(POnlineUser user, uint32_t session, CRPPacketNETNATAccept *packet);
+
+int ProcessPacketNETNATRefuse(POnlineUser user, uint32_t session, CRPPacketNETNATRefuse *packet);
+
+int ProcessPacketNETNATReady(POnlineUser user, uint32_t session, CRPPacketNETNATReady *packet);
 
 int ProcessPacketNETFriendDiscover(POnlineUser user, uint32_t session, CRPPacketNETFriendDiscover *packet);
 

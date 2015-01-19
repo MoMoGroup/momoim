@@ -1,5 +1,6 @@
 #include <protocol/CRPPackets.h>
 #include <asm-generic/errno-base.h>
+#include <protocol/info/Data.h>
 #include "datafile/user.h"
 #include "run/user.h"
 
@@ -13,6 +14,10 @@ int ProcessPacketInfoData(POnlineUser user, uint32_t session, CRPPacketInfoData 
         }
         else
         {
+            UserInfo *info = UserInfoGet(user->uid);
+            packet->info.lastlogout = info->lastlogout;
+            packet->info.level = info->level;
+            UserInfoDrop(info);
             if (!UserInfoSave(user->uid, &packet->info))
             {
                 CRPFailureSend(user->crp, session, EFAULT, "无法保存用户资料");

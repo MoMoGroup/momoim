@@ -6,5 +6,6 @@ SET(LIBCOMMON_SRC
     user.c
     sqlite3.c
     fileutil.c
+    natTraversal.c
     )
 ADD_LIBRARY(imcommon SHARED ${LIBCOMMON_SRC})

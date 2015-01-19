@@ -153,11 +153,11 @@ gboolean MyThread(gpointer user_data)//合并
     {
         UserWordInfo.font = (gchar *) malloc(50);
         UserWordInfo.description = pango_font_description_new();
-        pango_font_description_set_family(UserWordInfo.description, "Droid Sans Mono");
+        pango_font_description_set_family(UserWordInfo.description, "Mono");
         pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_NORMAL);
         pango_font_description_set_weight(UserWordInfo.description, PANGO_WEIGHT_NORMAL);
         pango_font_description_set_size(UserWordInfo.description, 14 * PANGO_SCALE);
-        memcpy(UserWordInfo.font, "Droid Sans Mono", strlen("Droid Sans Mono"));
+        memcpy(UserWordInfo.font, "Mono", strlen("Mono"));
         UserWordInfo.style = PANGO_STYLE_NORMAL;
         UserWordInfo.weight = PANGO_WEIGHT_NORMAL;
         UserWordInfo.size = 14;

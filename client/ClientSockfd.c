@@ -132,20 +132,6 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
-        case UMT_NAT_REQUEST:
-        {
-            int audioSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-            struct sockaddr_in addr;
-            socklen_t addrLen = sizeof(addr);
-            getpeername(sockfd->fd, (struct sockaddr *) &addr, &addrLen);
-            addr.sin_port = htons(8015);
-            for (int j = 0; j < 10; ++j)//UDP不稳定,发现包多次发送增加连接成功几率
-            {
-                sendto(audioSock, packet->message, 32, 0, (struct sockaddr *) &addr, addrLen);
-            }
-            StartAudioChat_Recv(audioSock);
-            break;
-        };
     }
 
     free(user_data);
@@ -376,7 +362,15 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             }
 
             break;
-
+        };
+        case CRP_PACKET_NET_NAT_REQUEST:
+        {
+            CRPPacketNETNATRequest *packet = CRPNETNATRequestCast(header);
+            AudioAcceptNatDiscover(packet);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
         };
         case CRP_PACKET_OK:
         {

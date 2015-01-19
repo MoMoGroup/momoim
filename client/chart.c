@@ -213,20 +213,7 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
         //标志位为0 表示没人在语音这时可以打开语音
         if (flag_audio_close == 0)
         {
-            session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
-
-            struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) malloc(sizeof(struct AudioDiscoverProcessEntry));
-            int randNum;
-            for (int randi = 0; randi < 32 / sizeof(int); ++randi)
-            {
-                randNum = rand();
-                memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
-            }
-            entry->uid = info->uid;
-            entry->messageSent = 0;
-            AddMessageNode(sessionNatDiscover, processNatDiscovered, entry);
-
-            CRPNATDiscoverSend(sockfd, sessionNatDiscover, entry->key);
+            AudioRequestNATDiscover(info->uid);
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
             flag_audio_close = 1;
         }
@@ -1186,7 +1173,7 @@ int MainChart(FriendInfo *friendinfonode)
     PangoFontDescription *font;
     nicheng = gtk_label_new(friendinfonode->user.nickName);
 
-    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+    font = pango_font_description_from_string("Mono");//"Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(nicheng, font);
     nicheng_event_box = BuildEventBox(

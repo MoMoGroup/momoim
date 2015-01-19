@@ -108,7 +108,17 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                 addrLen = sizeof(idxSock);
                 if (32 == recvfrom(sockIdx, keyBuffer, sizeof(keyBuffer), 0, (struct sockaddr *) &idxSock, &addrLen))
                 {
-                    NatHostDiscoverNotify(&idxSock, keyBuffer);
+                    if (NatHostDiscoverNotify(&idxSock, keyBuffer))
+                    {
+                        sendto(sockIdx, keyBuffer, 32, 0, (struct sockaddr *) &idxSock, addrLen);
+                    }
+                    else
+                    {
+                        log_warning("NATIndex", "Notify Failure\n");
+                        sendto(sockIdx, (uint8_t[32]) {0,}, 32, 0, (struct sockaddr *) &idxSock, addrLen);
+                    }
+                }else{
+                    log_warning("NATIndex", "Length Error,%s\n", strerror(errno));
                 }
             }
             else

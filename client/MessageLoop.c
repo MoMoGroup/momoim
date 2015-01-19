@@ -6,7 +6,7 @@
 #include "ClientSockfd.h"
 
 
-pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
+static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
 
 typedef struct messageloop
@@ -69,7 +69,7 @@ int MessageLoopFunc()
         header = CRPRecv(sockfd);
         pthread_rwlock_rdlock(&lock);//读锁定
         messageloop *prev = &messagehead, *p;
-        log_info("CRPPacket", "packet id %hu,session id %u\n", header->packetID, header->sessionID);
+        log_info("CRPPacket", "packet id %02hx,session id %u\n", header->packetID, header->sessionID);
         int flag = 1;
         while (prev->next)
         {
