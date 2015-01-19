@@ -229,7 +229,7 @@ gboolean putimage(gpointer user_data)
 
     idtext = gtk_label_new(addidstring);
     PangoFontDescription *font1;
-    font1 = pango_font_description_from_string("Sans");//"Sans"字体名
+    font1 = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font1, 16 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(idtext, font1);
 
@@ -240,7 +240,7 @@ gboolean putimage(gpointer user_data)
     nicheng = gtk_label_new(p->nickname);
     free(p->nickname);
     PangoFontDescription *font;
-    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(nicheng, font);
     gtk_fixed_put(GTK_FIXED(addlayout2), nicheng, 65, 180);

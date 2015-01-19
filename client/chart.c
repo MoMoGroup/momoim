@@ -1238,7 +1238,7 @@ int MainChart(FriendInfo *friendinfonode)
     GtkWidget *nicheng;
     PangoFontDescription *font;
     nicheng = gtk_label_new(friendinfonode->user.nickName);
-    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(nicheng, font);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), nicheng, 100, 20);

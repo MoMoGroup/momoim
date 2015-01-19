@@ -404,7 +404,7 @@ static void loadinfo()
     userid = gtk_label_new(CurrentUserInfo->nickName);
     //设置字体大小
     PangoFontDescription *font;
-    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(userid, font);
 
@@ -775,7 +775,7 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
             }
             //显示的文件名和大小
             file_message_data->file = gtk_label_new(sendfile_size);
-            font = pango_font_description_from_string("Sans");//"Sans"字体名
+            font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
             pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
             gtk_widget_override_font(file_message_data->file, font);
             gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->file, 160, 5);

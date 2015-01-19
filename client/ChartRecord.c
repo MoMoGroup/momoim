@@ -475,7 +475,7 @@ static void calendar_event(GtkWidget *widget, GdkEventButton *event, gpointer da
     sprintf(date, "  %d / %d / %d \n", year, 1 + month, day);
     gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date);
     PangoFontDescription *font;
-    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(record_message->info->record_date, font);
     gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
@@ -719,7 +719,7 @@ void ChartRecord(FriendInfo *info)
     sprintf(date, "  %d / %d / %d \n", (1900 + p->tm_year), 1 + p->tm_mon, p->tm_mday);
     record_message->info->record_date = gtk_label_new(date);
     PangoFontDescription *font;
-    font = pango_font_description_from_string("Sans");//"Sans"字体名
+    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(record_message->info->record_date, font);
     gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
