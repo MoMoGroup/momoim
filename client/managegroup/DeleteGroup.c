@@ -24,11 +24,12 @@ int delete_group_recv(CRPBaseHeader *header, void *data)
     {
         gtk_tree_store_remove(TreeViewListStore, &del_iterGroup);
         UserFriendsGroupDelete(friends, del_usg);
+        g_idle_add(GroupPop, "删除分组成功");
         return 0;
     }
     else
     {
-        g_idle_add(GroupPop, "删除失败");
+        g_idle_add(GroupPop, "删除分组失败");
     }
 }
 

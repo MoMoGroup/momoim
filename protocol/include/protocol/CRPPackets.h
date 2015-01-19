@@ -48,7 +48,11 @@
 #include "protocol/message/RecordQuery.h"
 #include "protocol/message/RecordData.h"
 
-#include "protocol/net/NATDiscover.h"
+#include "protocol/net/NATRegister.h"
+#include "protocol/net/NATRequest.h"
+#include "protocol/net/NATAccept.h"
+#include "protocol/net/NATRefuse.h"
+#include "protocol/net/NATReady.h"
 #include "protocol/net/FriendDiscover.h"
 #include "protocol/net/DiscoverAccept.h"
 #include "protocol/net/DiscoverRefuse.h"
@@ -113,8 +117,12 @@ typedef enum
     CRP_PACKET_NET__START = 0x60,   //NAT内网穿透开始
     CRP_PACKET_NET_QUALITY_TEST,    //网络质量测试
     CRP_PACKET_NET_INET_ADDRESS,    //IP地址数据包
-    CRP_PACKET_NET_DETECTED,        //主机已检测到
-    CRP_PACKET_NET_NAT_DISCOVER,    //NAT网络发现
+    CRP_PACKET_NET_NAT_DETECTED,    //主机已检测到
+    CRP_PACKET_NET_NAT_REGISTER,    //NAT网络发现
+    CRP_PACKET_NET_NAT_REQUEST,     //NAT请求
+    CRP_PACKET_NET_NAT_ACCEPT,      //接受NAT请求
+    CRP_PACKET_NET_NAT_REFUSE,      //拒绝NAT请求
+    CRP_PACKET_NET_NAT_READY,       //NAT数据包已接收
     CRP_PACKET_NET_FRIEND_DISCOVER, //好友网络发现
     CRP_PACKET_NET_DISCOVER_ACCEPT, //同意被发现
     CRP_PACKET_NET_DISCOVER_REFUSE, //拒绝被发现

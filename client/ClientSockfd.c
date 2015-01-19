@@ -132,20 +132,6 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
-        case UMT_NAT_REQUEST:
-        {
-            int audioSock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-            struct sockaddr_in addr;
-            socklen_t addrLen = sizeof(addr);
-            getpeername(sockfd->fd, (struct sockaddr *) &addr, &addrLen);
-            addr.sin_port = htons(8015);
-            for (int j = 0; j < 10; ++j)//UDP不稳定,发现包多次发送增加连接成功几率
-            {
-                sendto(audioSock, packet->message, 32, 0, (struct sockaddr *) &addr, addrLen);
-            }
-            StartAudioChat_Recv(audioSock);
-            break;
-        };
     }
 
     free(user_data);
@@ -292,9 +278,9 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 //        };
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
-            CRPPacketFriendNotify *data = CRPFriendNotifyCast(header);
+            CRPPacketFriendNotify *infodata = CRPFriendNotifyCast(header);
 
-            switch (data->type)
+            switch (infodata->type)
             {
                 case FNT_FRIEND_ONLINE://好友上线
                 {
@@ -303,7 +289,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
                     log_info("Serve Message", "好友上线\n");
                     char *mem = malloc(sizeof(CRPPacketFriendNotify));
-                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
                     g_idle_add(OnLine, mem);
                     break;
                 };
@@ -312,7 +298,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 {
                     log_info("Serve Message", "好友下线\n");
                     char *mem = malloc(sizeof(CRPPacketFriendNotify));
-                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
+                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
 
                     g_idle_add(OffLine, mem);
                     //free(mem);
@@ -321,23 +307,23 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
                 {
                     char *mem = malloc(sizeof(CRPPacketFriendNotify));
-                    memcpy(mem, data, sizeof(CRPPacketFriendNotify));
-                    log_info("好友资料需要更新", "UID:%u\n", data->uid);
+                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
+                    log_info("好友资料需要更新", "UID:%u\n", infodata->uid);
                     session_id_t sessionid = CountSessionId();
-                    AddMessageNode(sessionid, FriendFriendInfoChange, data);//注册
-                    CRPInfoRequestSend(sockfd, sessionid, data->uid);//请求这个用户的资料
+                    AddMessageNode(sessionid, FriendFriendInfoChange, infodata);//注册
+                    CRPInfoRequestSend(sockfd, sessionid, infodata->uid);//请求这个用户的资料
                     break;
                 };
                 case FNT_FRIEND_NEW://新好友
                 {
-                    UserGroup *grou = UserFriendsGroupGet(friends, data->toGid);//friends,好友分组信息
-                    UserFriendsUserAdd(grou, data->uid);//加入这个分组
+                    UserGroup *grou = UserFriendsGroupGet(friends, infodata->toGid);//friends,好友分组信息
+                    UserFriendsUserAdd(grou, infodata->uid);//加入这个分组
 
-                    if (data->toGid != UGI_PENDING)//不是添加到pending,说明是有人加你后好友列表需要更新
+                    if (infodata->toGid != UGI_PENDING)//不是添加到pending,说明是有人加你后好友列表需要更新
                     {
                         session_id_t sessionid = CountSessionId();
                         AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
-                        CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
+                        CRPInfoRequestSend(sockfd, sessionid, infodata->uid); //请求用户资料
                     }
 
                     break;
@@ -345,11 +331,11 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 case FNT_FRIEND_MOVE://说明是你添加别人后，需要移动到其它分组
                 {
 
-                    UserGroup *from_group = UserFriendsGroupGet(friends, data->fromGid),
-                            *to_group = UserFriendsGroupGet(friends, data->toGid);//从哪个分组来
-                    UserFriendsUserMove(from_group, to_group, data->uid);//加入这个分组
+                    UserGroup *from_group = UserFriendsGroupGet(friends, infodata->fromGid),
+                            *to_group = UserFriendsGroupGet(friends, infodata->toGid);//从哪个分组来
+                    UserFriendsUserMove(from_group, to_group, infodata->uid);//加入这个分组
                     session_id_t sessionid = CountSessionId();
-                    if (data->fromGid == UGI_PENDING)
+                    if (infodata->fromGid == UGI_PENDING)
                     {
                         AddMessageNode(sessionid, new_friend_info, NULL);//注册一个会话，接收新添加好友资料
                     }
@@ -357,12 +343,12 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     {
                         AddMessageNode(sessionid, friend_group_move, NULL);
                     }
-                    CRPInfoRequestSend(sockfd, sessionid, data->uid); //请求用户资料
+                    CRPInfoRequestSend(sockfd, sessionid, infodata->uid); //请求用户资料
                     break;
                 };
                 case FNT_FRIEND_DELETE:
                 {
-                    RemoveFriend(data);
+                    RemoveFriend(infodata);
                 };
                 default:
                 {
@@ -370,13 +356,21 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 
                 }
             }
-            if ((void *) data != header->data)
+            if ((void *) infodata != header->data)
             {
-                free(data);
+                free(infodata);
             }
 
             break;
-
+        };
+        case CRP_PACKET_NET_NAT_REQUEST:
+        {
+            CRPPacketNETNATRequest *packet = CRPNETNATRequestCast(header);
+            AudioAcceptNatDiscover(packet);
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
         };
         case CRP_PACKET_OK:
         {
@@ -410,14 +404,9 @@ int mysockfd()
     inet_aton(myip, &inp);
     struct sockaddr_in server_addr = {
             .sin_family=AF_INET,
-            //.sin_addr.s_addr=htonl(INADDR_LOOPBACK),
             .sin_addr.s_addr=inp.s_addr,
             .sin_port=htons(8014)
     };
-
-//    .sin_port=htons(8014)
-//};
-//inet_aton("192.168.8.167",&server_addr.sin_addr);
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
         perror("Connect");

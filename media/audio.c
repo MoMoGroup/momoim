@@ -155,7 +155,7 @@ void *play_routine(void *data)
         tail_recv = circle_buf_recv + (tail_recv - circle_buf_recv + 1) % (sizeof(circle_buf_recv) / sizeof(*circle_buf_recv));
         pthread_cond_signal(&recv_idle);
         pthread_mutex_unlock(&mutex_recv);
-        playback.data_buf =(uint8_t*) q_recv;
+        playback.data_buf = (uint8_t *) q_recv;
         SNDWAV_WritePcm(&playback, 1000);
         //snd_pcm_writei(playback.handle, q_recv, 1000);
         //SNDWAV_WritePcm(&playback, 1000);
@@ -227,7 +227,7 @@ void StartAudioChat_Recv(int sendSock)
     pthread_create(&mainThread, NULL, process, NULL);
 }
 
-void StartAudioChat_Send(struct sockaddr_in *addr)
+void StartAudioChat_Send(int sendSock, struct sockaddr_in *addr)
 {
     if (mainThread)
     {
@@ -236,7 +236,7 @@ void StartAudioChat_Send(struct sockaddr_in *addr)
     InitAudioChat();
     sendtoAssigned = 1;
     addr_sendto = *addr;
-    netSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    netSocket = sendSock;
     pthread_create(&mainThread, NULL, process, NULL);
 }
 

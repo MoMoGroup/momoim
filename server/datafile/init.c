@@ -49,9 +49,9 @@ void DataModuleFinalize()
 
 void InitServerDataDirectory()
 {
-/*#ifndef NDEBUG
+#ifndef NDEBUG
     return;
-#endif*/
+#endif
     char *path = (char *) malloc(PATH_MAX);
     sprintf(path, "%s/momo-server/", getpwuid(getuid())->pw_dir);
     struct stat dirStat;

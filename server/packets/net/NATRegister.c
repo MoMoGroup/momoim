@@ -3,6 +3,7 @@
 #include <run/natTraversal.h>
 #include <stdlib.h>
 #include <logger.h>
+#include <arpa/inet.h>
 #include "run/user.h"
 
 typedef struct
@@ -25,31 +26,39 @@ static int DiscoverCancelHandler(POnlineUser user, PUserOperation op)
     return 0;
 }
 
-static void DiscoverDetected(struct sockaddr_in *addr, void *data)
+static int DiscoverDetected(const struct sockaddr_in *addr, void *data)
 {
     PUserOperation op = data;
     DiscoverOperation *discoverOperation = op->data;
     POnlineUser user = OnlineUserGet(discoverOperation->uid);
     if (user)
     {
-        log_info("Discover", "UID:%u,Session:%u\n", user->uid, discoverOperation->session);
-        CRPNATDetectedSend(user->crp, discoverOperation->session, addr);
+        struct sockaddr_in fromAddr;
+        socklen_t len = sizeof(fromAddr);
+        getpeername(user->crp->fd, &fromAddr, &len);
+        log_info("Detect",
+                 "UID:%u,Session:%u,From:%s\n",
+                 user->uid,
+                 discoverOperation->session,
+                 inet_ntoa(fromAddr.sin_addr));
+        CRPNATDetectedSend(user->crp, discoverOperation->session, addr->sin_addr.s_addr, addr->sin_port);
         UserDrop(user);
     }
-    free(discoverOperation);
     op->data = NULL;
     op->onCancel = NULL;
+    free(discoverOperation);
     UserOperationUnregister(user, op);
+    return 1;
 }
 
-int ProcessPacketNETNATDiscover(POnlineUser user, uint32_t session, CRPPacketNATDiscover *packet)
+int ProcessPacketNETNATRegister(POnlineUser user, uint32_t session, CRPPacketNETNATRegister *packet)
 {
     if (user->state == OUS_ONLINE)
     {
         DiscoverOperation *discoverOperation = (DiscoverOperation *) malloc(sizeof(DiscoverOperation));
         discoverOperation->uid = user->uid;
         discoverOperation->session = session;
-        log_info("Discover", "Register User:%u,Session:%u\n", user->uid, session);
+        log_info("NATRegister", "User:%u,Session:%u\n", user->uid, session);
         PUserOperation operation = UserOperationRegister(user, session, CUOT_NAT_DISCOVER, discoverOperation);
         discoverOperation->discoverEntry = NatHostDiscoverRegister(packet->key, DiscoverDetected, operation);
         operation->onCancel = DiscoverCancelHandler;

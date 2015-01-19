@@ -162,7 +162,7 @@ gboolean show_record_message(void *data)
         sprintf(date, "  %d/%d/%d \n", p->tm_year + 1900, 1 + p->tm_mon, p->tm_mday);
         gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date);
         PangoFontDescription *font;
-        font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+        font = pango_font_description_from_string("Mono");//"Mono"字体名
         pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
         gtk_widget_override_font(record_message->info->record_date, font);
         gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
@@ -597,6 +597,18 @@ static gint close_but_leave_notify_event(GtkWidget *widget, GdkEventButton *even
     return 0;
 }
 
+static gint text_view_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+    if (info->calendar != NULL)
+    {
+        gtk_widget_destroy(info->calendar);
+        info->calendar = NULL;
+    }
+    return 0;
+}
+
+
 void ChartRecord(FriendInfo *info)
 {
     GtkEventBox *record_background_event_box, *record_next_event_box, *record_close_event_box, *calendar_event_box, *record_upward_event_box;
@@ -684,6 +696,10 @@ void ChartRecord(FriendInfo *info)
 
     record_message->info->record_text = gtk_text_view_new();
     record_message->info->record_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (record_message->info->record_text));
+    g_signal_connect(record_message->info->record_text,
+                     "button_press_event",
+                     G_CALLBACK(text_view_click),
+                     record_message->info);
 
     //创建文字标记
     gtk_text_buffer_create_tag(record_message->info->record_buffer, "red_foreground", "foreground", "red", NULL);
@@ -718,7 +734,7 @@ void ChartRecord(FriendInfo *info)
     sprintf(date, "  %d / %d / %d \n", (1900 + p->tm_year), 1 + p->tm_mon, p->tm_mday);
     record_message->info->record_date = gtk_label_new(date);
     PangoFontDescription *font;
-    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+    font = pango_font_description_from_string("Mono");//"Mono"字体名
     pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(record_message->info->record_date, font);
     gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);

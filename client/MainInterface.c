@@ -309,7 +309,7 @@ GtkTreeModel *createModel()
         cr = cairo_create(surface);
         cairo_move_to(cr, 0, 20);
         cairo_set_font_size(cr, 14);
-        cairo_select_font_face(cr, "Droid Sans Mono", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_select_font_face(cr, "Mono", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_show_text(cr, friends->groups[i].groupName);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
         gtk_tree_store_append(TreeViewListStore, &iter1, NULL);
@@ -406,7 +406,7 @@ static void loadinfo()
     userid = gtk_label_new(CurrentUserInfo->nickName);
     //设置字体大小
     PangoFontDescription *font;
-    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+    font = pango_font_description_from_string("Mono");//"Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(userid, font);
 
@@ -761,7 +761,7 @@ int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
                 }
                 //显示的文件名和大小
                 file_message_data->file = gtk_label_new(sendfile_size);
-                font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+                font = pango_font_description_from_string("Mono");//"Mono"字体名
                 pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
                 gtk_widget_override_font(file_message_data->file, font);
                 gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->file, 160, 5);

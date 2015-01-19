@@ -134,7 +134,6 @@ void show_local_text(gchar *text, FriendInfo *info, char *nicheng_times, int cou
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
                                              nicheng_times, -1, "red_foreground", "size1", NULL);
     decoding_text(text, info, count); //解码
-
 }
 
 
@@ -153,7 +152,7 @@ void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              nicheng_times, -1, "blue_foreground", "size1", NULL);
-    decoding_text(rcvd_text, info, len); //解码
+    decoding_text((gchar *) rcvd_text, info, len); //解码
 
 }
 
@@ -373,7 +372,7 @@ void UploadingFile(gchar *filename, FriendInfo *info)
         sprintf(sendfile_size, "\t %s \n 大小为：%d byte", filename + i + 1, (int) stat_buf.st_size);
     }
     file_messge->file = gtk_label_new(sendfile_size);
-    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+    font = pango_font_description_from_string("Mono");//"Mono"字体名
     pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(file_messge->file, font);
     gtk_fixed_put(GTK_FIXED(info->chartlayout), file_messge->file, 160, 5);
@@ -420,9 +419,9 @@ void CodingTextImage(FriendInfo *info, gchar *coding, int *count)
             GtkWidget *imageWidget = g_list_nth_data(list, 0);
             g_list_free(list);
             gchar *src = g_object_get_data(G_OBJECT(imageWidget), "ImageSrc");
-            Md5Coding(src, char_rear);
+            Md5Coding(src, (unsigned char *) char_rear);
             char targetfilename[256] = {0};
-            HexadecimalConversion(targetfilename, char_rear); //进制转换，将MD5值的字节流转换成十六进制
+            HexadecimalConversion(targetfilename, (const unsigned char *) char_rear); //进制转换，将MD5值的字节流转换成十六进制
             CopyFile(src, targetfilename);
             char_rear = char_rear + MD5_DIGEST_LENGTH;
         }
@@ -565,7 +564,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                 {
                     isimageflag = 1;
                     char filename[256] = {0};
-                    char strdest[17] = {0};
+                    unsigned char strdest[17] = {0};
                     struct stat stat_buf;
                     session_id_t session_id;
                     struct PictureMessageFileUploadingData *imagemessge
@@ -580,7 +579,11 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                     imagemessge->image_message_data = image_message_data_state;
                     imagemessge->image_message_data->imagecount++;
                     AddMessageNode(session_id, deal_with_message, imagemessge);
-                    CRPFileStoreRequestSend(sockfd, session_id, (size_t) stat_buf.st_size, 0, char_text + i);
+                    CRPFileStoreRequestSend(sockfd,
+                                            session_id,
+                                            (size_t) stat_buf.st_size,
+                                            0,
+                                            (unsigned char *) char_text + i);
                     i = i + 16;
                 };
                 default:

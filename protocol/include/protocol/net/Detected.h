@@ -7,10 +7,11 @@
 
 CRP_STRUCTURE
 {
-    struct sockaddr_in addr;
+    uint32_t ipv4;
+    uint16_t port;
 } CRPPacketNATDetected;
 
 __attribute_malloc__
 CRPPacketNATDetected *CRPNATDetectedCast(CRPBaseHeader *base);
 
-int CRPNATDetectedSend(CRPContext context, uint32_t sessionID, const struct sockaddr_in *addr);
+int CRPNATDetectedSend(CRPContext context, uint32_t sessionID, uint32_t ipv4, uint16_t port);
