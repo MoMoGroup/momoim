@@ -40,8 +40,7 @@ static int DiscoverDetected(const struct sockaddr_in *addr, void *data)
                  "UID:%u,Session:%u,From:%s\n",
                  user->uid,
                  discoverOperation->session,
-                 inet_ntoa(fromAddr.sin_addr),
-                 inet_ntoa(addr->sin_addr));
+                 inet_ntoa(fromAddr.sin_addr));
         CRPNATDetectedSend(user->crp, discoverOperation->session, addr->sin_addr.s_addr, addr->sin_port);
         UserDrop(user);
     }

@@ -30,12 +30,11 @@ HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32],
     {
         sprintf(hexKey + i * 2, "%02x", (int) key[i]);
     }
-    log_info("NatDiscover", "Register:%s\n", hexKey);
-    pthread_rwlock_wrlock(&lock);
     HostDiscoverEntry *entry = (HostDiscoverEntry *) malloc(sizeof(HostDiscoverEntry));
     entry->fn = fn;
     entry->data = data;
     memcpy(entry->key, key, 32);
+    pthread_rwlock_wrlock(&lock);
     entry->prev = table.last;
     entry->next = NULL;
     if (table.last == NULL)
@@ -45,6 +44,7 @@ HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32],
     else
     {
         table.last->next = entry;
+        table.last = entry;
     }
     pthread_rwlock_unlock(&lock);
     return entry;
@@ -57,7 +57,6 @@ int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
     {
         sprintf(hexKey + i * 2, "%02x", (int) entry->key[i]);
     }
-    log_info("NatDiscover", "Unregister:%s\n", hexKey);
     pthread_rwlock_wrlock(&lock);
     if (entry->prev)
     {

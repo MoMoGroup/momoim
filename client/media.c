@@ -68,6 +68,7 @@ int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid)
     }
     return 0;
 }
+
 //主动发起方,等待接受方建立连接
 void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
 {
@@ -216,6 +217,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
     }
     return 1;
 }
+
 //主动发起NAT发现请求
 int AudioRequestNATDiscover(uint32_t uid)
 {
@@ -289,7 +291,13 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                 }
                 else
                 {
-                    log_info("Key", "WrongKey\n");
+                    char hexKey[65] = {0};
+                    for (int i = 0; i < 32; ++i)
+                    {
+                        sprintf(hexKey + i * 2, "%02x", (int) buffer[i]);
+                    }
+                    log_info("Key", "WrongKey%s\n", hexKey);
+                    sleep(1);
                 }
 
             }
@@ -416,41 +424,6 @@ int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid)
     }
     return 0;
 }
-
-
-
-
-//处理服务器发送accept_net_friend_discover的函数
-//包括　发送accept失败，或者发送accept成功，成功的话运行音频程序
-//int deal_audio_accept_feedback(CRPBaseHeader *header){
-//    if(header->packetID==CRP_PACKET_FAILURE) {
-//        g_idle_add(popup_audio, NULL);
-//        the_log_request_friend_discover.uid=-1;
-//        the_log_request_friend_discover.requset_reason=-1;
-//    }else{
-//        //被动方开始运行音频程序，不需要对方的ip地址
-////        AudioChatRoutine();
-//    }
-//    return 0;
-//}
-
-
-
-
-
-////处理服务器发送accept_net_friend_discover的函数
-////包括　发送accept失败，或者发送accept成功，成功的话运行视频程序
-//int deal_video_accept_feedback(CRPBaseHeader *header){
-//    if(header->packetID==CRP_PACKET_FAILURE) {
-//        g_idle_add(popup_audio, NULL);
-//        the_log_request_friend_discover.uid=-1;
-//        the_log_request_friend_discover.requset_reason=-1;
-//    }else{
-//        //被动方进行视频程序 ，不需要需要对方的ip地址
-//        primary_video(1,NULL);
-//    }
-//    return 0;
-//}
 
 
 //接到视频请求后的处理函数

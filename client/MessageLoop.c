@@ -6,7 +6,7 @@
 #include "ClientSockfd.h"
 
 
-pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
+static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
 
 typedef struct messageloop
