@@ -295,12 +295,13 @@ gint delete_event(GtkWindow *window)
     //gtk_main_quit();
     gtk_widget_destroy(window);
     pthread_detach(tid1);
+    pthread_detach(tid2);
+    pthread_detach(tid3);
+
     pthread_cancel(tid1);
     pthread_join(tid1, NULL);
-    pthread_detach(tid2);
     pthread_cancel(tid2);
     pthread_join(tid2, NULL);
-    pthread_detach(tid3);
     pthread_cancel(tid3);
     pthread_join(tid3, NULL);
     free(rgbBuf);
