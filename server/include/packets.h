@@ -89,6 +89,8 @@ int ProcessPacketNETNATAccept(POnlineUser user, uint32_t session, CRPPacketNETNA
 
 int ProcessPacketNETNATRefuse(POnlineUser user, uint32_t session, CRPPacketNETNATRefuse *packet);
 
+int ProcessPacketNETNATReady(POnlineUser user, uint32_t session, CRPPacketNETNATReady *packet);
+
 int ProcessPacketNETFriendDiscover(POnlineUser user, uint32_t session, CRPPacketNETFriendDiscover *packet);
 
 int ProcessPacketNetDiscoverRefuse(POnlineUser user, uint32_t session, CRPPacketNETDiscoverRefuse *packet);

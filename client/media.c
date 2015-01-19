@@ -73,20 +73,23 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
 {
     pthread_detach(pthread_self());
     int sockSender = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    int isServerDetected = 0, isPeerDetected = 0;
+    int isServerDetected = 0, RecvPipeOK = 0;
     struct sockaddr_in serverNatService;
     socklen_t serverAddrLen = sizeof(serverNatService);
     getpeername(sockfd->fd, (struct sockaddr *) &serverNatService, &serverAddrLen);
     serverNatService.sin_port = htons(8015);
     int tryTimes = 0;
-    while (!isPeerDetected)
+    while (!entry->peerReady || !RecvPipeOK)
     {
         if (!isServerDetected)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
-        log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
+        if (!RecvPipeOK)
+        {
+            sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
+            log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
+        }
         fd_set set;
         FD_ZERO(&set);
         FD_SET(sockSender, &set);
@@ -109,12 +112,14 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
                     log_info("Discover", "Server Found\n");
                     isServerDetected = 1;
                 }
-                else if (memcmp(buffer, entry->key, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
+                else if (memcmp(buffer, entry->key, 32) == 0)
                 {
                     log_info("Discover", "Peer Found\n");
-                    isPeerDetected = 1;
+                    RecvPipeOK = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
+                    CRPNETNATReadySend(sockfd, entry->localSession, entry->peerUid, entry->peerSession);
                 }
+
             }
             else
             {
@@ -152,6 +157,11 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             free(entry);
             return 0;
         };
+        case CRP_PACKET_NET_NAT_READY:
+        {
+            entry->peerReady = 1;
+            return 0;
+        };
         case CRP_PACKET_NET_NAT_ACCEPT:
         {
             CRPPacketNETNATAccept *packet = CRPNETNATAcceptCast(header);
@@ -164,7 +174,6 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             if (entry->addr.sin_port)
             {
                 AudioStartWaitConnection(entry);
-                return 0;
             }
             break;
         };
@@ -182,7 +191,6 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             if (entry->peerKeySet)
             {
                 AudioStartWaitConnection(entry);
-                return 0;
             }
             break;
         };
@@ -218,21 +226,22 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
 {
     pthread_detach(pthread_self());
     int sockSender = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    int isServerDetected = 0, isPeerDetected = 0;
+    int isServerDetected = 0, isRecvPipeOK = 0;
     struct sockaddr_in serverNatService;
     socklen_t serverAddrLen = sizeof(serverNatService);
     getpeername(sockfd->fd, (struct sockaddr *) &serverNatService, &serverAddrLen);
     serverNatService.sin_port = htons(8015);
     int tryTimes = 0;
-    while (!isPeerDetected)
+    while (!entry->peerReady || !isRecvPipeOK)
     {
         if (!isServerDetected)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        if (!entry->addr.sin_port)
+        if (entry->addr.sin_port && !isRecvPipeOK)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
+            log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
         }
 
         fd_set set;
@@ -258,8 +267,9 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                 }
                 else if (memcmp(buffer, entry->key, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
                 {
-                    isPeerDetected = 1;
+                    isRecvPipeOK = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
+                    CRPNETNATReadySend(sockfd, entry->localSession, entry->peerUid, entry->peerSession);
                 }
 
             }
@@ -289,6 +299,11 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
             free(entry);
             return 0;
         };
+        case CRP_PACKET_NET_NAT_READY:
+        {
+            entry->peerReady = 1;
+            return 0;
+        };
         case CRP_PACKET_OK:
         {
             if (!entry->messageSent)
@@ -310,7 +325,7 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
             {
                 free(packet);
             }
-            return 0;
+            return 1;
         };
     }
     return 1;
@@ -332,6 +347,7 @@ int AcceptNatDiscover(CRPPacketNETNATRequest *request)
     entry->peerUid = request->uid;
     entry->peerKeySet = 1;
     entry->peerSession = request->session;
+    entry->localSession = sid;
     AddMessageNode(sid, AcceptNATDiscoverProcess, entry);
 
     char hexKey[65] = {0};

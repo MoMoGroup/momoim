@@ -239,12 +239,13 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
             }
             entry->peerUid = info->uid;
             entry->messageSent = 0;
+            entry->localSession = sessionNatDiscover;
             AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
 
             char hexKey[65] = {0};
             for (int i = 0; i < 32; ++i)
             {
-                sprintf(hexKey + i * 2, "%02x",(int) entry->key[i]);
+                sprintf(hexKey + i * 2, "%02x", (int) entry->key[i]);
             }
             log_info("Discover", "Try to register key %s\n", hexKey);
 

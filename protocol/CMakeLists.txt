@@ -54,6 +54,7 @@ SET(LIBPROTOCOL_SRC
     packets/net/NATRequest.c
     packets/net/NATAccept.c
     packets/net/NATRefuse.c
+    packets/net/NATReady.c
     packets/net/QualityTest.c
     packets/net/Detected.c
     packets/net/InetAddress.c

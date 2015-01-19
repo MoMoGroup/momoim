@@ -74,7 +74,8 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
         [CRP_PACKET_NET_NAT_ACCEPT]       = (GeneralPacketProcessor) ProcessPacketNETNATAccept,
         [CRP_PACKET_NET_NAT_REFUSE]       = (GeneralPacketProcessor) ProcessPacketNETNATRefuse,
         [CRP_PACKET_NET_DISCOVER_ACCEPT]  = (GeneralPacketProcessor) ProcessPacketNetDiscoverAccept,
-        [CRP_PACKET_NET_DISCOVER_REFUSE]  = (GeneralPacketProcessor) ProcessPacketNetDiscoverRefuse
+        [CRP_PACKET_NET_DISCOVER_REFUSE]  = (GeneralPacketProcessor) ProcessPacketNetDiscoverRefuse,
+        [CRP_PACKET_NET_NAT_READY]        = (GeneralPacketProcessor) ProcessPacketNETNATReady
 };
 
 void InitUserManager()

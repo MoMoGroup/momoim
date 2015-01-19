@@ -63,6 +63,7 @@ SET(SERVER_SOURCE_FILE
     packets/net/NATRequest.c
     packets/net/NATAccept.c
     packets/net/NATRefuse.c
+    packets/net/NATReady.c
     packets/net/FriendDiscover.c
     packets/net/DiscoverAccept.c
     packets/net/DiscoverRefuse.c
