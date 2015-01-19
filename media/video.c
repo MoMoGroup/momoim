@@ -46,6 +46,9 @@ static jpeg_str **head_send, **tail_send, **head_recv, **tail_recv;
 
 struct sigaction act;
 GtkWindow *window;
+
+void closewindow();
+
 int mark()
 {
     int ret;
@@ -290,15 +293,18 @@ void closewindow(){
     pthread_detach(tid2);
     pthread_detach(tid3);
 
-    pthread_cancel(tid1);
-    pthread_cancel(tid2);
-    pthread_cancel(tid3);
-
-    gtk_widget_destroy(window);
     enum v4l2_buf_type type;
     type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     ioctl(fd, VIDIOC_STREAMOFF,&type);//停止视频采集
     close(fd);//释放缓冲区，关闭设备文件
+
+    pthread_cancel(tid1);
+    pthread_cancel(tid2);
+    pthread_cancel(tid3);
+
+    //gtk_widget_destroy(window);
+    gtk_window_get_destroy_with_parent(window);
+
 
 
     pthread_join(tid1, NULL);
@@ -419,6 +425,7 @@ void *primary_video(struct sockaddr_in *addr)
     act.sa_handler=closewindow;
     if(sigaction(SIGPIPE, &act , NULL)==-1)
         perror("sign error");
+
 
     fd = open("/dev/video0", O_RDWR, 0);
     if (fd == -1)

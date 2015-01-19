@@ -212,7 +212,6 @@ int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer
 
 
 
-    //memcpy(&tem_iter, &up_iter_group, sizeof(up_iter_group));
     if (gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &up_iter_group) != 0)
     {
         gtk_tree_model_get(model, &up_iter_group, FRIENDUID_COL, &next_gid, -1);//拿到选中的后一个权值
