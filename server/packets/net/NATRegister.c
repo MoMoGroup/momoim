@@ -3,6 +3,7 @@
 #include <run/natTraversal.h>
 #include <stdlib.h>
 #include <logger.h>
+#include <arpa/inet.h>
 #include "run/user.h"
 
 typedef struct
@@ -32,7 +33,15 @@ static int DiscoverDetected(const struct sockaddr_in *addr, void *data)
     POnlineUser user = OnlineUserGet(discoverOperation->uid);
     if (user)
     {
-        log_info("Discover", "UID:%u,Session:%u\n", user->uid, discoverOperation->session);
+        struct sockaddr_in fromAddr;
+        socklen_t len;
+        getpeername(user->crp->fd, &fromAddr, &len);
+        log_info("Discover",
+                 "UID:%u,Session:%u,From:%s,To:%s\n",
+                 user->uid,
+                 discoverOperation->session,
+                 inet_ntoa(fromAddr.sin_addr),
+                 inet_ntoa(addr->sin_addr));
         CRPNATDetectedSend(user->crp, discoverOperation->session, addr);
         UserDrop(user);
     }
