@@ -263,9 +263,15 @@ int okinfo(void *data)
 
 int shibaiinfo(void *reason)
 {
-    /*修改密码失败的原因*/
     popup("莫默告诉你：", reason);
     free(reason);
+    return 0;
+}
+
+int shibaiinfo2(void *reason2)
+{
+    popup("莫默告诉你：", reason2);
+    free(reason2);
     return 0;
 }
 
@@ -302,7 +308,7 @@ int dealwithheadphoto(void *data)
     char userhead[80] = {0};
     static cairo_t *cr;
     cairo_surface_t *surface, *surfacehead2;
-    HexadecimalConversion(userhead, weinfo.icon);
+    HexadecimalConversion(userhead, CurrentUserInfo->icon);
     //加载一个图片
     surface = cairo_image_surface_create_from_png(userhead);
     int w = cairo_image_surface_get_width(surface);
@@ -318,7 +324,7 @@ int dealwithheadphoto(void *data)
     //把画笔和图片相结合。
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_paint(cr);
-    gtk_image_set_from_surface((GtkImage *) headx, surfacehead2);//更新主界面头
+    gtk_image_set_from_surface((GtkImage *) headx, surfacehead2);//更新主界面头像
 
     //更新主界面分组下用户的头像和昵称
     GdkPixbuf *pixbuf;
@@ -406,6 +412,9 @@ int infoheadphoto(CRPBaseHeader *header, void *data)//资料更新(换头像)处
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURe reason", infodata->reason);
+            char *failreason = (char *) malloc(strlen(infodata->reason));
+            memcpy(failreason, infodata->reason, strlen(infodata->reason - 1));
+            g_idle_add(shibaiinfo2, failreason);
             if ((void *) infodata != header->data)
             {
                 free(infodata);
