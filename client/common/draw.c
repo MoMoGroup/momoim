@@ -56,6 +56,5 @@ GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
 
     pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 60);
     cairo_surface_destroy(surface);
-
     return pixbuf;
 }

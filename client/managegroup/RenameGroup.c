@@ -87,8 +87,8 @@ int rename_group_recv(CRPBaseHeader *header, void *data)
 //确定按钮
 static gint done_rename_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    char *rename_group_name;//分组名称
-    rename_group_name = gtk_entry_get_text(new_group_text);
+    gchar *rename_group_name;//分组名称
+    rename_group_name = gtk_entry_get_text(GTK_ENTRY(new_group_text));
 
     if (rename_group_id == 1 || rename_group_id == 0)//黑名单或者我的好友
     {
@@ -125,6 +125,8 @@ static gint close_rename_event(GtkWidget *widget, GdkEventButton *event, gpointe
 int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     GtkWidget *renamewindow, *renameframelayout, *renamelayout;
+    cairo_surface_t *surface_background;
+    GtkWidget *rename_background;
 
     renamewindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     renameframelayout = gtk_layout_new(NULL, NULL);
@@ -135,7 +137,9 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
     gtk_window_set_resizable(GTK_WINDOW (renamewindow), FALSE);//窗口不可改变
     gtk_window_set_decorated(GTK_WINDOW(renamewindow), FALSE);   // 去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(renamewindow), 220, 70);//窗口大小
-
+//背景
+    surface_background = ChangeThem_png("");
+    rename_background = gtk_image_new_from_surface(surface_background);
 //关闭事件
     cairo_surface_t *rename_surface_close;
     GtkWidget *rename_close;
@@ -150,14 +154,6 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
             NULL,
             NULL,
             renamewindow);
-    gtk_fixed_put(GTK_FIXED(renamelayout), rename_close_event_box, 170, 0);
-
-//新组名,组id
-    new_group_text = gtk_entry_new();//新组名输入
-    gtk_fixed_put(GTK_FIXED(renamelayout), new_group_text, 0, 0);
-
-    rename_group_id = get_iter_id(data);
-
 
 //确定事件，发送请求
     cairo_surface_t *rename_surface_done;
@@ -173,7 +169,18 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
             NULL,
             NULL,
             renamewindow);
-    gtk_fixed_put(GTK_FIXED(renamelayout), GTK_WIDGET(rename_done_event_box), 160, 30);
+
+//新组名,组id
+    new_group_text = gtk_entry_new();//新组名输入
+    gtk_fixed_put(GTK_FIXED(renamelayout), new_group_text, 0, 0);
+
+    rename_group_id = (uint8_t) get_iter_id(data);
+
+
+    //关闭按钮
+    gtk_fixed_put(GTK_FIXED(renamelayout), GTK_WIDGET(rename_close_event_box), 170, 0);
+    //确定按钮
+    gtk_fixed_put(GTK_FIXED(renamelayout), GTK_WIDGET(rename_done_event_box), 145, 30);
 
 
     gtk_container_add(GTK_CONTAINER (renamewindow), renameframelayout);

@@ -62,7 +62,7 @@ void *WorkerMain(void *arg)
                 continue;
             }
             clock_gettime(CLOCK_MONOTONIC, &end);
-            if (end.tv_sec - start.tv_sec > 0 || end.tv_nsec - start.tv_nsec > 1000000)
+            if (end.tv_sec - start.tv_sec > 0 || end.tv_nsec - start.tv_nsec > 10000000)
             {
                 log_warning("PerfMonitor",
                             "Slow Packet %02x,using %ds%dns\n",

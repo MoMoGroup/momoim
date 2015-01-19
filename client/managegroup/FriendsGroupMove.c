@@ -112,7 +112,6 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
     moveInfo.currentGid = curren_group_id;//选择的组id
     moveInfo.iteruser = iteruser;//好友iter
 
-    // gtk_tree_model_iter_parent(<#(GtkTreeModel*)tree_model#>, <#(GtkTreeIter*)iter#>, <#(GtkTreeIter*)child#>)
     UserGroup *userCueentGroup = UserFriendsGroupGet(friends, (uint8_t) curren_group_id);
 
 
