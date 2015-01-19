@@ -309,7 +309,7 @@ GtkTreeModel *createModel()
         cr = cairo_create(surface);
         cairo_move_to(cr, 0, 20);
         cairo_set_font_size(cr, 14);
-        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_select_font_face(cr, "Droid Sans Mono", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_show_text(cr, friends->groups[i].groupName);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
         gtk_tree_store_append(TreeViewListStore, &iter1, NULL);

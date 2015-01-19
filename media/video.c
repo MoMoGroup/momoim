@@ -161,8 +161,9 @@ int video()
         yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);
         p_send = (jpeg_str *) malloc(50000);
         /*将tempbuf中的数据转换成jpeg放入p->send中*/
-        p_send->jpeglen = (int) jpegWrite(tempbuf, p_send->jpeg_buf);
+        p_send->jpeglen = (int) jpegWrite(tempbuf,(unsigned char*) p_send->jpeg_buf);
         free(tempbuf);
+        tempbuf=NULL;
         //应用程序将该帧缓冲区重新排入输入队列
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)
         {
@@ -180,13 +181,34 @@ int video()
     return 0;
 }
 
+void video_off() {
+    enum v4l2_buf_type type;
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    //停止视频采集
+    int ret = ioctl(fd, VIDIOC_STREAMOFF, &type);
+    if (ret == -1) {
+        printf("vidio OFF error!\n");
+    }
+
+    close(fd);
+}
+
 void *pthread_video(void *arg)
 {
     video_on();
+    int times_err=0;
     while (1)
     {
-        video();
+        if(video()==-1)
+            times_err++;
+        if(times_err==3) break;
+        video_off();
+        mark();
+        localMem();
+        video_on();
+
     }
+    closewindow();
     return NULL;
 }
 
@@ -211,6 +233,7 @@ void *pthread_snd(void *socketsd)
         send(sd, q_send->jpeg_buf, q_send->jpeglen, 0);
 
         free(q_send);
+        q_send=NULL;
         ///////////////////////////////////////////////////////////////////////////////////////////
     }
     return NULL;
@@ -274,7 +297,7 @@ gboolean idleDraw(gpointer data)
     pthread_cond_signal(&recv_idle);
     pthread_mutex_unlock(&mutex_recv);
     //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
-    if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf, (size_t) q_recv->jpeglen))
+    if (read_JPEG_file(q_recv->jpeg_buf, (char*)rgbBuf, (size_t) q_recv->jpeglen))
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(rgbBuf, GDK_COLORSPACE_RGB, 0, 8, 640, 480, 640 * 3, NULL, NULL);
@@ -284,6 +307,7 @@ gboolean idleDraw(gpointer data)
     }
     fprintf(stderr,".");
     free(q_recv);
+    q_recv=NULL;
     ///////////////////////////////////////////////////////////////////////////////////////////
     return 1;
 }
@@ -298,12 +322,27 @@ void closewindow(){
     ioctl(fd, VIDIOC_STREAMOFF,&type);//停止视频采集
     close(fd);//释放缓冲区，关闭设备文件
 
+
+
     pthread_cancel(tid1);
     pthread_cancel(tid2);
     pthread_cancel(tid3);
 
-    //gtk_widget_destroy(window);
-    gtk_window_get_destroy_with_parent(window);
+
+    int i;
+    for(i=0;i<8;i++){
+        free(circle_buf_recv[i]);
+        circle_buf_recv[i]=NULL;
+        free(circle_buf_send[i]);
+        circle_buf_send[i]=NULL;
+    }
+    free(*tail_recv);
+    (*tail_recv)=NULL;
+    free(*tail_send);
+    (*tail_send)=NULL;
+
+    gtk_widget_destroy(GTK_WIDGET(window));
+    //gtk_window_get_destroy_with_parent(window);
 
 
 
@@ -371,6 +410,8 @@ void *primary_video(struct sockaddr_in *addr)
     addrlen = sizeof(struct sockaddr_in);
     int netSocket;
     int on = 1;
+    //两个视频聊天的进程接受到的参数不一样。一方拿到对方的ip，一方参数为空
+    //根据收到的参数判断是先连接对方，还是先监听对方
     if (addr != NULL)
     {
         netSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -438,10 +479,10 @@ void *primary_video(struct sockaddr_in *addr)
 
     mark();
     localMem();
-    ret = pthread_create(&tid1, NULL, pthread_video, NULL);
+    pthread_create(&tid1, NULL, pthread_video, NULL);
     g_idle_add(guiMain, NULL);
-    ret = pthread_create(&tid3, NULL, pthread_rev, &netSocket);
-    ret = pthread_create(&tid2, NULL, pthread_snd, &netSocket);
+    pthread_create(&tid3, NULL, pthread_rev, &netSocket);
+    pthread_create(&tid2, NULL, pthread_snd, &netSocket);
     pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
     pthread_join(tid3, NULL);
