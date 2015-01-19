@@ -85,7 +85,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
+        sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
         log_info("SendKey", "To %s%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
         fd_set set;
         FD_ZERO(&set);
@@ -103,13 +103,13 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             n = (int) recvfrom(sockSender, buffer, 32, 0, (struct sockaddr *) &opaddr, &opAddrLen);
             if (n == 32)
             {
-                if (memcmp(buffer, entry->key, 32) == 0//与本地key相等是服务器返回数据
+                if (memcmp(buffer, entry->peerKey, 32) == 0//与本地key相等是服务器返回数据
                     || memcmp(buffer, (uint8_t[32]) {0}, 32))
                 {
                     log_info("Discover", "Server Found\n");
                     isServerDetected = 1;
                 }
-                else if (memcmp(buffer, entry->peerKey, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
+                else if (memcmp(buffer, entry->key, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
                 {
                     log_info("Discover", "Peer Found\n");
                     isPeerDetected = 1;
@@ -225,7 +225,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         }
         if (entry->addr.sin_port)
         {
-            sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
+            sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
         }
 
         fd_set set;
@@ -244,12 +244,12 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
             n = (int) recvfrom(sockSender, buffer, 32, 0, (struct sockaddr *) &opaddr, &opAddrLen);
             if (n == 32)
             {
-                if (memcmp(buffer, entry->key, 32) == 0
+                if (memcmp(buffer, entry->peerKey, 32) == 0
                     || memcmp(buffer, (uint8_t[32]) {0}, 32))//与本地key相等是服务器返回数据
                 {
                     isServerDetected = 1;
                 }
-                else if (memcmp(buffer, entry->peerKey, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
+                else if (memcmp(buffer, entry->key, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
                 {
                     isPeerDetected = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
