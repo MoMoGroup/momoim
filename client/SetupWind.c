@@ -287,7 +287,7 @@ int SetupFace()
                                        NULL,
                                        NULL,
                                        NULL);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), Setbackg_event_box, 0, 0);
+    gtk_fixed_put(GTK_FIXED(SetupLayout), (GtkWidget *) Setbackg_event_box, 0, 0);
 
     Save_event_box = BuildEventBox(SetupSave,
                                    G_CALLBACK(save_button_press_event),
@@ -296,7 +296,7 @@ int SetupFace()
                                    G_CALLBACK(save_button_release_event),
                                    NULL,
                                    NULL);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), Save_event_box, 350, 440);
+    gtk_fixed_put(GTK_FIXED(SetupLayout), (GtkWidget *) Save_event_box, 350, 440);
 
     Cancel_event_box = BuildEventBox(SetupCancel,
                                      G_CALLBACK(cancel_button_press_event),
@@ -305,7 +305,7 @@ int SetupFace()
                                      G_CALLBACK(cancel_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), Cancel_event_box, 450, 440);
+    gtk_fixed_put(GTK_FIXED(SetupLayout), (GtkWidget *) Cancel_event_box, 450, 440);
 
     Guanxx_event_box = BuildEventBox(SetupGuanbi,
                                      G_CALLBACK(guanxx_button_press_event),
@@ -314,7 +314,7 @@ int SetupFace()
                                      G_CALLBACK(guanxx_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(SetupLayout), Guanxx_event_box, 531, 0);
+    gtk_fixed_put(GTK_FIXED(SetupLayout), (GtkWidget *) Guanxx_event_box, 531, 0);
 
     OldPasswd = gtk_entry_new();//原密码
     NewPasswd1 = gtk_entry_new();//新密码1

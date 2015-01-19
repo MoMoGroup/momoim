@@ -246,14 +246,14 @@ int okinfo(void *data)
     {
         do
         {
-            gtk_tree_model_iter_next(TreeViewListStore, &group_iter);
+            gtk_tree_model_iter_next((GtkTreeModel *) TreeViewListStore, &group_iter);
             gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
                                FRIENDUID_COL, &groupid,
                                -1);
         }
         while (!(groupid == 1));
     }
-    gtk_tree_model_iter_children(TreeViewListStore, &useriter, &group_iter);
+    gtk_tree_model_iter_children((GtkTreeModel *) TreeViewListStore, &useriter, &group_iter);
     gtk_tree_store_set(TreeViewListStore, &useriter,
                        PIXBUF_COL, pixbuf,
                        PRIORITY_COL, 1,
@@ -340,14 +340,14 @@ int dealwithheadphoto(void *data)
     {
         do
         {
-            gtk_tree_model_iter_next(TreeViewListStore, &group_iter);
+            gtk_tree_model_iter_next((GtkTreeModel *) TreeViewListStore, &group_iter);
             gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
                                FRIENDUID_COL, &groupid,
                                -1);
         }
         while (!(groupid == 1));
     }
-    gtk_tree_model_iter_children(TreeViewListStore, &useriter, &group_iter);
+    gtk_tree_model_iter_children((GtkTreeModel *) TreeViewListStore, &useriter, &group_iter);
     gtk_tree_store_set(TreeViewListStore, &useriter,
                        PIXBUF_COL, pixbuf,
                        PRIORITY_COL, 1,
@@ -438,10 +438,10 @@ int sheng_change_city()
             break;
         }
     }
-    gtk_combo_box_text_remove_all(icity);//清除所有城市
+    gtk_combo_box_text_remove_all((GtkComboBoxText *) icity);//清除所有城市
     for (int j = 0; j < 41; ++j)
     {
-        gtk_combo_box_text_append(icity, NULL, allcity[shengfen][j]);
+        gtk_combo_box_text_append((GtkComboBoxText *) icity, NULL, allcity[shengfen][j]);
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(icity), 0);//设置默认城市
     return 0;
@@ -975,34 +975,34 @@ void infotv()
     gtk_fixed_put(GTK_FIXED(Infolayout), ilevel, 270, 70);
 
     inickname = gtk_entry_new();//昵称
-    gtk_entry_set_max_length(inickname, 8);
+    gtk_entry_set_max_length((GtkEntry *) inickname, 8);
     gtk_entry_set_has_frame((GtkEntry *) inickname, FALSE);
-    gtk_entry_set_text(inickname, CurrentUserInfo->nickName);
+    gtk_entry_set_text((GtkEntry *) inickname, CurrentUserInfo->nickName);
     gtk_fixed_put(GTK_FIXED(Infolayout), inickname, 58, 165);
 
     iname = gtk_entry_new();//姓名
-    gtk_entry_set_max_length(iname, 8);
+    gtk_entry_set_max_length((GtkEntry *) iname, 8);
     gtk_entry_set_has_frame((GtkEntry *) iname, FALSE);
-    gtk_entry_set_text(iname, CurrentUserInfo->name);
+    gtk_entry_set_text((GtkEntry *) iname, CurrentUserInfo->name);
     gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 225);
 
     itel = gtk_entry_new();//电话
-    gtk_entry_set_max_length(itel, 11);
+    gtk_entry_set_max_length((GtkEntry *) itel, 11);
     gtk_entry_set_has_frame((GtkEntry *) itel, FALSE);
-    gtk_entry_set_text(itel, CurrentUserInfo->tel);
+    gtk_entry_set_text((GtkEntry *) itel, CurrentUserInfo->tel);
     gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 358);
 
     imail = gtk_entry_new();//邮箱
-    gtk_entry_set_max_length(imail, 30);
+    gtk_entry_set_max_length((GtkEntry *) imail, 30);
     gtk_entry_set_has_frame((GtkEntry *) imail, FALSE);
-    gtk_entry_set_text(imail, CurrentUserInfo->mail);
+    gtk_entry_set_text((GtkEntry *) imail, CurrentUserInfo->mail);
     gtk_fixed_put(GTK_FIXED(Infolayout), imail, 305, 358);
 
     imotto = gtk_entry_new();//个人说明
     gtk_widget_set_size_request(imotto, 300, 10);
-    gtk_entry_set_max_length(imotto, 256);
+    gtk_entry_set_max_length((GtkEntry *) imotto, 256);
     gtk_entry_set_has_frame((GtkEntry *) imotto, FALSE);
-    gtk_entry_set_text(imotto, CurrentUserInfo->motto);
+    gtk_entry_set_text((GtkEntry *) imotto, CurrentUserInfo->motto);
     gtk_fixed_put(GTK_FIXED(Infolayout), imotto, 75, 390);
 
     if (strlen(CurrentUserInfo->birthday) == 0)
@@ -1017,8 +1017,8 @@ void infotv()
     g_signal_connect(ibirthday, "clicked", G_CALLBACK(calendar_change_birthday), NULL);
 
     isex = gtk_combo_box_text_new();//性别
-    gtk_combo_box_text_append(isex, "0", "女");
-    gtk_combo_box_text_append(isex, "1", "男");
+    gtk_combo_box_text_append((GtkComboBoxText *) isex, "0", "女");
+    gtk_combo_box_text_append((GtkComboBoxText *) isex, "1", "男");
     if (1 == CurrentUserInfo->sex)
     {
         gtk_combo_box_set_active(GTK_COMBO_BOX(isex), 1);
@@ -1035,7 +1035,7 @@ void infotv()
     //gtkcomboboxset
     for (int i = 0; i < 12; ++i)
     {
-        gtk_combo_box_text_append(iconstellation, NULL, constellations[i]);
+        gtk_combo_box_text_append((GtkComboBoxText *) iconstellation, NULL, constellations[i]);
     }
     for (int i = 0; i < 12; ++i)
     {
@@ -1054,7 +1054,7 @@ void infotv()
     int weizhi = 0;
     for (int i = 0; i < 35; ++i)
     {
-        gtk_combo_box_text_append(iprovinces, NULL, provinces[i]);
+        gtk_combo_box_text_append((GtkComboBoxText *) iprovinces, NULL, provinces[i]);
     }
     for (int i = 0; i < 35; ++i)
     {
@@ -1135,7 +1135,7 @@ int ChangeInfo()
                                         NULL,
                                         NULL,
                                         NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Infobackg_event_box, 0, 0);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Infobackg_event_box, 0, 0);
 
     Save_event_box = BuildEventBox(Infosave,
                                    G_CALLBACK(save_button_press_event),
@@ -1144,7 +1144,7 @@ int ChangeInfo()
                                    G_CALLBACK(save_button_release_event),
                                    NULL,
                                    NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Save_event_box, 350, 440);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Save_event_box, 350, 440);
 
     Cancel_event_box = BuildEventBox(Infocancel,
                                      G_CALLBACK(cancel_button_press_event),
@@ -1153,7 +1153,7 @@ int ChangeInfo()
                                      G_CALLBACK(cancel_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Cancel_event_box, 450, 440);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Cancel_event_box, 450, 440);
 
     Guanxx_event_box = BuildEventBox(Infoguanbi,
                                      G_CALLBACK(guanxx_button_press_event),
@@ -1162,7 +1162,7 @@ int ChangeInfo()
                                      G_CALLBACK(guanxx_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Guanxx_event_box, 509, 0);
 
     infotv();
 
@@ -1173,7 +1173,7 @@ int ChangeInfo()
                                        G_CALLBACK(touxiang_button_release_event),
                                        NULL,
                                        NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), touxiang_event_box, 25, 15);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) touxiang_event_box, 25, 15);
     gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
 
     gtk_widget_show_all(Infowind);

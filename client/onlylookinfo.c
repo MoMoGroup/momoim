@@ -223,7 +223,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
                                         NULL,
                                         NULL,
                                         friendinfonode);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Infobackg_event_box, 0, 0);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), (GtkWidget *) Infobackg_event_box, 0, 0);
 
     Cancel_event_box = BuildEventBox(friendinfonode->Infocancel,
                                      G_CALLBACK(cancel_button_press_event),
@@ -232,7 +232,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
                                      G_CALLBACK(cancel_button_release_event),
                                      NULL,
                                      friendinfonode);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Cancel_event_box, 450, 440);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), (GtkWidget *) Cancel_event_box, 450, 440);
 
     Guanxx_event_box = BuildEventBox(friendinfonode->Infoguanbi,
                                      G_CALLBACK(guanxx_button_press_event),
@@ -241,7 +241,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
                                      G_CALLBACK(guanxx_button_release_event),
                                      NULL,
                                      friendinfonode);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Guanxx_event_box, 509, 0);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), (GtkWidget *) Guanxx_event_box, 509, 0);
 
     if (CurrentUserInfo->uid == friendinfonode->user.uid)
     {
@@ -252,7 +252,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
                                          G_CALLBACK(change_button_release_event),
                                          NULL,
                                          friendinfonode);
-        gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), Change_event_box, 350, 440);
+        gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), (GtkWidget *) Change_event_box, 350, 440);
     }
 
     GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
@@ -303,6 +303,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     }
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), isex, 305, 240);
 
+    iconstellation = gtk_label_new("摩羯座");
     for (int i = 0; i < 12; ++i)
     {
         if (friendinfonode->user.constellation == i)

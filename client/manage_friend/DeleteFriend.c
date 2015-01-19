@@ -60,13 +60,14 @@ int delete_friend_recv_fun(CRPBaseHeader *header, void *data)
 
     if (header->packetID == CRP_PACKET_FAILURE)//删除成功
     {
-        g_idle_add(GroupPop, "删除失败");
+        g_idle_add(GroupPop, "删除好友失败");
         return 0;
     }
     else
     {
-        UserGroup *group = UserFriendsGroupGet(friends, delete_gid);
+        UserGroup *group = UserFriendsGroupGet(friends, (uint8_t) delete_gid);
         UserFriendsUserDelete(group, delete_uid);//更新资料
+        g_idle_add(GroupPop, "删除好友成功");
 
     }
     return 0;

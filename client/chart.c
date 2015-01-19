@@ -276,7 +276,15 @@ static gint voice_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
     FriendInfo *info = (FriendInfo *) data;
     //设置语音按钮
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    //判断此时是不是在语音聊天，是的话将语音聊天按钮设置成占线模式，否则普通模式
+    if (flag_audio_close == 0)
+    {
+        gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    }
+    else
+    {
+        gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
+    }
 
     return 0;
 }
@@ -1252,6 +1260,7 @@ int MainChart(FriendInfo *friendinfonode)
     GtkWidget *nicheng;
     PangoFontDescription *font;
     nicheng = gtk_label_new(friendinfonode->user.nickName);
+
     font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(nicheng, font);
