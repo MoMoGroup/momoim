@@ -73,14 +73,15 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
 {
     pthread_detach(pthread_self());
     int sockSender = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    int isServerDetected = 0, RecvPipeOK = 0;
+    int isServerDetected = 0, isRecvPipeOK = 0;
     struct sockaddr_in serverNatService;
     socklen_t serverAddrLen = sizeof(serverNatService);
     getpeername(sockfd->fd, (struct sockaddr *) &serverNatService, &serverAddrLen);
     serverNatService.sin_port = htons(8015);
     int tryTimes = 0;
-    while (!entry->peerReady || !RecvPipeOK)
+    while (!entry->peerReady || !isRecvPipeOK)
     {
+        log_info("RecvPipe", "%d\n", isRecvPipeOK);
         if (!isServerDetected)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
@@ -112,7 +113,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
                 else if (memcmp(buffer, entry->key, 32) == 0)
                 {
                     log_info("Discover", "Peer Found\n");
-                    RecvPipeOK = 1;
+                    isRecvPipeOK = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                     CRPNETNATReadySend(sockfd, entry->localSession, entry->peerUid, entry->peerSession);
                 }
@@ -232,6 +233,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
     int tryTimes = 0;
     while (!entry->peerReady || !isRecvPipeOK)
     {
+        log_info("RecvPipe", "%d\n", isRecvPipeOK);
         if (!isServerDetected)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
