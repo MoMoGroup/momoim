@@ -94,11 +94,6 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
     {
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                                    (gint) event->x_root, (gint) event->y_root, event->time);
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
 
     }
     return 0;
@@ -132,11 +127,7 @@ static gint send_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     {
 
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
+
         SendText(info);
 
     }
@@ -175,12 +166,6 @@ gboolean key_value(GtkWidget *widget, GdkEventKey *event, gpointer data)
     guint keyvalue = event->keyval;
     if (keyvalue == GDK_KEY_Return || ((keyvalue == GDK_KEY_Alt_L || keyvalue == GDK_KEY_Alt_R) && (keyvalue == GDK_KEY_Return)))
     {
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
-
         SendText(info);
         return 1;
     }
@@ -390,11 +375,7 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
+
         if (info->record_window != NULL)
         {
             gtk_widget_destroy(info->record_window);
@@ -453,11 +434,6 @@ static gint close_but_button_release_event(GtkWidget *widget, GdkEventButton *ev
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
 
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
         if (info->record_window != NULL)
         {
             gtk_widget_destroy(info->record_window);
@@ -508,17 +484,9 @@ static gint look_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-
         gtk_image_set_from_surface((GtkImage *) info->imagelook, surfacelook1);
-        if (info->look_window == NULL)
-        {
             ChartLook(info, event->x_root, event->y_root - 130);
-        }
-        else
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
+
     }
     return 0;
 
@@ -565,12 +533,6 @@ static gint jietu_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu1);
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
-
         ScreenShot(info);
     }
     return 0;
@@ -619,12 +581,6 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
-
         gtk_image_set_from_surface((GtkImage *) info->imagefile, surfacefile1);
         GtkWidget *dialog;
         gchar *filename;
@@ -709,12 +665,6 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
-
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
         GtkWidget *dialog;
         gchar *filename;
@@ -818,11 +768,6 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
         gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart1);
         GtkWidget *dialog;
         dialog = gtk_font_chooser_dialog_new("choose a font", GTK_WINDOW(event->window));
@@ -912,11 +857,7 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
+
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
         GtkColorSelectionDialog *dialog;
         GtkColorSelection *colorsel;
@@ -1003,11 +944,6 @@ static gint chartrecord_button_release_event(GtkWidget *widget, GdkEventButton *
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        if (info->look_window != NULL)
-        {
-            gtk_widget_destroy(info->look_window);
-            info->look_window = NULL;
-        }
 
         if (info->record_window == NULL)
         {
@@ -1040,17 +976,6 @@ static gint chartrecord_leave_notify_event(GtkWidget *widget, GdkEventButton *ev
     FriendInfo *info = (FriendInfo *) data;
 
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-    return 0;
-}
-
-static gint text_view_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-    FriendInfo *info = (FriendInfo *) data;
-    if (info->look_window != NULL)
-    {
-        gtk_widget_destroy(info->look_window);
-        info->look_window = NULL;
-    }
     return 0;
 }
 
@@ -1255,7 +1180,7 @@ int MainChart(FriendInfo *friendinfonode)
             nicheng,
             G_CALLBACK(nicheng_button_event),
             NULL, NULL, NULL, NULL, friendinfonode);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), nicheng_event_box, 100, 20);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(nicheng_event_box), 100, 20);
 //发送
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(send_event_box), 390, 512);
 //语音
@@ -1288,15 +1213,6 @@ int MainChart(FriendInfo *friendinfonode)
     //创建发送文本框，和接受文本框
     friendinfonode->input_text = gtk_text_view_new();
     friendinfonode->show_text = gtk_text_view_new();
-    g_signal_connect(friendinfonode->input_text,
-                     "button_press_event",
-                     G_CALLBACK(text_view_button_event),
-                     friendinfonode);
-    g_signal_connect(friendinfonode->show_text,
-                     "button_press_event",
-                     G_CALLBACK(text_view_button_event),
-                     friendinfonode);
-
     friendinfonode->input_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->input_text));
     friendinfonode->show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->show_text));
 
@@ -1330,8 +1246,6 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_widget_override_background_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
     gtk_widget_override_background_color(friendinfonode->show_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
 
-//    comboBox = gtk_combo_box_new();
-//    gtk_combo_box_set_active(GTK_COMBO_BOX(comboBox), 0);
     //设置打开窗口后字体样式
 
     gtk_widget_override_font(friendinfonode->input_text, UserWordInfo.description);
