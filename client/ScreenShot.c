@@ -57,7 +57,7 @@ static gint select_area_press(GtkWidget *widget, GdkEventButton *event, JieTuDAT
 
     gtk_window_move(GTK_WINDOW(widget), -100, -100); //将窗口移出屏幕之外
     gtk_window_resize(GTK_WINDOW(widget), 10, 10);
-    gtk_window_set_opacity(GTK_WINDOW(widget), 0.1); //设置窗口透明度为80%不透明
+    gtk_widget_set_opacity(widget, 0.1); //设置窗口透明度为80%不透明
     data->press = TRUE;
     data->x = event->x_root;
     data->y = event->y_root;  //得到当前鼠标所在坐标
@@ -110,7 +110,6 @@ void ScreenShot(FriendInfo *info)
 {
     GtkWidget *win;
     GdkScreen *screen;
-    GdkColor color;
     screen = gdk_screen_get_default();
     win = gtk_window_new(GTK_WINDOW_POPUP);
     gtk_widget_set_app_paintable(win, TRUE);
@@ -124,12 +123,14 @@ void ScreenShot(FriendInfo *info)
     g_signal_connect(G_OBJECT(win), "motion_notify_event",
                      G_CALLBACK(select_area_move), info->data);
 
-    color.red = 0xffff;
-    color.green = 0xffff;
-    color.blue = 0xffff;
-    gtk_widget_modify_bg(win, GTK_STATE_NORMAL, &color); //设置背景
+    GdkRGBA rgbacolor;
+    rgbacolor.alpha = 1;
+    rgbacolor.red = 1;
+    rgbacolor.green = 1;
+    rgbacolor.blue = 1;
+    gtk_widget_override_background_color(win, GTK_STATE_FLAG_NORMAL, &rgbacolor); //设置背景
 
-    gtk_window_set_opacity(GTK_WINDOW(win), 0); //设置窗口全透明
+    gtk_widget_set_opacity(win, 0); //设置窗口全透明
     gtk_window_resize(GTK_WINDOW(win),
                       gdk_screen_get_width(screen),
                       gdk_screen_get_height(screen)); //设置窗口大小为全屏

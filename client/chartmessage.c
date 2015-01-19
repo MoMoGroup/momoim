@@ -9,7 +9,7 @@
 #include "chartmessage.h"
 
 //解码
-void DecodingText(const gchar *text, FriendInfo *info, int count)
+void decoding_text(gchar *text, FriendInfo *info, int count)
 {
 
     gchar *ptext = text, *ptext_end = text + count;
@@ -93,7 +93,7 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
                     GtkTextChildAnchor *anchor;
                     GtkWidget *image;
                     char filename[256] = {0};
-                    char strdest[16] = {0};
+                    unsigned char strdest[16] = {0};
                     ptext = ptext + 2;
                     memcpy(strdest, ptext, 16);
                     HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
@@ -120,22 +120,21 @@ void DecodingText(const gchar *text, FriendInfo *info, int count)
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
-    gtk_text_buffer_get_end_iter(info->input_buffer, &end);
-    GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(info->input_buffer, NULL, &end, 1);
-    gtk_text_buffer_move_mark(info->input_buffer, text_mark_log, &end);
-    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->input_text), text_mark_log, 0, 1, 1, 1);
-    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->show_text),
-                                       gtk_text_buffer_get_insert(show_buffer));//实现自动滚屏的效果
+    //gtk_text_buffer_get_end_iter(show_buffer, &end);
+    GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(show_buffer, NULL, &end, 1);
+    gtk_text_buffer_move_mark(show_buffer, text_mark_log, &end);
+    gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->show_text), text_mark_log, 0, 1, 1, 1);
+
 }
 
 //将输入的文本框输出在显示的文本框中
-void show_local_text(const gchar *text, FriendInfo *info, char *nicheng_times, int count)
+void show_local_text(gchar *text, FriendInfo *info, char *nicheng_times, int count)
 {
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
                                              nicheng_times, -1, "red_foreground", "size1", NULL);
-    DecodingText(text, info, count); //解码
+    decoding_text(text, info, count); //解码
 
 }
 
@@ -155,7 +154,7 @@ void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              nicheng_times, -1, "blue_foreground", "size1", NULL);
-    DecodingText(rcvd_text, info, len); //解码
+    decoding_text(rcvd_text, info, len); //解码
 
 }
 
@@ -338,7 +337,7 @@ void UploadingFile(gchar *filename, FriendInfo *info)
     stat(filename, &stat_buf);
 
     file_messge->file_size = stat_buf.st_size;
-    char strdest[17] = {0};
+    unsigned char strdest[17] = {0};
     Md5Coding(filename, strdest);  //获得MD5值存在strdest
 
     //截取最后的文件名
@@ -372,7 +371,7 @@ void UploadingFile(gchar *filename, FriendInfo *info)
     }
     else
     {
-        sprintf(sendfile_size, "\t %s \n 大小为：%d byte", filename + i + 1, stat_buf.st_size);
+        sprintf(sendfile_size, "\t %s \n 大小为：%d byte", filename + i + 1, (int) stat_buf.st_size);
     }
     file_messge->file = gtk_label_new(sendfile_size);
     font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
@@ -421,7 +420,7 @@ void CodingTextImage(FriendInfo *info, gchar *coding, int *count)
             GList *list = gtk_text_child_anchor_get_widgets(anchor);
             GtkWidget *imageWidget = g_list_nth_data(list, 0);
             g_list_free(list);
-            gchar *src = g_object_get_data(imageWidget, "ImageSrc");
+            gchar *src = g_object_get_data(G_OBJECT(imageWidget), "ImageSrc");
             Md5Coding(src, char_rear);
             char targetfilename[256] = {0};
             HexadecimalConversion(targetfilename, char_rear); //进制转换，将MD5值的字节流转换成十六进制
@@ -582,7 +581,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                     imagemessge->image_message_data = image_message_data_state;
                     imagemessge->image_message_data->imagecount++;
                     AddMessageNode(session_id, deal_with_message, imagemessge);
-                    CRPFileStoreRequestSend(sockfd, session_id, stat_buf.st_size, 0, char_text + i);
+                    CRPFileStoreRequestSend(sockfd, session_id, (size_t) stat_buf.st_size, 0, char_text + i);
                     i = i + 16;
                 };
                 default:

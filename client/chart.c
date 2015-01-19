@@ -652,7 +652,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             else
             {
                 GtkWidget *cue_dialog;
-                cue_dialog = gtk_message_dialog_new(dialog, GTK_DIALOG_MODAL,
+                cue_dialog = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_MODAL,
                                                     GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
                                                     "文件大小不应超过150M，请选择其他文件");
                 gtk_window_set_title(GTK_WINDOW (cue_dialog), "Information");
@@ -925,7 +925,6 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         GtkColorSelectionDialog *dialog;
         GtkColorSelection *colorsel;
         GdkColor color;
-        //gtk_color_chooser_dialog_new(<#(const gchar*)title#>, <#(GtkWindow*)parent#>);
         dialog = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new("ColorSelect"));
         color.red = 0;
         color.blue = 65535;
@@ -935,7 +934,6 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_color_selection_set_has_palette(colorsel, 1);
         gtk_color_selection_set_previous_color(colorsel, &color);
         gtk_color_selection_set_current_color(colorsel, &color);
-        //gtk_color_chooser_set_rgba(<#(GtkColorChooser*)chooser#>, <#(const GdkRGBA*)color#>)
         if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
         {
             gtk_color_selection_get_current_color(colorsel, &color);
