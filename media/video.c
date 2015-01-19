@@ -331,8 +331,8 @@ void closewindow(){
         free(circle_buf_recv[i]);
         free(circle_buf_send[i]);
     }
-    free(tail_recv);
-    free(tail_send);
+    //free(tail_recv);
+    //free(tail_send);
 
     //gtk_widget_destroy(window);
     gtk_window_get_destroy_with_parent(window);
