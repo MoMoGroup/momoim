@@ -83,7 +83,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
     {
         if (!isServerDetected)
         {
-            sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
+            sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
         sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
         log_info("SendKey", "To %s%hu\n", inet_ntoa(entry->addr.sin_addr), entry->addr.sin_port);
@@ -221,7 +221,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
     {
         if (!isServerDetected)
         {
-            sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
+            sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
         if (entry->addr.sin_port)
         {
