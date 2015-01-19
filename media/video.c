@@ -50,6 +50,8 @@ GtkWindow *window;
 int flag_idle; //用于取消idle的旗帜
 int flag_main_idle;
 
+int len_buffer;
+
 void closewindow();
 
 
@@ -199,6 +201,14 @@ void video_off()
     close(fd);
 }
 
+void cancle_mem(){
+    int i;
+    for(i=0;i<4;i++)
+    {
+        munmap(buffers[i].start, 640*480*2);
+    }
+}
+
 void *pthread_video(void *arg)
 {
     video_on();
@@ -212,6 +222,7 @@ void *pthread_video(void *arg)
         if (times_err == 3) break;
         video_off();
         mark();
+        cancle_mem();
         localMem();
         video_on();
 
@@ -335,6 +346,8 @@ void closewindow()
     pthread_cancel(tid1);
     pthread_cancel(tid2);
     pthread_cancel(tid3);
+
+    cancle_mem();
 
     pthread_mutex_unlock(&mutex_recv);
     pthread_mutex_destroy(&mutex_recv);
