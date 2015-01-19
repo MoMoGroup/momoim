@@ -341,8 +341,8 @@ void closewindow(){
     free(*tail_send);
     (*tail_send)=NULL;
 
-    //gtk_widget_destroy(window);
-    gtk_window_get_destroy_with_parent(window);
+    gtk_widget_destroy(GTK_WIDGET(window));
+    //gtk_window_get_destroy_with_parent(window);
 
 
 
