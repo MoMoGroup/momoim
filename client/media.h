@@ -46,4 +46,5 @@ int deal_video_feedback(CRPBaseHeader *, u_int32_t);
 
 int processNatDiscoveredOnAudio(CRPBaseHeader *, void *);
 
-int AcceptNatDiscover(CRPPacketNETNATRequest *);
+int AudioAcceptNatDiscover(CRPPacketNETNATRequest *);
+int AudioRequestNATDiscover(uint32_t uid);

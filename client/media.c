@@ -68,7 +68,7 @@ int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid)
     }
     return 0;
 }
-
+//主动发起方,等待接受方建立连接
 void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
 {
     pthread_detach(pthread_self());
@@ -137,13 +137,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
     free(entry);
 }
 
-void AudioStartWaitConnection(const struct AudioDiscoverProcessEntry *entry)
-{
-    pthread_t t;
-    pthread_create(&t, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
-}
-
-//主动发起音频方
+//主动发起音频方处理消息句柄
 int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
 {
     struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
@@ -172,7 +166,8 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             }
             if (entry->addr.sin_port)
             {
-                AudioStartWaitConnection(entry);
+                pthread_t t;
+                pthread_create(&t, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
             }
             break;
         };
@@ -189,7 +184,8 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
             }
             if (entry->peerKeySet)
             {
-                AudioStartWaitConnection(entry);
+                pthread_t t;
+                pthread_create(&t, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
             }
             break;
         };
@@ -221,6 +217,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
     return 1;
 }
 
+//被动接收方发起NAT发现
 void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
 {
     pthread_detach(pthread_self());
@@ -289,6 +286,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
     }
     StartAudioChat_Send(sockSender, &entry->addr);
     free(entry);
+    return NULL;
 }
 
 //接受语音聊天方
@@ -335,8 +333,27 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
     return 1;
 }
 
+int AudioRequestNATDiscover(uint32_t uid)
+{
+    session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
+
+    struct AudioDiscoverProcessEntry *entry =
+            (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
+    int randNum;
+    for (int randi = 0; randi < 32 / sizeof(int); ++randi)
+    {
+        randNum = rand();
+        memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
+    }
+    entry->peerUid = uid;
+    entry->messageSent = 0;
+    entry->localSession = sessionNatDiscover;
+    AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
+    CRPNETNATRegisterSend(sockfd, sessionNatDiscover, entry->key);
+}
+
 //同意NAT发现
-int AcceptNatDiscover(CRPPacketNETNATRequest *request)
+int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request)
 {
     session_id_t sid = CountSessionId();
     struct AudioDiscoverProcessEntry *entry =

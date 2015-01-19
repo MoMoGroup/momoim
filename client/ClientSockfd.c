@@ -353,7 +353,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_NET_NAT_REQUEST:
         {
             CRPPacketNETNATRequest *packet = CRPNETNATRequestCast(header);
-            AcceptNatDiscover(packet);
+            AudioAcceptNatDiscover(packet);
             if ((void *) packet != header->data)
             {
                 free(packet);

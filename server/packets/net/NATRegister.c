@@ -45,9 +45,9 @@ static int DiscoverDetected(const struct sockaddr_in *addr, void *data)
         CRPNATDetectedSend(user->crp, discoverOperation->session, addr->sin_addr.s_addr, addr->sin_port);
         UserDrop(user);
     }
-    free(discoverOperation);
     op->data = NULL;
     op->onCancel = NULL;
+    free(discoverOperation);
     UserOperationUnregister(user, op);
     return 1;
 }

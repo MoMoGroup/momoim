@@ -227,29 +227,7 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
         //标志位为0 表示没人在语音这时可以打开语音
         if (flag_audio_close == 0)
         {
-            session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
-
-            struct AudioDiscoverProcessEntry *entry =
-                    (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
-            int randNum;
-            for (int randi = 0; randi < 32 / sizeof(int); ++randi)
-            {
-                randNum = rand();
-                memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
-            }
-            entry->peerUid = info->uid;
-            entry->messageSent = 0;
-            entry->localSession = sessionNatDiscover;
-            AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
-
-            char hexKey[65] = {0};
-            for (int i = 0; i < 32; ++i)
-            {
-                sprintf(hexKey + i * 2, "%02x", (int) entry->key[i]);
-            }
-            log_info("Discover", "Try to register key %s\n", hexKey);
-
-            CRPNETNATRegisterSend(sockfd, sessionNatDiscover, entry->key);
+            AudioRequestNATDiscover(info->uid);
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
             flag_audio_close = 1;
         }
