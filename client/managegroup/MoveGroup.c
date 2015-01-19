@@ -17,7 +17,6 @@ int up_group(void *data)
     int64_t priority;
     int64_t next_priority;
     GtkTreeIter up_itergroup;
-    log_info("选中的之前组ID2", "%u\n", gid);
 
 
     gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);
@@ -74,17 +73,16 @@ int up_group_recv(CRPBaseHeader *header, void *data)
     {
         log_info("上移失败\n", "");
     }
+    return 0;
 }
 
 
 int UpGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     int64_t up_priority;
-    int64_t previous_priority;
     uint32_t up_gid;
     uint32_t pre_gid;
     GtkTreeIter up_iter_group;
-    GtkTextIter tem_iter;
 
 
     GtkTreeView *treeview = GTK_TREE_VIEW(data);
@@ -107,8 +105,8 @@ int UpGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer d
 
 
         session_id_t sessionid = CountSessionId();
-        AddMessageNode(sessionid, up_group_recv, pre_gid);
-        CRPFriendGroupMoveSend(sockfd, sessionid, up_gid, pre_gid);
+        AddMessageNode(sessionid, up_group_recv, (void *) pre_gid);
+        CRPFriendGroupMoveSend(sockfd, sessionid, (uint8_t) up_gid, (uint8_t) pre_gid);
 
 
 //    log_info("选中的上一个权值", "%d\n",up_iter_group);
@@ -128,10 +126,10 @@ int UpGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer d
 
 int down_grou(void *data)
 {
-    uint32_t gid = data;
+    uint8_t gid = (uint8_t) data;
     uint32_t usg;
-    int64_t priority;
-    int64_t next_priority;
+    int64_t priority = 0;
+    int64_t next_priority = 0;
     GtkTreeIter up_itergroup;
 
     gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &up_itergroup);
@@ -164,7 +162,6 @@ int down_grou(void *data)
     }
 
 
-
     gtk_tree_store_set(TreeViewListStore, &up_itergroup,
                        PRIORITY_COL, priority,
                        -1);
@@ -181,13 +178,12 @@ int down_group_recv(CRPBaseHeader *header, void *data)
 
     if (header->packetID == CRP_PACKET_OK)
     {
-//遍历iter
+        //接收到服务器的Ok包，主界面移动分组
         g_idle_add(down_grou, data);
 
     }
-    else
-    {
-    }
+    return 0;
+
 }
 
 int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -220,7 +216,7 @@ int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer
 
         session_id_t sessionid = CountSessionId();
         AddMessageNode(sessionid, down_group_recv, current_gid);
-        CRPFriendGroupMoveSend(sockfd, sessionid, next_gid, current_gid);
+        CRPFriendGroupMoveSend(sockfd, sessionid, (uint8_t) next_gid, (uint8_t) current_gid);
 
     }
     else

@@ -65,7 +65,7 @@ int delete_friend_recv_fun(CRPBaseHeader *header, void *data)
     }
     else
     {
-        UserGroup *group = UserFriendsGroupGet(friends, delete_gid);
+        UserGroup *group = UserFriendsGroupGet(friends, (uint8_t) delete_gid);
         UserFriendsUserDelete(group, delete_uid);//更新资料
 
     }

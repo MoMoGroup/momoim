@@ -197,7 +197,7 @@ typedef struct find_image_recv_new
     unsigned char key[16];
     FILE *fp;
 
-};
+} find_image_recv_new;
 
 int recv_new_friend_image(CRPBaseHeader *header, void *data)
 {
@@ -252,11 +252,16 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
             free(p);
             return 0;
         }
+        default:
+        {
+            break;
+        }
 
     }
+    return 0;
 }
 
-int FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
+void FindImage(const char *key, const void *data, gboolean (*fn)(void *data))
 {
     char filename[256];
     HexadecimalConversion(filename, key);//根据icon,计算一个文件名,
@@ -285,11 +290,11 @@ void *playMusicRoutine(void *data)
     {
         char path_theme[PATH_MAX] = "", path_music[PATH_MAX] = "";
         sprintf(path_theme, "%s/.momo/current_theme", getpwuid(getuid())->pw_dir);//获取本机主题目录
-        sprintf(path_music, "%s/%s", path_theme, data);
+        sprintf(path_music, "%s/%s", path_theme, (char *) data);
         if (access(path_music, F_OK) != 0)
         {
             sprintf(path_theme, "%s/.momo/theme/images", getpwuid(getuid())->pw_dir);
-            sprintf(path_music, "%s/%s", path_theme, data);
+            sprintf(path_music, "%s/%s", path_theme, (char *) data);
         }
 
         sprintf(filename, "play -q \"%s\"", path_music);

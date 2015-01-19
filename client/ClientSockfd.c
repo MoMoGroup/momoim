@@ -58,6 +58,7 @@ FriendInfo *FineNode(uint32_t uid)
         }
     }
     log_info("NO found", "node\n");
+    return 0;
 
 }
 
@@ -154,7 +155,7 @@ gboolean postMessage(gpointer user_data)
 
 int friend_group_move(CRPBaseHeader *header, void *data)
 {
-
+    return 0;
 }
 
 //接收新添加好友资料的，
@@ -163,6 +164,7 @@ int new_friend_info(CRPBaseHeader *header, void *data)
     log_info("用户资料回复开始", "\n");
     switch (header->packetID)
     {
+
         case CRP_PACKET_INFO_DATA: //用户资料回复
         {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
@@ -182,14 +184,20 @@ int new_friend_info(CRPBaseHeader *header, void *data)
 
             //infodata->info;//昵称，性别等用户资料
             log_info("用户资料回复，昵称", "%s\n", infodata->info.nickName);
-            FindImage(infodata->info.icon, mem, FriendListInsertEntry);//判断是否有头像
-            if ((const char *) infodata != header->data)
+            FindImage((const char *) infodata->info.icon, mem, FriendListInsertEntry);//判断是否有头像
+            if ((void *) infodata != header->data)
             {
                 free(infodata);
             }
-            return 0;//0删除
+
+        }
+        default:
+        {
+            break;
         }
     }
+
+    return 0;//0删除
 }
 
 
@@ -235,7 +243,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 //                    g_idle_add(treatment_request_audio_discover, audio_data_copy);
 //                    break;
 //                };
-                    //视频请求
+                //视频请求
                 case CRPFDR_VEDIO:
                 {
                     log_info("Serve Message", "视频请求\n");
@@ -252,7 +260,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     break;
                 };
             }
-            if (media_data != header->data)
+            if ((void *) media_data != header->data)
             {
                 free(media_data);
             }
@@ -356,6 +364,11 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 {
                     RemoveFriend(data);
                 };
+                default:
+                {
+                    break;
+
+                }
             }
             if ((void *) data != header->data)
             {

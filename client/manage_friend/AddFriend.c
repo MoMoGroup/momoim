@@ -36,7 +36,7 @@ typedef struct add_friend_info
     char key[16];
     session_id_t sessionid;
     char *note;
-};
+} add_friend_info;
 
 void create_surface()
 {
