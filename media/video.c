@@ -328,11 +328,11 @@ void closewindow(){
 
     int i;
     for(i=0;i<7;i++){
-        free(circle_buf_recv[i]);
-        free(circle_buf_send[i]);
+        if(circle_buf_recv[1]!=NULL)free(circle_buf_recv[i]);
+        if(circle_buf_send[1]!=NULL)free(circle_buf_send[i]);
     }
-    //free(tail_recv);
-    //free(tail_send);
+    if(tail_recv!=NULL)free(tail_recv);
+    if(tail_send!=NULL)free(tail_send);
 
     //gtk_widget_destroy(window);
     gtk_window_get_destroy_with_parent(window);
