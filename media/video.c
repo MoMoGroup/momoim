@@ -152,7 +152,7 @@ int video()
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = 0;
-
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
 
     jpeg_str *p_send;
     while (1)
@@ -236,6 +236,8 @@ void *pthread_video(void *arg)
 
 void *pthread_snd(void *socketsd)
 {
+
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
     int sd = (*(int *) socketsd);
     jpeg_str *q_send;
     while (1)
@@ -269,6 +271,8 @@ gint delete_event(GtkWindow *window)
 
 void *pthread_rev(void *socketrev)
 {
+
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
     int sd = (*(int *) socketrev);
     jpeg_str *p_recv;
     ssize_t ret;
@@ -418,6 +422,7 @@ int guiMain(void *button)
 
 void *primary_video(struct sockaddr_in *addr)
 {
+    //pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
 
     //用于取消idle的环境变量
     flag_main_idle = 0;
