@@ -44,7 +44,7 @@ typedef struct
 static jpeg_str *circle_buf_send[8], *circle_buf_recv[8];
 static jpeg_str **head_send, **tail_send, **head_recv, **tail_recv;
 
-
+GtkWindow *window;
 int mark()
 {
     int ret;
@@ -221,13 +221,15 @@ void *pthread_rev(void *socketrev)
         if (ret <= 0)
         {
             perror("recv");
-            delete_event();
+            //delete_event();
+            closewindow();
         }
         errno = 0;
         ret = recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
         if(ret<=0){
             perror("recv");
-            delete_event();
+            //delete_event();
+            closewindow();
         };
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
@@ -273,12 +275,34 @@ gboolean idleDraw(gpointer data)
     return 1;
 }
 
-gint delete_event()
-{
-    gtk_main_quit();
+void closewindow(){
+    gtk_widget_destroy(window);
+    pthread_detach(tid1);
+    pthread_detach(tid2);
+    pthread_detach(tid3);
+
     pthread_cancel(tid1);
+    pthread_join(tid1, NULL);
     pthread_cancel(tid2);
+    pthread_join(tid2, NULL);
     pthread_cancel(tid3);
+    pthread_join(tid3, NULL);
+    free(rgbBuf);
+}
+
+gint delete_event(GtkWindow *window)
+{
+    //gtk_main_quit();
+    gtk_widget_destroy(window);
+    pthread_detach(tid1);
+    pthread_detach(tid2);
+    pthread_detach(tid3);
+    pthread_cancel(tid1);
+    pthread_join(tid1, NULL);
+    pthread_cancel(tid2);
+    pthread_join(tid2, NULL);
+    pthread_cancel(tid3);
+    pthread_join(tid3, NULL);
     free(rgbBuf);
     return FALSE;
 }
@@ -286,7 +310,7 @@ gint delete_event()
 int guiMain(void *button)
 {
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
-    GtkWindow *window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
     GtkImage *image = GTK_IMAGE(gtk_image_new());
     gtk_widget_set_size_request(GTK_WIDGET(window), 640, 480);
