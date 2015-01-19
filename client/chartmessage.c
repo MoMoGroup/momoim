@@ -372,7 +372,7 @@ void UploadingFile(gchar *filename, FriendInfo *info)
         sprintf(sendfile_size, "\t %s \n 大小为：%d byte", filename + i + 1, (int) stat_buf.st_size);
     }
     file_messge->file = gtk_label_new(sendfile_size);
-    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+    font = pango_font_description_from_string("Mono");//"Mono"字体名
     pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(file_messge->file, font);
     gtk_fixed_put(GTK_FIXED(info->chartlayout), file_messge->file, 160, 5);
