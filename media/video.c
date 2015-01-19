@@ -355,6 +355,7 @@ void closewindow()
 //    pthread_detach(tid3);
 
     log_info("CloseWind", "Window is closing.\n");
+    if(flag_idle==1) return ;
     flag_idle = 1;
     flag_main_idle = 1;
 
