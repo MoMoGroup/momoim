@@ -241,7 +241,8 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
             n = (int) recvfrom(sockSender, buffer, 32, 0, (struct sockaddr *) &opaddr, &opAddrLen);
             if (n == 32)
             {
-                if (memcmp(buffer, entry->key, 32) == 0)//与本地key相等是服务器返回数据
+                if (memcmp(buffer, entry->key, 32) == 0
+                    || memcmp(buffer, (uint8_t[32]) {0}, 32))//与本地key相等是服务器返回数据
                 {
                     isServerDetected = 1;
                 }
@@ -250,6 +251,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                     isPeerDetected = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                 }
+
             }
         }
         else
@@ -278,12 +280,12 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
         };
         case CRP_PACKET_OK:
         {
-            if (!entry->peerKeySet)
+            if (!entry->messageSent)
             {
                 pthread_t tid;
                 pthread_create(&tid, NULL, (void *(*)(void *)) AudioWaitDiscover, entry);
                 CRPNETNATAcceptSend(sockfd, header->sessionID, entry->peerUid, entry->peerSession, entry->key);
-                entry->peerKeySet = 1;
+                entry->messageSent = 1;
             }
             break;
         }

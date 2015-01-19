@@ -25,7 +25,7 @@ static int DiscoverCancelHandler(POnlineUser user, PUserOperation op)
     return 0;
 }
 
-static int DiscoverDetected(struct sockaddr_in *addr, void *data)
+static int DiscoverDetected(const struct sockaddr_in *addr, void *data)
 {
     PUserOperation op = data;
     DiscoverOperation *discoverOperation = op->data;
