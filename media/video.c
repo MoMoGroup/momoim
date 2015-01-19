@@ -275,15 +275,14 @@ void *pthread_rev(void *socketrev)
         {
             perror("recv");
             //delete_event();
-            closewindow();
+            g_idle_add(delete_event, NULL);
         }
         errno = 0;
         ret = recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
         if (ret <= 0)
         {
             perror("recv");
-            //delete_event();
-            closewindow();
+            g_idle_add(delete_event, NULL);
         };
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
