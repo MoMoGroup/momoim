@@ -6,10 +6,10 @@
 
 CRP_STRUCTURE
 {
-    char key[32];
+    uint8_t key[32];
 } CRPPacketNETNATRegister;
 
 __attribute_malloc__
 CRPPacketNETNATRegister *CRPNETNATRegisterCast(CRPBaseHeader *base);
 
-int CRPNETNATRegisterSend(CRPContext context, uint32_t sessionID, char key[32]);
+int CRPNETNATRegisterSend(CRPContext context, uint32_t sessionID, uint8_t key[32]);

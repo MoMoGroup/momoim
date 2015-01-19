@@ -27,7 +27,7 @@ HostDiscoverEntry *NatHostDiscoverRegister(const char key[32], int(*fn)(struct s
     {
         sprintf(hexKey + i * 2, "%02x", key[i]);
     }
-    log_info("NatDiscover", "Key:%s\n", hexKey);
+    log_info("NatDiscover", "Register:%s\n", hexKey);
     pthread_rwlock_wrlock(&lock);
     HostDiscoverEntry *entry = (HostDiscoverEntry *) malloc(sizeof(HostDiscoverEntry));
     entry->fn = fn;

@@ -138,7 +138,7 @@ void AudioStartWaitConnection(const struct AudioDiscoverProcessEntry *entry)
     pthread_create(&t, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
 }
 
-//处理发送音频请求后，对方是否同意的函数
+//主动发起音频方
 int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
 {
     struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
@@ -271,7 +271,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
     StartAudioChat_Send(sockSender, &entry->addr);
     free(entry);
 }
-
+//接受语音聊天方
 int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
 {
     struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
@@ -328,7 +328,7 @@ int AcceptNatDiscover(CRPPacketNETNATRequest *request)
     entry->peerKeySet = 1;
     entry->peerSession = request->session;
     AddMessageNode(sid, AcceptNATDiscoverProcess, entry);
-    CRPNETNATRegisterSend(sockfd, sid, request->key);
+    CRPNETNATRegisterSend(sockfd, sid, entry->key);
     return 1;
 }
 
