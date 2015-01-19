@@ -161,7 +161,7 @@ int video()
         yuv422_rgb24(buffers[buf.index].start, tempbuf, 640, 480);
         p_send = (jpeg_str *) malloc(50000);
         /*将tempbuf中的数据转换成jpeg放入p->send中*/
-        p_send->jpeglen = (int) jpegWrite(tempbuf, p_send->jpeg_buf);
+        p_send->jpeglen = (int) jpegWrite(tempbuf,(unsigned char*) p_send->jpeg_buf);
         free(tempbuf);
         //应用程序将该帧缓冲区重新排入输入队列
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)
@@ -180,12 +180,30 @@ int video()
     return 0;
 }
 
+void video_off() {
+    enum v4l2_buf_type type;
+    type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+    //停止视频采集
+    int ret = ioctl(fd, VIDIOC_STREAMOFF, &type);
+    if (ret == -1) {
+        printf("vidio OFF error!\n");
+    }
+
+    close(fd);
+}
+
 void *pthread_video(void *arg)
 {
     video_on();
     while (1)
     {
-        video();
+        if(video()==-1)
+        {
+            video_off();
+            mark();
+            localMem();
+            video_on();
+        }
     }
     return NULL;
 }
@@ -274,7 +292,7 @@ gboolean idleDraw(gpointer data)
     pthread_cond_signal(&recv_idle);
     pthread_mutex_unlock(&mutex_recv);
     //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
-    if (read_JPEG_file(q_recv->jpeg_buf, rgbBuf, (size_t) q_recv->jpeglen))
+    if (read_JPEG_file(q_recv->jpeg_buf, (char*)rgbBuf, (size_t) q_recv->jpeglen))
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(rgbBuf, GDK_COLORSPACE_RGB, 0, 8, 640, 480, 640 * 3, NULL, NULL);
