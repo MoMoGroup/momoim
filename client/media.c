@@ -216,6 +216,25 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
     }
     return 1;
 }
+//主动发起NAT发现请求
+int AudioRequestNATDiscover(uint32_t uid)
+{
+    session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
+
+    struct AudioDiscoverProcessEntry *entry =
+            (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
+    int randNum;
+    for (int randi = 0; randi < 32 / sizeof(int); ++randi)
+    {
+        randNum = rand();
+        memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
+    }
+    entry->peerUid = uid;
+    entry->messageSent = 0;
+    entry->localSession = sessionNatDiscover;
+    AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
+    CRPNETNATRegisterSend(sockfd, sessionNatDiscover, entry->key);
+}
 
 //被动接收方发起NAT发现
 void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
@@ -235,7 +254,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        if (entry->addr.sin_port)
+        if (entry->addr.sin_port)//等待对方Discover
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
             log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), ntohs(entry->addr.sin_port));
@@ -333,26 +352,7 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
     return 1;
 }
 
-int AudioRequestNATDiscover(uint32_t uid)
-{
-    session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
-
-    struct AudioDiscoverProcessEntry *entry =
-            (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
-    int randNum;
-    for (int randi = 0; randi < 32 / sizeof(int); ++randi)
-    {
-        randNum = rand();
-        memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
-    }
-    entry->peerUid = uid;
-    entry->messageSent = 0;
-    entry->localSession = sessionNatDiscover;
-    AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
-    CRPNETNATRegisterSend(sockfd, sessionNatDiscover, entry->key);
-}
-
-//同意NAT发现
+//收到NAT请求,同意NAT发现
 int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request)
 {
     session_id_t sid = CountSessionId();

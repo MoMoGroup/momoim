@@ -114,8 +114,11 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                     }
                     else
                     {
+                        log_warning("NATIndex", "Notify Failure\n");
                         sendto(sockIdx, (uint8_t[32]) {0,}, 32, 0, (struct sockaddr *) &idxSock, addrLen);
                     }
+                }else{
+                    log_warning("NATIndex", "Length Error,%s\n", strerror(errno));
                 }
             }
             else

@@ -21,12 +21,14 @@ void NatHostFinalize()
     pthread_rwlock_destroy(&lock);
 }
 
-HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32], int(*fn)(struct sockaddr_in const *, void *), void *data)
+HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32],
+                                           int(*fn)(struct sockaddr_in const *, void *),
+                                           void *data)
 {
     char hexKey[65] = {0};
     for (int i = 0; i < 32; ++i)
     {
-        sprintf(hexKey + i * 2, "%02x",(int) key[i]);
+        sprintf(hexKey + i * 2, "%02x", (int) key[i]);
     }
     log_info("NatDiscover", "Register:%s\n", hexKey);
     pthread_rwlock_wrlock(&lock);
@@ -50,6 +52,12 @@ HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32], int(*fn)(struc
 
 int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
 {
+    char hexKey[65] = {0};
+    for (int i = 0; i < 32; ++i)
+    {
+        sprintf(hexKey + i * 2, "%02x", (int) entry->key[i]);
+    }
+    log_info("NatDiscover", "Unregister:%s\n", hexKey);
     pthread_rwlock_wrlock(&lock);
     if (entry->prev)
     {
@@ -77,8 +85,9 @@ int NatHostDiscoverNotify(struct sockaddr_in const *address, const uint8_t key[3
     char hexKey[65] = {0};
     for (int i = 0; i < 32; ++i)
     {
-        sprintf(hexKey + i * 2, "%02x", (int)key[i]);
+        sprintf(hexKey + i * 2, "%02x", (int) key[i]);
     }
+    log_info("NatDiscover", "Notify:Key:%s\n", hexKey);
     HostDiscoverEntry *entry = NULL;
     pthread_rwlock_rdlock(&lock);
     for (entry = table.first; entry != NULL; entry = entry->next)
