@@ -75,13 +75,14 @@ static gint add_group_done(GtkWidget *widget, GdkEventButton *event, gpointer da
 
 
     UserGroup *group = calloc(1, sizeof(UserGroup));
-    for (uint32_t i = 2; i < 256; i++)
+    //循环找到一个空分组id
+    for (uint8_t i = 2; i < 256; i++)
     {
 
         if (UserFriendsGroupGet(friends, i) == NULL)
         {
             group->groupId = i;
-            memcpy(group->groupName, groupname, sizeof(groupname));
+            memcpy(group->groupName, groupname, strlen(groupname));
             break;
         }
     }

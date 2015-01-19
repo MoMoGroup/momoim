@@ -46,8 +46,8 @@ gboolean mov(void *data)
                        PRIORITY_COL, priority,
                        -1);
 
-    UserGroup *frome = UserFriendsGroupGet(friends, move_info_detail->currentGid);
-    UserGroup *to = UserFriendsGroupGet(friends, move_info_detail->toGid);
+    UserGroup *frome = UserFriendsGroupGet(friends, (uint8_t) move_info_detail->currentGid);
+    UserGroup *to = UserFriendsGroupGet(friends, (uint8_t) move_info_detail->toGid);
     UserFriendsUserMove(frome, to, uid);
 
     gtk_tree_store_remove(TreeViewListStore, &move_info_detail->iteruser);
@@ -76,14 +76,13 @@ int mov_friend(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     move_info *move_info_detail = g_object_get_data(G_OBJECT(widget), "moveInfo");
 
-    // uint8_t current_friend_uid = (uint8_t *) data;
     session_id_t sessionid = CountSessionId();
     AddMessageNode(sessionid, mov_recv, move_info_detail);
     CRPFriendMoveSend(sockfd,
                       sessionid,
                       move_info_detail->currentuid,
-                      move_info_detail->currentGid,
-                      move_info_detail->toGid);
+                      (uint8_t) move_info_detail->currentGid,
+                      (uint8_t) move_info_detail->toGid);
     return 0;
 }
 
@@ -114,7 +113,7 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
     moveInfo.iteruser = iteruser;//好友iter
 
     // gtk_tree_model_iter_parent(<#(GtkTreeModel*)tree_model#>, <#(GtkTreeIter*)iter#>, <#(GtkTreeIter*)child#>)
-    UserGroup *userCueentGroup = UserFriendsGroupGet(friends, curren_group_id);
+    UserGroup *userCueentGroup = UserFriendsGroupGet(friends, (uint8_t) curren_group_id);
 
 
     GtkWidget *mov_menu = gtk_menu_new();//创建一个菜单
@@ -136,13 +135,13 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
         move_info_detail->itergroup = to_group_iter;//to分组iter
         move_info_detail->toGid = groupid;
 
-        friendGroup = UserFriendsGroupGet(friends, groupid);//保存好友信息
+        friendGroup = UserFriendsGroupGet(friends, (uint8_t) groupid);//保存好友信息
         show = gtk_menu_item_new_with_mnemonic(friendGroup->groupName);//显示名字
         gtk_container_add(GTK_CONTAINER(mov_menu), show);//添加到菜单
 
         g_object_set_data_full(G_OBJECT(show), "moveInfo", move_info_detail, free);
         g_signal_connect(G_OBJECT(show), "button_press_event",
-                         G_CALLBACK(mov_friend), current_friend_uid);
+                         G_CALLBACK(mov_friend), (void *) current_friend_uid);
 
         gtk_widget_show(show);
     }

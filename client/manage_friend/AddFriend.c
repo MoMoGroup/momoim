@@ -6,13 +6,12 @@
 #include <glib-unix.h>
 #include <math.h>
 #include <cairo-script-interpreter.h>
-#include <protocol/base.h>
 #include "friend.h"
 #include "common.h"
 #include "../managegroup/ManageGroup.h"
 
 static GtkWidget *addwindow, *addframelayout;
-static GtkWidget *addlayout2, *addlayout1, *addlayout31;
+static GtkWidget *addlayout2, *addlayout1;
 //layout
 static GtkWidget *addtext;
 static cairo_surface_t *surfacenext, *surfacenext_press, *surfaceclose;
@@ -124,7 +123,7 @@ static gint done_button_leave_event(GtkWidget *widget, GdkEventButton *event,
 
 static int addfriendRecv(CRPBaseHeader *header, void *data)
 {
-    if(header->packetID==CRP_PACKET_FAILURE)
+    if (header->packetID == CRP_PACKET_FAILURE)
     {
         g_idle_add(GroupPop, "添加失败");
     }
@@ -141,6 +140,7 @@ static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     CRPFriendAddSend(sockfd, sessionid, p->uid, p->note);//发送添加请求
     AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
+    return 0;
 
 }
 
@@ -445,6 +445,6 @@ int AddFriendFun()
     gtk_container_add(GTK_CONTAINER (addframelayout), addlayout1);
 
     gtk_widget_show_all(addwindow);
-
+    return 0;
 }
 
