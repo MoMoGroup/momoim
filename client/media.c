@@ -85,11 +85,8 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        if (!RecvPipeOK)
-        {
-            sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
-            log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), ntohs(entry->addr.sin_port));
-        }
+        sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
+        log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), ntohs(entry->addr.sin_port));
         fd_set set;
         FD_ZERO(&set);
         FD_SET(sockSender, &set);
@@ -239,7 +236,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        if (entry->addr.sin_port && !isRecvPipeOK)
+        if (entry->addr.sin_port)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
             log_info("SendKey", "To %s:%hu\n", inet_ntoa(entry->addr.sin_addr), ntohs(entry->addr.sin_port));
