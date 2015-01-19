@@ -297,7 +297,6 @@ gint delete_event(GtkWindow *window)
     pthread_detach(tid1);
     pthread_detach(tid2);
     pthread_detach(tid3);
-
     pthread_cancel(tid1);
     pthread_join(tid1, NULL);
     pthread_cancel(tid2);
