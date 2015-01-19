@@ -258,6 +258,13 @@ void *pthread_snd(void *socketsd)
 }
 
 
+gint delete_event(GtkWindow *window)
+{
+
+    closewindow();
+    return FALSE;
+}
+
 void *pthread_rev(void *socketrev)
 {
     int sd = (*(int *) socketrev);
@@ -391,13 +398,6 @@ void closewindow()
     free(rgbBuf);
 }
 
-
-gint delete_event(GtkWindow *window)
-{
-
-    closewindow();
-    return FALSE;
-}
 
 int guiMain(void *button)
 {
