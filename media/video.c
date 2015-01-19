@@ -44,6 +44,7 @@ typedef struct
 static jpeg_str *circle_buf_send[8], *circle_buf_recv[8];
 static jpeg_str **head_send, **tail_send, **head_recv, **tail_recv;
 
+struct sigaction act;
 GtkWindow *window;
 int mark()
 {
@@ -149,7 +150,7 @@ int video()
         //应用程序从视频采集输出队列中去除已含有采集数据的帧缓冲区
         if (ioctl(fd, VIDIOC_DQBUF, &buf) == -1)
         {
-            printf("ioctl未知情况\n");
+            printf("ioctl出现错误\n");
             return -1;
         }
         unsigned char *tempbuf = (unsigned char *) malloc(640 * 480 * 3);
@@ -218,6 +219,8 @@ void *pthread_rev(void *socketrev)
     int sd = (*(int *) socketrev);
     jpeg_str *p_recv;
     ssize_t ret;
+
+
     while (1)
     {
         //////////////////////////////////////接受的循环队列/////////////////////////////////////////
@@ -276,6 +279,7 @@ gboolean idleDraw(gpointer data)
         gtk_image_set_from_pixbuf(image, pixbuf);
         g_object_unref(pixbuf);
     }
+    fprintf(stderr,".");
     free(q_recv);
     ///////////////////////////////////////////////////////////////////////////////////////////
     return 1;
@@ -411,6 +415,11 @@ void *primary_video(struct sockaddr_in *addr)
         }
         close(listener);
     }
+
+    act.sa_handler=closewindow;
+    if(sigaction(SIGPIPE, &act , NULL)==-1)
+        perror("sign error");
+
     fd = open("/dev/video0", O_RDWR, 0);
     if (fd == -1)
     {
