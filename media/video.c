@@ -56,6 +56,7 @@ static int len_buffer;
 void closewindow();
 
 
+
 int mark()
 {
     int ret;
@@ -264,9 +265,12 @@ void *pthread_snd(void *socketsd)
 
 gint delete_event(GtkWindow *window)
 {
-
     closewindow();
     return FALSE;
+}
+
+void pre_closewindow(){
+    g_idle_add(delete_event, NULL);
 }
 
 void *pthread_rev(void *socketrev)
@@ -503,7 +507,7 @@ void *primary_video(struct sockaddr_in *addr)
         close(listener);
     }
 
-    act.sa_handler = closewindow;
+    act.sa_handler = pre_closewindow;
     if (sigaction(SIGPIPE, &act, NULL) == -1)
     {
         perror("sign error");
