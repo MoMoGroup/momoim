@@ -166,8 +166,9 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
                 AudioStartWaitConnection(entry);
                 return 0;
             }
+            break;
         };
-        case CRP_PACKET_NET_DETECTED:
+        case CRP_PACKET_NET_NAT_DETECTED:
         {
             CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
             entry->addr.sin_family = AF_INET;
@@ -299,7 +300,7 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
             }
             break;
         }
-        case CRP_PACKET_NET_DETECTED:
+        case CRP_PACKET_NET_NAT_DETECTED:
         {
             CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
             entry->addr.sin_family = AF_INET;

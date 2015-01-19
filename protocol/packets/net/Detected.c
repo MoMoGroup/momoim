@@ -8,7 +8,7 @@ CRPPacketNATDetected *CRPNATDetectedCast(CRPBaseHeader *base)
 int CRPNATDetectedSend(CRPContext context, uint32_t sessionID, uint32_t ipv4, uint16_t port)
 {
     return CRPSend(context,
-                   CRP_PACKET_NET_DETECTED,
+                   CRP_PACKET_NET_NAT_DETECTED,
                    sessionID,
                    &(CRPPacketNATDetected) {.ipv4=ipv4, .port=port},
                    6) != -1;

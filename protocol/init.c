@@ -70,7 +70,7 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_NET_NAT_REQUEST]          = (void *(*)(CRPBaseHeader *)) CRPNETNATRequestCast,
         [CRP_PACKET_NET_NAT_ACCEPT]           = (void *(*)(CRPBaseHeader *)) CRPNETNATAcceptCast,
         [CRP_PACKET_NET_NAT_REFUSE]           = (void *(*)(CRPBaseHeader *)) CRPNETNATRefuseCast,
-        [CRP_PACKET_NET_DETECTED]             = (void *(*)(CRPBaseHeader *)) CRPNATDetectedCast,
+        [CRP_PACKET_NET_NAT_DETECTED]         = (void *(*)(CRPBaseHeader *)) CRPNATDetectedCast,
 };
 
 typedef struct

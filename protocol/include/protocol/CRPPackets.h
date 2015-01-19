@@ -116,7 +116,7 @@ typedef enum
     CRP_PACKET_NET__START = 0x60,   //NAT内网穿透开始
     CRP_PACKET_NET_QUALITY_TEST,    //网络质量测试
     CRP_PACKET_NET_INET_ADDRESS,    //IP地址数据包
-    CRP_PACKET_NET_DETECTED,        //主机已检测到
+    CRP_PACKET_NET_NAT_DETECTED,        //主机已检测到
     CRP_PACKET_NET_NAT_REGISTER,    //NAT网络发现
     CRP_PACKET_NET_NAT_REQUEST,     //NAT请求
     CRP_PACKET_NET_NAT_ACCEPT,      //接受NAT请求
