@@ -115,6 +115,8 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
                     isPeerDetected = 1;
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                 }
+            }else{
+                perror("recv");
             }
         }
         else
