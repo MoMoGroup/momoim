@@ -4,7 +4,9 @@
 
 #include "../MainInterface.h"
 
-extern int Friend_Delete_Popup(GtkTreeView *treeview);
+//extern int Friend_Delete_Popup(GtkTreeView *treeview);
+extern int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *treeview);
+
 extern int RemoveFriend(void *data);
 
 extern int AddFriendFun();

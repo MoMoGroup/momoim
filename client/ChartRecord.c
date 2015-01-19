@@ -28,7 +28,7 @@ static void create_surfaces()
 }
 
 
-void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
+void DecodingRecordText(gchar *text, FriendInfo *info, int count)
 {
 
     gchar *ptext = text, *ptext_end = text + count;
@@ -111,7 +111,7 @@ void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
                     GtkTextChildAnchor *anchor;
                     GtkWidget *image;
                     char filename[256] = {0};
-                    char strdest[16] = {0};
+                    unsigned char strdest[16] = {0};
                     ptext = ptext + 2;
                     memcpy(strdest, ptext, 16);
                     HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
@@ -125,8 +125,6 @@ void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
                 default:
                     break;
             }
-
-
         }
         else
         {
@@ -138,8 +136,8 @@ void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
-//    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->record_text),
-//                                       gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
+    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->record_text),
+                                       gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
 }
 
 gboolean show_record_message(void *data)

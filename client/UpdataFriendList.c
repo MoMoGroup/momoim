@@ -198,7 +198,7 @@ int FriendFriendInfoChange(CRPBaseHeader *header, void *data)
             p = p->next;
             if (infodata->info.uid == p->user.uid)
             {
-                memcpy(p->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));
+                memcpy(p->user.nickName, infodata->info.nickName, strlen(infodata->info.nickName) + 1);
                 memcpy(p->user.icon, infodata->info.icon, sizeof(infodata->info.icon));
 
                 break;

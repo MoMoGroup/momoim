@@ -13,7 +13,6 @@
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
-#include "chart.h"
 
 static GtkWidget *imageremember, *imagehead, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
@@ -33,9 +32,6 @@ int flag_cunchu = 0;
 int FlagRemember = 0;
 int FirstPwd = 0;
 char mulu_username[80] = "", mulu_benji[80] = "";
-GtkStyleContext *combostyle;
-GtkStyleProvider *comboprovider;
-const gchar *combostring;
 
 static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd, *sremember1, *sremember2;
 static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *scancel10_1, *scancel10_2, *scancel10_3;
@@ -250,13 +246,13 @@ void on_button_clicked()
 //获取登录名和密码
     if (FirstPwd == 0)
     {
-        name = gtk_combo_box_text_get_active_text(LoginWindowUserNameBox);
+        name = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(LoginWindowUserNameBox));
         pwd = gtk_entry_get_text(GTK_ENTRY(LoginWindowPassWordBox));
     }
     else
     {
         char hash[16];
-        name = gtk_combo_box_text_get_active_text(LoginWindowUserNameBox);
+        name = gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(LoginWindowUserNameBox));
         pwd = gtk_entry_get_text(GTK_ENTRY(LoginWindowPassWordBox));
         MD5((unsigned char *) pwd, strlen(pwd), hash);//加密存储
         strncpy(pwd, hash, 16);
@@ -435,6 +431,7 @@ static gint passwd_change_event()
             }
         }
     }
+    return 0;
 }
 
 //背景
@@ -1002,7 +999,7 @@ gboolean loadloginLayout(gpointer user_data)
     //设置两个输入框
     LoginWindowUserNameBox = gtk_combo_box_text_new_with_entry();
     GtkEntry *nameEntry = GTK_ENTRY(gtk_bin_get_child(LoginWindowUserNameBox));
-    gtk_entry_set_width_chars(nameEntry, 19);
+    gtk_entry_set_width_chars(nameEntry, 15);
 
     LoginWindowPassWordBox = gtk_entry_new();
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度
@@ -1057,7 +1054,7 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window
     gtk_container_add(GTK_CONTAINER (frameLayout), loginLayout);
 
-    gtk_widget_show(landbutevent_box);
+    gtk_widget_show(GTK_WIDGET(landbutevent_box));
     gtk_widget_show_all(window);
     return FALSE;
 }

@@ -112,7 +112,7 @@ static gint pop_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
 
 int put(void *data)
 {
-    tongyi *info = data;
+    tongyi *info = data;//这个函数不能释放，销毁窗口用到了
     GtkEventBox *popup_accept_eventbox, *popup_cancel_eventbox, *pop_mov_event;
     GtkWidget *popupwindow, *popupframelayout, *popuplayout;
 
@@ -139,8 +139,7 @@ int put(void *data)
 
     popupbackground = gtk_image_new_from_surface(popupsurfacebackground);
 
-//    tongyi *info = malloc(sizeof(struct tongyi));
-//    info->uid = uid;
+
     info->win = popupwindow;
 
     // 设置窗体获取鼠标事件
@@ -175,7 +174,6 @@ int put(void *data)
 
 
     char buf[80], mes[256];
-
     GtkWidget *yanzheng, *text, *xitong;
 
     sprintf(buf, "用户%d,昵称:%s\n请求添加你为好友。", info->uid, info->nickname);
@@ -214,17 +212,15 @@ int get_nicheng(CRPBaseHeader *header, void *data)
     if (header->packetID == CRP_PACKET_INFO_DATA)//查询到资料，防到通知框
     {
         CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-        memcpy(aaaa->nickname, infodata->info.nickName, sizeof(infodata->info.nickName));
+        memcpy(aaaa->nickname, infodata->info.nickName, strlen(infodata->info.nickName) + 1);
         g_idle_add(put, aaaa);
 
         if ((void *) infodata == header)
         {
             free(infodata);
         }
-        return 0;
     }
-
-
+    return 0;
 }
 
 int Friend_Request_Popup(uint32_t uid, const char *verification_message)
