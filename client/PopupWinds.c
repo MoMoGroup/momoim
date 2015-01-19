@@ -112,7 +112,7 @@ int popup(const char *title, const char *tell)
 
     PangoLayout *layout = pango_layout_new(context);
     //pango_layout_set_font_description(layout, pango_font_description_from_string("Monospace 15"));
-    pango_layout_set_text(layout, tell, strlen(tell));
+    pango_layout_set_text(layout, tell, (int) strlen(tell));
     pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
     pango_layout_get_pixel_size(layout, &maWidth, &maHeight);
 

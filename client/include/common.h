@@ -15,7 +15,7 @@ extern int CopyFile(const char *sourceFileNameWithPath, const char *targetFileNa
 
 extern void HexadecimalConversion(char *filename, unsigned char const *fileKey);
 
-extern int FindImage(const char *key, const void *data, gboolean (*fn)(void *data));
+extern void FindImage(const char *key, const void *data, gboolean (*fn)(void *data));
 
 GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color);
 

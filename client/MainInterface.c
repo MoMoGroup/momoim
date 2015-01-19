@@ -13,6 +13,7 @@
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
 
+
 static GtkWidget *status;
 
 static GtkWidget *background1, *search, *friend, *change, *closebut, *SetUp;
@@ -69,7 +70,7 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
         if (FlagChange == 1)
         {
             //换肤成cartoon
-            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80], string1[80], string2[80];
+            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80];
             sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
             sprintf(mulu_thempath, "%s/current_theme", mulu_benji);
             unlink(mulu_thempath);
@@ -83,7 +84,7 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
         if (FlagChange == 2)
         {
             //换肤成flower
-            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80], string1[80], string2[80];
+            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80];
             sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
             sprintf(mulu_thempath, "%s/current_theme", mulu_benji);
             unlink(mulu_thempath);
@@ -97,7 +98,7 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
         if (FlagChange == 3)
         {
             //换肤成lol
-            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80], string1[80], string2[80];
+            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80];
             sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
             sprintf(mulu_thempath, "%s/current_theme", mulu_benji);
             unlink(mulu_thempath);
@@ -186,7 +187,7 @@ static gint ipic3_button_release_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 //主函数
-int changethemeface()
+void changethemeface()
 {
     //初始化窗口
     huanfuwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -272,6 +273,7 @@ int changethemeface()
 
 
     gtk_widget_show_all(huanfuwindow);
+
 }
 
 /***********换肤END*************/
@@ -307,7 +309,7 @@ GtkTreeModel *createModel()
         cr = cairo_create(surface);
         cairo_move_to(cr, 0, 20);
         cairo_set_font_size(cr, 14);
-        cairo_select_font_face(cr, "Monospace", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+        cairo_select_font_face(cr, "Droid Sans Mono", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_show_text(cr, friends->groups[i].groupName);
         pixbuf = gdk_pixbuf_get_from_surface(surface, 0, 0, 260, 33);
         gtk_tree_store_append(TreeViewListStore, &iter1, NULL);
@@ -697,7 +699,7 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
 }
 
 //接收文件处理函数
-int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
+int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
 {
     if (info->chartwindow != NULL)
     {
@@ -710,17 +712,16 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
         gchar file_info[256];
         sprintf(file_info, "莫默询问您：\n您想接收 %s 这份文件吗？", file_message_data->filename);
 
-        dialog = gtk_message_dialog_new(info->chartwindow, GTK_DIALOG_MODAL,
+        dialog = gtk_message_dialog_new(GTK_WINDOW(info->chartwindow), GTK_DIALOG_MODAL,
                                         GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
                                         file_info);
         gtk_window_set_title(GTK_WINDOW (dialog), "Question");
         gint result = gtk_dialog_run(GTK_DIALOG (dialog));
-        g_print("%the result is %d\n", result);
         if (result == -5)
         {
             gtk_widget_destroy(dialog);
             //文件的信息初始化
-            char strdest[17] = {0};
+            unsigned char strdest[17] = {0};
             size_t filename_len = strlen(file_message_data->filename);
             memcpy(&file_message_data->file_size, recv_text + filename_len, 4);//获取文件大小
             memcpy(strdest, recv_text + filename_len + 4, 16);
@@ -729,22 +730,16 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
             file_message_data->userinfo = info;
             gchar sendfile_size[100];
             PangoFontDescription *font;
-
             session_id_t session_id;
-
             //写文件
             GtkWidget *save_dialog;
-//            gchar *file =(gchar *) malloc(100);
-//            sprintf(file, "%s/文档",getpwuid(getuid())->pw_dir);
             save_dialog = gtk_file_chooser_dialog_new("将文件保存在...", GTK_WINDOW(info->chartwindow),
                                                       GTK_FILE_CHOOSER_ACTION_SAVE,
                                                       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                                       GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
                                                       NULL);
-            // gtk_file_chooser_set_current_folder(save_dialog, file);
             gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(save_dialog), file_message_data->filename);
             gint save_result = gtk_dialog_run(GTK_DIALOG (save_dialog));
-//            free(file);
             if (save_result == GTK_RESPONSE_ACCEPT)
             {
                 gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (save_dialog));
@@ -752,48 +747,46 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
                 memcpy(file_message_data->filemulu, filename, len_filename);
                 file_message_data->filemulu[len_filename] = 0;
                 g_free(filename);
-            }
-/*            else
-            {
-                sprintf(file_message_data->filemulu,
-                        "%s/.momo/files/%s",
-                        getpwuid(getuid())->pw_dir,
-                        file_message_data->filename);
+                gtk_widget_destroy(save_dialog);
 
-            }*/
-            gtk_widget_destroy(save_dialog);
+                if (file_message_data->file_size / 1048576.0 > 0)
+                {
+                    sprintf(sendfile_size, "\t %s \n 大小为：%.2f M", file_message_data->filename,
+                            file_message_data->file_size / 1048576.0);
+                }
+                else
+                {
+                    sprintf(sendfile_size,
+                            "\t %s \n 大小为：%d byte", file_message_data->filename, file_message_data->file_size);
+                }
+                //显示的文件名和大小
+                file_message_data->file = gtk_label_new(sendfile_size);
+                font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+                pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
+                gtk_widget_override_font(file_message_data->file, font);
+                gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->file, 160, 5);
+                gtk_widget_show(file_message_data->file);                   //文件名和大小
 
-            if (file_message_data->file_size / 1048576.0 > 0)
-            {
-                sprintf(sendfile_size, "\t %s \n 大小为：%.2f M", file_message_data->filename,
-                        file_message_data->file_size / 1048576.0);
+                //进度条
+                file_message_data->progressbar = gtk_progress_bar_new();        //进度条
+                gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->progressbar, 175, 50);
+                gtk_widget_show(file_message_data->progressbar);
+                g_idle_add(recv_progress_bar_crcle, file_message_data);  //用来更新进度条
+
+
+                file_message_data->Wfp = (fopen(file_message_data->filemulu, "w"));
+
+                session_id = CountSessionId();
+                AddMessageNode(session_id, deal_with_recv_file, file_message_data);
+                CRPFileRequestSend(sockfd, session_id, 0, strdest);
+
             }
             else
             {
-                sprintf(sendfile_size,
-                        "\t %s \n 大小为：%d byte", file_message_data->filename, file_message_data->file_size);
+                free(file_message_data->filename);
+                free(file_message_data);
+                gtk_widget_destroy(save_dialog);
             }
-            //显示的文件名和大小
-            file_message_data->file = gtk_label_new(sendfile_size);
-            font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
-            pango_font_description_set_size(font, 10 * PANGO_SCALE);//设置字体大小
-            gtk_widget_override_font(file_message_data->file, font);
-            gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->file, 160, 5);
-            gtk_widget_show(file_message_data->file);                   //文件名和大小
-
-            //进度条
-            file_message_data->progressbar = gtk_progress_bar_new();        //进度条
-            gtk_fixed_put(GTK_FIXED(info->chartlayout), file_message_data->progressbar, 175, 50);
-            gtk_widget_show(file_message_data->progressbar);
-            g_idle_add(recv_progress_bar_crcle, file_message_data);  //用来更新进度条
-
-
-            file_message_data->Wfp = (fopen(file_message_data->filemulu, "w"));
-
-            session_id = CountSessionId();
-            AddMessageNode(session_id, deal_with_recv_file, file_message_data);
-            CRPFileRequestSend(sockfd, session_id, 0, strdest);
-
         }
         else
         {
@@ -801,7 +794,6 @@ int file_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
             free(file_message_data);
             gtk_widget_destroy(dialog);
         }
-
     }
     return 0;
 }
@@ -854,7 +846,7 @@ int deal_with_recv_message(void *data)
 }
 
 //接收图片函数
-int image_message_recv(gchar *recv_text, FriendInfo *info, int charlen)
+int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
 {
     int i = 0;
     int isimageflag = 0;
@@ -1280,7 +1272,7 @@ static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event
 void set_position(GtkMenu *menu, gint *px, gint *py, gboolean *push_in, gpointer data)
 {
 
-    gdk_window_get_origin(window, px, py);
+    gdk_window_get_origin(GDK_WINDOW(window), px, py);
     *py += 10;
 
 }
@@ -1301,6 +1293,7 @@ int status_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer
     {
         gtk_image_set_from_surface((GtkImage *) status, surface_status2);
     }
+    return 0;
 }
 
 //松开
@@ -1312,7 +1305,7 @@ int status_button_release_event(GtkWidget *widget, GdkEventButton *event, gpoint
     gtk_menu_popup(GTK_MENU(menu_status), NULL, NULL, set_position, NULL, event->button, event->time);
 
     gtk_image_set_from_surface((GtkImage *) status, surface_status);
-
+    return 0;
 }
 
 //离开
@@ -1328,7 +1321,7 @@ static gint status_button_leave_event(GtkWidget *widget, GdkEventButton *event,
 int MainInterFace()
 {
     //一个关闭语音按钮的标志位。为１时表示语音已经打开，为０表示没有人在语音。
-    flag_audio_close=0;
+    flag_audio_close = 0;
 
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
@@ -1389,11 +1382,11 @@ int MainInterFace()
                                     NULL);
 
 
-    gtk_fixed_put(GTK_FIXED(MainLayout), background_event_box, 0, 0);//起始坐标
-    gtk_fixed_put(GTK_FIXED(MainLayout), change_event_box, 240, 185);
-    gtk_fixed_put(GTK_FIXED(MainLayout), closebut_event_box, 247, 0);
-    gtk_fixed_put(GTK_FIXED(MainLayout), search_event_box, 0, 140);
-    gtk_fixed_put(GTK_FIXED(MainLayout), setup_event_box, 205, 188);//设置按钮
+    gtk_fixed_put(GTK_FIXED(MainLayout), GTK_WIDGET(background_event_box), 0, 0);//起始坐标
+    gtk_fixed_put(GTK_FIXED(MainLayout), GTK_WIDGET(change_event_box), 240, 185);
+    gtk_fixed_put(GTK_FIXED(MainLayout), GTK_WIDGET(closebut_event_box), 247, 0);
+    gtk_fixed_put(GTK_FIXED(MainLayout), GTK_WIDGET(search_event_box), 0, 140);
+    gtk_fixed_put(GTK_FIXED(MainLayout), GTK_WIDGET(setup_event_box), 205, 188);//设置按钮
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);
     loadinfo();
 
@@ -1404,7 +1397,7 @@ int MainInterFace()
                                     G_CALLBACK(headx_button_release_event),
                                     NULL,
                                     NULL);
-    gtk_fixed_put(GTK_FIXED(MainLayout), headx_event_box, 10, 15);
+    gtk_fixed_put(GTK_FIXED(MainLayout), GTK_WIDGET(headx_event_box), 10, 15);
 
     GtkWidget *online, *hideline;
 
@@ -1412,7 +1405,7 @@ int MainInterFace()
     surface_status2 = ChangeThem_png("状态2.png");
     status = gtk_image_new_from_surface(surface_status);
 
-    GtkEventBox *online_event_box, *hide_event_box, *status_event_box;
+    GtkEventBox *status_event_box;
     status_event_box = BuildEventBox(status,
                                      G_CALLBACK(status_button_press_event),
                                      G_CALLBACK(status_button_notify_event),
@@ -1420,7 +1413,7 @@ int MainInterFace()
                                      G_CALLBACK(status_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(MainLayout), status_event_box, 220, 3);//起始坐标
+    gtk_fixed_put(GTK_FIXED(MainLayout), GTK_WIDGET(status_event_box), 220, 3);//起始坐标
 
 
     GtkWidget *changeMenu;

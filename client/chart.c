@@ -13,7 +13,8 @@
 #include "media.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
-#include "../media/sound.h"
+#include "../media/audio.h"
+#include "onlylookinfo.h"
 
 int flag_audio_close;
 
@@ -262,7 +263,15 @@ static gint voice_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
     FriendInfo *info = (FriendInfo *) data;
     //设置语音按钮
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    //判断此时是不是在语音聊天，是的话将语音聊天按钮设置成占线模式，否则普通模式
+    if (flag_audio_close == 0)
+    {
+        gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    }
+    else
+    {
+        gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
+    }
 
     return 0;
 }
@@ -639,7 +648,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
             else
             {
                 GtkWidget *cue_dialog;
-                cue_dialog = gtk_message_dialog_new(dialog, GTK_DIALOG_MODAL,
+                cue_dialog = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_MODAL,
                                                     GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
                                                     "文件大小不应超过150M，请选择其他文件");
                 gtk_window_set_title(GTK_WINDOW (cue_dialog), "Information");
@@ -838,7 +847,7 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
                 UserWordInfo.style = pango_font_description_get_style(UserWordInfo.description); //斜体
                 UserWordInfo.weight = pango_font_description_get_weight(UserWordInfo.description); //宽度
                 gtk_widget_override_font(info->input_text, UserWordInfo.description); //设置输入框的字体
-                UserWordInfo.font = pango_font_family_get_name(fontFamily);
+                UserWordInfo.font = (gchar *) pango_font_family_get_name(fontFamily);
                 handle_font_color(info);
                 break;
             }
@@ -912,7 +921,6 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         GtkColorSelectionDialog *dialog;
         GtkColorSelection *colorsel;
         GdkColor color;
-        //gtk_color_chooser_dialog_new(<#(const gchar*)title#>, <#(GtkWindow*)parent#>);
         dialog = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new("ColorSelect"));
         color.red = 0;
         color.blue = 65535;
@@ -922,7 +930,6 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_color_selection_set_has_palette(colorsel, 1);
         gtk_color_selection_set_previous_color(colorsel, &color);
         gtk_color_selection_set_current_color(colorsel, &color);
-        //gtk_color_chooser_set_rgba(<#(GtkColorChooser*)chooser#>, <#(const GdkRGBA*)color#>)
         if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
         {
             gtk_color_selection_get_current_color(colorsel, &color);
@@ -1036,7 +1043,7 @@ static gint chartrecord_leave_notify_event(GtkWidget *widget, GdkEventButton *ev
     return 0;
 }
 
-static gint text_view_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+static gint text_view_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
     if (info->look_window != NULL)
@@ -1047,12 +1054,27 @@ static gint text_view_click(GtkWidget *widget, GdkEventButton *event, gpointer d
     return 0;
 }
 
+static gint nicheng_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+    if (info->Infowind == NULL)
+    {
+        OnlyLookInfo(info);
+    }
+    else
+    {
+        gtk_window_present(GTK_WINDOW(info->Infowind));
+    }
+    return 0;
+}
+
+
 int MainChart(FriendInfo *friendinfonode)
 {
 
     GtkEventBox *chartbackground_event_box, *send_event_box, *voice_event_box, *video_event_box;
     GtkEventBox *close_event_box, *close_but_event_box, *look_event_box, *jietu_event_box, *file_event_box;
-    GtkEventBox *photo_event_box, *wordart_event_box, *color_event_box, *chartrecord_event_box;
+    GtkEventBox *photo_event_box, *wordart_event_box, *color_event_box, *chartrecord_event_box, *nicheng_event_box;
 
     //创建窗口，并为窗口的关闭信号加回调函数以便退出
     friendinfonode->chartwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -1225,11 +1247,15 @@ int MainChart(FriendInfo *friendinfonode)
     GtkWidget *nicheng;
     PangoFontDescription *font;
     nicheng = gtk_label_new(friendinfonode->user.nickName);
+
     font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(nicheng, font);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), nicheng, 100, 20);
-
+    nicheng_event_box = BuildEventBox(
+            nicheng,
+            G_CALLBACK(nicheng_button_event),
+            NULL, NULL, NULL, NULL, friendinfonode);
+    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), nicheng_event_box, 100, 20);
 //发送
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(send_event_box), 390, 512);
 //语音
@@ -1262,8 +1288,14 @@ int MainChart(FriendInfo *friendinfonode)
     //创建发送文本框，和接受文本框
     friendinfonode->input_text = gtk_text_view_new();
     friendinfonode->show_text = gtk_text_view_new();
-    g_signal_connect(friendinfonode->input_text, "clicked", G_CALLBACK(text_view_click), friendinfonode);
-    g_signal_connect(friendinfonode->show_text, "clicked", G_CALLBACK(text_view_click), friendinfonode);
+    g_signal_connect(friendinfonode->input_text,
+                     "button_press_event",
+                     G_CALLBACK(text_view_button_event),
+                     friendinfonode);
+    g_signal_connect(friendinfonode->show_text,
+                     "button_press_event",
+                     G_CALLBACK(text_view_button_event),
+                     friendinfonode);
 
     friendinfonode->input_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->input_text));
     friendinfonode->show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (friendinfonode->show_text));
@@ -1278,12 +1310,7 @@ int MainChart(FriendInfo *friendinfonode)
     //创建滚动窗口
     friendinfonode->sw1 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
     friendinfonode->sw2 = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
-//    gtk_text_view_scroll_to_iter(<#(GtkTextView*)text_view#>,
-//                                 <#(GtkTextIter*)iter#>,
-//                                 <#(gdouble)within_margin#>,
-//                                 <#(gboolean)use_align#>,
-//                                 <#(gdouble)xalign#>,
-//                                 <#(gdouble)yalign#>)
+
     gtk_container_add(GTK_CONTAINER(friendinfonode->sw1), friendinfonode->input_text);
     gtk_container_add(GTK_CONTAINER(friendinfonode->sw2), friendinfonode->show_text);
 

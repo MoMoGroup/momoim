@@ -54,32 +54,23 @@ int RemoveFriend(void *data)
 }
 
 
-//如果服务区发来FAILURE包，说明删除失败，弹窗提醒
+//如果服务区发来FAILURE包，说明删除好友失败，弹窗提醒
 int delete_friend_recv_fun(CRPBaseHeader *header, void *data)
 {
 
     if (header->packetID == CRP_PACKET_FAILURE)//删除成功
     {
-        g_idle_add(GroupPop, "删除失败");
+        g_idle_add(GroupPop, "删除好友失败");
         return 0;
     }
     else
     {
+        UserGroup *group = UserFriendsGroupGet(friends, (uint8_t) delete_gid);
+        UserFriendsUserDelete(group, delete_uid);//更新资料
+        g_idle_add(GroupPop, "删除好友成功");
 
-        UserFriendsUserDelete(UserFriendsGroupGet(friends, delete_gid), delete_uid);
-//        FriendInfo *p = FriendInfoHead;//更新链表里的资料
-//        while (p->next)
-//        {
-//            if (uid == p->next->user.uid)//p的下一个节点需要删除
-//            {
-//                FriendInfo *a = p->next;
-//                p->next = a->next;
-//                free(a);
-//
-//                break;
-//            }
-//        }
     }
+    return 0;
 }
 
 //忽略按钮放上去
@@ -134,7 +125,7 @@ int delete_done_event_fun()
 {
     session_id_t sessionid = CountSessionId();
     AddMessageNode(sessionid, delete_friend_recv_fun, NULL);
-    CRPFriendDeleteSend(sockfd, sessionid, delete_uid, delete_gid);//发送删除好友的请求
+    CRPFriendDeleteSend(sockfd, sessionid, delete_uid, (uint8_t) delete_gid);//发送删除好友的请求
     gtk_widget_destroy(delete_window);
     return 0;
 
@@ -149,8 +140,7 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
     GtkEventBox *delete_cancel_eventbox, *delete_done_eventbox;
     char str[80];
     GtkTreeIter itergroup, iteruser;
-    GtkWidget *show, *txt, *xitong;
-//    GtkTreeIter itergroup, iteruser;
+    GtkWidget *txt, *xitong;
 //首先拿到选中好友所在分组id,和好友uid
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
@@ -162,7 +152,6 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
 
     log_info("要删除好友Uid", "%d\n", delete_uid);
     log_info("要删除好友分组Gid", "%u\n", delete_gid);
-
 
     delete_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     delete_framelayout = gtk_layout_new(NULL, NULL);
@@ -203,7 +192,7 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
 
 
     sprintf(str, "确定删除%u吗", delete_uid);
-    txt = gtk_label_new(str);
+    txt = gtk_label_new(str);//确定删除提示框
 
     xitong = gtk_label_new("系统消息");
 

@@ -28,7 +28,7 @@ static void create_surfaces()
 }
 
 
-void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
+void DecodingRecordText(gchar *text, FriendInfo *info, int count)
 {
 
     gchar *ptext = text, *ptext_end = text + count;
@@ -111,7 +111,7 @@ void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
                     GtkTextChildAnchor *anchor;
                     GtkWidget *image;
                     char filename[256] = {0};
-                    char strdest[16] = {0};
+                    unsigned char strdest[16] = {0};
                     ptext = ptext + 2;
                     memcpy(strdest, ptext, 16);
                     HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
@@ -125,8 +125,6 @@ void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
                 default:
                     break;
             }
-
-
         }
         else
         {
@@ -138,8 +136,8 @@ void DecodingRecordText(const gchar *text, FriendInfo *info, int count)
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
-//    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->record_text),
-//                                       gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
+    gtk_text_view_scroll_mark_onscreen(GTK_TEXT_VIEW(info->record_text),
+                                       gtk_text_buffer_get_insert(info->show_buffer));//实现自动滚屏的效果
 }
 
 gboolean show_record_message(void *data)
@@ -153,12 +151,22 @@ gboolean show_record_message(void *data)
             record_message->max_id = record_message->record_message_data[i].record_id;
         }
         char nicheng_times[60] = {0};
+        char date[50];
         struct tm *p;
         GtkTextIter start, end;
         GtkTextBuffer *buffer;
         buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(record_message->info->record_text));
         gtk_text_buffer_get_bounds(buffer, &start, &end);
         p = localtime(&record_message->record_message_data[i].time);
+
+        sprintf(date, "  %d/%d/%d \n", p->tm_year + 1900, 1 + p->tm_mon, p->tm_mday);
+        gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date);
+        PangoFontDescription *font;
+        font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+        pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
+        gtk_widget_override_font(record_message->info->record_date, font);
+        gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
+
         if (record_message->record_message_data[i].record_user_uid == record_message->info->user.uid)
         {
             sprintf(nicheng_times,
@@ -463,7 +471,6 @@ static void calendar_event(GtkWidget *widget, GdkEventButton *event, gpointer da
     RcordMessage *record_message = (RcordMessage *) data;
     struct tm ptime;
     time_t times;
-    char date[40] = {0};
     guint year;
     guint month;
     guint day;
@@ -472,16 +479,8 @@ static void calendar_event(GtkWidget *widget, GdkEventButton *event, gpointer da
     ptime.tm_mon = month;
     ptime.tm_mday = day;
     times = mktime(&ptime);
-    sprintf(date, "  %d / %d / %d \n", year, 1 + month, day);
-    gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date);
-    PangoFontDescription *font;
-    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
-    pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
-    gtk_widget_override_font(record_message->info->record_date, font);
-    gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
     gtk_widget_destroy(widget);
-    widget = NULL;
-
+    record_message->info->calendar = NULL;
     MessageQueryCondition *message_query_conditon = (MessageQueryCondition *) malloc(sizeof(MessageQueryCondition));
     message_query_conditon->from = record_message->info->user.uid;
     message_query_conditon->to = record_message->info->user.uid;
@@ -598,6 +597,18 @@ static gint close_but_leave_notify_event(GtkWidget *widget, GdkEventButton *even
     return 0;
 }
 
+static gint text_view_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+    if (info->calendar != NULL)
+    {
+        gtk_widget_destroy(info->calendar);
+        info->calendar = NULL;
+    }
+    return 0;
+}
+
+
 void ChartRecord(FriendInfo *info)
 {
     GtkEventBox *record_background_event_box, *record_next_event_box, *record_close_event_box, *calendar_event_box, *record_upward_event_box;
@@ -685,6 +696,10 @@ void ChartRecord(FriendInfo *info)
 
     record_message->info->record_text = gtk_text_view_new();
     record_message->info->record_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (record_message->info->record_text));
+    g_signal_connect(record_message->info->record_text,
+                     "button_press_event",
+                     G_CALLBACK(text_view_click),
+                     record_message->info);
 
     //创建文字标记
     gtk_text_buffer_create_tag(record_message->info->record_buffer, "red_foreground", "foreground", "red", NULL);

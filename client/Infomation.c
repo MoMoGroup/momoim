@@ -211,6 +211,7 @@ static const char *xingzuo[12][2] = {
         {"天蝎座", "射手座"},
         {"射手座", "魔蝎座"}
 };
+static UserInfo weinfo;
 
 static void destroy_infosurfaces()
 {
@@ -225,19 +226,195 @@ static void destroy_infosurfaces()
     cairo_surface_destroy(Surfaceend2);
 }
 
-int infoupdate(CRPBaseHeader *header, void *data)//资料更新处理函数
+int okinfo(void *data)
+{
+    popup("莫默告诉你：", "恭喜你修改成功");
+    /*修改成功关闭修改界面*/
+    memcpy(CurrentUserInfo, &weinfo, sizeof(weinfo));
+    gtk_label_set_label((GtkLabel *) userid, CurrentUserInfo->nickName);//更新主界面昵称
+    //更新主界面分组下用户的头像和昵称
+    GdkPixbuf *pixbuf;
+    pixbuf = DrawFriend(CurrentUserInfo, 1);
+    GtkTreeIter group_iter, useriter;
+    uint32_t groupid = 0;
+
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &group_iter);
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
+                       FRIENDUID_COL, &groupid,
+                       -1);
+    if (groupid != 1)
+    {
+        do
+        {
+            gtk_tree_model_iter_next((GtkTreeModel *) TreeViewListStore, &group_iter);
+            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
+                               FRIENDUID_COL, &groupid,
+                               -1);
+        }
+        while (!(groupid == 1));
+    }
+    gtk_tree_model_iter_children((GtkTreeModel *) TreeViewListStore, &useriter, &group_iter);
+    gtk_tree_store_set(TreeViewListStore, &useriter,
+                       PIXBUF_COL, pixbuf,
+                       PRIORITY_COL, 1,
+                       -1);
+    return 0;
+}
+
+int shibaiinfo(void *reason)
+{
+    popup("莫默告诉你：", reason);
+    free(reason);
+    return 0;
+}
+
+int shibaiinfo2(void *reason2)
+{
+    popup("莫默告诉你：", reason2);
+    free(reason2);
+    return 0;
+}
+
+int infoupdate(CRPBaseHeader *header, void *data)//资料更新（文本资料）处理函数
 {
     switch (header->packetID)
     {
         case CRP_PACKET_OK:
         {
-            log_info("资料更新", "收到OKBAO\n");
+            g_idle_add(okinfo, NULL);
+            log_info("资料更新", "%s", CurrentUserInfo->nickName);
             return 0;
         };
         case CRP_PACKET_FAILURE:
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURe reason", infodata->reason);
+            char *failreason = (char *) malloc(strlen(infodata->reason));
+            memcpy(failreason, infodata->reason, strlen(infodata->reason - 1));
+            g_idle_add(shibaiinfo, failreason);
+            if ((void *) infodata != header->data)
+            {
+                free(infodata);
+            }
+            break;
+        };
+    }
+    return 0;
+}
+
+int dealwithheadphoto(void *data)
+{
+    //memcpy(CurrentUserInfo, &weinfo, sizeof(weinfo));
+    char userhead[80] = {0};
+    static cairo_t *cr;
+    cairo_surface_t *surface, *surfacehead2;
+    HexadecimalConversion(userhead, CurrentUserInfo->icon);
+    //加载一个图片
+    surface = cairo_image_surface_create_from_png(userhead);
+    int w = cairo_image_surface_get_width(surface);
+    int h = cairo_image_surface_get_height(surface);
+    //创建画布
+    surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
+    //创建画笔
+    cr = cairo_create(surfacehead2);
+    //缩放
+    cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
+    cairo_clip(cr);
+    cairo_scale(cr, 125.0 / w, 126.0 / h);
+    //把画笔和图片相结合。
+    cairo_set_source_surface(cr, surface, 0, 0);
+    cairo_paint(cr);
+    gtk_image_set_from_surface((GtkImage *) headx, surfacehead2);//更新主界面头像
+
+    //更新主界面分组下用户的头像和昵称
+    GdkPixbuf *pixbuf;
+    pixbuf = DrawFriend(CurrentUserInfo, 1);
+    GtkTreeIter group_iter, useriter;
+    uint32_t groupid = 0;
+
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &group_iter);
+    gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
+                       FRIENDUID_COL, &groupid,
+                       -1);
+    if (groupid != 1)
+    {
+        do
+        {
+            gtk_tree_model_iter_next((GtkTreeModel *) TreeViewListStore, &group_iter);
+            gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
+                               FRIENDUID_COL, &groupid,
+                               -1);
+        }
+        while (!(groupid == 1));
+    }
+    gtk_tree_model_iter_children((GtkTreeModel *) TreeViewListStore, &useriter, &group_iter);
+    gtk_tree_store_set(TreeViewListStore, &useriter,
+                       PIXBUF_COL, pixbuf,
+                       PRIORITY_COL, 1,
+                       -1);
+
+    /**********保存修改后的头像至本地***********/
+    typedef struct cunchu
+    {
+        char cunchu_name[40];
+        char cunchu_pwd[16];
+        uint32_t cunchu_uid;
+        char cunchu_lujing[16];
+    };
+    struct cunchu str_cunchu[20];
+    char mulu_username[80] = "", mulu_benji[80] = "";
+    FILE *passwdfp;
+    int i = 0, y = 0;
+
+//从本地读取账号记录
+    sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+    mkdir(mulu_benji, 0700);
+    sprintf(mulu_username, "%s/username", mulu_benji);
+    // 读取并用结构体数组存储
+    if ((passwdfp = fopen(mulu_username, "r")) != NULL)
+    {
+        y = fread(str_cunchu, sizeof(struct cunchu), 20, passwdfp);
+        fclose(passwdfp);
+    }
+    //重新写入头像路径
+    for (i = 0; i < y; ++i)
+    {
+        if (CurrentUserInfo->uid == str_cunchu[i].cunchu_uid)//在数组中查找
+        {
+            memcpy(str_cunchu[i].cunchu_lujing, CurrentUserInfo->icon, 16);
+            int fd = open(mulu_username, O_RDWR);
+            if (fd == -1)
+            {
+                log_error("User", "Cannot read user friends file %s.\n", mulu_username);
+                break;
+            }
+            lseek(fd, 0, SEEK_SET);
+            write(fd, str_cunchu, sizeof(struct cunchu) * y);
+            close(fd);
+            break;
+        }
+    }
+/*****************保存头像END*****************/
+    return 0;
+}
+
+int infoheadphoto(CRPBaseHeader *header, void *data)//资料更新(换头像)处理函数
+{
+    switch (header->packetID)
+    {
+        case CRP_PACKET_OK:
+        {
+            log_info("资料更新", "%s", CurrentUserInfo->nickName);
+            g_idle_add(dealwithheadphoto, NULL);
+            return 0;
+        };
+        case CRP_PACKET_FAILURE:
+        {
+            CRPPacketFailure *infodata = CRPFailureCast(header);
+            log_info("FAILURe reason", infodata->reason);
+            char *failreason = (char *) malloc(strlen(infodata->reason));
+            memcpy(failreason, infodata->reason, strlen(infodata->reason - 1));
+            g_idle_add(shibaiinfo2, failreason);
             if ((void *) infodata != header->data)
             {
                 free(infodata);
@@ -261,10 +438,10 @@ int sheng_change_city()
             break;
         }
     }
-    gtk_combo_box_text_remove_all(icity);//清除所有城市
+    gtk_combo_box_text_remove_all((GtkComboBoxText *) icity);//清除所有城市
     for (int j = 0; j < 41; ++j)
     {
-        gtk_combo_box_text_append(icity, NULL, allcity[shengfen][j]);
+        gtk_combo_box_text_append((GtkComboBoxText *) icity, NULL, allcity[shengfen][j]);
     }
     gtk_combo_box_set_active(GTK_COMBO_BOX(icity), 0);//设置默认城市
     return 0;
@@ -387,10 +564,9 @@ int dealwith_photo(CRPBaseHeader *header, void *data)
         }
         else
         {
-            UserInfo weinfo = *CurrentUserInfo;
             session_id_t newinfoid = CountSessionId();
             memcpy(weinfo.icon, photo_message->code, 16);
-            AddMessageNode(newinfoid, infoupdate, photo_message);
+            AddMessageNode(newinfoid, infoheadphoto, NULL);
             CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
             memcpy(CurrentUserInfo->icon, photo_message->code, 16);
             free(photo_message);
@@ -398,11 +574,9 @@ int dealwith_photo(CRPBaseHeader *header, void *data)
     }
     else if (header->packetID == CRP_PACKET_FILE_DATA_END)
     {
-        log_info("头像1", "头像1");
-        UserInfo weinfo = *CurrentUserInfo;
         session_id_t newinfoid = CountSessionId();
         memcpy(weinfo.icon, photo_message->code, 16);
-        AddMessageNode(newinfoid, infoupdate, NULL);
+        AddMessageNode(newinfoid, infoheadphoto, NULL);
         CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
         memcpy(CurrentUserInfo->icon, photo_message->code, 16);
         fclose(photo_message->fp);
@@ -458,21 +632,8 @@ static void create_infofaces()
 //保存按钮后
 int infosockfd()
 {
-    if (filename)
-    {
-        new_head(filename);
-    }
-
-    UserInfo weinfo = *CurrentUserInfo;
+    weinfo = *CurrentUserInfo;
     const gchar *buf;
-    buf = gtk_entry_get_text(GTK_ENTRY(inickname));
-    if (strlen(buf) == 0)
-    {
-        popup("莫默告诉你", "给自己起个昵称");
-    }
-    memset(weinfo.nickName, 0, strlen(weinfo.nickName));
-    memcpy(weinfo.nickName, buf, strlen(buf));
-    memset(CurrentUserInfo->nickName, 0, strlen(weinfo.nickName));
 
     buf = gtk_entry_get_text(GTK_ENTRY(iname));
     memset(weinfo.name, 0, strlen(weinfo.name));
@@ -526,7 +687,7 @@ int infosockfd()
         }
     }
 
-    gtk_calendar_get_date(GTK_CALENDAR(icalendar), &year, &month, &day);/*取得选择的年月日*/
+    gtk_calendar_get_date(GTK_CALENDAR(icalendar), &year, &month, &day);//取得选择的年月日
     gtk_button_get_label((GtkButton *) ibirthday);
     int x = month + 1;
     int y = day / 21;
@@ -544,10 +705,27 @@ int infosockfd()
     }
     log_info("获取的日期", "%c", weinfo.constellation);
     //log_info("获取的日期", "Year:%d Month:%d Day:%d DATE:%s", year, month, day, buf);
-    session_id_t newinfoid = CountSessionId();
-    AddMessageNode(newinfoid, infoupdate, &weinfo);
-    CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
-    memcpy(CurrentUserInfo, &weinfo, sizeof(weinfo));
+    buf = gtk_entry_get_text(GTK_ENTRY(inickname));
+    if (strlen(buf) == 0)
+    {
+        popup("莫默告诉你", "给自己起个昵称");
+    }
+    else
+    {
+        memset(weinfo.nickName, 0, strlen(weinfo.nickName));
+        memcpy(weinfo.nickName, buf, strlen(buf));
+        if (filename)
+        {
+            new_head(filename);
+        }
+        session_id_t newinfoid = CountSessionId();
+        AddMessageNode(newinfoid, infoupdate, NULL);
+        CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
+        destroy_infosurfaces();
+        gtk_widget_destroy(Infowind);
+        MarkUpdateInfo = 0;
+    }
+    //memcpy(CurrentUserInfo, &weinfo, sizeof(weinfo));
     return 0;
 }
 
@@ -585,106 +763,6 @@ static gint save_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     if (event->button == 1)
     {
         infosockfd();
-        const gchar *buf;
-        buf = gtk_entry_get_text(GTK_ENTRY(inickname));
-        if (strlen(buf) != 0)
-        {
-            destroy_infosurfaces();
-            gtk_widget_destroy(Infowind);
-            MarkUpdateInfo = 0;
-        }
-        gtk_label_set_label((GtkLabel *) userid, CurrentUserInfo->nickName);//更新主界面昵称
-        char userhead[80] = {0};
-        static cairo_t *cr;
-        cairo_surface_t *surface, *surfacehead2;
-        HexadecimalConversion(userhead, CurrentUserInfo->icon);
-        //加载一个图片
-        surface = cairo_image_surface_create_from_png(userhead);
-        int w = cairo_image_surface_get_width(surface);
-        int h = cairo_image_surface_get_height(surface);
-        //创建画布
-        surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 125, 125);
-        //创建画笔
-        cr = cairo_create(surfacehead2);
-        //缩放
-        cairo_arc(cr, 60, 60, 60, 0, M_PI * 2);
-        cairo_clip(cr);
-        cairo_scale(cr, 125.0 / w, 126.0 / h);
-        //把画笔和图片相结合。
-        cairo_set_source_surface(cr, surface, 0, 0);
-        cairo_paint(cr);
-        gtk_image_set_from_surface((GtkImage *) headx, surfacehead2);//更新主界面头
-        //更新主界面分组下用户的头像和昵称
-        GdkPixbuf *pixbuf;
-        pixbuf = DrawFriend(CurrentUserInfo, 1);
-        GtkTreeIter group_iter, useriter;
-        uint32_t groupid = 0;
-
-        gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &group_iter);
-        gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
-                           FRIENDUID_COL, &groupid,
-                           -1);
-        if (groupid != 1)
-        {
-
-            do
-            {
-                gtk_tree_model_iter_next(TreeViewListStore, &group_iter);
-                gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &group_iter,
-                                   FRIENDUID_COL, &groupid,
-                                   -1);
-            }
-            while (!(groupid == 1));
-        }
-
-        /**********保存修改后的头像至本地***********/
-        typedef struct cunchu
-        {
-            char cunchu_name[40];
-            char cunchu_pwd[16];
-            uint32_t cunchu_uid;
-            char cunchu_lujing[16];
-        };
-        struct cunchu str_cunchu[20];
-        char mulu_username[80] = "", mulu_benji[80] = "";
-        FILE *passwdfp;
-        int i = 0, y = 0;
-
-//从本地读取账号记录
-        sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
-        mkdir(mulu_benji, 0700);
-        sprintf(mulu_username, "%s/username", mulu_benji);
-        // 读取并用结构体数组存储
-        if ((passwdfp = fopen(mulu_username, "r")) != NULL)
-        {
-            y = fread(str_cunchu, sizeof(struct cunchu), 20, passwdfp);
-            fclose(passwdfp);
-        }
-        //重新写入头像路径
-        for (i = 0; i < y; ++i)
-        {
-            if (CurrentUserInfo->uid == str_cunchu[i].cunchu_uid)//在数组中查找
-            {
-                memcpy(str_cunchu[i].cunchu_lujing, CurrentUserInfo->icon, 16);
-                int fd = open(mulu_username, O_RDWR);
-                if (fd == -1)
-                {
-                    log_error("User", "Cannot read user friends file %s.\n", mulu_username);
-                    break;
-                }
-                lseek(fd, 0, SEEK_SET);
-                write(fd, str_cunchu, sizeof(struct cunchu)*y);
-                close(fd);
-                break;
-            }
-        }
-/*****************保存头像END*****************/
-
-        gtk_tree_model_iter_children(TreeViewListStore, &useriter, &group_iter);
-        gtk_tree_store_set(TreeViewListStore, &useriter,
-                           PIXBUF_COL, pixbuf,
-                           PRIORITY_COL, 1,
-                           -1);
     }
     return 0;
 }
@@ -897,34 +975,34 @@ void infotv()
     gtk_fixed_put(GTK_FIXED(Infolayout), ilevel, 270, 70);
 
     inickname = gtk_entry_new();//昵称
-    gtk_entry_set_max_length(inickname, 8);
+    gtk_entry_set_max_length((GtkEntry *) inickname, 8);
     gtk_entry_set_has_frame((GtkEntry *) inickname, FALSE);
-    gtk_entry_set_text(inickname, CurrentUserInfo->nickName);
+    gtk_entry_set_text((GtkEntry *) inickname, CurrentUserInfo->nickName);
     gtk_fixed_put(GTK_FIXED(Infolayout), inickname, 58, 165);
 
     iname = gtk_entry_new();//姓名
-    gtk_entry_set_max_length(iname, 8);
+    gtk_entry_set_max_length((GtkEntry *) iname, 8);
     gtk_entry_set_has_frame((GtkEntry *) iname, FALSE);
-    gtk_entry_set_text(iname, CurrentUserInfo->name);
+    gtk_entry_set_text((GtkEntry *) iname, CurrentUserInfo->name);
     gtk_fixed_put(GTK_FIXED(Infolayout), iname, 48, 225);
 
     itel = gtk_entry_new();//电话
-    gtk_entry_set_max_length(itel, 11);
+    gtk_entry_set_max_length((GtkEntry *) itel, 11);
     gtk_entry_set_has_frame((GtkEntry *) itel, FALSE);
-    gtk_entry_set_text(itel, CurrentUserInfo->tel);
+    gtk_entry_set_text((GtkEntry *) itel, CurrentUserInfo->tel);
     gtk_fixed_put(GTK_FIXED(Infolayout), itel, 48, 358);
 
     imail = gtk_entry_new();//邮箱
-    gtk_entry_set_max_length(imail, 30);
+    gtk_entry_set_max_length((GtkEntry *) imail, 30);
     gtk_entry_set_has_frame((GtkEntry *) imail, FALSE);
-    gtk_entry_set_text(imail, CurrentUserInfo->mail);
+    gtk_entry_set_text((GtkEntry *) imail, CurrentUserInfo->mail);
     gtk_fixed_put(GTK_FIXED(Infolayout), imail, 305, 358);
 
     imotto = gtk_entry_new();//个人说明
     gtk_widget_set_size_request(imotto, 300, 10);
-    gtk_entry_set_max_length(imotto, 256);
+    gtk_entry_set_max_length((GtkEntry *) imotto, 256);
     gtk_entry_set_has_frame((GtkEntry *) imotto, FALSE);
-    gtk_entry_set_text(imotto, CurrentUserInfo->motto);
+    gtk_entry_set_text((GtkEntry *) imotto, CurrentUserInfo->motto);
     gtk_fixed_put(GTK_FIXED(Infolayout), imotto, 75, 390);
 
     if (strlen(CurrentUserInfo->birthday) == 0)
@@ -939,8 +1017,8 @@ void infotv()
     g_signal_connect(ibirthday, "clicked", G_CALLBACK(calendar_change_birthday), NULL);
 
     isex = gtk_combo_box_text_new();//性别
-    gtk_combo_box_text_append(isex, "0", "女");
-    gtk_combo_box_text_append(isex, "1", "男");
+    gtk_combo_box_text_append((GtkComboBoxText *) isex, "0", "女");
+    gtk_combo_box_text_append((GtkComboBoxText *) isex, "1", "男");
     if (1 == CurrentUserInfo->sex)
     {
         gtk_combo_box_set_active(GTK_COMBO_BOX(isex), 1);
@@ -957,7 +1035,7 @@ void infotv()
     //gtkcomboboxset
     for (int i = 0; i < 12; ++i)
     {
-        gtk_combo_box_text_append(iconstellation, NULL, constellations[i]);
+        gtk_combo_box_text_append((GtkComboBoxText *) iconstellation, NULL, constellations[i]);
     }
     for (int i = 0; i < 12; ++i)
     {
@@ -976,7 +1054,7 @@ void infotv()
     int weizhi = 0;
     for (int i = 0; i < 35; ++i)
     {
-        gtk_combo_box_text_append(iprovinces, NULL, provinces[i]);
+        gtk_combo_box_text_append((GtkComboBoxText *) iprovinces, NULL, provinces[i]);
     }
     for (int i = 0; i < 35; ++i)
     {
@@ -1057,7 +1135,7 @@ int ChangeInfo()
                                         NULL,
                                         NULL,
                                         NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Infobackg_event_box, 0, 0);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Infobackg_event_box, 0, 0);
 
     Save_event_box = BuildEventBox(Infosave,
                                    G_CALLBACK(save_button_press_event),
@@ -1066,7 +1144,7 @@ int ChangeInfo()
                                    G_CALLBACK(save_button_release_event),
                                    NULL,
                                    NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Save_event_box, 350, 440);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Save_event_box, 350, 440);
 
     Cancel_event_box = BuildEventBox(Infocancel,
                                      G_CALLBACK(cancel_button_press_event),
@@ -1075,7 +1153,7 @@ int ChangeInfo()
                                      G_CALLBACK(cancel_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Cancel_event_box, 450, 440);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Cancel_event_box, 450, 440);
 
     Guanxx_event_box = BuildEventBox(Infoguanbi,
                                      G_CALLBACK(guanxx_button_press_event),
@@ -1084,7 +1162,7 @@ int ChangeInfo()
                                      G_CALLBACK(guanxx_button_release_event),
                                      NULL,
                                      NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), Guanxx_event_box, 509, 0);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) Guanxx_event_box, 509, 0);
 
     infotv();
 
@@ -1095,7 +1173,7 @@ int ChangeInfo()
                                        G_CALLBACK(touxiang_button_release_event),
                                        NULL,
                                        NULL);
-    gtk_fixed_put(GTK_FIXED(Infolayout), touxiang_event_box, 25, 15);
+    gtk_fixed_put(GTK_FIXED(Infolayout), (GtkWidget *) touxiang_event_box, 25, 15);
     gtk_fixed_put(GTK_FIXED(Infolayout), BianJi, 70, 110);
 
     gtk_widget_show_all(Infowind);

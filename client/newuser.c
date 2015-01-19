@@ -71,7 +71,7 @@ int newsockfd()
             char myip1[20];
             struct in_addr inp;
             ipfp2 = fopen(checkmulu_ip, "r");//checkmulu_ip为全局变量的文件名，存放首次启动时输入的IP地址
-            int n = fread(myip1, 1, 20, ipfp2);
+            size_t n = fread(myip1, 1, 20, ipfp2);
             myip1[n] = 0;
             log_info("IP", myip1);
             inet_aton(myip1, &inp);//字符串IP地址转换为一个32位的网络序列IP地址
@@ -165,7 +165,7 @@ static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
-                event->x_root, event->y_root, event->time);
+                                   (gint) event->x_root, (gint) event->y_root, event->time);
     }
     return 0;
 }
@@ -295,10 +295,10 @@ int newface()
                                        G_CALLBACK(closebut_button_release_event),
                                        NULL,
                                        NULL);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), newbackground_event_box, 0, 0);//起始坐标
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), (GtkWidget *) newbackground_event_box, 0, 0);//起始坐标
     gtk_widget_set_size_request(GTK_WIDGET(background1), 500, 500);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), zhuce_event_box, 20, 440);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), closebut_event_box, 530, 0);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), (GtkWidget *) zhuce_event_box, 20, 440);
+    gtk_fixed_put(GTK_FIXED(zhuceLayout), (GtkWidget *) closebut_event_box, 530, 0);
 
     mnickname = gtk_entry_new();//昵称
     newusername = gtk_entry_new();//id
@@ -320,4 +320,5 @@ int newface()
     gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd2, 100, 326);
 
     gtk_widget_show_all(newwindow);
+    return 0;
 }
