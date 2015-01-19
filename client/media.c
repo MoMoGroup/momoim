@@ -170,7 +170,9 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
         case CRP_PACKET_NET_DETECTED:
         {
             CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
-            entry->addr = packet->addr;
+            entry->addr.sin_family = AF_INET;
+            entry->addr.sin_addr.s_addr = packet->ipv4;
+            entry->addr.sin_port = packet->port;
 
             if ((void *) packet != header->data)
             {
@@ -190,7 +192,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
                 char hexKey[65] = {0};
                 for (int i = 0; i < 32; ++i)
                 {
-                    sprintf(hexKey + i * 2, "%02x", (int)entry->key[i]);
+                    sprintf(hexKey + i * 2, "%02x", (int) entry->key[i]);
                 }
                 log_info("NATRequest", "Key:%s\n", hexKey);
                 CRPNETNATRequestSend(sockfd,
@@ -300,10 +302,9 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
         case CRP_PACKET_NET_DETECTED:
         {
             CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
-            uint16_t port = packet->addr.sin_port;
-            packet->addr.sin_port = 0;
-            entry->addr = packet->addr;
-            entry->addr.sin_port = port;
+            entry->addr.sin_family = AF_INET;
+            entry->addr.sin_addr.s_addr = packet->ipv4;
+            entry->addr.sin_port = packet->port;
             if ((void *) packet != header->data)
             {
                 free(packet);
@@ -335,7 +336,7 @@ int AcceptNatDiscover(CRPPacketNETNATRequest *request)
     char hexKey[65] = {0};
     for (int i = 0; i < 32; ++i)
     {
-        sprintf(hexKey + i * 2, "%02x", (int)entry->key[i]);
+        sprintf(hexKey + i * 2, "%02x", (int) entry->key[i]);
     }
     log_info("Discover", "Try to register key %s\n", hexKey);
     CRPNETNATRegisterSend(sockfd, sid, entry->key);
