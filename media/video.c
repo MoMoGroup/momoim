@@ -14,10 +14,11 @@
 #include <gtk/gtk.h>
 #include "yuv422_rgb.h"
 #include "video.h"
+#include "../logger/include/logger.h"
 
 #define SERVERPORT 5555
 
-struct sockaddr_in addr_opposite;
+static struct sockaddr_in addr_opposite;
 
 typedef struct VideoBuffer
 {
@@ -27,11 +28,11 @@ typedef struct VideoBuffer
 
 
 static VideoBuffer *buffers = NULL;
-unsigned char *rgbBuf;
+static unsigned char *rgbBuf;
 
-int fd;//摄像头的文件描述符
+static int fd;//摄像头的文件描述符
 
-pthread_t tid1, tid2, tid3;
+static pthread_t tid1, tid2, tid3;
 
 /*下面的代码用来做循环队列*/
 static pthread_mutex_t mutex_send, mutex_recv;
@@ -45,12 +46,12 @@ static jpeg_str *circle_buf_send[8], *circle_buf_recv[8];
 static jpeg_str **head_send, **tail_send, **head_recv, **tail_recv;
 
 struct sigaction act;
-GtkWindow *window;
+static GtkWindow *window;
 
-int flag_idle; //用于取消idle的旗帜
-int flag_main_idle;
+static int flag_idle; //用于取消idle的旗帜
+static int flag_main_idle;
 
-int len_buffer;
+static int len_buffer;
 
 void closewindow();
 
@@ -201,11 +202,12 @@ void video_off()
     close(fd);
 }
 
-void cancle_mem(){
+void cancle_mem()
+{
     int i;
-    for(i=0;i<4;i++)
+    for (i = 0; i < 4; i++)
     {
-        munmap(buffers[i].start, 640*480*2);
+        munmap(buffers[i].start, 640 * 480 * 2);
     }
 }
 
@@ -308,7 +310,7 @@ void *pthread_rev(void *socketrev)
 
 gboolean idleDraw(gpointer data)
 {
-    if(flag_idle) return 0;
+    if (flag_idle) return 0;
     jpeg_str *q_recv;
     pthread_mutex_lock(&mutex_recv);
     if (!*tail_recv)
@@ -344,14 +346,17 @@ void closewindow()
 //    pthread_detach(tid2);
 //    pthread_detach(tid3);
 
-
-    flag_idle=1;
-    flag_main_idle=1;
+    log_info("CloseWind", "Window is closing.\n");
+    flag_idle = 1;
+    flag_main_idle = 1;
 
 
     pthread_cancel(tid1);
+    pthread_join(tid1, NULL);
     pthread_cancel(tid2);
+    pthread_join(tid2, NULL);
     pthread_cancel(tid3);
+    pthread_join(tid3, NULL);
 
     cancle_mem();
 
@@ -392,17 +397,14 @@ void closewindow()
 
 
 
-    pthread_join(tid1, NULL);
-    pthread_join(tid2, NULL);
-    pthread_join(tid3, NULL);
     free(rgbBuf);
 }
 
 
 int guiMain(void *button)
 {
-    if(flag_main_idle) return 0;
-    flag_idle=0;
+    if (flag_main_idle) return 0;
+    flag_idle = 0;
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
@@ -418,7 +420,7 @@ void *primary_video(struct sockaddr_in *addr)
 {
 
     //用于取消idle的环境变量
-    flag_main_idle=0;
+    flag_main_idle = 0;
 
     head_send = circle_buf_send;
     tail_send = circle_buf_send;
