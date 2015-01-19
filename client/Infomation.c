@@ -970,7 +970,10 @@ void infotv()
     iid = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), iid, 255, 29);
     memset(idstring, 0, strlen(idstring));
-    sprintf(idstring, "%d", CurrentUserInfo->level);//等级
+
+    int mylevel = CurrentUserInfo->level;
+    mylevel = log10(mylevel) / log10(2) + 1;//等级计算
+    sprintf(idstring, "%d", mylevel);//等级
     ilevel = gtk_label_new(idstring);
     gtk_fixed_put(GTK_FIXED(Infolayout), ilevel, 270, 70);
 
