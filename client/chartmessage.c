@@ -120,7 +120,6 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
-    //gtk_text_buffer_get_end_iter(show_buffer, &end);
     GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(show_buffer, NULL, &end, 1);
     gtk_text_buffer_move_mark(show_buffer, text_mark_log, &end);
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->show_text), text_mark_log, 0, 1, 1, 1);

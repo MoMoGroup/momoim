@@ -151,12 +151,22 @@ gboolean show_record_message(void *data)
             record_message->max_id = record_message->record_message_data[i].record_id;
         }
         char nicheng_times[60] = {0};
+        char date[50];
         struct tm *p;
         GtkTextIter start, end;
         GtkTextBuffer *buffer;
         buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(record_message->info->record_text));
         gtk_text_buffer_get_bounds(buffer, &start, &end);
         p = localtime(&record_message->record_message_data[i].time);
+
+        sprintf(date, "  %d/%d/%d \n", p->tm_year + 1900, 1 + p->tm_mon, p->tm_mday);
+        gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date);
+        PangoFontDescription *font;
+        font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
+        pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
+        gtk_widget_override_font(record_message->info->record_date, font);
+        gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
+
         if (record_message->record_message_data[i].record_user_uid == record_message->info->user.uid)
         {
             sprintf(nicheng_times,
@@ -461,7 +471,6 @@ static void calendar_event(GtkWidget *widget, GdkEventButton *event, gpointer da
     RcordMessage *record_message = (RcordMessage *) data;
     struct tm ptime;
     time_t times;
-    char date[40] = {0};
     guint year;
     guint month;
     guint day;
@@ -470,16 +479,8 @@ static void calendar_event(GtkWidget *widget, GdkEventButton *event, gpointer da
     ptime.tm_mon = month;
     ptime.tm_mday = day;
     times = mktime(&ptime);
-    sprintf(date, "  %d / %d / %d \n", year, 1 + month, day);
-    gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date);
-    PangoFontDescription *font;
-    font = pango_font_description_from_string("Droid Sans Mono");//"Droid Sans Mono"字体名
-    pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
-    gtk_widget_override_font(record_message->info->record_date, font);
-    gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
     gtk_widget_destroy(widget);
-    widget = NULL;
-
+    record_message->info->calendar = NULL;
     MessageQueryCondition *message_query_conditon = (MessageQueryCondition *) malloc(sizeof(MessageQueryCondition));
     message_query_conditon->from = record_message->info->user.uid;
     message_query_conditon->to = record_message->info->user.uid;

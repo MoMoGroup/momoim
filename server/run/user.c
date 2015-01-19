@@ -290,6 +290,9 @@ static int OnlineTableGC(POnlineUsersTableType table)
             if (OnlineTableGC(table->next[i]))
             {
                 table->next[i] = NULL;
+            }
+            else
+            {
                 child++;
             }
         }
@@ -570,5 +573,9 @@ void PostMessage(UserMessage *message)
                              message->messageLen,
                              message->content);
         UserDrop(toUser);
+    }
+    else
+    {
+        log_warning("PostMessage", "User Offline.\n");
     }
 }
