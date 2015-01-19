@@ -15,9 +15,12 @@ struct log_request_friend_discover{
 
 typedef struct AudioDiscoverProcessEntry
 {
-    char key[32];
-    uint32_t uid;
+    uint8_t key[32],peerKey[32];
+    int peerKeySet;
+    uint32_t peerUid;
     uint8_t messageSent;
+    struct sockaddr_in addr;
+    session_id_t peerSession;
 };
 extern struct log_request_friend_discover the_log_request_friend_discover;
 int  audio_request_refuse();
@@ -30,4 +33,5 @@ gboolean treatment_request_video_discover(gpointer );
 int deal_video_dicover_server_feedback(CRPBaseHeader *, u_int32_t );
 int deal_video_feedback(CRPBaseHeader *, u_int32_t );
 
-int processNatDiscovered(CRPBaseHeader *, void *);
+int processNatDiscoveredOnAudio(CRPBaseHeader *, void *);
+int AcceptNatDiscover(CRPPacketNETNATRequest *);

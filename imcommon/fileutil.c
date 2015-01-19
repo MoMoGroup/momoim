@@ -30,15 +30,3 @@ ssize_t FileCopy(const char *src, const char *dst)
     close(fdDst);
     return totalSize;
 }
-
-ssize_t DirectoryCopy(const char *src, const char *dst)
-{
-    char *currentPath = (char *) malloc(PATH_MAX);
-    DIR *dir = opendir(src);
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL)
-    {
-        //entry->d_type
-    }
-    return 0;
-}

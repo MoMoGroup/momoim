@@ -229,18 +229,18 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
         {
             session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
 
-            struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) malloc(sizeof(struct AudioDiscoverProcessEntry));
+            struct AudioDiscoverProcessEntry *entry =
+                    (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
             int randNum;
             for (int randi = 0; randi < 32 / sizeof(int); ++randi)
             {
                 randNum = rand();
                 memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
             }
-            entry->uid = info->uid;
+            entry->peerUid = info->uid;
             entry->messageSent = 0;
-            AddMessageNode(sessionNatDiscover, processNatDiscovered, entry);
-
-            CRPNATDiscoverSend(sockfd, sessionNatDiscover, entry->key);
+            AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
+            CRPNETNATRegisterSend(sockfd, sessionNatDiscover, entry->key);
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
             flag_audio_close = 1;
         }

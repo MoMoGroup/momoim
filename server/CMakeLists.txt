@@ -59,7 +59,10 @@ SET(SERVER_SOURCE_FILE
     packets/message/QueryOffline.c
     packets/message/RecordQuery.c
 
-    packets/net/NATDiscover.c
+    packets/net/NATRegister.c
+    packets/net/NATRequest.c
+    packets/net/NATAccept.c
+    packets/net/NATRefuse.c
     packets/net/FriendDiscover.c
     packets/net/DiscoverAccept.c
     packets/net/DiscoverRefuse.c

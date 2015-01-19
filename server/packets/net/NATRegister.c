@@ -25,7 +25,7 @@ static int DiscoverCancelHandler(POnlineUser user, PUserOperation op)
     return 0;
 }
 
-static void DiscoverDetected(struct sockaddr_in *addr, void *data)
+static int DiscoverDetected(struct sockaddr_in *addr, void *data)
 {
     PUserOperation op = data;
     DiscoverOperation *discoverOperation = op->data;
@@ -40,9 +40,10 @@ static void DiscoverDetected(struct sockaddr_in *addr, void *data)
     op->data = NULL;
     op->onCancel = NULL;
     UserOperationUnregister(user, op);
+    return 1;
 }
 
-int ProcessPacketNETNATDiscover(POnlineUser user, uint32_t session, CRPPacketNATDiscover *packet)
+int ProcessPacketNETNATRegister(POnlineUser user, uint32_t session, CRPPacketNETNATRegister *packet)
 {
     if (user->state == OUS_ONLINE)
     {

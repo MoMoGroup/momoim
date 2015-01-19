@@ -69,7 +69,10 @@ static int(*PacketsProcessMap[CRP_PACKET_ID_MAX + 1])(POnlineUser, uint32_t, voi
 
         [CRP_PACKET_NET__START]           = (GeneralPacketProcessor) NULL,
         [CRP_PACKET_NET_FRIEND_DISCOVER]  = (GeneralPacketProcessor) ProcessPacketNETFriendDiscover,
-        [CRP_PACKET_NET_NAT_DISCOVER]     = (GeneralPacketProcessor) ProcessPacketNETNATDiscover,
+        [CRP_PACKET_NET_NAT_REGISTER]     = (GeneralPacketProcessor) ProcessPacketNETNATRegister,
+        [CRP_PACKET_NET_NAT_REQUEST]      = (GeneralPacketProcessor) ProcessPacketNETNATRequest,
+        [CRP_PACKET_NET_NAT_ACCEPT]       = (GeneralPacketProcessor) ProcessPacketNETNATAccept,
+        [CRP_PACKET_NET_NAT_REFUSE]       = (GeneralPacketProcessor) ProcessPacketNETNATRefuse,
         [CRP_PACKET_NET_DISCOVER_ACCEPT]  = (GeneralPacketProcessor) ProcessPacketNetDiscoverAccept,
         [CRP_PACKET_NET_DISCOVER_REFUSE]  = (GeneralPacketProcessor) ProcessPacketNetDiscoverRefuse
 };

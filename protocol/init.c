@@ -66,7 +66,10 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_NET_FRIEND_DISCOVER]      = (void *(*)(CRPBaseHeader *)) CRPNETFriendDiscoverCast,
         [CRP_PACKET_NET_DISCOVER_ACCEPT]      = (void *(*)(CRPBaseHeader *)) CRPNETDiscoverAcceptCast,
         [CRP_PACKET_NET_DISCOVER_REFUSE]      = (void *(*)(CRPBaseHeader *)) CRPNETDiscoverRefuseCast,
-        [CRP_PACKET_NET_NAT_DISCOVER]         = (void *(*)(CRPBaseHeader *)) CRPNATDiscoverCast,
+        [CRP_PACKET_NET_NAT_REGISTER]         = (void *(*)(CRPBaseHeader *)) CRPNETNATRegisterCast,
+        [CRP_PACKET_NET_NAT_REQUEST]          = (void *(*)(CRPBaseHeader *)) CRPNETNATRequestCast,
+        [CRP_PACKET_NET_NAT_ACCEPT]           = (void *(*)(CRPBaseHeader *)) CRPNETNATAcceptCast,
+        [CRP_PACKET_NET_NAT_REFUSE]           = (void *(*)(CRPBaseHeader *)) CRPNETNATRefuseCast,
         [CRP_PACKET_NET_DETECTED]             = (void *(*)(CRPBaseHeader *)) CRPNATDetectedCast,
 };
 

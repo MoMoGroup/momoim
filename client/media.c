@@ -69,43 +69,261 @@ int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid)
     return 0;
 }
 
-
-//处理发送音频请求后，对方是否同意的函数
-int processNatDiscovered(CRPBaseHeader *header, void *data)
+void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
 {
-    struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
-    if (header->packetID == CRP_PACKET_NET_DETECTED)
+    pthread_detach(pthread_self());
+    int sockSender = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    int isServerDetected = 0, isPeerDetected = 0;
+    struct sockaddr_in serverNatService;
+    socklen_t serverAddrLen = sizeof(serverNatService);
+    getpeername(sockfd->fd, (struct sockaddr *) &serverNatService, &serverAddrLen);
+    serverNatService.sin_port = htons(8015);
+    int tryTimes = 0;
+    while (!isPeerDetected)
     {
-        CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
-        StartAudioChat_Send(&packet->addr);
-
-        if ((void *) packet != header->data)
+        if (!isServerDetected)
         {
-            free(packet);
+            sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
         }
-        return 0;
-    }
-    if (header->packetID == CRP_PACKET_OK)
-    {
-        if (!entry->messageSent)
+        sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
+
+        fd_set set;
+        FD_ZERO(&set);
+        FD_SET(sockSender, &set);
+        struct timeval timeout = {
+                .tv_sec=1
+        };
+        int n;
+        n = select(sockSender + 1, &set, NULL, NULL, &timeout);
+        if (n > 0)
         {
-            char hexKey[65] = {0};
-            for (int i = 0; i < 32; ++i)
+            char buffer[32];
+            struct sockaddr_in opaddr;
+            socklen_t opAddrLen;
+            n = (int) recvfrom(sockSender, buffer, 32, 0, (struct sockaddr *) &opaddr, &opAddrLen);
+            if (n == 32)
             {
-                sprintf(hexKey + i * 2, "%02x", entry->key[i]);
+                if (memcmp(buffer, entry->key, 32) == 0)//与本地key相等是服务器返回数据
+                {
+                    isServerDetected = 1;
+                }
+                else if (memcmp(buffer, entry->peerKey, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
+                {
+                    isPeerDetected = 1;
+                    memcpy(&entry->addr, &opaddr, opAddrLen);
+                }
             }
-            log_info("NatDiscover", "Key:%s\n", hexKey);
-            CRPMessageNormalSend(sockfd, header->sessionID, UMT_NAT_REQUEST, entry->uid, 32, entry->key);
-            entry->messageSent = 1;
         }
         else
         {
-
+            if (++tryTimes >= 10)//10次重试未成功
+            {
+                free(entry);
+                return 0;
+            }
         }
+    }
+    StartAudioChat_Send(sockSender, &entry->addr);
+    free(entry);
+}
+
+void AudioStartWaitConnection(const struct AudioDiscoverProcessEntry *entry)
+{
+    pthread_t t;
+    pthread_create(&t, NULL, (void *(*)(void *)) AudioWaitConnection, entry);
+}
+
+//处理发送音频请求后，对方是否同意的函数
+int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
+{
+    struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
+    switch (header->packetID)
+    {
+        case CRP_PACKET_FAILURE:
+        {
+            log_error("NatDiscover", "error\n");
+            free(entry);
+            return 0;
+        };
+        case CRP_PACKET_NET_NAT_ACCEPT:
+        {
+            CRPPacketNETNATAccept *packet = CRPNETNATAcceptCast(header);
+            memcpy(entry->peerKey, packet->key, 32);
+            entry->peerKeySet = 1;
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            if (entry->addr.sin_port)
+            {
+                AudioStartWaitConnection(entry);
+                return 0;
+            }
+        };
+        case CRP_PACKET_NET_DETECTED:
+        {
+            CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
+            entry->addr = packet->addr;
+
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            if (entry->peerKeySet)
+            {
+                AudioStartWaitConnection(entry);
+                return 0;
+            }
+            break;
+        };
+        case CRP_PACKET_OK:
+        {
+            if (!entry->messageSent)
+            {
+                char hexKey[65] = {0};
+                for (int i = 0; i < 32; ++i)
+                {
+                    sprintf(hexKey + i * 2, "%02x", entry->key[i]);
+                }
+                log_info("NatDiscover", "Key:%s\n", hexKey);
+                CRPNETNATRequestSend(sockfd,
+                                     header->sessionID,
+                                     entry->key,
+                                     entry->peerUid,
+                                     CRPNDR_AUDIO,
+                                     header->sessionID);
+                entry->messageSent = 1;
+            }
+            else
+            {
+
+            }
+            break;
+        };
     }
     return 1;
 }
 
+void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
+{
+    pthread_detach(pthread_self());
+    int sockSender = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    int isServerDetected = 0, isPeerDetected = 0;
+    struct sockaddr_in serverNatService;
+    socklen_t serverAddrLen = sizeof(serverNatService);
+    getpeername(sockfd->fd, (struct sockaddr *) &serverNatService, &serverAddrLen);
+    serverNatService.sin_port = htons(8015);
+    int tryTimes = 0;
+    while (!isPeerDetected)
+    {
+        if (!isServerDetected)
+        {
+            sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
+        }
+        if (entry->addr.sin_port)
+        {
+            sendto(sockSender, entry->key, 32, 0, (struct sockaddr *) &entry->addr, sizeof(entry->addr));
+        }
+
+        fd_set set;
+        FD_ZERO(&set);
+        FD_SET(sockSender, &set);
+        struct timeval timeout = {
+                .tv_sec=1
+        };
+        int n;
+        n = select(sockSender + 1, &set, NULL, NULL, &timeout);
+        if (n > 0)
+        {
+            char buffer[32];
+            struct sockaddr_in opaddr;
+            socklen_t opAddrLen;
+            n = (int) recvfrom(sockSender, buffer, 32, 0, (struct sockaddr *) &opaddr, &opAddrLen);
+            if (n == 32)
+            {
+                if (memcmp(buffer, entry->key, 32) == 0)//与本地key相等是服务器返回数据
+                {
+                    isServerDetected = 1;
+                }
+                else if (memcmp(buffer, entry->peerKey, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
+                {
+                    isPeerDetected = 1;
+                    memcpy(&entry->addr, &opaddr, opAddrLen);
+                }
+            }
+        }
+        else
+        {
+            if (++tryTimes >= 10)//10次重试未成功
+            {
+                free(entry);
+                return 0;
+            }
+        }
+    }
+    StartAudioChat_Send(sockSender, &entry->addr);
+    free(entry);
+}
+
+int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
+{
+    struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
+    switch (header->packetID)
+    {
+        case CRP_PACKET_FAILURE:
+        {
+            log_error("NatDiscover", "error\n");
+            free(entry);
+            return 0;
+        };
+        case CRP_PACKET_OK:
+        {
+            if (!entry->peerKeySet)
+            {
+                pthread_t tid;
+                pthread_create(&tid, NULL, (void *(*)(void *)) AudioWaitDiscover, entry);
+                CRPNETNATAcceptSend(sockfd, header->sessionID, entry->peerUid, entry->peerSession, entry->key);
+                entry->peerKeySet = 1;
+            }
+            break;
+        }
+        case CRP_PACKET_NET_DETECTED:
+        {
+            CRPPacketNATDetected *packet = CRPNATDetectedCast(header);
+            uint16_t port = packet->addr.sin_port;
+            packet->addr.sin_port = 0;
+            entry->addr = packet->addr;
+            entry->addr.sin_port = port;
+            if ((void *) packet != header->data)
+            {
+                free(packet);
+            }
+            return 0;
+        };
+    }
+    return 1;
+}
+
+//同意NAT发现
+int AcceptNatDiscover(CRPPacketNETNATRequest *request)
+{
+    session_id_t sid = CountSessionId();
+    struct AudioDiscoverProcessEntry *entry =
+            (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
+    int randNum;
+    for (int randi = 0; randi < 32 / sizeof(int); ++randi)
+    {
+        randNum = rand();
+        memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
+    }
+    memcpy(entry->peerKey, request->key, sizeof(entry->peerKey));
+    entry->peerUid = request->uid;
+    entry->peerKeySet = 1;
+    entry->peerSession = request->session;
+    AddMessageNode(sid, AcceptNATDiscoverProcess, entry);
+    CRPNETNATRegisterSend(sockfd, sid, request->key);
+    return 1;
+}
 
 //处理发送视频请求后，对方是否同意的函数
 int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid)
