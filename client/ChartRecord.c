@@ -597,6 +597,18 @@ static gint close_but_leave_notify_event(GtkWidget *widget, GdkEventButton *even
     return 0;
 }
 
+static gint text_view_click(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+    if (info->calendar != NULL)
+    {
+        gtk_widget_destroy(info->calendar);
+        info->calendar = NULL;
+    }
+    return 0;
+}
+
+
 void ChartRecord(FriendInfo *info)
 {
     GtkEventBox *record_background_event_box, *record_next_event_box, *record_close_event_box, *calendar_event_box, *record_upward_event_box;
@@ -684,6 +696,10 @@ void ChartRecord(FriendInfo *info)
 
     record_message->info->record_text = gtk_text_view_new();
     record_message->info->record_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW (record_message->info->record_text));
+    g_signal_connect(record_message->info->record_text,
+                     "button_press_event",
+                     G_CALLBACK(text_view_click),
+                     record_message->info);
 
     //创建文字标记
     gtk_text_buffer_create_tag(record_message->info->record_buffer, "red_foreground", "foreground", "red", NULL);

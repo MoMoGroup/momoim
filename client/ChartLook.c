@@ -53,20 +53,22 @@ void ChartLook(FriendInfo *info, gdouble event_x, gdouble event_y)
     GtkWidget *shy, *nose, *laughter;
     GtkEventBox *smile_event_box, *goodbye_event_box, *lovely_event_box, *angry_event_box, *cry_event_box;
     GtkEventBox *shy_event_box, *poor_event_box, *nose_event_box, *laughter_event_box;
-
-    GdkColor color;
     info->look_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+
     gtk_window_move(GTK_WINDOW(info->look_window), event_x, event_y);
     gtk_window_set_decorated(GTK_WINDOW(info->look_window), FALSE);   // 去掉边框
     gtk_widget_set_size_request(GTK_WIDGET(info->look_window), 100, 100);
 
     info->look_layout = gtk_fixed_new();
     gtk_container_add(GTK_CONTAINER(info->look_window), info->look_layout);
-    color.red = 0xffff;
-    color.green = 0xffff;
-    color.blue = 0xffff;
-    gtk_widget_modify_bg(info->look_layout, GTK_STATE_NORMAL, &color);
-    gtk_window_set_opacity(GTK_WINDOW(info->look_layout), 0.8); //设置窗口全透明
+
+    GdkRGBA rgbacolor;
+    rgbacolor.alpha = 1;
+    rgbacolor.red = 1;
+    rgbacolor.green = 1;
+    rgbacolor.blue = 1;
+    gtk_widget_override_background_color(info->look_layout, GTK_STATE_FLAG_NORMAL, &rgbacolor); //设置背景
+    gtk_widget_set_opacity(info->look_layout, 0.8); //设置窗口全透明
 
     smile = ChangeFace_file("1.png");
     goodbye = ChangeFace_file("2.png");
@@ -133,6 +135,5 @@ void ChartLook(FriendInfo *info, gdouble event_x, gdouble event_y)
     gtk_fixed_put(GTK_FIXED(info->look_layout), GTK_WIDGET(poor_event_box), 0, 80);
     gtk_fixed_put(GTK_FIXED(info->look_layout), GTK_WIDGET(cry_event_box), 40, 80);
     gtk_fixed_put(GTK_FIXED(info->look_layout), GTK_WIDGET(nose_event_box), 80, 80);
-    ///gtk_widget_show_all(info->look_layout);
     gtk_widget_show_all(info->look_window);
 }
