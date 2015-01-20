@@ -71,7 +71,7 @@ extern GtkWidget *StatusShowText;//显示在线隐身字体
 
 extern int OnLineStatus();
 
-extern GtkWidget *userid, *headx;
+extern GtkWidget *UserId, *HeadX;//修改资料用到的,主界面头像跟昵称
 
 extern int Status(void *data);
 
