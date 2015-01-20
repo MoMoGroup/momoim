@@ -24,6 +24,27 @@ int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendM
         UserFriendsUserDelete(groupFrom, packet->uid);
         CRPFriendNotifySend(user->crp, 0, FNT_FRIEND_MOVE, packet->uid, packet->fromGid, packet->toGid);
         CRPOKSend(user->crp, session);
+        if (user->hiddenStatus != UOS_HIDDEN)
+        {
+            if (packet->toGid == UGI_BLACKLIST)
+            {
+                POnlineUser duser = OnlineUserGet(packet->uid);
+                if (duser)
+                {
+                    CRPFriendNotifySend(duser->crp, 0, FNT_FRIEND_OFFLINE, user->uid, 0, 0);
+                    UserDrop(duser);
+                }
+            }
+            else if (packet->fromGid == UGI_BLACKLIST)
+            {
+                POnlineUser duser = OnlineUserGet(packet->uid);
+                if (duser)
+                {
+                    CRPFriendNotifySend(duser->crp, 0, FNT_FRIEND_ONLINE, user->uid, 0, 0);
+                    UserDrop(duser);
+                }
+            }
+        }
         pthread_rwlock_unlock(user->info->friendsLock);
     }
     else

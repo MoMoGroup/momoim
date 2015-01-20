@@ -122,7 +122,7 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                         }
                         else
                         {
-                            log_error("SERVER-LISTENER",
+                            log_error("Listener",
                                       "accept failure:%s\n",
                                       strerror(errno));
                             break;
@@ -276,6 +276,7 @@ void *ListenMain(void *nouse)
     sockListener = prepareListener();
     if (sockListener < 0)
     {
+        IsServerRunning = 0;
         return NULL;
     }
     pthread_cleanup_push(close, sockListener);
@@ -289,8 +290,8 @@ void *ListenMain(void *nouse)
                     NatHostInitlize();
 
                     pthread_cleanup_push(NatHostFinalize, 0);
-                            log_info("Listener", "主服务正在监听TCP %d\n", CONFIG_LISTEN_PORT);
-                            log_info("Listener", "NAT穿透服务正在等待UDP %d.\n", CONFIG_HOST_DISCOVER_PORT);
+                            log_info("Listener", "Server is listener on TCP %d\n", CONFIG_LISTEN_PORT);
+                            log_info("Listener", "NAT Traversal is waiting on UDP %d.\n", CONFIG_HOST_DISCOVER_PORT);
 
                             serverIOPool = epoll_create1(EPOLL_CLOEXEC);
                             {
@@ -314,5 +315,6 @@ void *ListenMain(void *nouse)
                     pthread_cleanup_pop(1);
             pthread_cleanup_pop(1);
     pthread_cleanup_pop(1);
+    IsServerRunning = 0;
     return (void *) -1;
 }

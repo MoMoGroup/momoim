@@ -1,22 +1,59 @@
 #include <run/cli.h>
-#include <limits.h>
 #include <stdio.h>
-#include<stdint.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
 #include <run/Structures.h>
 #include <run/user.h>
 #include <arpa/inet.h>
 #include <server.h>
+#include <ctype.h>
+
+//
+const char *commands[] = {
+        "list",
+        "kick",
+        "ban",
+        "unban",
+        "stop"
+};
+const char *commandDesc[] = {
+        "List all online users",
+        "Kick out user",
+        "Forbid an host connect to server",
+        "Allow an host connect to server",
+        "Safely stop server"
+};
+const char *commandArgs[] = {
+        "",
+        "<uid>",
+        "<ipv4>",
+        "<ipv4>",
+        ""
+};
+
+
+void (*const commandFunc[])(const char *) = {
+        CLIList,
+        CLIKick,
+        CLIBan,
+        CLIUnban,
+        CLIStop
+};
 
 static void printMenu()
 {
-    printf("MoMO服务器:\n"
-                   "当前有以下指令可以使用:\n"
-                   "kick <uid>   - 将一个用户踢出服务器\n"
-                   "ban <ipv4>   - 拒绝一个IP地址连入服务器\n"
-                   "unban <ipv4> - 允许一个IP地址连入服务器\n"
-                   ":");
+    printf("MoMO Server:\n");
+    for (int i = 0; i < sizeof(commands) / sizeof(*commands); ++i)
+    {
+        printf("%s %s - %s\n", commands[i], commandArgs[i], commandDesc[i]);
+    }
+    printf(":");
+}
+
+void CLIStop(const char *arg)
+{
+    IsServerRunning = 0;
 }
 
 void CLIKick(const char *arg)
@@ -26,11 +63,11 @@ void CLIKick(const char *arg)
     if (user)
     {
         OnlineUserDelete(user);
-        printf("用户已踢出服务器\n");
+        printf("The user has been kicked\n");
     }
     else
     {
-        printf("用户不在线\n");
+        printf("User not found.\n");
     }
 }
 
@@ -39,12 +76,12 @@ void CLIBan(const char *arg)
     struct in_addr ip;
     if (inet_aton(arg, &ip) == 0)
     {
-        printf("无效IP地址\n");
+        printf("Invalid ipv4 address\n");
     }
     else
     {
         BanListAdd(ip.s_addr);
-        printf("已添加到拒绝列表\n");
+        printf("OK\n");
     }
 }
 
@@ -54,36 +91,55 @@ void CLIUnban(const char *arg)
     struct in_addr ip;
     if (inet_aton(arg, &ip) == 0)
     {
-        printf("无效IP地址\n");
-    }else{
-        BanListRemove(ip.s_addr);
-        printf("已从拒绝列表中移除\n");
+        printf("Invalid ipv4 address\n");
     }
+    else
+    {
+        BanListRemove(ip.s_addr);
+        printf("OK\n");
+    }
+}
+
+void CLIList(const char *arg)
+{
+    printf("Online User List:\n");
+    UserManagerListOnline();
 }
 
 int CLIHandle()
 {
     printMenu();
-    char buf[LINE_MAX];
-    if (!fgets(buf, LINE_MAX, stdin))
+    char *buf = (char *) malloc(2048);
+    if (!fgets(buf, 2048, stdin))
     {
         return 0;
     }
-    if (memcmp(buf, "kick ", 5) == 0)
+    if (isspace(*buf))
     {
-        CLIKick(buf + 5);
+        return 1;
     }
-    else if (memcmp(buf, "ban ", 4) == 0)
+    for (int i = 0; i < sizeof(commands) / sizeof(*commands); ++i)
     {
-        CLIBan(buf + 4);
+        size_t nlen = strlen(commands[i]);
+        if (memcmp(buf, commands[i], nlen) == 0)
+        {
+            if (buf[nlen] == 0)
+            {
+                commandFunc[i](buf + nlen);
+            }
+            else if (isspace(buf[nlen]))
+            {
+                commandFunc[i](buf + nlen + 1);
+            }
+            else
+            {
+                continue;
+            }
+            free(buf);
+            return 1;
+        }
     }
-    else if (memcmp(buf, "unban ", 6) == 0)
-    {
-        CLIUnban(buf + 6);
-    }
-    else
-    {
-        printf("指令未找到\n");
-    }
-    return 1;
+    printf("Command not found\n");
+    free(buf);
+    return 0;
 }

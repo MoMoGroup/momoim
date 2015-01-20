@@ -7,7 +7,7 @@ typedef enum
 {
     UOS_ONLINE = 0,
     UOS_HIDDEN
-} UserOnlineStatus;
+} UserIsOnlineOrHidden;
 typedef struct __attribute__ ((packed))
 {
     uint32_t uid;

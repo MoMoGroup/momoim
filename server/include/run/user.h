@@ -100,7 +100,7 @@ struct structOnlineUser
 
     //该状态私有数据
     uint32_t uid;
-    UserOnlineStatus status;
+    UserIsOnlineOrHidden hiddenStatus;
     POnlineUserInfo info;
     UserOperationTable operations;
 };
@@ -193,6 +193,7 @@ void UserOperationRemoveAll(POnlineUser user);
 void InitUserManager();
 
 void UserManagerFinalize();
+void UserManagerListOnline();
 
 //在线的小伙伴们！！
 extern OnlineUsersTableType OnlineUserTable;

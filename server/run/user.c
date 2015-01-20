@@ -6,6 +6,7 @@
 #include <run/jobs.h>
 #include <datafile/message.h>
 #include <asm-generic/errno.h>
+#include <arpa/inet.h>
 
 #include "datafile/user.h"
 #include "datafile/friend.h"
@@ -94,11 +95,12 @@ static void cleanupUserTable(POnlineUsersTableType table)
         if (table->next[i])
         {
             cleanupUserTable(table->next[i]);
+            table->next[i]= NULL;
         }
-        free(table->next[i]);
     }
     if (table->user != (POnlineUser) -1)
     {
+        OnlineUserDelete(table->user);
         free(table);
     }
 }
@@ -107,6 +109,31 @@ static void deleteAllUser()
 {
     pthread_mutex_lock(&OnlineUserTableLock);
     cleanupUserTable(&OnlineUserTable);
+    pthread_mutex_unlock(&OnlineUserTableLock);
+}
+
+static void listOnlineTable(POnlineUsersTableType table)
+{
+    for (int i = 0; i < 0x10; ++i)
+    {
+        if (table->next[i])
+        {
+            listOnlineTable(table->next[i]);
+        }
+    }
+    struct sockaddr_in addr;
+    socklen_t len= sizeof(addr);
+    if (table->user && table->user != (void *) -1)
+    {
+        getpeername(table->user->crp->fd, (struct sockaddr *) &addr, &len);
+        printf("UID:%u,IP:%s\n", table->user->uid, inet_ntoa(addr.sin_addr));
+    }
+}
+
+void UserManagerListOnline()
+{
+    pthread_mutex_lock(&OnlineUserTableLock);
+    listOnlineTable(&OnlineUserTable);
     pthread_mutex_unlock(&OnlineUserTableLock);
 }
 
