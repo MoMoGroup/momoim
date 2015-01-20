@@ -20,6 +20,10 @@ static int popup_audio(gpointer p)
     popup("错误", "无法建立连接");
     return 0;
 }
+static int audioCloseMsg(gpointer p){
+    popup("消息", "语音聊天已结束");
+    return 0;
+}
 
 //对方拒绝请求时的弹窗
 static int popup_audio_request_refuse(gpointer p)
@@ -48,11 +52,16 @@ static int popup_video_request_accept(gpointer p)
     popup("消息", "对方已接受了您的视频请求");
     return 0;
 }
+
 ////提示弹窗
 //int popup_request_num_limit(gpointer p){
 //    popup("消息","同一时间只能对一个好友发起请求哦");
 //    return 0;
 //}
+static int onAudioStop(void *data)
+{
+    g_idle_add(audioCloseMsg, data);
+}
 
 //处理服务器发送net_friend_discover这个包的反馈函数
 //貌似音视频都可以用这个函数啊
@@ -143,7 +152,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
         }
     }
     log_info("Audio", "Start Audio Module\n");
-    StartAudioChat_Send(sockSender, &entry->addr);
+    StartAudioChat(sockSender, &entry->addr, onAudioStop, NULL);
     free(entry);
 }
 
@@ -326,7 +335,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         }
     }
     log_info("Audio", "Start Audio Module\n");
-    StartAudioChat_Send(sockSender, &entry->addr);
+    StartAudioChat(sockSender, &entry->addr, NULL, NULL);
     free(entry);
     return NULL;
 }

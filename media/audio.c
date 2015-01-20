@@ -20,6 +20,9 @@ static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
 static char *circle_buf_send[8], *circle_buf_recv[8];
 static char **head_send, **tail_send, **head_recv, **tail_recv;
 
+static int (*cleanupFunc)(void *);
+
+static void *cleanupArg;
 
 void *record_routine(void *data)
 {
@@ -198,19 +201,23 @@ static void cleanupAudioChat(void *__noused)
 
 static void *process(void *data)
 {
-    pthread_t t_record, t_send, t_recv, t_play;
-    pthread_create(&t_send, NULL, send_routine, NULL);
-    pthread_create(&t_recv, NULL, recv_routine, NULL);
-    pthread_create(&t_record, NULL, record_routine, NULL);
-    pthread_create(&t_play, NULL, play_routine, NULL);
-    pthread_cleanup_push(pthread_cancel, t_send);
-            pthread_cleanup_push(pthread_cancel, t_recv);
-                    pthread_cleanup_push(pthread_cancel, t_record);
-                            pthread_cleanup_push(pthread_cancel, t_play);
-                                    pthread_join(t_send, NULL);
-                                    pthread_join(t_recv, NULL);
-                                    pthread_join(t_record, NULL);
-                                    pthread_join(t_play, NULL);
+    pthread_cleanup_push(cleanupFunc, cleanupArg);
+            pthread_cleanup_push(cleanupAudioChat, 0);
+                    pthread_t t_record, t_send, t_recv, t_play;
+                    pthread_create(&t_send, NULL, send_routine, NULL);
+                    pthread_create(&t_recv, NULL, recv_routine, NULL);
+                    pthread_create(&t_record, NULL, record_routine, NULL);
+                    pthread_create(&t_play, NULL, play_routine, NULL);
+                    pthread_cleanup_push(pthread_cancel, t_send);
+                            pthread_cleanup_push(pthread_cancel, t_recv);
+                                    pthread_cleanup_push(pthread_cancel, t_record);
+                                            pthread_cleanup_push(pthread_cancel, t_play);
+                                                    pthread_join(t_send, NULL);
+                                                    pthread_join(t_recv, NULL);
+                                                    pthread_join(t_record, NULL);
+                                                    pthread_join(t_play, NULL);
+                                            pthread_cleanup_pop(1);
+                                    pthread_cleanup_pop(1);
                             pthread_cleanup_pop(1);
                     pthread_cleanup_pop(1);
             pthread_cleanup_pop(1);
@@ -218,18 +225,18 @@ static void *process(void *data)
     return 0;
 }
 
-void StartAudioChat_Send(int sendSock, struct sockaddr_in *addr)
+void StartAudioChat(int sendSock, struct sockaddr_in *addr, int (*onCancel)(void *), void *data)
 {
     if (mainThread)
     {
         pthread_cancel(mainThread);
     }
     InitAudioChat();
-    pthread_cleanup_push(cleanupAudioChat, 0);
-            addr_sendto = *addr;
-            netSocket = sendSock;
-            pthread_create(&mainThread, NULL, process, NULL);
-    pthread_cleanup_pop(1);
+    addr_sendto = *addr;
+    netSocket = sendSock;
+    pthread_create(&mainThread, NULL, process, NULL);
+    cleanupFunc = onCancel;
+    cleanupArg = data;
 }
 
 void StopAudioChat(void)
