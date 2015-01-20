@@ -44,7 +44,6 @@ gboolean treatment_request_audio_discover(gpointer);
 
 gboolean treatment_request_video_discover(gpointer);
 
-gboolean ProcessAudioRequest(gpointer user_data);
 
 int deal_video_dicover_server_feedback(CRPBaseHeader *, void*);
 

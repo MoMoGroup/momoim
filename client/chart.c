@@ -109,6 +109,65 @@ int OnAudioCloseMsg(gpointer p)
     return 0;
 }
 
+gboolean ProcessAudioRequest(gpointer user_data)
+{
+
+    CRPPacketNETNATRequest *entry = (CRPPacketNETNATRequest *) user_data;
+    //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
+    //找到这个好友
+    FriendInfo *userinfo = FriendInfoHead;
+    int uidfindflag = 0;
+    while (userinfo)
+    {
+        if (userinfo->user.uid == entry->uid)
+        {
+            uidfindflag = 1;
+            break;
+        }
+        else
+        {
+            userinfo = userinfo->next;
+        }
+    }
+    //如果找到这个好友
+    if (uidfindflag == 1)
+    {
+        //打开聊天窗口或者置前聊天窗口
+        if (userinfo->chartwindow == NULL)
+        {
+            MainChart(userinfo);
+        }
+        else
+        {
+            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
+        }
+        if (userinfo->chartwindow != NULL)
+        {
+
+            GtkWidget *dialog_request_audio_request;
+
+            dialog_request_audio_request = gtk_message_dialog_new(GTK_WINDOW(userinfo->chartwindow), GTK_DIALOG_MODAL,
+                                                                  GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+                                                                  "莫默询问您：\n您想与这位好友语音聊天吗？");
+            gtk_window_set_title(GTK_WINDOW (dialog_request_audio_request), "Question");
+            gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_audio_request));
+            if (result == -5)
+            {
+                gtk_image_set_from_surface((GtkImage *) userinfo->imagevoice, surfacevoice3);
+                isAudioRunning = 1;
+                AudioAcceptNatDiscover(entry, userinfo);
+                gtk_widget_destroy(dialog_request_audio_request);
+            }
+            else
+            {
+                CRPNETNATRefuseSend(sockfd, CountSessionId(), entry->uid, entry->session);
+                gtk_widget_destroy(dialog_request_audio_request);
+            }
+        }
+    }
+    free(user_data);
+}
+
 //背景的eventbox
 static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {

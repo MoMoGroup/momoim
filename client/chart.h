@@ -19,3 +19,4 @@ extern struct UserTextInformation UserWordInfo;
 
 int OnAudioCloseMsg(gpointer p);
 int OnAudioRefuseMsg(gpointer p);
+gboolean ProcessAudioRequest(gpointer user_data);
