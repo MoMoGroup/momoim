@@ -83,6 +83,17 @@ static void create_surfaces(FriendInfo *information)
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 }
+//对方拒绝请求时的弹窗
+static int OnAudioRefuseMsg(gpointer p)
+{
+    FriendInfo *info = p;
+    isAudioRunning = 0;
+    StopAudioChat();
+    gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    popup("消息", "对方已拒绝您的音频请求");
+    return 0;
+}
+
 int OnAudioCloseMsg(gpointer p)
 {
     FriendInfo *info = p;

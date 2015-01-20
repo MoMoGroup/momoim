@@ -20,13 +20,6 @@ static int popup_audio(gpointer p)
     return 0;
 }
 
-//对方拒绝请求时的弹窗
-static int popup_audio_request_refuse(gpointer p)
-{
-    popup("消息", "对方已拒绝您的音频请求");
-    return 0;
-}
-
 //对方同意请求时的弹窗
 static int popup_audio_request_accept(gpointer p)
 {
@@ -176,7 +169,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
         };
         case CRP_PACKET_NET_NAT_REFUSE:
         {
-            g_idle_add(popup_audio_request_refuse, NULL);
+            g_idle_add(popup_audio_request_refuse, entry->friendInfo);
             return 0;
         };
         case CRP_PACKET_NET_NAT_ACCEPT:
