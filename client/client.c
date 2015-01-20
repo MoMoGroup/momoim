@@ -164,11 +164,13 @@ gboolean MyThread(gpointer user_data)//合并
     return 0;
 }//合并
 
+
+//如果登录失败，返回到登录界面
 gboolean DestroyLayout(gpointer user_data)
 {
     Popup("莫默告诉你：", user_data);
-    gtk_widget_hide(pendingLayout);
-    gtk_widget_show_all(loginLayout);
+    gtk_widget_hide(pendingLayout);//隐藏正在登录界面
+    gtk_widget_show_all(loginLayout);//显示登录界面
     free(user_data);
     return FALSE;
 }
@@ -899,7 +901,7 @@ gboolean DestoryAll(gpointer user_data)
     }
 
     LoadLoginLayout(NULL);
-    Popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
+    Popup("系统消息", user_data);
     return FALSE;
 }
 
