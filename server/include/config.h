@@ -13,4 +13,4 @@
 //主机发现功能端口号
 #define CONFIG_HOST_DISCOVER_PORT 8015
 //垃圾收集执行概率
-#define CONFIG_GC_RADIO (0.005)
+#define CONFIG_GC_RADIO (0.002)

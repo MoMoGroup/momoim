@@ -257,7 +257,7 @@ gboolean putimage(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(addlayout2), yanzhengxinxi, 210, 75);//位置
 
     char filename[256];
-    HexadecimalConversion(filename, p->key);
+    HexadecimalConversion(filename,(const uint8_t *) p->key);
     surface = cairo_image_surface_create_from_png(filename);
     int w = cairo_image_surface_get_width(surface);
     int h = cairo_image_surface_get_height(surface);
@@ -380,7 +380,7 @@ static gint next_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     //主消息循环注册查找好友
     AddMessageNode(sessionid, searchfriend, malloc(sizeof(struct add_friend_info)));
     //请求要添加的资料
-    CRPInfoRequestSend(sockfd, sessionid, atol(gtk_entry_get_text(addtext)));
+    CRPInfoRequestSend(sockfd, sessionid, (uint32_t) atol(gtk_entry_get_text(GTK_ENTRY(addtext))));
     return 0;
 }
 

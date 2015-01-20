@@ -6,10 +6,10 @@
 #include <arpa/inet.h>
 #include "PopupWinds.h"
 #include "media.h"
-#include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "../media/video.h"
 #include "../media/audio.h"
+#include "chart.h"
 
 //这个结构体用来保存请求音视频的记录
 struct log_request_friend_discover the_log_request_friend_discover;
@@ -18,13 +18,6 @@ struct log_request_friend_discover the_log_request_friend_discover;
 static int popup_audio(gpointer p)
 {
     popup("错误", "无法建立连接");
-    return 0;
-}
-
-//对方拒绝请求时的弹窗
-static int popup_audio_request_refuse(gpointer p)
-{
-    popup("消息", "对方已拒绝您的音频请求");
     return 0;
 }
 
@@ -48,15 +41,20 @@ static int popup_video_request_accept(gpointer p)
     popup("消息", "对方已接受了您的视频请求");
     return 0;
 }
+
 ////提示弹窗
 //int popup_request_num_limit(gpointer p){
 //    popup("消息","同一时间只能对一个好友发起请求哦");
 //    return 0;
 //}
+static int onAudioStop(void *data)
+{
+    g_idle_add(OnAudioCloseMsg, data);
+}
 
 //处理服务器发送net_friend_discover这个包的反馈函数
 //貌似音视频都可以用这个函数啊
-int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid)
+int deal_video_dicover_server_feedback(CRPBaseHeader *header, void* data)
 {
     if (header->packetID == CRP_PACKET_FAILURE)
     {
@@ -116,15 +114,20 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                     CRPNETNATReadySend(sockfd, entry->localSession, entry->peerUid, entry->peerSession);
                 }
+                else
+                {
+                    char hexKey[65] = {0};
+                    for (int i = 0; i < 32; ++i)
+                    {
+                        sprintf(hexKey + i * 2, "%02x", (int) buffer[i]);
+                    }
+                    log_info("Key", "WrongKey%s\n", hexKey);
+                }
 
             }
             else
             {
                 perror("recv");
-            }
-            if (timeout.tv_usec > 0)
-            {
-                usleep((useconds_t) timeout.tv_usec);
             }
         }
         else
@@ -132,11 +135,13 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             if (++tryTimes >= 10)//10次重试未成功
             {
                 free(entry);
+                g_idle_add(popup_audio, NULL);
                 return 0;
             }
         }
     }
-    StartAudioChat_Send(sockSender, &entry->addr);
+    log_info("Audio", "Start Audio Module\n");
+    StartAudioChat(sockSender, &entry->addr, onAudioStop, entry->friendInfo);
     free(entry);
 }
 
@@ -161,6 +166,11 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
         case CRP_PACKET_NET_NAT_READY:
         {
             entry->peerReady = 1;
+            return 0;
+        };
+        case CRP_PACKET_NET_NAT_REFUSE:
+        {
+            g_idle_add(OnAudioRefuseMsg, entry->friendInfo);
             return 0;
         };
         case CRP_PACKET_NET_NAT_ACCEPT:
@@ -225,7 +235,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
 }
 
 //主动发起NAT发现请求
-int AudioRequestNATDiscover(uint32_t uid)
+int AudioRequestNATDiscover(FriendInfo *info)
 {
     session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
 
@@ -237,7 +247,8 @@ int AudioRequestNATDiscover(uint32_t uid)
         randNum = rand();
         memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
     }
-    entry->peerUid = uid;
+    entry->peerUid = info->uid;
+    entry->friendInfo = info;
     entry->messageSent = 0;
     entry->localSession = sessionNatDiscover;
     AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
@@ -307,21 +318,19 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                     log_info("Key", "WrongKey%s\n", hexKey);
                 }
             }
-            if (timeout.tv_usec > 0)
-            {
-                usleep((useconds_t) timeout.tv_usec);
-            }
         }
         else
         {
             if (++tryTimes >= 10)//10次重试未成功
             {
+                g_idle_add(popup_audio, NULL);
                 free(entry);
                 return 0;
             }
         }
     }
-    StartAudioChat_Send(sockSender, &entry->addr);
+    log_info("Audio", "Start Audio Module\n");
+    StartAudioChat(sockSender, &entry->addr,  onAudioStop, entry->friendInfo);
     free(entry);
     return NULL;
 }
@@ -371,11 +380,12 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
 }
 
 //收到NAT请求,同意NAT发现
-int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request)
+int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request, FriendInfo *friendInfo)
 {
     session_id_t sid = CountSessionId();
     struct AudioDiscoverProcessEntry *entry =
             (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
+    entry->friendInfo = friendInfo;
     int randNum;
     for (int randi = 0; randi < 32 / sizeof(int); ++randi)
     {
@@ -400,7 +410,7 @@ int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request)
 }
 
 //处理发送视频请求后，对方是否同意的函数
-int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid)
+int deal_video_feedback(CRPBaseHeader *header, void * data)
 {
     if (header->packetID == CRP_PACKET_NET_DISCOVER_REFUSE)
     {
@@ -482,10 +492,7 @@ gboolean treatment_request_video_discover(gpointer user_data)
                 //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址.先打开监听程序然后再发送同意接受包
                 //primary_video(1,NULL);
                 pthread_t pthd_video_recv;
-                pthread_create(&pthd_video_recv,
-                               NULL,
-                               primary_video,
-                               NULL);
+                pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
                 session_id_t sessionid_accept = CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
                 CRPNETDiscoverAcceptSend(sockfd, sessionid_accept, video_data->uid, video_data->session);

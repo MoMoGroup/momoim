@@ -35,7 +35,7 @@ static int DiscoverDetected(const struct sockaddr_in *addr, void *data)
     {
         struct sockaddr_in fromAddr;
         socklen_t len = sizeof(fromAddr);
-        getpeername(user->crp->fd, &fromAddr, &len);
+        getpeername(user->crp->fd, (struct sockaddr *) &fromAddr, &len);
         log_info("Detect",
                  "UID:%u,Session:%u,From:%s\n",
                  user->uid,

@@ -237,7 +237,9 @@ POnlineUser OnlineUserGet(uint32_t uid)
         currentTable = currentTable->next[reserve[end]];
         --end;
     }
-    if (currentTable->user && OnlineUserHold(currentTable->user))
+    if (currentTable->user
+        && currentTable != &OnlineUserTable
+        && OnlineUserHold(currentTable->user))
     {
         ret = currentTable->user;
     }
@@ -278,7 +280,7 @@ PPendingUser UserNew(int fd)
     user->state = OUS_PENDING_HELLO;
     user->holdLock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));
     pthread_rwlock_init(user->holdLock, NULL);
-    time(&user->lastUpdateTime);
+    time(&user->timeLastPacket);
     return user;
 }
 
@@ -332,7 +334,7 @@ void UserGC()
     time(&now);
     for (PPendingUser user = PendingUserTable.first; user != NULL; user = user->next)
     {
-        if (difftime(now, user->lastUpdateTime) > 10)//Pending表最小宽限时间为10秒
+        if (difftime(now, user->timeLastPacket) > 10)//Pending表最小宽限时间为10秒
         {
             PendingUserDelete(user);
         }
@@ -346,7 +348,7 @@ void UserGC()
 
 int OnlineUserHold(POnlineUser user)
 {
-    return user->state != OUS_ONLINE || pthread_rwlock_tryrdlock(user->holdLock) == 0;
+    return user && (user->state != OUS_ONLINE || pthread_rwlock_tryrdlock(user->holdLock) == 0);
 }
 
 void UserDrop(POnlineUser user)

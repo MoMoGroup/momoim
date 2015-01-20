@@ -86,7 +86,6 @@ int NatHostDiscoverNotify(struct sockaddr_in const *address, const uint8_t key[3
     {
         sprintf(hexKey + i * 2, "%02x", (int) key[i]);
     }
-    log_info("NatDiscover", "Notify:Key:%s\n", hexKey);
     HostDiscoverEntry *entry = NULL;
     pthread_rwlock_rdlock(&lock);
     for (entry = table.first; entry != NULL; entry = entry->next)
