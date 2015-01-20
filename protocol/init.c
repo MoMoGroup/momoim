@@ -74,21 +74,6 @@ void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_NET_NAT_READY]            = (void *(*)(CRPBaseHeader *)) CRPNETNATReadyCast,
 };
 
-typedef struct
-{
-    uint8_t type;
-    uint16_t seq;
-    uint16_t length;
-    uint8_t payload[0];
-} ARQPacket;
-static pthread_t arqThread;
-static pthread_mutex_t arqLock;
-
-static void ARQInit()
-{
-    //T!ODO ARQ
-}
-
 static void CRPEncryptDisableUnlock(CRPContext context)
 {
     if (context->sendTd || context->recvTd)

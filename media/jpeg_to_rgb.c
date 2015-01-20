@@ -61,7 +61,7 @@ int read_JPEG_file(char *buf1, char *buf2, size_t bufSize)
 ////////////////////////////////////////////////////////////////////////////////
 //    jpeg_stdio_src(&cinfo, infile);
 
-    jpeg_mem_src(&cinfo, buf1, bufSize);
+    jpeg_mem_src(&cinfo, (unsigned char*)buf1, bufSize);
 ////////////////////////////////////////////////////////////////////////////////
     jpeg_read_header(&cinfo, TRUE);
 

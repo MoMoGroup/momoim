@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ClientSockfd.h"
+
 #define NET_DISCOVER_AUDIO 1
 #define NET_DISCOVER_VIDEO 2
 #define NET_DISCOVER_ONLINE_FILE 3
@@ -26,6 +28,7 @@ typedef struct AudioDiscoverProcessEntry
     struct sockaddr_in addr;
     session_id_t localSession, peerSession;
     pthread_t workerThread;
+    FriendInfo *friendInfo;
 };
 extern struct log_request_friend_discover the_log_request_friend_discover;
 
@@ -41,11 +44,13 @@ gboolean treatment_request_audio_discover(gpointer);
 
 gboolean treatment_request_video_discover(gpointer);
 
+gboolean ProcessAudioRequest(gpointer user_data);
+
 int deal_video_dicover_server_feedback(CRPBaseHeader *, void*);
 
 int deal_video_feedback(CRPBaseHeader *, void*);
 
 int processNatDiscoveredOnAudio(CRPBaseHeader *, void *);
 
-int AudioAcceptNatDiscover(CRPPacketNETNATRequest *);
-int AudioRequestNATDiscover(uint32_t uid);
+int AudioAcceptNatDiscover(CRPPacketNETNATRequest *,FriendInfo*);
+int AudioRequestNATDiscover(FriendInfo *);

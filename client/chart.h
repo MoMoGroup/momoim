@@ -1,6 +1,6 @@
 #pragma once
-
 #include "ClientSockfd.h"
+#include <gtk/gtk.h>
 
 struct UserTextInformation
 {
@@ -17,7 +17,5 @@ struct UserTextInformation
 };
 extern struct UserTextInformation UserWordInfo;
 
-
-extern int flag_audio_close;
-
-extern void LoadingIcon(FriendInfo *info);
+int OnAudioCloseMsg(gpointer p);
+int OnAudioRefuseMsg(gpointer p);
