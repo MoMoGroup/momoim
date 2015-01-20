@@ -4,7 +4,6 @@
 #include <logger.h>
 #include <common.h>
 #include <arpa/inet.h>
-#include <protocol/status/Failure.h>
 #include "PopupWinds.h"
 #include "media.h"
 #include "ClientSockfd.h"
@@ -123,6 +122,10 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             {
                 perror("recv");
             }
+            if (timeout.tv_usec > 0)
+            {
+                usleep((useconds_t) timeout.tv_usec);
+            }
         }
         else
         {
@@ -146,8 +149,8 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
         case CRP_PACKET_FAILURE:
         {
             CRPPacketFailure *packet = CRPFailureCast(header);
-            log_error("NatDiscover", "error%s\n",packet->reason);
-            if ((void*)packet != header->data)
+            log_error("NatDiscover", "error%s\n", packet->reason);
+            if ((void *) packet != header->data)
             {
                 free(packet);
             }
@@ -258,6 +261,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         if (!isServerDetected)
         {
             sendto(sockSender, entry->peerKey, 32, 0, (struct sockaddr *) &serverNatService, serverAddrLen);
+            log_info("SendKey", "To Server\n", inet_ntoa(entry->addr.sin_addr), ntohs(entry->addr.sin_port));
         }
         if (entry->addr.sin_port)//等待对方Discover
         {
@@ -285,6 +289,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                     || memcmp(buffer, (uint8_t[32]) {0}, 32) == 0)//与本地key相等是服务器返回数据
                 {
                     isServerDetected = 1;
+                    log_info("Processing", "Server Found.");
                 }
                 else if (memcmp(buffer, entry->key, 32) == 0)//与对点key相等,是对方发来的数据.连接已建立成功
                 {
@@ -300,9 +305,11 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                         sprintf(hexKey + i * 2, "%02x", (int) buffer[i]);
                     }
                     log_info("Key", "WrongKey%s\n", hexKey);
-                    sleep(1);
                 }
-
+            }
+            if (timeout.tv_usec > 0)
+            {
+                usleep((useconds_t) timeout.tv_usec);
             }
         }
         else
@@ -419,10 +426,7 @@ int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid)
         addr_opposite->sin_addr = addr;
         //这里运行　视频函数，需要对方ip地址
         pthread_t pthd_video;
-        pthread_create(&pthd_video,
-                       NULL,
-                       primary_video,
-                       addr_opposite);
+        pthread_create(&pthd_video, NULL, primary_video, addr_opposite);
         //primary_video(2,ip);
     }
     return 0;

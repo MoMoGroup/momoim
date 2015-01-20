@@ -16,7 +16,7 @@
 #include "../media/audio.h"
 #include "onlylookinfo.h"
 
-int flag_audio_close;
+int isAudioRunning;
 
 struct UserTextInformation UserWordInfo;
 static cairo_surface_t *schartbackgroud, *surfacesend1, *surfacesend2, *surfacehead3, *surfacevoice1, *surfacevoice2, *surfacevoice3, *surfacevideo1, *surfacevideo2;
@@ -195,31 +195,15 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
     FriendInfo *info = (FriendInfo *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
-//        uint8_t gid_audio;
-//        int quantity_group = friends->groupCount;
-//        //用来找出gid
-//        int i, j = 0;
-//        for (i = 0; i < quantity_group; i++)
-//        {
-//            for (j = 0; j < friends->groups[i].friendCount; j++)
-//            {
-//                if (friends->groups[i].friends[j] == info->user.uid)
-//                {
-//                    gid_audio = friends->groups[i].groupId;
-//                    break;
-//                }
-//            }
-//        }
-        //标志位为0 表示没人在语音这时可以打开语音
-        if (flag_audio_close == 0)
+        if (isAudioRunning == 0)
         {
             AudioRequestNATDiscover(info->uid);
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
-            flag_audio_close = 1;
+            isAudioRunning = 1;
         }
         else//如果标志位不为０表示此时应该关掉语音.
         {
-            flag_audio_close = 0;
+            isAudioRunning = 0;
             StopAudioChat();
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
         }
@@ -249,7 +233,7 @@ static gint voice_leave_notify_event(GtkWidget *widget, GdkEventButton *event, g
     //设置语音按钮
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     //判断此时是不是在语音聊天，是的话将语音聊天按钮设置成占线模式，否则普通模式
-    if (flag_audio_close == 0)
+    if (isAudioRunning == 0)
     {
         gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
     }

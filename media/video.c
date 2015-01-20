@@ -14,10 +14,12 @@
 #include <gtk/gtk.h>
 #include "yuv422_rgb.h"
 #include "video.h"
+#include "../logger/include/logger.h"
+#include "../client/PopupWinds.h"
 
 #define SERVERPORT 5555
 
-struct sockaddr_in addr_opposite;
+static struct sockaddr_in addr_opposite;
 
 typedef struct VideoBuffer
 {
@@ -27,11 +29,14 @@ typedef struct VideoBuffer
 
 
 static VideoBuffer *buffers = NULL;
-unsigned char *rgbBuf;
 
-int fd;//摄像头的文件描述符
+static unsigned char *rgbBuf;
 
-pthread_t tid1, tid2, tid3;
+//摄像头的文件描述符
+static int fd;
+
+//获取视频信息，发送视频信息，接受视频信息分别三个线程id
+static pthread_t tid1, tid2, tid3;
 
 /*下面的代码用来做循环队列*/
 static pthread_mutex_t mutex_send, mutex_recv;
@@ -44,13 +49,19 @@ typedef struct
 static jpeg_str *circle_buf_send[8], *circle_buf_recv[8];
 static jpeg_str **head_send, **tail_send, **head_recv, **tail_recv;
 
+//接收到对面发来的关闭连接的信号
 struct sigaction act;
-GtkWindow *window;
 
-int flag_idle; //用于取消idle的旗帜
-int flag_main_idle;
+//绘制视频的窗口
+static GtkWindow *window;
+
+static int flag_idle; //用于取消idle的旗帜
+//static int flag_main_idle;
+
+//static int len_buffer;
 
 void closewindow();
+
 
 
 int mark()
@@ -149,7 +160,7 @@ int video()
     buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     buf.memory = V4L2_MEMORY_MMAP;
     buf.index = 0;
-
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
 
     jpeg_str *p_send;
     while (1)
@@ -199,6 +210,23 @@ void video_off()
     close(fd);
 }
 
+void cancle_mem()
+{
+    int i;
+    for (i = 0; i < 4; i++)
+    {
+        munmap(buffers[i].start, 640 * 480 * 2);
+    }
+}
+
+gint delete_event(GtkWindow *window)
+{
+    closewindow();
+    popup("消息","视频已结束");
+    return FALSE;
+}
+
+
 void *pthread_video(void *arg)
 {
     video_on();
@@ -209,20 +237,25 @@ void *pthread_video(void *arg)
         {
             times_err++;
         }
+        //视频采集出现三次错误就关掉聊天窗口
         if (times_err == 3) break;
         video_off();
         mark();
+        cancle_mem();
         localMem();
         video_on();
 
     }
-    closewindow();
+    //closewindow();
+    g_idle_add(delete_event, NULL);
     return NULL;
 }
 
 
 void *pthread_snd(void *socketsd)
 {
+
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
     int sd = (*(int *) socketsd);
     jpeg_str *q_send;
     while (1)
@@ -247,8 +280,16 @@ void *pthread_snd(void *socketsd)
 }
 
 
+
+
+void pre_closewindow(){
+    g_idle_add(delete_event, NULL);
+}
+
 void *pthread_rev(void *socketrev)
 {
+
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
     int sd = (*(int *) socketrev);
     jpeg_str *p_recv;
     ssize_t ret;
@@ -260,19 +301,21 @@ void *pthread_rev(void *socketrev)
         p_recv = (jpeg_str *) malloc(50000);
         errno = 0;
         ret = recv(sd, &p_recv->jpeglen, sizeof(int), MSG_WAITALL);
+        //如果收到错误信号，就关闭窗口
         if (ret <= 0)
         {
             perror("recv");
-            //delete_event();
-            closewindow();
+            g_idle_add(delete_event, NULL);
+            return NULL;
         }
         errno = 0;
         ret = recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
+        //如果收到错误信号，就关闭窗口
         if (ret <= 0)
         {
             perror("recv");
-            //delete_event();
-            closewindow();
+            g_idle_add(delete_event, NULL);
+            return NULL;
         };
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
@@ -291,7 +334,7 @@ void *pthread_rev(void *socketrev)
 
 gboolean idleDraw(gpointer data)
 {
-    if(flag_idle) return 0;
+    if (flag_idle) return 0;
     jpeg_str *q_recv;
     pthread_mutex_lock(&mutex_recv);
     if (!*tail_recv)
@@ -314,27 +357,40 @@ gboolean idleDraw(gpointer data)
         gtk_image_set_from_pixbuf(image, pixbuf);
         g_object_unref(pixbuf);
     }
-    fprintf(stderr, ".");
     free(q_recv);
     q_recv = NULL;
     ///////////////////////////////////////////////////////////////////////////////////////////
     return 1;
 }
 
+//关闭窗口之后的处理函数
 void closewindow()
 {
 //    pthread_detach(tid1);
 //    pthread_detach(tid2);
 //    pthread_detach(tid3);
 
+    log_info("CloseWind", "Window is closing.\n");
+    if(flag_idle==1) return ;
+    flag_idle = 1;
+    //flag_main_idle = 1;
 
-    flag_idle=1;
-    flag_main_idle=1;
-
-
+    //log_info("DEBUG", "cancel1");
     pthread_cancel(tid1);
+    //log_info("DEBUG", "join1");
+    pthread_join(tid1, NULL);
+    //log_info("DEBUG", "cancel2");
     pthread_cancel(tid2);
+    //log_info("DEBUG", "join2");
+    pthread_join(tid2, NULL);
+    //log_info("DEBUG", "cancel3");
     pthread_cancel(tid3);
+    //log_info("DEBUG", "join3");
+    pthread_join(tid3, NULL);
+    //log_info("DEBUG", "cancel memory");
+
+    cancle_mem();
+    //log_info("DEBUG", "destory locks");
 
     pthread_mutex_unlock(&mutex_recv);
     pthread_mutex_destroy(&mutex_recv);
@@ -349,12 +405,16 @@ void closewindow()
     pthread_cond_destroy(&recv_busy);
     pthread_cond_broadcast(&recv_idle);
     pthread_cond_destroy(&recv_idle);
+    //log_info("DEBUG", "close videos");
 
     enum v4l2_buf_type type;
     type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-    ioctl(fd, VIDIOC_STREAMOFF, &type);//停止视频采集
-    close(fd);//释放缓冲区，关闭设备文件
+    //停止视频采集
+    ioctl(fd, VIDIOC_STREAMOFF, &type);
+    //释放缓冲区，关闭设备文件
+    close(fd);
 
+    //log_info("DEBUG", "clean buffer");
     int i;
     for (i = 0; i < 8; i++)
     {
@@ -367,30 +427,23 @@ void closewindow()
 //    (*tail_recv)=NULL;
 //    free(*tail_send);
 //    (*tail_send)=NULL;
+    //log_info("DEBUG", "destory window");
 
     gtk_widget_destroy(GTK_WIDGET(window));
     //gtk_window_get_destroy_with_parent(window);
 
+    //log_info("DEBUG", "free buf");
+    //close(netSocket);
 
 
-    pthread_join(tid1, NULL);
-    pthread_join(tid2, NULL);
-    pthread_join(tid3, NULL);
     free(rgbBuf);
 }
 
-
-gint delete_event(GtkWindow *window)
-{
-
-    closewindow();
-    return FALSE;
-}
-
+//用于绘制视频窗口的入口
 int guiMain(void *button)
 {
-    if(flag_main_idle) return 0;
-    flag_idle=0;
+    //if (flag_main_idle) return 0;
+    flag_idle = 0;
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
     g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
@@ -402,11 +455,14 @@ int guiMain(void *button)
     return 0;
 }
 
+
+//视频聊天的函数入口
 void *primary_video(struct sockaddr_in *addr)
 {
+    //pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
 
     //用于取消idle的环境变量
-    flag_main_idle=0;
+    //flag_main_idle = 0;
 
     head_send = circle_buf_send;
     tail_send = circle_buf_send;
@@ -484,7 +540,8 @@ void *primary_video(struct sockaddr_in *addr)
         close(listener);
     }
 
-    act.sa_handler = closewindow;
+    //收到对面关闭连接的信号之后就关闭窗口
+    act.sa_handler = pre_closewindow;
     if (sigaction(SIGPIPE, &act, NULL) == -1)
     {
         perror("sign error");

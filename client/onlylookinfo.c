@@ -265,7 +265,10 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), iid, 255, 29);
 
     memset(idstring, 0, strlen(idstring));
-    sprintf(idstring, "%d", friendinfonode->user.level);
+    int mylevel = friendinfonode->user.level;
+    mylevel = log10(mylevel) / log10(2) + 1;//等级计算
+    sprintf(idstring, "%d", mylevel);
+    //sprintf(idstring, "%d", friendinfonode->user.level);
     ilevel = gtk_label_new(idstring);//等级
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), ilevel, 270, 70);
 
