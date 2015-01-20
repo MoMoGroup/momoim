@@ -295,6 +295,7 @@ void *pthread_rev(void *socketrev)
             perror("recv");
             //delete_event();
             g_idle_add(delete_event, NULL);
+            return NULL;
         }
         errno = 0;
         ret = recv(sd, p_recv->jpeg_buf, (size_t) p_recv->jpeglen, MSG_WAITALL);
@@ -302,6 +303,7 @@ void *pthread_rev(void *socketrev)
         {
             perror("recv");
             g_idle_add(delete_event, NULL);
+            return NULL;
         };
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
@@ -361,22 +363,22 @@ void closewindow()
     flag_idle = 1;
     flag_main_idle = 1;
 
-    log_info("DEBUG", "cancel1");
+    //log_info("DEBUG", "cancel1");
     pthread_cancel(tid1);
-    log_info("DEBUG", "join1");
+    //log_info("DEBUG", "join1");
     pthread_join(tid1, NULL);
-    log_info("DEBUG", "cancel2");
+    //log_info("DEBUG", "cancel2");
     pthread_cancel(tid2);
-    log_info("DEBUG", "join2");
+    //log_info("DEBUG", "join2");
     pthread_join(tid2, NULL);
-    log_info("DEBUG", "cancel3");
+    //log_info("DEBUG", "cancel3");
     pthread_cancel(tid3);
-    log_info("DEBUG", "join3");
+    //log_info("DEBUG", "join3");
     pthread_join(tid3, NULL);
-    log_info("DEBUG", "cancel memory");
+    //log_info("DEBUG", "cancel memory");
 
     cancle_mem();
-    log_info("DEBUG", "destory locks");
+    //log_info("DEBUG", "destory locks");
 
     pthread_mutex_unlock(&mutex_recv);
     pthread_mutex_destroy(&mutex_recv);
@@ -391,14 +393,14 @@ void closewindow()
     pthread_cond_destroy(&recv_busy);
     pthread_cond_broadcast(&recv_idle);
     pthread_cond_destroy(&recv_idle);
-    log_info("DEBUG", "close videos");
+    //log_info("DEBUG", "close videos");
 
     enum v4l2_buf_type type;
     type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     ioctl(fd, VIDIOC_STREAMOFF, &type);//停止视频采集
     close(fd);//释放缓冲区，关闭设备文件
 
-    log_info("DEBUG", "clean buffer");
+    //log_info("DEBUG", "clean buffer");
     int i;
     for (i = 0; i < 8; i++)
     {
@@ -411,12 +413,12 @@ void closewindow()
 //    (*tail_recv)=NULL;
 //    free(*tail_send);
 //    (*tail_send)=NULL;
-    log_info("DEBUG", "destory window");
+    //log_info("DEBUG", "destory window");
 
     gtk_widget_destroy(GTK_WIDGET(window));
     //gtk_window_get_destroy_with_parent(window);
 
-    log_info("DEBUG", "free buf");
+    //log_info("DEBUG", "free buf");
 
 
     free(rgbBuf);
