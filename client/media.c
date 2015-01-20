@@ -55,6 +55,12 @@ static int onAudioStop(void *data)
     g_idle_add(OnAudioCloseMsg, data);
 }
 
+//调用这个函数时，视频函数已经结束，所以把videoflag置为0
+void HandleVideoFlag(){
+    FlagVideo=0;
+}
+
+
 //处理服务器发送net_friend_discover这个包的反馈函数
 //貌似音视频都可以用这个函数啊
 int DealVideoDicoverServerFeedback(CRPBaseHeader *header, void *data)
@@ -438,8 +444,9 @@ int DealVideoFeedback(CRPBaseHeader *header, void *data)
         addr_opposite->sin_port = htons(5555);
         addr_opposite->sin_addr = addr;
         //这里运行　视频函数，需要对方ip地址
-        pthread_t pthd_video;
-        pthread_create(&pthd_video, NULL, primary_video, addr_opposite);
+//        pthread_t pthd_video;
+//        pthread_create(&pthd_video, NULL, primary_video, addr_opposite);
+        StartVideoChat(addr_opposite,HandleVideoFlag);
 
         //用于标识现在是否有视频通话
         FlagVideo=1;
@@ -447,10 +454,7 @@ int DealVideoFeedback(CRPBaseHeader *header, void *data)
     }
     return 0;
 }
-//调用这个函数时，视频函数已经结束，所以把videoflag置为0
-void HandleVideoFlag(){
-    FlagVideo=0;
-}
+
 
 //接到视频请求后的处理函数
 //同意或者拒绝
@@ -514,6 +518,7 @@ gboolean TreatmentRequestVideoDiscover(gpointer user_data)
             }
             else
             {
+                FlagVideo=0;
                 CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), video_data->uid, video_data->session);
                 gtk_widget_destroy(dialog_request_video_net_discover);
             }

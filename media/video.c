@@ -37,6 +37,8 @@ static int fd;
 //获取视频信息，发送视频信息，接受视频信息分别三个线程id
 static pthread_t tid1, tid2, tid3;
 
+void *primary_video(struct sockaddr_in *addr);
+
 /*下面的代码用来做循环队列*/
 static pthread_mutex_t mutex_send, mutex_recv;
 static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
