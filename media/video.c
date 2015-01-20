@@ -187,7 +187,7 @@ int video()
         /*将tempbuf中的数据转换成jpeg放入p->send中*/
         p_send->jpeglen = (int) jpegWrite(tempbuf, (unsigned char *) p_send->jpeg_buf);
         free(tempbuf);
-        //tempbuf = NULL;
+        tempbuf = NULL;
         //应用程序将该帧缓冲区重新排入输入队列
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)
         {
@@ -474,10 +474,9 @@ int guiMain(void *button)
 //视频聊天的函数入口
 void *primary_video(struct sockaddr_in *addr)
 {
-    //pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS,NULL);
 
     //用于取消idle的环境变量
-    //flag_main_idle = 0;
+    flag_main_idle = 0;
 
     head_send = circle_buf_send;
     tail_send = circle_buf_send;
