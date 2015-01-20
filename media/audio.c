@@ -49,7 +49,7 @@ void *record_routine(void *data)
         fprintf(stderr, "Error snd_pcm_open [ default]\n");
         goto Err;
     }
-    pthread_cleanup_push(snd_pcm_close, &record.handle);
+    pthread_cleanup_push(snd_pcm_close, record.handle);
             //设置参数
             if (SNDWAV_SetParams(&record, &wav) < 0)
             {
@@ -149,7 +149,7 @@ void *play_routine(void *data)
         fprintf(stderr, "Error snd_pcm_open [ default ]\n");
         goto Err;
     }
-    pthread_cleanup_push(snd_pcm_close, &playback.handle);
+    pthread_cleanup_push(snd_pcm_close, playback.handle);
             //设置参数
             if (SNDWAV_SetParams(&playback, &wav) < 0)
             {
