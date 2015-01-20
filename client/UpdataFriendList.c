@@ -45,7 +45,7 @@ int FriendListInsertEntry(void *data)
     return 0;
 }
 
-//拿到那个用户的iter
+//给一个uid，返回那个用户的iter
 GtkTreeIter getUserIter(uint32_t frienduid)//参数为匹配需要的uid
 {
     GtkTreeIter iterUser, iterGroup;
@@ -166,12 +166,16 @@ int gengxin_ziliao(void *data)
 {
     FriendInfo *infodata = data;
 
-    GtkTreeIter iterUser;
+    GtkTreeIter iterUser = getUserIter(infodata->uid);//拿到好友的iter
+    GdkPixbuf *pixbuf = DrawFriend(&infodata->user, infodata->isonline);//重画好友头像
 
-    iterUser = getUserIter(infodata->uid);
 
-    GdkPixbuf *pixbuf;
-    pixbuf = DrawFriend(&infodata->user, infodata->isonline);
+    log_info("更改资料", "上下线%d\n", infodata->isonline);
+
+    if (infodata->chartwindow != NULL)//判断聊天窗口是否打开
+    {
+        infodata->user.uid;
+    }
 
     gtk_tree_store_set(TreeViewListStore, &iterUser,
                        PIXBUF_COL, pixbuf,
@@ -182,6 +186,8 @@ int gengxin_ziliao(void *data)
     return 0;
 }
 
+
+//好友列表有人更新资料，实时更新到自己的列表的函数
 int FriendFriendInfoChange(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_INFO_DATA)
@@ -192,15 +198,15 @@ int FriendFriendInfoChange(CRPBaseHeader *header, void *data)
         //仅仅是为了建立那个文件
         FindImage(infodata->info.icon, NULL, NULL);
 
-        FriendInfo *p = FriendInfoHead;//更新链表里的资料
-        while (p->next)
+        FriendInfo *p = FriendInfoHead;
+        while (p->next)//更新链表里的资料
         {
             p = p->next;
             if (infodata->info.uid == p->user.uid)
             {
+
                 memcpy(p->user.nickName, infodata->info.nickName, strlen(infodata->info.nickName) + 1);
                 memcpy(p->user.icon, infodata->info.icon, sizeof(infodata->info.icon));
-
                 break;
             }
         }

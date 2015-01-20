@@ -18,13 +18,12 @@
 #include "../media/audio.h"
 
 pthread_t ThreadKeepAlive;
-pthread_t ThreadListenOnLine;//监听在线传输文件的线程
 
 CRPContext sockfd;
 UserFriends *friends;
 UserGroup *group;
 UserInfo *CurrentUserInfo;
-gchar *uidname;
+//gchar *uidname;
 FILE *fp;
 int AddFriendflag = 1;//只打开一个添加好友窗口
 
@@ -93,7 +92,8 @@ gboolean postMessage(gpointer user_data)
 
         case UMT_FILE_OFFLINE:
         {
-
+            //好友消息声音
+            PlayMusic("好友消息.wav");
             char *message = (char *) malloc(packet->messageLen);
             memcpy(message, packet->message, packet->messageLen);
             //fun();
@@ -106,7 +106,8 @@ gboolean postMessage(gpointer user_data)
             break;
         }
         case UMT_TEXT:
-        {
+        { //好友消息声音
+            PlayMusic("好友消息.wav");
             char *message = (char *) malloc(packet->messageLen);
             memcpy(message, packet->message, packet->messageLen);
             //fun();
@@ -207,8 +208,8 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //消息
         case CRP_PACKET_MESSAGE_NORMAL://不会丢的
         {
-            //好友消息声音
-            PlayMusic("好友消息.wav");
+//            //好友消息声音
+//            PlayMusic("好友消息.wav");
             CRPBaseHeader *dup = (CRPBaseHeader *) malloc(header->totalLength);
             memcpy(dup, header, header->totalLength);
             g_idle_add(postMessage, dup);
@@ -245,6 +246,10 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     //CRPNETDiscoverAcceptSend(sockfd, CountSessionId(), media_data->uid, media_data->session);
                     break;
                 };
+                default:
+                {
+                    break;
+                }
             }
             if ((void *) media_data != header->data)
             {
