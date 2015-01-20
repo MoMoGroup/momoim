@@ -47,7 +47,7 @@ static int popup_video_request_accept(gpointer p)
 
 //提示弹窗
 int popup_request_num_limit(gpointer p){
-    Popup("消息", "同一时间只能对一个好友发起视频请求哦");
+    Popup("消息", "同一时间只能对一位好友\n发起视频请求哦\n");
     return 0;
 }
 static int onAudioStop(void *data)
@@ -446,10 +446,11 @@ int DealVideoFeedback(CRPBaseHeader *header, void *data)
         //这里运行　视频函数，需要对方ip地址
 //        pthread_t pthd_video;
 //        pthread_create(&pthd_video, NULL, primary_video, addr_opposite);
+        FlagVideo=1;
         StartVideoChat(addr_opposite,HandleVideoFlag);
 
         //用于标识现在是否有视频通话
-        FlagVideo=1;
+
         //primary_video(2,ip);
     }
     return 0;
@@ -502,14 +503,15 @@ gboolean TreatmentRequestVideoDiscover(gpointer user_data)
             g_print("the result is %d\n", result);
             if (result == -5)
             {
+                //用于标识现在是否有视频通话
+                FlagVideo=1;
                 //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址.先打开监听程序然后再发送同意接受包
                 //primary_video(1,NULL);
                 //pthread_t pthd_video_recv;
                 //pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
                 StartVideoChat(NULL,HandleVideoFlag);
 
-                //用于标识现在是否有视频通话
-                FlagVideo=1;
+
 
                 session_id_t sessionid_accept = CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
@@ -518,6 +520,7 @@ gboolean TreatmentRequestVideoDiscover(gpointer user_data)
             }
             else
             {
+                //拒绝视频请求后将标志位置为0
                 FlagVideo=0;
                 CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), video_data->uid, video_data->session);
                 gtk_widget_destroy(dialog_request_video_net_discover);
