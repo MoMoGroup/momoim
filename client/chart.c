@@ -15,6 +15,7 @@
 #include "ChartLook.h"
 #include "../media/audio.h"
 #include "onlylookinfo.h"
+#include "chart.h"
 
 int isAudioRunning;
 
@@ -56,13 +57,17 @@ static void create_surfaces(FriendInfo *information)
     surfacecolor = ChangeThem_png("颜色.png");
     surfacechartrecord = ChangeThem_png("消息记录.png");
 
-    static cairo_t *cr;
-//    char mulu[80] = {0};
-    cairo_surface_t *surface;
-//    sprintf(mulu, "%s/.momo/friend/%u.png", getpwuid(getuid())->pw_dir, information->user.uid);
 
+}
+
+//加载聊天窗口头像
+
+void LoadingIcon(FriendInfo *info)
+{
+    static cairo_t *cr;
+    cairo_surface_t *surface;
     char filename[256];
-    HexadecimalConversion(filename, information->user.icon);
+    HexadecimalConversion(filename, info->user.icon);
     log_info("头像路径", "%s\n", filename);
     //加载一个图片
     surface = cairo_image_surface_create_from_png(filename);
@@ -81,9 +86,8 @@ static void create_surfaces(FriendInfo *information)
     cairo_paint(cr);
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
+
 }
-
-
 //背景的eventbox
 static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -1000,6 +1004,7 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_window_set_decorated(GTK_WINDOW(friendinfonode->chartwindow), FALSE);   // 去掉边框
 
     create_surfaces(friendinfonode);
+    LoadingIcon(friendinfonode);
 
     friendinfonode->imageflowerbackgroud = gtk_image_new_from_surface(schartbackgroud);
     friendinfonode->imagesend = gtk_image_new_from_surface(surfacesend1);

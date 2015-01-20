@@ -12,7 +12,7 @@
 #include "managegroup/ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
-
+#include "chart.h"
 
 static GtkWidget *status;
 

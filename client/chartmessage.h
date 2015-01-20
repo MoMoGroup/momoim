@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ClientSockfd.h"
+
 extern void SendText(FriendInfo *info);
 
 extern void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len);
