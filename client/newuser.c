@@ -14,22 +14,21 @@
 #include "client.h"
 
 /*注册新用户界面*/
-static GtkWidget *newwindow;
-static GtkWidget *zhuceLayout;
-static GtkWidget *mnickname, *newusername, *passwd1, *passwd2;
-static GtkWidget *background1, *mminfo, *endwind;
-static cairo_surface_t *surface1, *surface3, *surface32, *surface33, *surface8, *surface82, *surface83;
-static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
+static GtkWidget *NewWindow;
+static GtkWidget *ZhuceLayout;
+static GtkWidget *MoNickname, *NewUsername, *Passwd1, *Passwd2;
+static GtkWidget *BackGround1, *MoInfo, *EndWind;
+static cairo_surface_t *Surface1, *Surface3, *Surface32, *Surface33, *Surface8, *Surface82, *Surface83;
 
 int newsockfd()
 {
     //注册按钮点击事件
     const gchar *newname, *newpwd, *newpwd2, *newnick;
     /*获取输入框中的输入*/
-    newname = gtk_entry_get_text(GTK_ENTRY(newusername));
-    newpwd = gtk_entry_get_text(GTK_ENTRY(passwd1));
-    newpwd2 = gtk_entry_get_text(GTK_ENTRY(passwd2));
-    newnick = gtk_entry_get_text(GTK_ENTRY(mnickname));
+    newname = gtk_entry_get_text(GTK_ENTRY(NewUsername));
+    newpwd = gtk_entry_get_text(GTK_ENTRY(Passwd1));
+    newpwd2 = gtk_entry_get_text(GTK_ENTRY(Passwd2));
+    newnick = gtk_entry_get_text(GTK_ENTRY(MoNickname));
 
     /*输入的字符传长度不为0时*/
     if ((strlen(newname) != 0) && (strlen(newpwd) != 0) && (strlen(newpwd2) != 0) && (strlen(newnick) != 0))
@@ -57,13 +56,13 @@ int newsockfd()
             if (number == charnum)//比较含数字的数量是否跟字符串长度相等
             {
                 log_info("登录名全为数字", "登录名全为数字\n");
-                popup("莫默告诉你：", "登录名全为数字");
+                Popup("莫默告诉你：", "登录名全为数字");
                 return 1;
             }
             if (g_strcmp0(newpwd, newpwd2) != 0)//比较两次密码是否相同
             {
                 log_info("密码不一致", "密码不一致\n");
-                popup("莫默告诉你：", "两次密码不一致");
+                Popup("莫默告诉你：", "两次密码不一致");
                 return 1;
             }
             int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -107,26 +106,26 @@ int newsockfd()
             if (header->packetID != CRP_PACKET_OK)
             {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
-                popup("莫默告诉你：", "登录名已经存在");
+                Popup("莫默告诉你：", "登录名已经存在");
                 return 1;
             }
             log_info("注册OK", "momo\n");
-            popup("莫默告诉你：", "欢迎你加入莫默");
+            Popup("莫默告诉你：", "欢迎你加入莫默");
             free(header);
-            gtk_widget_destroy(newwindow);
+            gtk_widget_destroy(NewWindow);
             CRPClose(sockfd);
         }
         else
         {
             log_info("不合格字符", "momo\n");
-            popup("莫默告诉你：", "包含不合格字符");
+            Popup("莫默告诉你：", "包含不合格字符");
             return 1;
         }
     }
     else
     {
         log_info("注册信息不完整", "momo\n");
-        popup("莫默告诉你：", "请完善注册信息");
+        Popup("莫默告诉你：", "请完善注册信息");
         return 1;
     }
     return 0;
@@ -134,34 +133,34 @@ int newsockfd()
 
 static void create_zhucefaces()
 {
-    surface1 = ChangeThem_png("注册背景.png");
+    Surface1 = ChangeThem_png("注册背景.png");
 
-    surface3 = ChangeThem_png("注册按钮.png");
-    surface32 = ChangeThem_png("注册按钮3.png");
-    surface33 = ChangeThem_png("注册按钮2.png");
+    Surface3 = ChangeThem_png("注册按钮.png");
+    Surface32 = ChangeThem_png("注册按钮3.png");
+    Surface33 = ChangeThem_png("注册按钮2.png");
 
-    surface8 = ChangeThem_png("关闭按钮1.png");
-    surface82 = ChangeThem_png("关闭按钮2.png");
-    surface83 = ChangeThem_png("关闭按钮3.png");
+    Surface8 = ChangeThem_png("关闭按钮1.png");
+    Surface82 = ChangeThem_png("关闭按钮2.png");
+    Surface83 = ChangeThem_png("关闭按钮3.png");
 }
 
 static void destroy_surfaces()
 {
     g_print("destroying surfaces2");
 
-    cairo_surface_destroy(surface1);
-    cairo_surface_destroy(surface3);
-    cairo_surface_destroy(surface32);
-    cairo_surface_destroy(surface33);
-    cairo_surface_destroy(surface8);
-    cairo_surface_destroy(surface82);
-    cairo_surface_destroy(surface83);
+    cairo_surface_destroy(Surface1);
+    cairo_surface_destroy(Surface3);
+    cairo_surface_destroy(Surface32);
+    cairo_surface_destroy(Surface33);
+    cairo_surface_destroy(Surface8);
+    cairo_surface_destroy(Surface82);
+    cairo_surface_destroy(Surface83);
 }
 
 //背景的eventbox拖曳窗口
 static gint newbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_ARROW));
+    gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1)
     { //gtk_widget_get_toplevel 返回顶层窗口 就是window.
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
@@ -176,8 +175,8 @@ static gint zhuce_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 {
     if (event->button == 1)
     {        //设置注册按钮
-        gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) mminfo, surface32); //置换图标
+        gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+        gtk_image_set_from_surface((GtkImage *) MoInfo, Surface32); //置换图标
     }
     return 0;
 }
@@ -198,16 +197,16 @@ static gint zhuce_button_release_event(GtkWidget *widget, GdkEventButton *event,
 //鼠标移动事件
 static gint zhuce_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));
-    gtk_image_set_from_surface((GtkImage *) mminfo, surface33);
+    gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) MoInfo, Surface33);
     return 0;
 }
 
 //鼠标离开事件
 static gint zhuce_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) mminfo, surface3);
+    gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) MoInfo, Surface3);
 
     return 0;
 }
@@ -218,8 +217,8 @@ static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event
 {
     if (event->button == 1)
     {              //设置关闭按钮
-        gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) endwind, surface82); //置换图标
+        gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+        gtk_image_set_from_surface((GtkImage *) EndWind, Surface82); //置换图标
     }
 
     return 0;
@@ -231,9 +230,9 @@ static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *eve
 {
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
-        gtk_image_set_from_surface((GtkImage *) endwind, surface8);  //设置关闭按钮
+        gtk_image_set_from_surface((GtkImage *) EndWind, Surface8);  //设置关闭按钮
         destroy_surfaces();
-        gtk_widget_destroy(newwindow);
+        gtk_widget_destroy(NewWindow);
     }
     return 0;
 }
@@ -242,8 +241,8 @@ static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *eve
 //鼠标移动事件
 static gint closebut_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_HAND2));
-    gtk_image_set_from_surface((GtkImage *) endwind, surface83);
+    gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) EndWind, Surface83);
 
     return 0;
 }
@@ -251,28 +250,29 @@ static gint closebut_enter_notify_event(GtkWidget *widget, GdkEventButton *event
 //鼠标离开事件
 static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    gdk_window_set_cursor(gtk_widget_get_window(newwindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) endwind, surface8);
-    gtk_image_set_from_surface((GtkImage *) mminfo, surface3);
+    gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) EndWind, Surface8);
+    gtk_image_set_from_surface((GtkImage *) MoInfo, Surface3);
     return 0;
 }
 
-int newface()
+int Newface()
 {
-    newwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);//创建新窗口
-    gtk_window_set_position(GTK_WINDOW(newwindow), GTK_WIN_POS_CENTER);//窗口位置
-    gtk_window_set_resizable(GTK_WINDOW (newwindow), FALSE);//固定窗口大小
-    gtk_window_set_decorated(GTK_WINDOW(newwindow), FALSE);//去掉边框
-    gtk_widget_set_size_request(GTK_WIDGET(newwindow), 500, 500);//设置窗口大小
+    static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
+    NewWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);//创建新窗口
+    gtk_window_set_position(GTK_WINDOW(NewWindow), GTK_WIN_POS_CENTER);//窗口位置
+    gtk_window_set_resizable(GTK_WINDOW (NewWindow), FALSE);//固定窗口大小
+    gtk_window_set_decorated(GTK_WINDOW(NewWindow), FALSE);//去掉边框
+    gtk_widget_set_size_request(GTK_WIDGET(NewWindow), 500, 500);//设置窗口大小
 
-    zhuceLayout = gtk_fixed_new();//新建layout布局容纳控件
+    ZhuceLayout = gtk_fixed_new();//新建layout布局容纳控件
     create_zhucefaces();
-    gtk_container_add(GTK_CONTAINER(newwindow), zhuceLayout);//将layout的添加到窗体中
-    background1 = gtk_image_new_from_surface(surface1);//为控件加上特定的图片
-    mminfo = gtk_image_new_from_surface(surface3);
-    endwind = gtk_image_new_from_surface(surface8);
+    gtk_container_add(GTK_CONTAINER(NewWindow), ZhuceLayout);//将layout的添加到窗体中
+    BackGround1 = gtk_image_new_from_surface(Surface1);//为控件加上特定的图片
+    MoInfo = gtk_image_new_from_surface(Surface3);
+    EndWind = gtk_image_new_from_surface(Surface8);
 
-    newbackground_event_box = BuildEventBox(background1,
+    newbackground_event_box = BuildEventBox(BackGround1,
                                             G_CALLBACK(newbackground_button_press_event),
                                             NULL,
                                             NULL,
@@ -280,7 +280,7 @@ int newface()
                                             NULL,
                                             NULL);
 
-    zhuce_event_box = BuildEventBox(mminfo,
+    zhuce_event_box = BuildEventBox(MoInfo,
                                     G_CALLBACK(zhuce_button_press_event),
                                     G_CALLBACK(zhuce_enter_notify_event),
                                     G_CALLBACK(zhuce_leave_notify_event),
@@ -288,37 +288,37 @@ int newface()
                                     NULL,
                                     NULL);
 
-    closebut_event_box = BuildEventBox(endwind,
+    closebut_event_box = BuildEventBox(EndWind,
                                        G_CALLBACK(closebut_button_press_event),
                                        G_CALLBACK(closebut_enter_notify_event),
                                        G_CALLBACK(closebut_leave_notify_event),
                                        G_CALLBACK(closebut_button_release_event),
                                        NULL,
                                        NULL);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), (GtkWidget *) newbackground_event_box, 0, 0);//起始坐标
-    gtk_widget_set_size_request(GTK_WIDGET(background1), 500, 500);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), (GtkWidget *) zhuce_event_box, 20, 440);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), (GtkWidget *) closebut_event_box, 530, 0);
+    gtk_fixed_put(GTK_FIXED(ZhuceLayout), (GtkWidget *) newbackground_event_box, 0, 0);//起始坐标
+    gtk_widget_set_size_request(GTK_WIDGET(BackGround1), 500, 500);
+    gtk_fixed_put(GTK_FIXED(ZhuceLayout), (GtkWidget *) zhuce_event_box, 20, 440);
+    gtk_fixed_put(GTK_FIXED(ZhuceLayout), (GtkWidget *) closebut_event_box, 530, 0);
 
-    mnickname = gtk_entry_new();//昵称
-    newusername = gtk_entry_new();//id
-    passwd1 = gtk_entry_new();//密码1
-    passwd2 = gtk_entry_new();//密码2
-    gtk_entry_set_max_length((GTK_ENTRY(mnickname)), 20);//设置输入的最大长度
-    gtk_entry_set_max_length((GTK_ENTRY(newusername)), 20);
-    gtk_entry_set_max_length((GTK_ENTRY(passwd1)), 20);
-    gtk_entry_set_max_length((GTK_ENTRY(passwd2)), 20);
+    MoNickname = gtk_entry_new();//昵称
+    NewUsername = gtk_entry_new();//id
+    Passwd1 = gtk_entry_new();//密码1
+    Passwd2 = gtk_entry_new();//密码2
+    gtk_entry_set_max_length((GTK_ENTRY(MoNickname)), 20);//设置输入的最大长度
+    gtk_entry_set_max_length((GTK_ENTRY(NewUsername)), 20);
+    gtk_entry_set_max_length((GTK_ENTRY(Passwd1)), 20);
+    gtk_entry_set_max_length((GTK_ENTRY(Passwd2)), 20);
 
-    gtk_entry_set_visibility(GTK_ENTRY(passwd1), FALSE);//设置密码不可见
-    gtk_entry_set_invisible_char(GTK_ENTRY(passwd1), '*');//将不可见设置为*
-    gtk_entry_set_visibility(GTK_ENTRY(passwd2), FALSE);
-    gtk_entry_set_invisible_char(GTK_ENTRY(passwd2), '*');
+    gtk_entry_set_visibility(GTK_ENTRY(Passwd1), FALSE);//设置密码不可见
+    gtk_entry_set_invisible_char(GTK_ENTRY(Passwd1), '*');//将不可见设置为*
+    gtk_entry_set_visibility(GTK_ENTRY(Passwd2), FALSE);
+    gtk_entry_set_invisible_char(GTK_ENTRY(Passwd2), '*');
 
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), newusername, 100, 120);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), mnickname, 100, 180);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd1, 100, 255);
-    gtk_fixed_put(GTK_FIXED(zhuceLayout), passwd2, 100, 326);
+    gtk_fixed_put(GTK_FIXED(ZhuceLayout), NewUsername, 100, 120);
+    gtk_fixed_put(GTK_FIXED(ZhuceLayout), MoNickname, 100, 180);
+    gtk_fixed_put(GTK_FIXED(ZhuceLayout), Passwd1, 100, 255);
+    gtk_fixed_put(GTK_FIXED(ZhuceLayout), Passwd2, 100, 326);
 
-    gtk_widget_show_all(newwindow);
+    gtk_widget_show_all(NewWindow);
     return 0;
 }

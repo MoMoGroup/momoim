@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <datafile/init.h>
+#include <run/cli.h>
+#include <run/worker.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
@@ -55,19 +57,21 @@ int main(int argc, char **argv)
     }
 
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
+    usleep(200000);
     while (IsServerRunning)
     {
-        pause();
+        CLIHandle();
     }
+    log_warning("MAIN", "Server is stopping\n");
     log_info("MAIN", "Stopping Listener\n");
     pthread_cancel(ThreadListener);
     pthread_join(ThreadListener, NULL);
 
+    log_info("MAIN", "Stopping Worker \n");
     for (int i = 0; i < CONFIG_WORKER_COUNT; ++i)
     {
-        log_info("MAIN", "Stopping Worker %d\n", PacketWorker[i].workerId);
+        pthread_detach(PacketWorker[i].WorkerThread);
         pthread_cancel(PacketWorker[i].WorkerThread);
-        //pthread_join(PacketWorker[i].WorkerThread, NULL);
     }
     log_info("MAIN", "UserManagerFinalize\n");
     UserManagerFinalize();
@@ -75,5 +79,6 @@ int main(int argc, char **argv)
     JobManagerFinalize();
     log_info("MAIN", "DataModuleFinalize\n");
     DataModuleFinalize();
+    log_info("MAIN", "Server Exit\n");
     return EXIT_SUCCESS;
 }

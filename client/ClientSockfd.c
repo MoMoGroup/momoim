@@ -16,6 +16,7 @@
 #include "manage_friend/friend.h"
 #include "media.h"
 #include "../media/audio.h"
+#include "chart.h"
 
 pthread_t ThreadKeepAlive;
 
@@ -25,7 +26,9 @@ UserGroup *group;
 UserInfo *CurrentUserInfo;
 //gchar *uidname;
 FILE *fp;
-int AddFriendflag = 1;//只打开一个添加好友窗口
+int AddFriendFlag = 1;
+//只打开一个添加好友窗口
+int DelFriendFlag = 1;//只打开一个删除好友窗口
 
 FriendInfo *FriendInfoHead;
 
@@ -125,12 +128,17 @@ gboolean postMessage(gpointer user_data)
             mes[packet->messageLen] = 0;
             log_info("验证消息", "%s", mes);
             memcpy(mes, packet->message, packet->messageLen);
-            Friend_Request_Popup(packet->uid, mes);
+            FriendRequestPopup(packet->uid, mes);
 
             if ((void *) packet != header->data)
             {
                 free(packet);
             }
+            break;
+        }
+        default:
+        {
+
             break;
         }
     }
@@ -164,7 +172,7 @@ int new_friend_info(CRPBaseHeader *header, void *data)
             //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
             node->uid = infodata->info.uid;//添加id到结构提
             node->user = infodata->info;
-            node->isonline = 0;//是否在线
+            node->isonline = 1;//是否在线
             memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
             add_node(node);             //添加新节点
 
@@ -198,8 +206,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         {
             pthread_cancel(ThreadKeepAlive);
             pthread_join(ThreadKeepAlive, NULL);
-            g_idle_add(destoryall, NULL);
-
+            g_idle_add(DestoryAll, "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
             CRPClose(sockfd);
 
             pthread_detach(pthread_self());//安全退出当前线程
@@ -222,22 +229,13 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             CRPPacketNETFriendDiscover *media_data = CRPNETFriendDiscoverCast(header);
             switch (media_data->reason)
             {
-//                //分离语音请求的包
-//                case CRPFDR_AUDIO:
-//                {
-//                    log_info("Serve Message", "语音请求\n");
-//                    char *audio_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
-//                    memcpy(audio_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
-//                    g_idle_add(treatment_request_audio_discover, audio_data_copy);
-//                    break;
-//                };
                 //视频请求
                 case CRPFDR_VEDIO:
                 {
                     log_info("Serve Message", "视频请求\n");
-                    char *video_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
+                    CRPPacketNETFriendDiscover *video_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
                     memcpy(video_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_video_discover, video_data_copy);
+                    g_idle_add(TreatmentRequestVideoDiscover, video_data_copy);
                     break;
                 };
                     //在线文件的包
@@ -261,27 +259,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //g_idle_add(Pretreatment_request_audio_net_discover,audio_data);
             break;
         };
-            /*
-            //对方同意好友发现
-        case CRP_PACKET_NET_DISCOVER_ACCEPT:
-        {
-            if (the_log_request_friend_discover.requset_reason == NET_DISCOVER_AUDIO)
-            {
-                g_idle_add(audio_request_accept, NULL);
-            }
-            if (the_log_request_friend_discover.requset_reason == NET_DISCOVER_VIDEO)
-            {
-                g_idle_add(video_request_accept, NULL);
-            }
-
-            break;
-        }*/
-//            //对方拒绝好友发现
-//        case CRP_PACKET_NET_DISCOVER_REFUSE:
-//        {
-//            g_idle_add(audio_request_refuse, NULL);
-//            break;
-//        };
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
             CRPPacketFriendNotify *infodata = CRPFriendNotifyCast(header);
@@ -312,11 +289,11 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 };
                 case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
                 {
-                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
-                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
-                    log_info("好友资料需要更新", "UID:%u\n", infodata->uid);
+//                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
+//                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
+//
                     session_id_t sessionid = CountSessionId();
-                    AddMessageNode(sessionid, FriendFriendInfoChange, infodata);//注册
+                    AddMessageNode(sessionid, FriendInfoChange, NULL);//注册
                     CRPInfoRequestSend(sockfd, sessionid, infodata->uid);//请求这个用户的资料
                     break;
                 };
@@ -372,7 +349,9 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_NET_NAT_REQUEST:
         {
             CRPPacketNETNATRequest *packet = CRPNETNATRequestCast(header);
-            AudioAcceptNatDiscover(packet);
+            CRPPacketNETNATRequest *packetDup = (CRPPacketNETNATRequest *) malloc(sizeof(CRPPacketNETNATRequest));
+            *packetDup = *packet;
+            g_idle_add(ProcessAudioRequest, packetDup);
             if ((void *) packet != header->data)
             {
                 free(packet);
@@ -415,7 +394,12 @@ int mysockfd()
     };
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
+        char *mem = malloc(33);
+        memcpy(mem, "无法连接到服务器", 32);
+        mem[32] = 0;
+        g_idle_add(DestroyLayout, mem);
         perror("Connect");
+
         return 0;
     }
     sockfd = CRPOpen(fd);
@@ -424,7 +408,10 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header == NULL || header->packetID != CRP_PACKET_OK)
     {
-        log_error("Hello", "Recv Packet:%d\n", header->packetID);
+
+        char *mem = malloc(sizeof("认证操作被服务器拒绝"));
+        memcpy(mem, "认证操作被服务器拒绝", sizeof("认证操作被服务器拒绝"));
+        g_idle_add(DestroyLayout, mem);
         return 0;
     }
     char sendKey[32], iv[32];
@@ -432,6 +419,7 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL)
     {
+
         log_error("SwitchProtocol", "Can not enable encrypt!\n", header->packetID);
     }
     else
@@ -458,8 +446,9 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
-        //密码错误DA
+        //密码错误,返回登录界面
         log_info("登录失败", "登录失败\n");
+
         CRPPacketFailure *f = CRPFailureCast(header);
         char *mem = malloc(strlen(f->reason) + 1);
         memcpy(mem, f->reason, strlen(f->reason) - 1);
@@ -479,9 +468,6 @@ int mysockfd()
         sleep(1);//登录动画
 
         //登陆成功之后开始请求资料
-
-//        ca_gtk_play_for_widget(<#(GtkWidget*)w#>, <#(uint32_t)id, ...#>);
-//        ca_gtk_proplist_set_for_event(<#(ca_proplist*)p#>, <#(GdkEvent*)e#>);
 
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid
@@ -668,7 +654,6 @@ int mysockfd()
                         UserGroup *group = friends->groups + i;
 
                         for (int j = 0; j < group->friendCount; ++j)//循环好友
-
                         {
                             CRPInfoRequestSend(sockfd, group->friends[j], group->friends[j]); //请求用户资料,
                         }

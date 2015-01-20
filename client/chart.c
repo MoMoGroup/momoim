@@ -16,6 +16,7 @@
 #include "ChartLook.h"
 #include "../media/audio.h"
 #include "onlylookinfo.h"
+#include "PopupWinds.h"
 #include "chart.h"
 
 int isAudioRunning;
@@ -88,8 +89,87 @@ void LoadingIcon(FriendInfo *info)
     cairo_paint(cr);
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
-
 }
+//对方拒绝请求时的弹窗
+int OnAudioRefuseMsg(gpointer p)
+{
+    FriendInfo *info = p;
+    isAudioRunning = 0;
+    StopAudioChat();
+    gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    Popup("消息", "对方已拒绝您的音频请求");
+    return 0;
+}
+
+int OnAudioCloseMsg(gpointer p)
+{
+    FriendInfo *info = p;
+    isAudioRunning = 0;
+    StopAudioChat();
+    gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    Popup("消息", "语音聊天已结束");
+    return 0;
+}
+
+gboolean ProcessAudioRequest(gpointer user_data)
+{
+
+    CRPPacketNETNATRequest *entry = (CRPPacketNETNATRequest *) user_data;
+    //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
+    //找到这个好友
+    FriendInfo *userinfo = FriendInfoHead;
+    int uidfindflag = 0;
+    while (userinfo)
+    {
+        if (userinfo->user.uid == entry->uid)
+        {
+            uidfindflag = 1;
+            break;
+        }
+        else
+        {
+            userinfo = userinfo->next;
+        }
+    }
+    //如果找到这个好友
+    if (uidfindflag == 1)
+    {
+        //打开聊天窗口或者置前聊天窗口
+        if (userinfo->chartwindow == NULL)
+        {
+            MainChart(userinfo);
+        }
+        else
+        {
+            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
+        }
+        if (userinfo->chartwindow != NULL)
+        {
+
+            GtkWidget *dialog_request_audio_request;
+
+            dialog_request_audio_request = gtk_message_dialog_new(GTK_WINDOW(userinfo->chartwindow), GTK_DIALOG_MODAL,
+                                                                  GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+                                                                  "莫默询问您：\n您想与这位好友语音聊天吗？");
+            gtk_window_set_title(GTK_WINDOW (dialog_request_audio_request), "Question");
+            gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_audio_request));
+            if (result == -5)
+            {
+                gtk_image_set_from_surface((GtkImage *) userinfo->imagevoice, surfacevoice3);
+                isAudioRunning = 1;
+                AudioAcceptNatDiscover(entry, userinfo);
+                gtk_widget_destroy(dialog_request_audio_request);
+            }
+            else
+            {
+                CRPNETNATRefuseSend(sockfd, CountSessionId(), entry->uid, entry->session);
+                gtk_widget_destroy(dialog_request_audio_request);
+            }
+        }
+    }
+    free(user_data);
+}
+
 //背景的eventbox
 static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -196,7 +276,7 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
     {
         if (isAudioRunning == 0)
         {
-            AudioRequestNATDiscover(info->uid);
+            AudioRequestNATDiscover(info);
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
             isAudioRunning = 1;
         }
@@ -268,43 +348,49 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        uint8_t gid_video;
-        int quantity_group = friends->groupCount;
-        //用来找出gid
-        int i, j = 0;
-        for (i = 0; i < quantity_group; i++)
+        if(FlagVideo==0)
         {
-            for (j = 0; j < friends->groups[i].friendCount; j++)
+            uint8_t gid_video = 0;
+            int quantity_group = friends->groupCount;
+            //用来找出gid
+            int i, j = 0;
+            for (i = 0; i < quantity_group; i++)
             {
-                if (friends->groups[i].friends[j] == info->user.uid)
+                for (j = 0; j < friends->groups[i].friendCount; j++)
                 {
-                    gid_video = friends->groups[i].groupId;
-                    break;
+                    if (friends->groups[i].friends[j] == info->user.uid)
+                    {
+                        gid_video = friends->groups[i].groupId;
+                        break;
+                    }
                 }
             }
+            session_id_t session_id_video_server_feedback = CountSessionId();//SESSION用来处理请求送达与否
+            session_id_t session_id_video_feedback = CountSessionId();//这个SESSION用来处理请求同意的情况
+            //同一时间只允许发起一个请求
+            //if(the_log_request_friend_discover.uid!=-1){
+            //  g_idle_add(popup_request_num_limit, NULL);
+            //}
+            the_log_request_friend_discover.uid = info->user.uid;
+            the_log_request_friend_discover.requset_reason = NET_DISCOVER_VIDEO;
+
+            AddMessageNode(session_id_video_server_feedback, DealVideoDicoverServerFeedback, NULL);
+            AddMessageNode(session_id_video_feedback, DealVideoFeedback, NULL);
+
+            CRPNETFriendDiscoverSend(sockfd,
+                                     session_id_video_server_feedback,
+                                     gid_video,
+                                     info->uid,
+                                     CRPFDR_VEDIO,
+                                     session_id_video_feedback
+                                    );
+
+
+            gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1);
         }
-        session_id_t session_id_video_server_feedback = CountSessionId();//SESSION用来处理请求送达与否
-        session_id_t session_id_video_feedback = CountSessionId();//这个SESSION用来处理请求同意的情况
-        //同一时间只允许发起一个请求
-        //if(the_log_request_friend_discover.uid!=-1){
-        //  g_idle_add(popup_request_num_limit, NULL);
-        //}
-        the_log_request_friend_discover.uid = info->user.uid;
-        the_log_request_friend_discover.requset_reason = NET_DISCOVER_VIDEO;
-
-        AddMessageNode(session_id_video_server_feedback, deal_video_dicover_server_feedback, NULL);
-        AddMessageNode(session_id_video_feedback, deal_video_feedback, NULL);
-
-        CRPNETFriendDiscoverSend(sockfd,
-                                 session_id_video_server_feedback,
-                                 gid_video,
-                                 info->uid,
-                                 CRPFDR_VEDIO,
-                                 session_id_video_feedback
-                                );
-
-
-        gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1);
+        if(FlagVideo==1){
+            g_idle_add(popup_request_num_limit,NULL);
+        }
     }
     return 0;
 

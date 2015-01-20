@@ -16,7 +16,10 @@ int ProcessPacketInfoRequest(POnlineUser user, uint32_t session, CRPPacketInfoRe
         else
         {
             POnlineUser duser = OnlineUserGet(packet->uid);
-            CRPInfoDataSend(user->crp, session, duser != NULL, info);
+            CRPInfoDataSend(user->crp, session,
+                            duser != NULL//如果用户在线并且不在对方黑名单内
+                            && UserFriendsExist(duser->info->friends, UGI_BLACKLIST, user->uid),
+                            info);
             if (duser)
             {
                 UserDrop(duser);

@@ -6,6 +6,7 @@
 #include <run/jobs.h>
 #include <datafile/message.h>
 #include <asm-generic/errno.h>
+#include <arpa/inet.h>
 
 #include "datafile/user.h"
 #include "datafile/friend.h"
@@ -94,11 +95,12 @@ static void cleanupUserTable(POnlineUsersTableType table)
         if (table->next[i])
         {
             cleanupUserTable(table->next[i]);
+            table->next[i]= NULL;
         }
-        free(table->next[i]);
     }
     if (table->user != (POnlineUser) -1)
     {
+        OnlineUserDelete(table->user);
         free(table);
     }
 }
@@ -107,6 +109,31 @@ static void deleteAllUser()
 {
     pthread_mutex_lock(&OnlineUserTableLock);
     cleanupUserTable(&OnlineUserTable);
+    pthread_mutex_unlock(&OnlineUserTableLock);
+}
+
+static void listOnlineTable(POnlineUsersTableType table)
+{
+    for (int i = 0; i < 0x10; ++i)
+    {
+        if (table->next[i])
+        {
+            listOnlineTable(table->next[i]);
+        }
+    }
+    struct sockaddr_in addr;
+    socklen_t len= sizeof(addr);
+    if (table->user && table->user != (void *) -1)
+    {
+        getpeername(table->user->crp->fd, (struct sockaddr *) &addr, &len);
+        printf("UID:%u,IP:%s\n", table->user->uid, inet_ntoa(addr.sin_addr));
+    }
+}
+
+void UserManagerListOnline()
+{
+    pthread_mutex_lock(&OnlineUserTableLock);
+    listOnlineTable(&OnlineUserTable);
     pthread_mutex_unlock(&OnlineUserTableLock);
 }
 
@@ -237,7 +264,9 @@ POnlineUser OnlineUserGet(uint32_t uid)
         currentTable = currentTable->next[reserve[end]];
         --end;
     }
-    if (currentTable->user && OnlineUserHold(currentTable->user))
+    if (currentTable->user
+        && currentTable != &OnlineUserTable
+        && OnlineUserHold(currentTable->user))
     {
         ret = currentTable->user;
     }
@@ -278,7 +307,7 @@ PPendingUser UserNew(int fd)
     user->state = OUS_PENDING_HELLO;
     user->holdLock = (pthread_rwlock_t *) malloc(sizeof(pthread_rwlock_t));
     pthread_rwlock_init(user->holdLock, NULL);
-    time(&user->lastUpdateTime);
+    time(&user->timeLastPacket);
     return user;
 }
 
@@ -332,7 +361,7 @@ void UserGC()
     time(&now);
     for (PPendingUser user = PendingUserTable.first; user != NULL; user = user->next)
     {
-        if (difftime(now, user->lastUpdateTime) > 10)//Pending表最小宽限时间为10秒
+        if (difftime(now, user->timeLastPacket) > 10)//Pending表最小宽限时间为10秒
         {
             PendingUserDelete(user);
         }
@@ -346,7 +375,7 @@ void UserGC()
 
 int OnlineUserHold(POnlineUser user)
 {
-    return user->state != OUS_ONLINE || pthread_rwlock_tryrdlock(user->holdLock) == 0;
+    return user && (user->state != OUS_ONLINE || pthread_rwlock_tryrdlock(user->holdLock) == 0);
 }
 
 void UserDrop(POnlineUser user)
@@ -534,7 +563,7 @@ POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid)
         OnlineUserTableRemove(user->uid);//从在线用户表中移除当前用户
         EpollRemove(user);              //从epoll中移除当前用户
         JobManagerKick(user);           //删除待处理事务
-        if (user->status != UOS_HIDDEN) //如果用户当前状态不是隐身状态则广播用户离线
+        if (user->hiddenStatus != UOS_HIDDEN) //如果用户当前状态不是隐身状态则广播用户离线
         {
             UserBroadcastNotify(user, FNT_FRIEND_OFFLINE);
         }

@@ -2,6 +2,7 @@ include_directories(include)
 include_directories(../logger/include)
 include_directories(../protocol/include)
 include_directories(../imcommon/include)
+add_definitions ("-DSQLITE_ENABLE_UPDATE_DELETE_LIMIT")
 
 SET(SERVER_SOURCE_FILE
     server.c
@@ -13,6 +14,7 @@ SET(SERVER_SOURCE_FILE
     run/worker.c
     run/natTraversal.c
     run/operation.c
+    run/cli.c
 
     datafile/init.c
     datafile/auth.c

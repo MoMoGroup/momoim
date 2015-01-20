@@ -100,7 +100,7 @@ struct structOnlineUser
 
     //该状态私有数据
     uint32_t uid;
-    UserOnlineStatus status;
+    UserIsOnlineOrHidden hiddenStatus;
     POnlineUserInfo info;
     UserOperationTable operations;
 };
@@ -110,7 +110,7 @@ struct structPendingUser
     CRPContext sockfd;
     volatile OnlineUserState state;
     pthread_rwlock_t *holdLock;
-    time_t lastUpdateTime;
+    time_t timeLastPacket;
 
     //待登陆私有数据Online
     struct structPendingUser *prev, *next;
@@ -193,6 +193,7 @@ void UserOperationRemoveAll(POnlineUser user);
 void InitUserManager();
 
 void UserManagerFinalize();
+void UserManagerListOnline();
 
 //在线的小伙伴们！！
 extern OnlineUsersTableType OnlineUserTable;

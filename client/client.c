@@ -165,11 +165,13 @@ gboolean MyThread(gpointer user_data)//合并
     return 0;
 }//合并
 
+
+//如果登录失败，返回到登录界面
 gboolean DestroyLayout(gpointer user_data)
 {
-    popup("莫默告诉你：", user_data);
-    gtk_widget_hide(pendingLayout);
-    gtk_widget_show_all(loginLayout);
+    Popup("莫默告诉你：", user_data);
+    gtk_widget_hide(pendingLayout);//隐藏正在登录界面
+    gtk_widget_show_all(loginLayout);//显示登录界面
     free(user_data);
     return FALSE;
 }
@@ -223,7 +225,7 @@ destroy_surfaces()
     cairo_surface_destroy(sremember2);
 }
 
-extern int DeleteEvent()
+int DeleteEvent()
 {
     gtk_main_quit();
     return TRUE;
@@ -279,13 +281,13 @@ void on_button_clicked()
         }
         else
         {
-            popup("莫默告诉你：", "包含不合格字符");
+            Popup("莫默告诉你：", "包含不合格字符");
             return;
         }
     }
     else
     {
-        popup("莫默告诉你：", "请填写登录信息");
+        Popup("莫默告诉你：", "请填写登录信息");
         return;
     }
     gtk_widget_hide(loginLayout);//隐藏loginlayout
@@ -342,13 +344,13 @@ static gint combo_change_event()
                 int w = cairo_image_surface_get_width(surface);
                 int h = cairo_image_surface_get_height(surface);
                 //创建画布
-                surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 164, 164);
+                surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 200);
                 //创建画笔
                 cr = cairo_create(surfacehead2);
                 //缩放
-                cairo_arc(cr, 82, 82, 82, 0, M_PI * 2);
+                cairo_arc(cr, 68, 68, 150, 0, M_PI * 2);
                 cairo_clip(cr);
-                cairo_scale(cr, 164.0 / w, 164.0 / h);
+                cairo_scale(cr, 170.0 / w, 170.0 / h);
                 //把画笔和图片相结合。
                 cairo_set_source_surface(cr, surface, 0, 0);
                 cairo_paint(cr);
@@ -520,7 +522,7 @@ static gint registered_button_press_event(GtkWidget *widget,
 static gint registered_button_release_event(GtkWidget *widget, GdkEventButton *event,
                                             gpointer data)
 {
-    newface(); //调用注册界面
+    Newface(); //调用注册界面
     return 0;
 }
 
@@ -646,7 +648,7 @@ static gint remember_button_press_event(GtkWidget *widget, GdkEventButton *event
             {
                 gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换取消记住图标
                 FlagRemember = 0;
-                popup("莫默告诉你", "请输入完整账号信息");
+                Popup("莫默告诉你", "请输入完整账号信息");
             }
         }
         else
@@ -757,7 +759,7 @@ static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event
             if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
             {
                 perror("Connect");
-                popup("莫默告诉你：", "连接不到服务器");
+                Popup("莫默告诉你：", "连接不到服务器");
                 return 0;
             }
             CRPContext sockfd = CRPOpen(fd);
@@ -769,7 +771,7 @@ static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event
             if (header == NULL || header->packetID != CRP_PACKET_OK)
             {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
-                popup("莫默告诉你：", "连接不到服务器");
+                Popup("莫默告诉你：", "连接不到服务器");
                 return 1;
             }
             else
@@ -779,13 +781,13 @@ static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event
                 fwrite(ipstrings, 1, strlen(ipstrings), ipfp);
                 fclose(ipfp);
                 gtk_widget_destroy(IpFillinWind);
-                loadloginLayout(NULL);//加载登陆界面
+                LoadLoginLayout(NULL);//加载登陆界面
             }
 
         }
         else
         {
-            popup("莫默告诉你：", "请输入正确的IP地址");
+            Popup("莫默告诉你：", "请输入正确的IP地址");
         }
     }
     return 0;
@@ -862,7 +864,7 @@ int main(int argc, char *argv[])
     char checkmulu[80], minglingcp[256], checkmulu_theme[80];
     sprintf(checkmulu, "%s/.momo", getpwuid(getuid())->pw_dir);
     sprintf(checkmulu_ip, "%s/ip", checkmulu);
-    sprintf(minglingcp, "cp -r /opt/momo/theme %s/theme/", checkmulu);
+    sprintf(minglingcp, "cp -r /opt/momo/theme/ %s/theme/", checkmulu);
     mkdir(checkmulu, 0700);
     if (access(checkmulu_ip, 0) != 0)
     {
@@ -875,14 +877,14 @@ int main(int argc, char *argv[])
     else
     {
         PlayMusic("开始.wav");
-        loadloginLayout("ad");//加载登陆界面
+        LoadLoginLayout("ad");//加载登陆界面
     }
     gtk_main();
     destroy_surfaces();
     return 0;
 }
 
-gboolean destoryall(gpointer user_data)
+gboolean DestoryAll(gpointer user_data)
 {
     DestoryMainInterface();//销毁主窗口,--maininterface
 
@@ -943,13 +945,13 @@ gboolean destoryall(gpointer user_data)
         free(p);
     }
 
-    loadloginLayout(NULL);
-    popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
+    LoadLoginLayout(NULL);
+    Popup("系统消息", user_data);
     return FALSE;
 }
 
 
-gboolean loadloginLayout(gpointer user_data)
+gboolean LoadLoginLayout(gpointer user_data)
 {
     //加载loginlayout
     create_surfaces1();
@@ -1045,7 +1047,8 @@ gboolean loadloginLayout(gpointer user_data)
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度
     //   gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
     //   gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
-
+    gtk_entry_set_has_frame(nameEntry, FALSE);
+    gtk_entry_set_has_frame((GtkEntry *) LoginWindowPassWordBox, FALSE);
     gtk_entry_set_visibility(GTK_ENTRY(LoginWindowPassWordBox), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(LoginWindowPassWordBox), '*');//设置密码不可见
 
@@ -1076,7 +1079,7 @@ gboolean loadloginLayout(gpointer user_data)
 
 //放置组件的相对位置
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(backgroundevent_box), 0, 0);//起始坐标
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 26);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(landbutevent_box), 75, 300);
     gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 33, 220);

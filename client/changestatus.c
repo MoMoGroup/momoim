@@ -9,7 +9,7 @@ int changeOnlineRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_OK)
     {
-        g_idle_add(Status, ((void *) -1));
+        g_idle_add(Status, ((void *) -1));//参数非空，设置在线
         g_idle_add(ShowStatus, "在线");
 
     }
@@ -21,7 +21,7 @@ int changeHideLineRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_OK)
     {
-        g_idle_add(Status, NULL);
+        g_idle_add(Status, NULL);//参数为空，设置隐身
 
         g_idle_add(ShowStatus, "隐身");
     }

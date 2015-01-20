@@ -13,7 +13,6 @@ CRPPacketFailure *CRPFailureCast(CRPBaseHeader *base)
 
 int CRPFailureSend(CRPContext context, uint32_t sessionID, uint8_t code, char *reason)
 {
-    log_warning("CRP", "Failure reason:%s\n", reason);
     size_t lenReason = strlen(reason);
     CRPPacketFailure *packet = (CRPPacketFailure *) malloc(sizeof(CRPPacketFailure) + lenReason);
     memcpy(&packet->code, &code, sizeof(uint8_t));

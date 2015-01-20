@@ -15,6 +15,8 @@ typedef struct structHostDiscoverTable
     HostDiscoverEntry *first, *last;
 } HostDiscoverTable;
 
+int NatHostInitlize();
+void NatHostFinalize();
 int NatHostDiscoverNotify(struct sockaddr_in const *address, const uint8_t key[32]);
 
 int NatHostDiscoverUnregister(HostDiscoverEntry *entry);

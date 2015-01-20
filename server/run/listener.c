@@ -15,7 +15,41 @@
 #include <run/jobs.h>
 #include <run/natTraversal.h>
 
-static int ServerIOPool;
+static pthread_mutex_t banListLock = PTHREAD_MUTEX_INITIALIZER;
+static in_addr_t *banList;
+static size_t banCount;
+static int serverIOPool;
+
+void BanListAdd(in_addr_t ip)
+{
+    pthread_mutex_lock(&banListLock);
+    void *ptr = realloc(banList, (banCount + 1) * sizeof(in_addr_t));
+    if (ptr)
+    {
+        banList = ptr;
+        banList[banCount++] = ip;
+    }
+    pthread_mutex_unlock(&banListLock);
+}
+
+void BanListRemove(in_addr_t ip)
+{
+    pthread_mutex_lock(&banListLock);
+    for (size_t i = 0; i < banCount; ++i)
+    {
+        if (banList[i] == ip)
+        {
+            memcpy(banList + i, banList + i + 1, (banCount - i - 1) * sizeof(in_addr_t));
+            void *ptr = realloc(banList, --banCount);
+            if (ptr)
+            {
+                banList = ptr;
+            }
+            break;
+        }
+    }
+    pthread_mutex_unlock(&banListLock);
+}
 
 void EpollAdd(POnlineUser user)
 {
@@ -23,7 +57,7 @@ void EpollAdd(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, user->crp->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(serverIOPool, EPOLL_CTL_ADD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll_ctl EPOLL_CTL_ADD");
     }
@@ -35,7 +69,7 @@ void EpollModify(POnlineUser user)
             .data.ptr=user,
             .events=EPOLLERR | EPOLLIN
     };
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_MOD, user->crp->fd, &event)) //用户无法被添加到epoll中
+    if (-1 == epoll_ctl(serverIOPool, EPOLL_CTL_MOD, user->crp->fd, &event)) //用户无法被添加到epoll中
     {
         perror("epoll_ctl EPOLL_CTL_MOD");
     }
@@ -43,7 +77,7 @@ void EpollModify(POnlineUser user)
 
 void EpollRemove(POnlineUser user)
 {
-    if (-1 == epoll_ctl(ServerIOPool, EPOLL_CTL_DEL, user->crp->fd, NULL))
+    if (-1 == epoll_ctl(serverIOPool, EPOLL_CTL_DEL, user->crp->fd, NULL))
     {
         if (errno != ENOENT)
         {
@@ -54,13 +88,13 @@ void EpollRemove(POnlineUser user)
 
 static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events)
 {
-    char keyBuffer[32];
+    uint8_t keyBuffer[32];
     struct sockaddr_in idxSock;
     struct sockaddr_in addr;
     socklen_t addrLen;
     while (IsServerRunning)
     {
-        int n = epoll_wait(ServerIOPool, events, CONFIG_EPOLL_QUEUE, -1);
+        int n = epoll_wait(serverIOPool, events, CONFIG_EPOLL_QUEUE, -1);
         if (n == -1)
         {
             if (errno != EINTR)
@@ -77,6 +111,7 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                 socklen_t addr_len = sizeof addr;
                 while (1)
                 {
+                    nextAccept:
                     fd = accept(sockListener, (struct sockaddr *) &addr, &addr_len);  //尝试接受一个客户端
                     if (-1 == fd)
                     {
@@ -87,12 +122,25 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                         }
                         else
                         {
-                            log_error("SERVER-LISTENER",
+                            log_error("Listener",
                                       "accept failure:%s\n",
                                       strerror(errno));
                             break;
                         }
                     }
+
+                    pthread_mutex_lock(&banListLock);
+
+                    for (size_t i = 0; i < banCount; ++i)
+                    {
+                        if (banList[i] == addr.sin_addr.s_addr)
+                        {
+                            close(fd);
+                            pthread_mutex_unlock(&banListLock);
+                            goto nextAccept;
+                        }
+                    }
+                    pthread_mutex_unlock(&banListLock);
                     if (OnlineUserCount >= CONFIG_MAX_CLIENTS)
                     {
                         close(fd);
@@ -117,7 +165,9 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                         log_warning("NATIndex", "Notify Failure\n");
                         sendto(sockIdx, (uint8_t[32]) {0,}, 32, 0, (struct sockaddr *) &idxSock, addrLen);
                     }
-                }else{
+                }
+                else
+                {
                     log_warning("NATIndex", "Length Error,%s\n", strerror(errno));
                 }
             }
@@ -226,6 +276,7 @@ void *ListenMain(void *nouse)
     sockListener = prepareListener();
     if (sockListener < 0)
     {
+        IsServerRunning = 0;
         return NULL;
     }
     pthread_cleanup_push(close, sockListener);
@@ -234,31 +285,36 @@ void *ListenMain(void *nouse)
             {
                 break;//跳出本层pthread_cleanup_push,会执行cleanup_pop
             }
+
             pthread_cleanup_push(close, sockIdx);
+                    NatHostInitlize();
 
-                    log_info("Listener", "主服务正在监听TCP %d\n", CONFIG_LISTEN_PORT);
-                    log_info("Listener", "NAT穿透服务正在等待UDP %d.\n", CONFIG_HOST_DISCOVER_PORT);
+                    pthread_cleanup_push(NatHostFinalize, 0);
+                            log_info("Listener", "Server is listener on TCP %d\n", CONFIG_LISTEN_PORT);
+                            log_info("Listener", "NAT Traversal is waiting on UDP %d.\n", CONFIG_HOST_DISCOVER_PORT);
 
-                    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);
-                    {
-                        struct epoll_event event = {
-                                .data.ptr=NULL,
-                                .events=EPOLLET | EPOLLIN                               //EPOLLET-边沿触发. EPOLLIN-数据传入时触发
-                        };
-                        epoll_ctl(ServerIOPool,
-                                  EPOLL_CTL_ADD,
-                                  sockListener,
-                                  &event);   //将监听socket加入epoll(data.ptr==NULL)
+                            serverIOPool = epoll_create1(EPOLL_CLOEXEC);
+                            {
+                                struct epoll_event event = {
+                                        .data.ptr=NULL,
+                                        .events=EPOLLET | EPOLLIN                       //EPOLLET-边沿触发. EPOLLIN-数据传入时触发
+                                };
+                                epoll_ctl(serverIOPool,
+                                          EPOLL_CTL_ADD,
+                                          sockListener,
+                                          &event);   //将监听socket加入epoll(data.ptr==NULL)
 
-                        event.data.ptr = (void *) -1;
-                        event.events = EPOLLERR | EPOLLIN | EPOLLET;
-                        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);        //NAT发现索引SOCKET
-                    }
-                    struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
-                    pthread_cleanup_push(free, events);
-                            listenLoop(sockListener, sockIdx, events);
+                                event.data.ptr = (void *) -1;
+                                event.events = EPOLLERR | EPOLLIN | EPOLLET;
+                                epoll_ctl(serverIOPool, EPOLL_CTL_ADD, sockIdx, &event);//NAT发现索引SOCKET
+                            }
+                            struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
+                            pthread_cleanup_push(free, events);
+                                    listenLoop(sockListener, sockIdx, events);
+                            pthread_cleanup_pop(1);
                     pthread_cleanup_pop(1);
             pthread_cleanup_pop(1);
     pthread_cleanup_pop(1);
+    IsServerRunning = 0;
     return (void *) -1;
 }

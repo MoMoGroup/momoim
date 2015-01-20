@@ -48,8 +48,6 @@ int up_group(void *data)
 
     }
 
-    log_info("PRIORITY_COL", "%d\n", priority);
-    log_info("PRIORITY_next COL", "%d\n", next_priority);
 
 
     gtk_tree_store_set(TreeViewListStore, &up_itergroup,
@@ -120,8 +118,8 @@ int UpGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer d
 }
 
 
-//分组下移……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
-//…………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
+//……………………………………………………………………………………………………………………………………分组下移………………………………………………………………………………………………………………………………………………
+//……………………………………………………………………………………………………………………………………分组下移…………………………………………………………………………………………………………………………………………………
 
 
 int down_grou(void *data)
@@ -189,7 +187,6 @@ int down_group_recv(CRPBaseHeader *header, void *data)
 int DownGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     int64_t up_priority;
-    //  int64_t next_priority;
 
     uint32_t current_gid;
     uint32_t next_gid;
