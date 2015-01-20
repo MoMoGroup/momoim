@@ -20,7 +20,9 @@ static int popup_audio(gpointer p)
     popup("错误", "无法建立连接");
     return 0;
 }
-static int audioCloseMsg(gpointer p){
+
+static int audioCloseMsg(gpointer p)
+{
     popup("消息", "语音聊天已结束");
     return 0;
 }
@@ -177,6 +179,11 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
         case CRP_PACKET_NET_NAT_READY:
         {
             entry->peerReady = 1;
+            return 0;
+        };
+        case CRP_PACKET_NET_NAT_REFUSE:
+        {
+            g_idle_add(popup_audio_request_refuse, NULL);
             return 0;
         };
         case CRP_PACKET_NET_NAT_ACCEPT:
@@ -496,10 +503,7 @@ gboolean treatment_request_video_discover(gpointer user_data)
                 //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址.先打开监听程序然后再发送同意接受包
                 //primary_video(1,NULL);
                 pthread_t pthd_video_recv;
-                pthread_create(&pthd_video_recv,
-                               NULL,
-                               primary_video,
-                               NULL);
+                pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
                 session_id_t sessionid_accept = CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
                 CRPNETDiscoverAcceptSend(sockfd, sessionid_accept, video_data->uid, video_data->session);
@@ -514,4 +518,61 @@ gboolean treatment_request_video_discover(gpointer user_data)
     }
     free(user_data);
     return 0;
+}
+
+gboolean ProcessAudioRequest(gpointer user_data)
+{
+
+    CRPPacketNETNATRequest *entry = (CRPPacketNETNATRequest *) user_data;
+    //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);
+    //找到这个好友
+    FriendInfo *userinfo = FriendInfoHead;
+    int uidfindflag = 0;
+    while (userinfo)
+    {
+        if (userinfo->user.uid == entry->uid)
+        {
+            uidfindflag = 1;
+            break;
+        }
+        else
+        {
+            userinfo = userinfo->next;
+        }
+    }
+    //如果找到这个好友
+    if (uidfindflag == 1)
+    {
+        //打开聊天窗口或者置前聊天窗口
+        if (userinfo->chartwindow == NULL)
+        {
+            MainChart(userinfo);
+        }
+        else
+        {
+            gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
+        }
+        if (userinfo->chartwindow != NULL)
+        {
+
+            GtkWidget *dialog_request_audio_request;
+
+            dialog_request_audio_request = gtk_message_dialog_new(userinfo->chartwindow, GTK_DIALOG_MODAL,
+                                                                  GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
+                                                                  "莫默询问您：\n您想与这位好友语音聊天吗？");
+            gtk_window_set_title(GTK_WINDOW (dialog_request_audio_request), "Question");
+            gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_audio_request));
+            if (result == -5)
+            {
+                AudioAcceptNatDiscover(entry);
+                gtk_widget_destroy(dialog_request_audio_request);
+            }
+            else
+            {
+                CRPNETNATRefuseSend(sockfd, CountSessionId(), entry->uid, entry->session);
+                gtk_widget_destroy(dialog_request_audio_request);
+            }
+        }
+    }
+    free(user_data);
 }

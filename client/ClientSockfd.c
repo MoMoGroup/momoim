@@ -220,15 +220,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             CRPPacketNETFriendDiscover *media_data = CRPNETFriendDiscoverCast(header);
             switch (media_data->reason)
             {
-//                //分离语音请求的包
-//                case CRPFDR_AUDIO:
-//                {
-//                    log_info("Serve Message", "语音请求\n");
-//                    char *audio_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
-//                    memcpy(audio_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
-//                    g_idle_add(treatment_request_audio_discover, audio_data_copy);
-//                    break;
-//                };
                 //视频请求
                 case CRPFDR_VEDIO:
                 {
@@ -255,27 +246,6 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             //g_idle_add(Pretreatment_request_audio_net_discover,audio_data);
             break;
         };
-            /*
-            //对方同意好友发现
-        case CRP_PACKET_NET_DISCOVER_ACCEPT:
-        {
-            if (the_log_request_friend_discover.requset_reason == NET_DISCOVER_AUDIO)
-            {
-                g_idle_add(audio_request_accept, NULL);
-            }
-            if (the_log_request_friend_discover.requset_reason == NET_DISCOVER_VIDEO)
-            {
-                g_idle_add(video_request_accept, NULL);
-            }
-
-            break;
-        }*/
-//            //对方拒绝好友发现
-//        case CRP_PACKET_NET_DISCOVER_REFUSE:
-//        {
-//            g_idle_add(audio_request_refuse, NULL);
-//            break;
-//        };
         case CRP_PACKET_FRIEND_NOTIFY://好友列表有更新
         {
             CRPPacketFriendNotify *infodata = CRPFriendNotifyCast(header);
@@ -366,7 +336,9 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         case CRP_PACKET_NET_NAT_REQUEST:
         {
             CRPPacketNETNATRequest *packet = CRPNETNATRequestCast(header);
-            AudioAcceptNatDiscover(packet);
+            CRPPacketNETNATRequest *packetDup = (CRPPacketNETNATRequest *) malloc(sizeof(CRPPacketNETNATRequest));
+            *packetDup = *packet;
+            g_idle_add(ProcessAudioRequest, packetDup);
             if ((void *) packet != header->data)
             {
                 free(packet);
