@@ -394,7 +394,12 @@ int mysockfd()
     };
     if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
     {
+        char *mem = malloc(33);
+        memcpy(mem, "无法连接到服务器", 32);
+        mem[32] = 0;
+        g_idle_add(DestroyLayout, mem);
         perror("Connect");
+
         return 0;
     }
     sockfd = CRPOpen(fd);
@@ -403,7 +408,7 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header == NULL || header->packetID != CRP_PACKET_OK)
     {
-        log_error("Hello", "Recv Packet:%d\n", header->packetID);
+
         return 0;
     }
     char sendKey[32], iv[32];
@@ -411,6 +416,11 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL)
     {
+        char *mem = malloc(21);
+        memcpy(mem, "服务器错误", 20);
+        mem[20] = 0;
+        g_idle_add(DestroyLayout, mem);
+
         log_error("SwitchProtocol", "Can not enable encrypt!\n", header->packetID);
     }
     else
@@ -437,8 +447,9 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID == CRP_PACKET_FAILURE)
     {
-        //密码错误DA
+        //密码错误,返回登录界面
         log_info("登录失败", "登录失败\n");
+
         CRPPacketFailure *f = CRPFailureCast(header);
         char *mem = malloc(strlen(f->reason) + 1);
         memcpy(mem, f->reason, strlen(f->reason) - 1);
@@ -458,9 +469,6 @@ int mysockfd()
         sleep(1);//登录动画
 
         //登陆成功之后开始请求资料
-
-//        ca_gtk_play_for_widget(<#(GtkWidget*)w#>, <#(uint32_t)id, ...#>);
-//        ca_gtk_proplist_set_for_event(<#(ca_proplist*)p#>, <#(GdkEvent*)e#>);
 
         CRPPacketLoginAccept *ac = CRPLoginAcceptCast(header);
         uint32_t uid = ac->uid;   ///拿到用户uid

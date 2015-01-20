@@ -12,10 +12,10 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <gtk/gtk.h>
-#include <pwd.h>
 #include "yuv422_rgb.h"
 #include "video.h"
 #include "logger.h"
+#include "../client/PopupWinds.h"
 
 #define SERVERPORT 5555
 
@@ -234,7 +234,7 @@ void cancle_mem()
 gint delete_event(GtkWindow *window)
 {
     closewindow();
-    popup("消息","视频已结束");
+    Popup("消息", "视频已结束");
     return FALSE;
 }
 
