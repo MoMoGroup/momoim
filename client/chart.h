@@ -25,5 +25,3 @@ typedef struct
     gdouble height;
     gboolean press;
 } JieTuDATA; //保存鼠标坐标位置的数据结构
-
-extern int flag_audio_close;

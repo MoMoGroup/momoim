@@ -122,7 +122,10 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             {
                 perror("recv");
             }
-            usleep((useconds_t) timeout.tv_usec);
+            if (timeout.tv_usec > 0)
+            {
+                usleep((useconds_t) timeout.tv_usec);
+            }
         }
         else
         {
@@ -304,7 +307,10 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                     log_info("Key", "WrongKey%s\n", hexKey);
                 }
             }
-            usleep((useconds_t) timeout.tv_usec);
+            if (timeout.tv_usec > 0)
+            {
+                usleep((useconds_t) timeout.tv_usec);
+            }
         }
         else
         {
