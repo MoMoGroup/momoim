@@ -137,6 +137,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             if (++tryTimes >= 10)//10次重试未成功
             {
                 free(entry);
+                g_idle_add(popup_audio, NULL);
                 return 0;
             }
         }
