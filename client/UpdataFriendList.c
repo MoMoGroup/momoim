@@ -5,6 +5,7 @@
 #include <string.h>
 #include <logger.h>
 #include "common.h"
+#include "chart.h"
 
 
 //新添加好友
@@ -175,7 +176,7 @@ int gengxin_ziliao(void *data)
     if (infodata->chartwindow != NULL)//判断聊天窗口是否打开
     {
         infodata->user.uid;
-        //LoadingIcon(infodata);
+        LoadingIcon(infodata);
     }
 
     gtk_tree_store_set(TreeViewListStore, &iterUser,

@@ -23,7 +23,6 @@ typedef struct cunchu
 {
     char cunchu_name[40];
     char cunchu_pwd[16];
-    uint32_t cunchu_uid;
     char cunchu_lujing[16];
 };
 struct cunchu str_cunchu[20];
@@ -44,11 +43,13 @@ static GtkWidget *IpBackg, *IpSure, *IpFillText;
 static cairo_surface_t *IpFillBackgface, *IpAnniuface, *IpAnniuface1;
 char checkmulu_ip[80];
 
+
+//设置用户在打开主界面前就读取的字体样式和字体颜色,读取文件里的内容，对其进行半解码，获得关于字体的设置
 void open_setting_file(FILE *fp)
 {
     UserWordInfo.coding_font_color = (gchar *) malloc(500);
-    UserWordInfo.codinglen = fread(UserWordInfo.coding_font_color, 1, 500, fp);
-    UserWordInfo.description = pango_font_description_new();
+    UserWordInfo.codinglen = fread(UserWordInfo.coding_font_color, 1, 500, fp); //实际读取的长度
+    UserWordInfo.description = pango_font_description_new();  //创建新的空的字体描述
     gchar *ptext = UserWordInfo.coding_font_color, *ptext_end = UserWordInfo.coding_font_color + UserWordInfo.codinglen;
     while (ptext < ptext_end)
     {
@@ -65,7 +66,7 @@ void open_setting_file(FILE *fp)
 
                     }
                     UserWordInfo.font = (gchar *) malloc(50);
-                    pango_font_description_set_family(UserWordInfo.description, ptext + 2);
+                    pango_font_description_set_family(UserWordInfo.description, ptext + 2); //添加到文字描述中
                     memcpy(UserWordInfo.font, ptext + 2, i - 2);
                     ptext = ptext + i + 1;
                     break;
@@ -78,11 +79,12 @@ void open_setting_file(FILE *fp)
                     int style_value = *ptext;
                     if (style_value == 1)
                     {
-                        pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_ITALIC);
+                        pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_ITALIC);//添加到文字描述中
                         UserWordInfo.style = PANGO_STYLE_ITALIC;
                     }
                     else
                     {
+                        pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_NORMAL);//添加到文字描述中
                         UserWordInfo.style = PANGO_STYLE_NORMAL;
                     }
                     ptext++;
@@ -93,7 +95,7 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 2;
                     int weight_value = 0;
                     memcpy(&weight_value, ptext, 2);
-                    pango_font_description_set_weight(UserWordInfo.description, weight_value);
+                    pango_font_description_set_weight(UserWordInfo.description, weight_value);//添加到文字描述中
                     UserWordInfo.weight = weight_value;
                     ptext = ptext + 2;
                     break;
@@ -103,12 +105,12 @@ void open_setting_file(FILE *fp)
                     ptext = ptext + 2;
                     gint size_value;
                     size_value = *ptext;
-                    pango_font_description_set_size(UserWordInfo.description, size_value * PANGO_SCALE);
+                    pango_font_description_set_size(UserWordInfo.description, size_value * PANGO_SCALE);//字体大小添加到文字描述中
                     UserWordInfo.size = size_value;
                     ptext++;
                     break;
                 };
-                case 5:
+                case 5:  //字体颜色
                 {
                     ptext = ptext + 2;
 
@@ -132,18 +134,17 @@ void open_setting_file(FILE *fp)
 gboolean MyThread(gpointer user_data)//合并
 {
 
-
-    gtk_widget_destroy(window);
+    gtk_widget_destroy(window);  //销毁登录界面
     FILE *fp;
     char wordfile[256];
     sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
-    if ((fp = fopen(wordfile, "r")) != NULL)
+    if ((fp = fopen(wordfile, "r")) != NULL)  //如果存在字体设置的话，就读取内容
     {
         open_setting_file(fp);
 
     }
 
-    else
+    else  //如果用户不存在字体设置文件的话，就给用户进行字体初始化，保证用户的字体设置一直都有内容
     {
         UserWordInfo.font = (gchar *) malloc(50);
         UserWordInfo.description = pango_font_description_new();
@@ -160,7 +161,7 @@ gboolean MyThread(gpointer user_data)//合并
         UserWordInfo.color_blue = 0;
 
     }
-    MainInterFace();
+    MainInterFace(); //打开主界面
     return 0;
 }//合并
 
@@ -895,6 +896,50 @@ gboolean DestoryAll(gpointer user_data)
         head->next = p->next;
         if (p->chartwindow)
         {
+            //销毁被顶掉时还存在的聊天窗口里的对话框
+            GtkWidget *file_dialog = g_object_get_data(G_OBJECT(p->chartwindow), "file_dialog");
+            if (file_dialog != NULL)
+            {
+                gtk_widget_destroy(file_dialog);
+                file_dialog = NULL;
+            }
+            GtkWidget *image_dialog = g_object_get_data(G_OBJECT(p->chartwindow), "image_dialog");
+            if (image_dialog != NULL)
+            {
+                gtk_widget_destroy(image_dialog);
+                image_dialog = NULL;
+            }
+            GtkWidget *font_dialog = g_object_get_data(G_OBJECT(p->chartwindow), "font_dialog");
+            if (font_dialog != NULL)
+            {
+                gtk_widget_destroy(font_dialog);
+                font_dialog = NULL;
+            }
+            GtkWidget *color_dialog = g_object_get_data(G_OBJECT(p->chartwindow), "color_dialog");
+            if (color_dialog != NULL)
+            {
+                gtk_widget_destroy(color_dialog);
+                color_dialog = NULL;
+            }
+
+            GtkWidget *file_cue_dialog = g_object_get_data(G_OBJECT(p->chartwindow), "file_cue_dialog");
+            if (file_cue_dialog != NULL)
+            {
+                gtk_widget_destroy(file_cue_dialog);
+                file_cue_dialog = NULL;
+            }
+            GtkWidget *recv_file_dialog = g_object_get_data(G_OBJECT(p->chartwindow), "recv_file_dialog");
+            if (recv_file_dialog != NULL)
+            {
+                gtk_widget_destroy(recv_file_dialog);
+                recv_file_dialog = NULL;
+            }
+            GtkWidget *save_file_dialog = g_object_get_data(G_OBJECT(p->chartwindow), "save_file_dialog");
+            if (save_file_dialog != NULL)
+            {
+                gtk_widget_destroy(save_file_dialog);
+                save_file_dialog = NULL;
+            }
             gtk_widget_destroy(p->chartwindow);
         }
         free(p);
