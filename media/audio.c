@@ -6,13 +6,13 @@
 #include <pthread.h>
 #include <alsa/asoundlib.h>
 #include "audio.h"
+#include "logger.h"
 
 static pthread_t mainThread;
 static int netSocket;
 
 static struct sockaddr_in addr_sendto;
 static socklen_t addr_sendto_len;
-static int sendtoAssigned;
 
 /*循环队列甬道的全局变量*/
 static pthread_mutex_t mutex_send, mutex_recv;
@@ -20,6 +20,9 @@ static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
 static char *circle_buf_send[8], *circle_buf_recv[8];
 static char **head_send, **tail_send, **head_recv, **tail_recv;
 
+static int (*cleanupFunc)(void *);
+
+static void *cleanupArg;
 
 void *record_routine(void *data)
 {
@@ -85,7 +88,15 @@ void *send_routine(void *data)
         tail_send = circle_buf_send + (tail_send - circle_buf_send + 1) % (sizeof(circle_buf_send) / sizeof(*circle_buf_send));
         pthread_cond_signal(&send_idle);
         pthread_mutex_unlock(&mutex_send);
-        sendto(netSocket, q_send, 1000, 0, (struct sockaddr *) &addr_sendto, sizeof(struct sockaddr_in));
+        if (sendto(netSocket,
+                   q_send,
+                   1000,
+                   MSG_NOSIGNAL,
+                   (struct sockaddr *) &addr_sendto,
+                   sizeof(struct sockaddr_in)) < 0)
+        {
+            StopAudioChat();
+        }
         free(q_send);
     }
 }
@@ -97,13 +108,14 @@ void *recv_routine(void *data)
     while (1)
     {
         p_recv = (char *) malloc(1000);
-        recvfrom(netSocket, p_recv, 1000, 0, &addr_sendto, &addr_sendto_len);
-        if (!sendtoAssigned)
+        if (recvfrom(netSocket, p_recv, 1000, MSG_NOSIGNAL, (struct sockaddr *) &addr_sendto, &addr_sendto_len) <= 0)
         {
-            pthread_mutex_unlock(&mutex_send);
-            sendtoAssigned = 0;
+            StopAudioChat();
         }
-
+        if (memcmp(p_recv, (char[1000]) {0}, 1000) == 0)
+        {
+            StopAudioChat();
+        }
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
         {
@@ -176,10 +188,6 @@ void *play_routine(void *data)
 
 static int InitAudioChat()
 {
-    if (head_send != NULL)
-    {
-        return 0;
-    }
     head_send = circle_buf_send;
     tail_send = circle_buf_send;
     head_recv = circle_buf_recv;
@@ -195,6 +203,7 @@ static int InitAudioChat()
 
 static void cleanupAudioChat(void *__noused)
 {
+    log_info("Audio Chat Cleanup", "Cleanup\n");
     pthread_mutex_unlock(&mutex_send);
     pthread_mutex_destroy(&mutex_send);
     pthread_cond_destroy(&send_idle);
@@ -203,23 +212,28 @@ static void cleanupAudioChat(void *__noused)
     pthread_mutex_destroy(&mutex_recv);
     pthread_cond_destroy(&recv_idle);
     pthread_cond_destroy(&recv_busy);
+    close(netSocket);
 }
 
 static void *process(void *data)
 {
-    pthread_t t_record, t_send, t_recv, t_play;
-    pthread_create(&t_send, NULL, send_routine, NULL);
-    pthread_create(&t_recv, NULL, recv_routine, NULL);
-    pthread_create(&t_record, NULL, record_routine, NULL);
-    pthread_create(&t_play, NULL, play_routine, NULL);
-    pthread_cleanup_push(pthread_cancel, t_send);
-            pthread_cleanup_push(pthread_cancel, t_recv);
-                    pthread_cleanup_push(pthread_cancel, t_record);
-                            pthread_cleanup_push(pthread_cancel, t_play);
-                                    pthread_join(t_send, NULL);
-                                    pthread_join(t_recv, NULL);
-                                    pthread_join(t_record, NULL);
-                                    pthread_join(t_play, NULL);
+    pthread_cleanup_push(cleanupFunc, cleanupArg);
+            pthread_cleanup_push(cleanupAudioChat, 0);
+                    pthread_t t_record, t_send, t_recv, t_play;
+                    pthread_create(&t_send, NULL, send_routine, NULL);
+                    pthread_create(&t_recv, NULL, recv_routine, NULL);
+                    pthread_create(&t_record, NULL, record_routine, NULL);
+                    pthread_create(&t_play, NULL, play_routine, NULL);
+                    pthread_cleanup_push(pthread_cancel, t_send);
+                            pthread_cleanup_push(pthread_cancel, t_recv);
+                                    pthread_cleanup_push(pthread_cancel, t_record);
+                                            pthread_cleanup_push(pthread_cancel, t_play);
+                                                    pthread_join(t_send, NULL);
+                                                    pthread_join(t_recv, NULL);
+                                                    pthread_join(t_record, NULL);
+                                                    pthread_join(t_play, NULL);
+                                            pthread_cleanup_pop(1);
+                                    pthread_cleanup_pop(1);
                             pthread_cleanup_pop(1);
                     pthread_cleanup_pop(1);
             pthread_cleanup_pop(1);
@@ -227,36 +241,27 @@ static void *process(void *data)
     return 0;
 }
 
-void StartAudioChat_Recv(int sendSock)
+void StartAudioChat(int sendSock, struct sockaddr_in *addr, int (*onCancel)(void *), void *data)
 {
     if (mainThread)
     {
         pthread_cancel(mainThread);
     }
     InitAudioChat();
-    pthread_mutex_lock(&mutex_send);
-    sendtoAssigned = 0;
+    addr_sendto = *addr;
     netSocket = sendSock;
-    pthread_create(&mainThread, NULL, process, NULL);
-}
 
-void StartAudioChat_Send(int sendSock, struct sockaddr_in *addr)
-{
-    if (mainThread)
-    {
-        pthread_cancel(mainThread);
-    }
-    InitAudioChat();
-    pthread_cleanup_push(cleanupAudioChat, 0);
-            sendtoAssigned = 1;
-            addr_sendto = *addr;
-            netSocket = sendSock;
-            pthread_create(&mainThread, NULL, process, NULL);
-    pthread_cleanup_pop(1);
+    pthread_create(&mainThread, NULL, process, NULL);
+    cleanupFunc = onCancel;
+    cleanupArg = data;
 }
 
 void StopAudioChat(void)
 {
-    pthread_cancel(mainThread);
-    mainThread = 0;
+    if (mainThread)
+    {
+        pthread_t t = mainThread;
+        mainThread = 0;
+        pthread_cancel(t);
+    }
 }

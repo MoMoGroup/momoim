@@ -30,7 +30,6 @@ typedef struct VideoBuffer
 
 
 static VideoBuffer *buffers = NULL;
-
 static unsigned char *rgbBuf;
 
 //摄像头的文件描述符
@@ -284,7 +283,7 @@ void *pthread_snd(void *socketsd)
 
 
 void pre_closewindow(){
-    g_idle_add(delete_event, NULL);
+    g_idle_add((GSourceFunc)delete_event, NULL);
 }
 
 void *pthread_rev(void *socketrev)
@@ -306,7 +305,8 @@ void *pthread_rev(void *socketrev)
         if (ret <= 0)
         {
             perror("recv");
-            g_idle_add(delete_event, NULL);
+            //delete_event();
+            g_idle_add((GSourceFunc)delete_event, NULL);
             return NULL;
         }
         errno = 0;
@@ -315,7 +315,7 @@ void *pthread_rev(void *socketrev)
         if (ret <= 0)
         {
             perror("recv");
-            g_idle_add(delete_event, NULL);
+            g_idle_add((GSourceFunc)delete_event, NULL);
             return NULL;
         };
         pthread_mutex_lock(&mutex_recv);

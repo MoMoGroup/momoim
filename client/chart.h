@@ -1,6 +1,6 @@
 #pragma once
-
 #include "ClientSockfd.h"
+#include <gtk/gtk.h>
 
 struct UserTextInformation
 {
@@ -17,7 +17,13 @@ struct UserTextInformation
 };
 extern struct UserTextInformation UserWordInfo;
 
-
-extern int flag_audio_close;
-
-extern void LoadingIcon(FriendInfo *info);
+typedef struct
+{
+    gdouble x;
+    gdouble y;
+    gdouble width;
+    gdouble height;
+    gboolean press;
+} JieTuDATA; //保存鼠标坐标位置的数据结构
+int OnAudioCloseMsg(gpointer p);
+int OnAudioRefuseMsg(gpointer p);
