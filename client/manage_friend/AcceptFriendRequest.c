@@ -116,7 +116,7 @@ int put(void *data)
     GtkEventBox *popup_accept_eventbox, *popup_cancel_eventbox, *pop_mov_event;
     GtkWidget *popupwindow, *popupframelayout, *popuplayout;
 
-//        popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+//        PopupWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     popupwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     popupframelayout = gtk_layout_new(NULL, NULL);
     popuplayout = gtk_fixed_new();
