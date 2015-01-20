@@ -199,6 +199,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
             pthread_cancel(ThreadKeepAlive);
             pthread_join(ThreadKeepAlive, NULL);
             g_idle_add(destoryall, NULL);
+
             CRPClose(sockfd);
 
             pthread_detach(pthread_self());//安全退出当前线程

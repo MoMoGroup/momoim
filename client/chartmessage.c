@@ -33,7 +33,7 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
                     {
 
                     }
-                    g_object_set(wordtag, "font", ptext + 2, NULL);
+                    g_object_set(wordtag, "font", ptext + 2, NULL);//添加字体类型到tag中
                     ptext = ptext + i + 1;
                     break;
 
@@ -45,7 +45,7 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
                     int style_value = *ptext;
                     if (style_value == 1)
                     {
-                        g_object_set(wordtag, "style", PANGO_STYLE_ITALIC, NULL);
+                        g_object_set(wordtag, "style", PANGO_STYLE_ITALIC, NULL);//添加斜体类型到tag中
                     }
                     ptext++;
                     break;
@@ -55,7 +55,7 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
                     ptext = ptext + 2;
                     int weight_value = 0;
                     memcpy(&weight_value, ptext, 2);
-                    g_object_set(wordtag, "weight", weight_value, NULL);
+                    g_object_set(wordtag, "weight", weight_value, NULL);//添加字体宽度类型到tag中
                     ptext = ptext + 2;
                     break;
                 };
@@ -64,12 +64,12 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
                     ptext = ptext + 2;
                     gint size_value;
                     size_value = *ptext;
-                    g_object_set(wordtag, "size", size_value * 1024, NULL);
+                    g_object_set(wordtag, "size", size_value * 1024, NULL);//添加字体大小类型到tag中
                     g_object_set(wordtag, "size-set", 1, NULL);
                     ptext++;
                     break;
                 };
-                case 5:
+                case 5: //添加字体颜色类型到tag中
                 {
                     ptext = ptext + 2;
                     guint16 colorred;
@@ -88,18 +88,19 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
                     ptext = ptext + 6;
                     break;
                 }
-                case 0:
+                case 0:  //图片内容
                 {
                     GtkTextChildAnchor *anchor;
                     GtkWidget *image;
                     char filename[256] = {0};
                     unsigned char strdest[16] = {0};
                     ptext = ptext + 2;
-                    memcpy(strdest, ptext, 16);
+                    memcpy(strdest, ptext, 16);//拿取md5值的key
                     HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
-                    anchor = gtk_text_buffer_create_child_anchor(show_buffer, &end);
+                    anchor = gtk_text_buffer_create_child_anchor(show_buffer, &end);//添加衍生控件
                     image = gtk_image_new_from_file(filename);
                     gtk_widget_show_all(image);
+                    //插入衍生控件到textview中
                     gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW(info->show_text), image, anchor);
                     ptext = ptext + 16;
                     break;
@@ -112,6 +113,7 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
         }
         else
         {
+            //转换成可显示中文
             gchar *next_char = g_utf8_next_char(ptext);
             gtk_text_buffer_insert_with_tags(show_buffer, &end, ptext, next_char - ptext, wordtag, NULL);
             ptext = next_char;
@@ -120,6 +122,7 @@ void decoding_text(gchar *text, FriendInfo *info, int count)
     }
     gtk_text_buffer_insert_with_tags_by_name(show_buffer, &end,
                                              "\n", -1, "gray_foreground", NULL);
+    //添加自动滚屏效果
     GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(show_buffer, NULL, &end, 1);
     gtk_text_buffer_move_mark(show_buffer, text_mark_log, &end);
     gtk_text_view_scroll_to_mark(GTK_TEXT_VIEW(info->show_text), text_mark_log, 0, 1, 1, 1);
@@ -131,6 +134,7 @@ void show_local_text(gchar *text, FriendInfo *info, char *nicheng_times, int cou
 {
     GtkTextIter start, end;
     gtk_text_buffer_get_bounds(info->show_buffer, &start, &end);
+    //显示用户昵称
     gtk_text_buffer_insert_with_tags_by_name(info->show_buffer, &end,
                                              nicheng_times, -1, "red_foreground", "size1", NULL);
     decoding_text(text, info, count); //解码
@@ -147,6 +151,7 @@ void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
     struct tm *p;
     time(&timep);
     p = localtime(&timep);
+    //显示好友昵称和时间
     sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(info->show_text));
     gtk_text_buffer_get_bounds(show_buffer, &start, &end);
@@ -161,7 +166,6 @@ void CodingWordColor(FriendInfo *info, gchar *coding, int *count)
 {
     gchar *char_rear = coding;
     //字体类型
-
     size_t fontcount;
     char_rear[0] = '\0';
     char_rear[1] = 1;
@@ -204,19 +208,19 @@ void CodingWordColor(FriendInfo *info, gchar *coding, int *count)
     *count = char_rear - coding;
 }
 
-
+//文件发送时的进度条显示
 gboolean progress_bar_crcle(void *data)
 {
     struct PictureMessageFileUploadingData *bar_crcle = (struct PictureMessageFileUploadingData *) data;
 
-    if (bar_crcle->file_loading_end == 0)
+    if (bar_crcle->file_loading_end == 0)  //文件未上传完毕
     {
         gdouble pvalue;
-        pvalue = (gdouble) bar_crcle->file_count / (gdouble) bar_crcle->file_size;
+        pvalue = (gdouble) bar_crcle->file_count / (gdouble) bar_crcle->file_size; //文件上传大小和文件实际大小的百分比
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(bar_crcle->progressbar), pvalue);
         return 1;
     }
-    else
+    else  //文件发送完毕，销毁控件，显示提示信息，并释放内存
     {
         gtk_widget_destroy(bar_crcle->file);
         gtk_widget_destroy(bar_crcle->progressbar);
@@ -233,7 +237,7 @@ gboolean progress_bar_crcle(void *data)
                (size_t) bar_crcle->image_message_data->charlen - 20);
         file_name[bar_crcle->image_message_data->charlen - 20] = '\0';
         sprintf(char_text, " 文件 %s 已经成功发送 ", file_name);
-
+        //显示发送完毕的提示信息
         show_local_text(char_text, bar_crcle->info, nicheng_times, (int) strlen(char_text));
         free(file_name);
         free(bar_crcle->image_message_data->message_data);
@@ -244,6 +248,7 @@ gboolean progress_bar_crcle(void *data)
 
 }
 
+//上传服务器的文件处理函数
 int deal_with_file(CRPBaseHeader *header, void *data)
 {
     struct PictureMessageFileUploadingData *file_message = (struct PictureMessageFileUploadingData *) data;

@@ -40,11 +40,22 @@ static GtkWidget *huanfuwindow;
 static GtkWidget *huanfuLayout;
 static GtkWidget *iback, *isure, *icancel, *ipic1, *ipic2, *ipic3;
 static cairo_surface_t *sbackground, *ssure1, *ssure2, *scancel1, *scancel2, *spic11, *spic12, *spic21, *spic22, *spic31, *spic32;
-static GtkEventBox *sure_event_box, *cancel_event_box, *ipic1_event_box, *ipic2_event_box, *ipic3_event_box;
+static GtkEventBox *back_event_box, *sure_event_box, *cancel_event_box, *ipic1_event_box, *ipic2_event_box, *ipic3_event_box;
 int FlagChange = 1;
 
 /**********换肤窗口********/
+static gint back_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    //设置在非按钮区域内移动窗口
+    gdk_window_set_cursor(gtk_widget_get_window(huanfuwindow), gdk_cursor_new(GDK_ARROW));
+    if (event->button == 1)
+    {
+        gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
+                                   event->x_root, event->y_root, event->time);
+    }
+    return 0;
 
+}
 //按下确定
 static gint sure_button_press_event(GtkWidget *widget, GdkEventButton *event,
                                     gpointer data)
@@ -64,7 +75,7 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
 {
     if (event->button == 1)
     {
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));//设置光标
+        gdk_window_set_cursor(gtk_widget_get_window(huanfuwindow), gdk_cursor_new(GDK_HAND2));//设置光标
         gtk_image_set_from_surface((GtkImage *) isure, ssure2);//置换图片
 
         if (FlagChange == 1)
@@ -121,7 +132,7 @@ static gint cancel_button_press_event(GtkWidget *widget, GdkEventButton *event,
 {
     if (event->type == GDK_BUTTON_PRESS) //判断鼠标是否被按下
     {
-        gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));//设置光标
+        gdk_window_set_cursor(gtk_widget_get_window(huanfuwindow), gdk_cursor_new(GDK_HAND2));//设置光标
         gtk_image_set_from_surface((GtkImage *) icancel, scancel2);//置换图片
     }
 
@@ -219,9 +230,17 @@ void changethemeface()
     ipic2 = gtk_image_new_from_surface(spic21);
     ipic3 = gtk_image_new_from_surface(spic31);
 
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), iback, 0, 0);//起始坐标
+
 
     //事件盒子
+    back_event_box = BuildEventBox(iback,
+                                   G_CALLBACK(back_button_press_event),
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                   NULL,
+                                   NULL);
+
     ipic1_event_box = BuildEventBox(ipic1,
                                     NULL,
                                     NULL,
@@ -263,6 +282,7 @@ void changethemeface()
                                      NULL);
 
     //布局
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(back_event_box), 0, 0);//起始坐标
     gtk_widget_set_size_request(GTK_WIDGET(iback), 432, 238);
     gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic1_event_box), 20, 70);
     gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic2_event_box), 155, 70);
@@ -423,19 +443,19 @@ static void loadinfo()
     FriendInfo *rear = FriendInfoHead;
     while (rear)
     {
-        if (rear->user.uid == CurrentUserInfo->uid)
+        if (rear->user.uid == CurrentUserInfo->uid)  //找到当前用户的存在于链表资料
         {
             finduidflag = 1;
             break;
         }
         rear = rear->next;
     }
-    if (finduidflag == 1)
+    if (finduidflag == 1)  //找到后将用户头像获取并且画在窗口上
     {
         char userhead[80] = {0};
         static cairo_t *cr;
         cairo_surface_t *surface;
-        HexadecimalConversion(userhead, CurrentUserInfo->icon);
+        HexadecimalConversion(userhead, CurrentUserInfo->icon); //获取头像
         //加载一个图片
         surface = cairo_image_surface_create_from_png(userhead);
         int w = cairo_image_surface_get_width(surface);
@@ -456,8 +476,7 @@ static void loadinfo()
     }
 }
 
-static void
-destroy_surfaces()
+static void destroy_surfaces()  //销毁资源
 {
     g_print("destroying surfaces2");
     cairo_surface_destroy(surfacemainbackgroud);
@@ -470,46 +489,46 @@ destroy_surfaces()
 
 }
 
-//单击分组显示右键菜单
-gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-    GdkEventButton *event_button;
-    GtkWidget *menu = GTK_WIDGET(data);
-    GtkTreeIter iter;
-    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
-    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
-    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
-    gtk_tree_selection_get_selected(selection, &model, &iter);
-
-    if (event->type == GDK_BUTTON_PRESS)
-    {
-        int i;
-        GtkTreePath *path;
-        path = gtk_tree_model_get_path(model, &iter);
-        i = gtk_tree_path_get_indices(path)[0];
-
-        event_button = (GdkEventButton *) event;
-
-        if (event->button == 0x1)
-        {
-            return FALSE;
-        }
-        if (event->button == 0x2)
-        {
-            return FALSE;
-        }
-        if (event->button == 0x3)
-        {
-            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
-            {
-                gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
-                return FALSE;
-            }
-        }
-    }
-
-    return FALSE;
-}
+////单击分组显示右键菜单
+//gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data)
+//{
+//    GdkEventButton *event_button;
+//    GtkWidget *menu = GTK_WIDGET(data);
+//    GtkTreeIter iter;
+//    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
+//    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
+//    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+//    gtk_tree_selection_get_selected(selection, &model, &iter);
+//
+//    if (event->type == GDK_BUTTON_PRESS)
+//    {
+//        int i;
+//        GtkTreePath *path;
+//        path = gtk_tree_model_get_path(model, &iter);
+//        i = gtk_tree_path_get_indices(path)[0];
+//
+//        event_button = (GdkEventButton *) event;
+//
+//        if (event->button == 0x1)
+//        {
+//            return FALSE;
+//        }
+//        if (event->button == 0x2)
+//        {
+//            return FALSE;
+//        }
+//        if (event->button == 0x3)
+//        {
+//            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
+//            {
+//                gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
+//                return FALSE;
+//            }
+//        }
+//    }
+//
+//    return FALSE;
+//}
 
 gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -591,27 +610,25 @@ gboolean button2_release_event(GtkWidget *widget, GdkEventButton *event, gpointe
     GtkTreeIter iter;
     GtkTreeView *treeview = GTK_TREE_VIEW(widget);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
-
-
     if (event->button == 0x3)
     {
-        GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
+        GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);//获取选中位置
         gtk_tree_selection_get_selected(selection, &model, &iter);//拿到 选中列的iter
         uint32_t id = 0;
         gtk_tree_model_get(model, &iter, FRIENDUID_COL, &id, -1);
 
-        if (id == CurrentUserInfo->uid)
+        if (id == CurrentUserInfo->uid) //判断是否用户本人
         {
             return FALSE;
         }
-        else if (id >= 256)
+        else if (id >= 256)      //判断是不是好友，是的话展开好友的右键菜单
         {
             GtkMenu *menu = g_object_get_data(G_OBJECT(widget), "FriendMenu");
             gtk_menu_item_set_submenu(GTK_MENU_ITEM(friend_mov_group), MovFriendButtonEvent(treeView));
             gtk_menu_popup(menu, NULL, NULL, NULL, NULL, event->button, event->time);
         }
 
-        else
+        else        //判断为分组时，展开分组的右键菜单
         {
             GtkMenu *menu = g_object_get_data(G_OBJECT(widget), "GroupMenu");
             gtk_menu_popup(menu, NULL, NULL, NULL, NULL, event->button, event->time);
@@ -621,39 +638,40 @@ gboolean button2_release_event(GtkWidget *widget, GdkEventButton *event, gpointe
 
 }
 
-
+//收到好友发送来的文件的进度条
 gboolean recv_progress_bar_crcle(void *data)
 {
-    struct RECVFileMessagedata *recv_file_bar_crcle = (struct RECVFileMessagedata *) data;
+    struct RECVFileMessagedata *recv_file_bar_crcle = (struct RECVFileMessagedata *) data; //结构体存放关于文件的信息
 
     if (recv_file_bar_crcle->file_loading_end == 0)
     {
-        gdouble pvalue;
+        gdouble pvalue; //创建以及接收的和总共的文件大小百分比
         pvalue = (gdouble) recv_file_bar_crcle->file_count / (gdouble) recv_file_bar_crcle->file_size;
         gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(recv_file_bar_crcle->progressbar), pvalue);
         return 1;
     }
-    else
+    else   //若接收完毕则释放内存和摧毁控件
     {
         gtk_widget_destroy(recv_file_bar_crcle->file);
         gtk_widget_destroy(recv_file_bar_crcle->progressbar);
         gchar filemulu[200] = {0};
         sprintf(filemulu, "文件保存地址为%s", recv_file_bar_crcle->filemulu);
         ShoweRmoteText(filemulu, recv_file_bar_crcle->userinfo,
-                       strlen(filemulu));
+                       strlen(filemulu)); //让输出文本框显示文件存放位置
         free(recv_file_bar_crcle->filename);
         free(recv_file_bar_crcle);
         return 0;
     }
 }
 
+//与服务器交互的文件处理函数，在这个函数中，不能修改界面上的内容。
 int deal_with_recv_file(CRPBaseHeader *header, void *data)
 {
-    struct RECVFileMessagedata *recv_message = (struct RECVFileMessagedata *) data;
+    struct RECVFileMessagedata *recv_message = (struct RECVFileMessagedata *) data;  //存放接收过来的文件信息的结构体
     int ret = 1;
     switch (header->packetID)
     {
-        case CRP_PACKET_FAILURE:
+        case CRP_PACKET_FAILURE:  //文件传输失败
         {
             CRPPacketFailure *infodata = CRPFailureCast(header);
             log_info("FAILURE reason", infodata->reason);
@@ -665,18 +683,18 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
             }
             return 0;
         };
-        case  CRP_PACKET_FILE_DATA_START:
+        case  CRP_PACKET_FILE_DATA_START:  //准备接收文件
         {
             log_info("Recv Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
             CRPOKSend(sockfd, header->sessionID);
             break;
         };
-        case CRP_PACKET_FILE_DATA:
+        case CRP_PACKET_FILE_DATA:   //开始接收文件
         {
 
             CRPPacketFileData *packet = CRPFileDataCast(header);
-            fwrite(packet->data, 1, packet->length, recv_message->Wfp);
-            recv_message->file_count = recv_message->file_count + packet->length;
+            fwrite(packet->data, 1, packet->length, recv_message->Wfp);  //将文件内容写入
+            recv_message->file_count = recv_message->file_count + packet->length; //文件以及接收的大小
             CRPOKSend(sockfd, header->sessionID);
             if ((void *) packet != header->data)
             {
@@ -684,10 +702,10 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
             }
             break;
         };
-        case CRP_PACKET_FILE_DATA_END:
+        case CRP_PACKET_FILE_DATA_END:   //文件传送完毕
         {
             fclose(recv_message->Wfp);
-            recv_message->file_loading_end = 1;
+            recv_message->file_loading_end = 1; //文件结束的标志
             ret = 0;
             break;
         };
@@ -702,7 +720,9 @@ int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
 {
     if (info->chartwindow != NULL)
     {
-        GtkWidget *dialog;
+        GtkWidget *dialog;  //弹出是否接收文件的提示框
+
+        //初始化接收文件信息内容
         struct RECVFileMessagedata *file_message_data = (struct RECVFileMessagedata *) malloc(sizeof(struct RECVFileMessagedata));
         file_message_data->charlen = charlen;
         file_message_data->filename = (gchar *) malloc(100);
@@ -715,39 +735,43 @@ int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
                                         GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
                                         file_info);
         gtk_window_set_title(GTK_WINDOW (dialog), "Question");
+        g_object_set_data(G_OBJECT(info->chartwindow), "recv_file_dialog", dialog);
         gint result = gtk_dialog_run(GTK_DIALOG (dialog));
-        if (result == -5)
+        if (result == -5)  //用户点击是的按钮时
         {
             gtk_widget_destroy(dialog);
             //文件的信息初始化
             unsigned char strdest[17] = {0};
-            size_t filename_len = strlen(file_message_data->filename);
+            size_t filename_len = strlen(file_message_data->filename); //获取文件名大小
             memcpy(&file_message_data->file_size, recv_text + filename_len, 4);//获取文件大小
-            memcpy(strdest, recv_text + filename_len + 4, 16);
-            file_message_data->file_loading_end = 0;
-            file_message_data->file_count = 0;
+            memcpy(strdest, recv_text + filename_len + 4, 16);//获得md5值的key值
+            file_message_data->file_loading_end = 0;  //文件传输是否结束标志
+            file_message_data->file_count = 0;//已接收的文件内容大小
             file_message_data->userinfo = info;
-            gchar sendfile_size[100];
+
             PangoFontDescription *font;
             session_id_t session_id;
             //写文件
-            GtkWidget *save_dialog;
+            GtkWidget *save_dialog; //选择文件保存位置的对话框
             save_dialog = gtk_file_chooser_dialog_new("将文件保存在...", GTK_WINDOW(info->chartwindow),
                                                       GTK_FILE_CHOOSER_ACTION_SAVE,
                                                       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                                       GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
                                                       NULL);
-            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(save_dialog), file_message_data->filename);
+            gtk_file_chooser_set_filename(GTK_FILE_CHOOSER(save_dialog), file_message_data->filename); //设置对话框的默认保存名
+            g_object_set_data(G_OBJECT(info->chartwindow), "save_file_dialog", save_dialog);
             gint save_result = gtk_dialog_run(GTK_DIALOG (save_dialog));
-            if (save_result == GTK_RESPONSE_ACCEPT)
+            if (save_result == GTK_RESPONSE_ACCEPT) //确认保存
             {
-                gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (save_dialog));
+                gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER (save_dialog));//获得用户设置文件名
                 size_t len_filename = strlen(filename);
-                memcpy(file_message_data->filemulu, filename, len_filename);
+                gchar sendfile_size[100];
+                memcpy(file_message_data->filemulu, filename, len_filename); //获取保存的具体路径
                 file_message_data->filemulu[len_filename] = 0;
                 g_free(filename);
                 gtk_widget_destroy(save_dialog);
 
+                //设置进度条上的内容
                 if (file_message_data->file_size / 1048576.0 > 0)
                 {
                     sprintf(sendfile_size, "\t %s \n 大小为：%.2f M", file_message_data->filename,
@@ -772,22 +796,22 @@ int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
                 gtk_widget_show(file_message_data->progressbar);
                 g_idle_add(recv_progress_bar_crcle, file_message_data);  //用来更新进度条
 
-
+                //打开写文件的文件指针
                 file_message_data->Wfp = (fopen(file_message_data->filemulu, "w"));
 
                 session_id = CountSessionId();
                 AddMessageNode(session_id, deal_with_recv_file, file_message_data);
-                CRPFileRequestSend(sockfd, session_id, 0, strdest);
+                CRPFileRequestSend(sockfd, session_id, 0, strdest);  //发送接收文件的请求
 
             }
-            else
+            else //取消接收，释放内存
             {
                 free(file_message_data->filename);
                 free(file_message_data);
                 gtk_widget_destroy(save_dialog);
             }
         }
-        else
+        else  //取消接收，释放内存
         {
             free(file_message_data->filename);
             free(file_message_data);
@@ -803,7 +827,7 @@ void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid)
     log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
     int uidfindflag = 0;
     FriendInfo *userinfo = FriendInfoHead;
-    while (userinfo)
+    while (userinfo)     //根据Uid找到发送过来的好友对象
     {
         if (userinfo->user.uid == recd_uid)
         {
@@ -829,12 +853,12 @@ void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid)
     }
 }
 
-//图片处理函数
+//与服务器交互的图片处理函数
 int deal_with_recv_message(void *data)
 {
     struct RECVImageMessagedata *recv_message = (struct RECVImageMessagedata *) data;
-    recv_message->imagecount--;
-    if (recv_message->imagecount == 0)
+    recv_message->imagecount--;   //图片未下载的数量（已经下载就--）
+    if (recv_message->imagecount == 0)   //当图片全都从服务器下载后
     {
         ShoweRmoteText(recv_message->message_data, recv_message->userinfo,
                        recv_message->charlen);
@@ -844,7 +868,7 @@ int deal_with_recv_message(void *data)
     return FALSE;
 }
 
-//接收图片函数
+//接收图片和文字函数，对信息进行半解码，判断是否存在图片
 int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
 {
     int i = 0;
@@ -853,22 +877,22 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
             = (struct RECVImageMessagedata *) malloc(sizeof(struct RECVImageMessagedata));
     gchar *message_recv = (gchar *) malloc(charlen);
     memcpy(message_recv, recv_text, charlen);
-    image_message_data->imagecount = 0;
-    image_message_data->message_data = message_recv;
+    image_message_data->imagecount = 0;  //图片数量
+    image_message_data->message_data = message_recv; //信息内容
     image_message_data->userinfo = info;
-    image_message_data->charlen = charlen;
+    image_message_data->charlen = charlen; //信息长度
     while (i < charlen)
     {
-        if (recv_text[i] != '\0')
+        if (recv_text[i] != '\0') //普通文字
         {
             i++;
         }
         else
         {
 
-            switch (recv_text[i + 1])
+            switch (recv_text[i + 1]) //字体类型
             {
-                case 1:
+                case 1:     //字体类型
                 {
                     i++;
                     while (recv_text[i] != '\0')
@@ -878,7 +902,7 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
                     i++;
                     break;
                 };
-                case 2 :
+                case 2 :  //是否斜体
                 {
                     i += 3;
                 };
@@ -898,14 +922,13 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
 
                     break;
                 };
-                case 0 :
+                case 0 :  //图片
                 {
-
+                    image_message_data->imagecount++;  //需要在imagecount--之前，否则有可能出现错误
                     isimageflag = 1;
                     char strdest[17] = {0};
                     i += 2;
-                    image_message_data->imagecount++;
-                    memcpy(strdest, &recv_text[i], 16);
+                    memcpy(strdest, &recv_text[i], 16);  //获得Md5值的key
                     FindImage(strdest, image_message_data, deal_with_recv_message); //请求图片
                     i = i + 16;
                     break;
@@ -918,7 +941,7 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
         }
 
     }
-    if (isimageflag == 0)
+    if (isimageflag == 0)  //判断如若没有一个图片时
     {
         ShoweRmoteText(image_message_data->message_data, image_message_data->userinfo,
                        image_message_data->charlen);
@@ -929,13 +952,14 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
     return 1;
 }
 
+//接收由服务器中转过来的好友发的信息
 void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
 {
 
     log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
     int uidfindflag = 0;
     FriendInfo *userinfo = FriendInfoHead;
-    while (userinfo)
+    while (userinfo)  //找到对应好友，打开其窗口，然后处理信息。
     {
         if (userinfo->user.uid == recd_uid)
         {
@@ -957,7 +981,7 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
         {
             gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
-        image_message_recv(rcvd_text, userinfo, len);
+        image_message_recv(rcvd_text, userinfo, len); //处理信息函数
 
     }
 }
@@ -1131,13 +1155,14 @@ static gint sendmsg_button_press_event(GtkWidget *widget, GdkEventButton *event,
     i = gtk_tree_path_get_indices(path)[0];
     j = gtk_tree_path_get_indices(path)[1];
 
+    //对方是好友时：
     if (gtk_tree_model_iter_has_child(model,
                                       &iter) == 0 && ((i == 0 && j > 0) || ((i != 0) && (friends->groups[i].friendCount > 0))))
     {
         uint32_t t;
-        gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1);
+        gtk_tree_model_get(model, &iter, FRIENDUID_COL, &t, -1); //取出好友的uid
         friendinforear = FriendInfoHead;
-        while (friendinforear)
+        while (friendinforear) //取出对应Uid的链表
         {
             if (friendinforear->user.uid == t)
             {
@@ -1215,13 +1240,6 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-//static gint search_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-//{
-//    GtkWidget *add_surface=data;
-//    gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
-//    gtk_image_set_from_surface((GtkImage *) add_surface, surface_status2);
-//    return 0;
-//}
 
 //搜索放上去
 static gint search_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -1357,7 +1375,7 @@ int MainInterFace()
     frameLayout = gtk_layout_new(NULL, NULL);
 
     create_surfaces();
-
+    //主界面背景
     background_event_box = BuildEventBox(background1,
                                          G_CALLBACK(background_button_press_event),
                                          NULL,
@@ -1365,7 +1383,7 @@ int MainInterFace()
                                          NULL,
                                          NULL,
                                          NULL);
-
+    //关闭按钮
     closebut_event_box = BuildEventBox(closebut,
                                        G_CALLBACK(closebut_button_press_event),
                                        G_CALLBACK(closebut_enter_notify_event),

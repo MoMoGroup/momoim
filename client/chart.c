@@ -10,6 +10,7 @@
 #include "ChartRecord.h"
 #include <sys/stat.h>
 #include <logger.h>
+#include <glib-unix.h>
 #include "media.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
@@ -25,6 +26,7 @@ static cairo_surface_t *surfaceclose1, *surfaceclose2, *surfaceclosebut1, *surfa
 static cairo_surface_t *surfacelook1, *surfacelook2, *surfacejietu1, *surfacejietu2, *surfacefile1, *surfacefile2, *surfaceimage1, *surfaceimage2;
 static cairo_surface_t *surfacewordart1, *surfacewordart2, *surfacecolor, *surfacechartrecord;
 
+//加载资源
 static void create_surfaces(FriendInfo *information)
 {
     schartbackgroud = ChangeThem_png("聊天背景.png");
@@ -95,7 +97,7 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
     //设置在非按钮区域内移动窗口
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     if (event->button == 1)
-    {
+    {   //设置拖动窗口
         gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)), event->button,
                                    (gint) event->x_root, (gint) event->y_root, event->time);
 
@@ -109,9 +111,6 @@ static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton
 static gint send_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-//    X = event->x;  // 取得鼠标相对于窗口的位置
-//    Y = event->y;
-
     if (event->button == 1)
     {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -129,11 +128,8 @@ static gint send_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-
         gtk_image_set_from_surface((GtkImage *) info->imagesend, surfacesend1);
-
-        SendText(info);
-
+        SendText(info); //调用发送触发函数
     }
     return 0;
 
@@ -162,8 +158,7 @@ static gint send_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
 }
 
 
-//键盘enter和alt+enter事件
-
+//键盘enter和alt+enter事件，用户可以通过enter和alt+enter发送消息
 gboolean key_value(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
@@ -363,7 +358,7 @@ static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) info->imageclose, surfaceclose1);//设置右下关闭
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
-
+        //关闭聊天记录窗口
         if (info->record_window != NULL)
         {
             gtk_widget_destroy(info->record_window);
@@ -421,7 +416,7 @@ static gint close_but_button_release_event(GtkWidget *widget, GdkEventButton *ev
         gtk_image_set_from_surface((GtkImage *) info->imageclosebut, surfaceclosebut1);  //设置右上关闭按钮
         gtk_widget_destroy(info->chartwindow);
         info->chartwindow = NULL;
-
+        //关闭聊天记录窗口
         if (info->record_window != NULL)
         {
             gtk_widget_destroy(info->record_window);
@@ -473,7 +468,7 @@ static gint look_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagelook, surfacelook1);
-            ChartLook(info, event->x_root, event->y_root - 130);
+        ChartLook(info, event->x_root, event->y_root - 130);//传递此时表情窗口应该出现的位置
 
     }
     return 0;
@@ -516,9 +511,7 @@ static gint jietu_button_press_event(GtkWidget *widget, GdkEventButton *event, g
 static gint jietu_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-
     if (event->button == 1)       // 判断是否是点击关闭图标
-
     {
         gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu1);
         ScreenShot(info);
@@ -531,7 +524,6 @@ static gint jietu_button_release_event(GtkWidget *widget, GdkEventButton *event,
 static gint jietu_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     gtk_image_set_from_surface((GtkImage *) info->imagejietu, surfacejietu2); //置换图标
 
@@ -562,6 +554,7 @@ static gint file_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     return 0;
 }
 
+//文件
 //鼠标抬起事件
 static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -570,15 +563,17 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagefile, surfacefile1);
-        GtkWidget *dialog;
+        GtkWidget *dialog;  //创建文件的对话框
         gchar *filename;
         dialog = gtk_file_chooser_dialog_new("Open File(s) ...", GTK_WINDOW(info->chartwindow),
                                              GTK_FILE_CHOOSER_ACTION_OPEN,
                                              "_Cancel", GTK_RESPONSE_CANCEL,
                                              "_Open", GTK_RESPONSE_ACCEPT,
                                              NULL);
+        g_object_set_data(G_OBJECT(info->chartwindow), "file_dialog", dialog);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-        while (result == GTK_RESPONSE_ACCEPT)
+
+        while (result == GTK_RESPONSE_ACCEPT) //用while循环是为了避免选了大于150的文件后不能再次选择的事件
         {
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
             struct stat buf;
@@ -596,6 +591,7 @@ static gint file_button_release_event(GtkWidget *widget, GdkEventButton *event, 
                                                     GTK_MESSAGE_INFO, GTK_BUTTONS_OK,
                                                     "文件大小不应超过150M，请选择其他文件");
                 gtk_window_set_title(GTK_WINDOW (cue_dialog), "Information");
+                g_object_set_data(G_OBJECT(info->chartwindow), "file_cue_dialog", cue_dialog);
                 gtk_dialog_run(GTK_DIALOG (cue_dialog));
                 gtk_widget_destroy(cue_dialog);
                 result = gtk_dialog_run(GTK_DIALOG(dialog));
@@ -631,7 +627,7 @@ static gint file_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gp
     return 0;
 }
 
-//tupian
+//图片
 //鼠标点击事件
 static gint photo_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -645,6 +641,7 @@ static gint photo_button_press_event(GtkWidget *widget, GdkEventButton *event, g
     return 0;
 }
 
+//图片
 //鼠标抬起事件
 static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -654,27 +651,27 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
-        GtkWidget *dialog;
+        GtkWidget *dialog;  //选择图片对话框
         gchar *filename;
         dialog = gtk_file_chooser_dialog_new("Open Image(s) ...", (GtkWindow *) info->chartwindow,
                                              GTK_FILE_CHOOSER_ACTION_OPEN,
                                              GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
                                              GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
                                              NULL);
+        g_object_set_data(G_OBJECT(info->chartwindow), "image_dialog", dialog);
         gint result = gtk_dialog_run(GTK_DIALOG(dialog));
         if (result == GTK_RESPONSE_ACCEPT)
         {
-            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
+            filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog)); //得到文件名
             GtkWidget *image;
             image = gtk_image_new_from_file(filename);
-
             // GtkTextBuffer *buffer;
             GtkTextMark *mark;
             GtkTextIter iter, end;
             GtkTextChildAnchor *anchor;
 
             size_t filenamelen;
-            mark = gtk_text_buffer_get_insert(info->input_buffer);
+            mark = gtk_text_buffer_get_insert(info->input_buffer); //创建标志
             gtk_text_buffer_get_iter_at_mark(info->input_buffer, &iter, mark);
             anchor = gtk_text_buffer_create_child_anchor(info->input_buffer, &iter); //添加衍生构件
             filenamelen = strlen(filename);
@@ -682,10 +679,11 @@ static gint photo_button_release_event(GtkWidget *widget, GdkEventButton *event,
             char *pSrc = malloc(filenamelen + 1);
             memcpy(pSrc, filename, filenamelen);
             pSrc[filenamelen] = 0;
-            g_object_set_data_full(G_OBJECT(image), "ImageSrc", pSrc, free); //将路径存成为key值在image控件中保存
+            g_object_set_data_full(G_OBJECT(image), "ImageSrc", pSrc, free); //将文件路径存成为key值在image控件中保存
             gtk_widget_show_all(image);
-            gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->input_text), image, anchor);
+            gtk_text_view_add_child_at_anchor(GTK_TEXT_VIEW (info->input_text), image, anchor); //将图片插入到textview中
             gtk_widget_grab_focus(info->input_text);
+            //自动滚屏效果、将视点放在插入后的位置
             gtk_text_buffer_get_end_iter(info->input_buffer, &end);
             GtkTextMark *text_mark_log = gtk_text_buffer_create_mark(info->input_buffer, NULL, &iter, 1);
             gtk_text_buffer_move_mark(info->input_buffer, text_mark_log, &end);
@@ -712,8 +710,8 @@ static gint photo_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 static gint photo_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1);
+    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));//设置鼠标光标
+    gtk_image_set_from_surface((GtkImage *) info->imagephoto, surfaceimage1); //置换图标
     return 0;
 }
 
@@ -722,12 +720,12 @@ void handle_font_color(FriendInfo *info)
 {
     int num;
     UserWordInfo.coding_font_color = (gchar *) malloc(strlen(UserWordInfo.font) + 30);
-    CodingWordColor(info, UserWordInfo.coding_font_color, &UserWordInfo.codinglen);
+    CodingWordColor(info, UserWordInfo.coding_font_color, &UserWordInfo.codinglen); //将字体和字体颜色进行编码
     FILE *fp;
     char wordfile[256];
     sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
     fp = fopen(wordfile, "w");
-    num = fwrite(UserWordInfo.coding_font_color, 1, UserWordInfo.codinglen, fp);
+    num = fwrite(UserWordInfo.coding_font_color, 1, UserWordInfo.codinglen, fp); //将编码后的存在文件中
     if (num == UserWordInfo.codinglen)
     {
         g_print("the wordtype write success");
@@ -757,11 +755,11 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
 
     {
         gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart1);
-        GtkWidget *dialog;
+        GtkWidget *dialog;  //创建字体选择对话框
         dialog = gtk_font_chooser_dialog_new("choose a font", GTK_WINDOW(event->window));
-
+        g_object_set_data(G_OBJECT(info->chartwindow), "font_dialog", dialog);
         if (UserWordInfo.description != NULL)
-        {
+        {   //设置打开对话框时的字体描述
             gtk_font_chooser_set_font_desc(GTK_FONT_CHOOSER(dialog), UserWordInfo.description);
         }
         gtk_widget_show_all(dialog);
@@ -774,13 +772,13 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
                 PangoFontFamily *fontFamily;
                 UserWordInfo.codinglen = 0;
                 fontFamily = gtk_font_chooser_get_font_family(GTK_FONT_CHOOSER(dialog));
-                UserWordInfo.description = gtk_font_chooser_get_font_desc(GTK_FONT_CHOOSER(dialog));
+                UserWordInfo.description = gtk_font_chooser_get_font_desc(GTK_FONT_CHOOSER(dialog)); //获得选择的字体描述
                 UserWordInfo.size = gtk_font_chooser_get_font_size(GTK_FONT_CHOOSER(dialog)); //大小
                 UserWordInfo.size = UserWordInfo.size / 1024;
-                UserWordInfo.style = pango_font_description_get_style(UserWordInfo.description); //斜体
+                UserWordInfo.style = pango_font_description_get_style(UserWordInfo.description); //是否斜体
                 UserWordInfo.weight = pango_font_description_get_weight(UserWordInfo.description); //宽度
                 gtk_widget_override_font(info->input_text, UserWordInfo.description); //设置输入框的字体
-                UserWordInfo.font = (gchar *) pango_font_family_get_name(fontFamily);
+                UserWordInfo.font = (gchar *) pango_font_family_get_name(fontFamily); //字体的字符串
                 handle_font_color(info);
                 break;
             }
@@ -811,22 +809,16 @@ static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
 {
     FriendInfo *info = (FriendInfo *) data;
 
-    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart1);
+    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));//设置鼠标光标
+    gtk_image_set_from_surface((GtkImage *) info->imagewordart, surfacewordart1);//置换图标
     return 0;
 }
 
-
 //颜色
-
-
 //鼠标点击事件
-static gint color_button_press_event(GtkWidget *widget,
-
-                                     GdkEventButton *event, gpointer data)
+static gint color_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-
     if (event->button == 1)
     {     //设置发送按钮
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -841,12 +833,12 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-
         gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
-        GtkColorSelectionDialog *dialog;
+        GtkColorSelectionDialog *dialog; //创建颜色选择对话框
         GtkColorSelection *colorsel;
         GdkColor color;
         dialog = GTK_COLOR_SELECTION_DIALOG(gtk_color_selection_dialog_new("ColorSelect"));
+        //设置对话框显示的默认颜色
         color.red = 0;
         color.blue = 65535;
         color.green = 0;
@@ -855,9 +847,10 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_color_selection_set_has_palette(colorsel, 1);
         gtk_color_selection_set_previous_color(colorsel, &color);
         gtk_color_selection_set_current_color(colorsel, &color);
+        g_object_set_data(G_OBJECT(info->chartwindow), "color_dialog", dialog);
         if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK)
         {
-            gtk_color_selection_get_current_color(colorsel, &color);
+            gtk_color_selection_get_current_color(colorsel, &color);//得到用户选择的颜色
             UserWordInfo.color_red = color.red;
             UserWordInfo.color_blue = color.blue;
             UserWordInfo.color_green = color.green;
@@ -866,7 +859,7 @@ static gint color_button_release_event(GtkWidget *widget, GdkEventButton *event,
             rgbacolor.red = UserWordInfo.color_red / 65535.0;
             rgbacolor.green = UserWordInfo.color_green / 65535.0;
             rgbacolor.blue = UserWordInfo.color_blue / 65535.0;
-            gtk_widget_override_color(info->input_text, GTK_STATE_FLAG_NORMAL, &rgbacolor);
+            gtk_widget_override_color(info->input_text, GTK_STATE_FLAG_NORMAL, &rgbacolor);  //将输入的textview设置为使用此颜色
             handle_font_color(info);
         }
 
@@ -928,8 +921,7 @@ static gint chartrecord_button_release_event(GtkWidget *widget, GdkEventButton *
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-
-        if (info->record_window == NULL)
+        if (info->record_window == NULL) //判断聊天记录框是否打开，没打开则打开，否则置前
         {
             ChartRecord(info);
         }
@@ -958,11 +950,11 @@ static gint chartrecord_enter_notify_event(GtkWidget *widget, GdkEventButton *ev
 static gint chartrecord_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     return 0;
 }
 
+//点击聊天窗口的好友昵称使其打开好友资料
 static gint nicheng_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
@@ -1021,14 +1013,12 @@ int MainChart(FriendInfo *friendinfonode)
     friendinfonode->imagechartrecord = gtk_image_new_from_surface(surfacechartrecord);
 
 // 设置窗体获取鼠标事件 背景
-
     chartbackground_event_box = BuildEventBox(
             friendinfonode->imageflowerbackgroud,
             G_CALLBACK(chartbackground_button_press_event),
             NULL, NULL, NULL, NULL, friendinfonode);
 
     //发送
-
     send_event_box = BuildEventBox(
             friendinfonode->imagesend,
             G_CALLBACK(send_button_press_event),
@@ -1039,8 +1029,6 @@ int MainChart(FriendInfo *friendinfonode)
             friendinfonode);
 
     //语音
-
-
     voice_event_box = BuildEventBox(
             friendinfonode->imagevoice,
             G_CALLBACK(voice_button_press_event),
@@ -1050,7 +1038,6 @@ int MainChart(FriendInfo *friendinfonode)
             NULL,
             friendinfonode);
     //视频
-
     video_event_box = BuildEventBox(
             friendinfonode->imagevideo,
             G_CALLBACK(video_button_press_event),
@@ -1091,7 +1078,6 @@ int MainChart(FriendInfo *friendinfonode)
             friendinfonode);
 
     //截图
-
     jietu_event_box = BuildEventBox(
             friendinfonode->imagejietu,
             G_CALLBACK(jietu_button_press_event),
@@ -1101,7 +1087,6 @@ int MainChart(FriendInfo *friendinfonode)
             NULL,
             friendinfonode);
 //文件
-
     file_event_box = BuildEventBox(
             friendinfonode->imagefile,
             G_CALLBACK(file_button_press_event),
@@ -1112,7 +1097,6 @@ int MainChart(FriendInfo *friendinfonode)
             friendinfonode);
 
     //图片
-
     photo_event_box = BuildEventBox(
             friendinfonode->imagephoto,
             G_CALLBACK(photo_button_press_event),
@@ -1122,7 +1106,6 @@ int MainChart(FriendInfo *friendinfonode)
             NULL,
             friendinfonode);
     //字体
-
     wordart_event_box = BuildEventBox(
             friendinfonode->imagewordart,
             G_CALLBACK(wordart_button_press_event),
@@ -1232,19 +1215,13 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_widget_override_background_color(friendinfonode->show_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
 
     //设置打开窗口后字体样式
-
-    gtk_widget_override_font(friendinfonode->input_text, UserWordInfo.description);
-
+    gtk_widget_override_font(friendinfonode->input_text, UserWordInfo.description);//字体
     GdkRGBA rgbacolor;
     rgbacolor.alpha = 1;
     rgbacolor.red = UserWordInfo.color_red / 65535.0;
     rgbacolor.green = UserWordInfo.color_green / 65535.0;
     rgbacolor.blue = UserWordInfo.color_blue / 65535.0;
-    gtk_widget_override_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgbacolor);
+    gtk_widget_override_color(friendinfonode->input_text, GTK_STATE_FLAG_NORMAL, &rgbacolor);//字体颜色
     gtk_widget_show_all(friendinfonode->chartwindow);
-
-
-    // gtk_main();
-
     return 0;
 }
