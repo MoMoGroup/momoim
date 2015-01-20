@@ -2,7 +2,7 @@
 #include <common.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
-#include "managegroup/ManageGroup.h"
+#include "ManageGroup.h"
 
 
 int changeOnlineRecv(CRPBaseHeader *header, void *data)

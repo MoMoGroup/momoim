@@ -1,9 +1,9 @@
-#include"../ClientSockfd.h"
-#include "../MainInterface.h"
+#include"ClientSockfd.h"
+#include "MainInterface.h"
 #include<stdlib.h>
 #include <common.h>
 #include"ManageGroup.h"
-#include "../PopupWinds.h"
+#include "PopupWinds.h"
 //删除分组………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 //……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 

@@ -9,7 +9,7 @@
 #include "common.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
-#include "managegroup/ManageGroup.h"
+#include "ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
 #include "chart.h"

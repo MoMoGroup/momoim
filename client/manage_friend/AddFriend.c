@@ -8,7 +8,7 @@
 #include <cairo-script-interpreter.h>
 #include "friend.h"
 #include "common.h"
-#include "../managegroup/ManageGroup.h"
+#include "ManageGroup.h"
 
 static GtkWidget *addwindow, *addframelayout;
 static GtkWidget *addlayout2, *addlayout1;
