@@ -12,6 +12,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <gtk/gtk.h>
+#include <pwd.h>
 #include "yuv422_rgb.h"
 #include "video.h"
 #include "../logger/include/logger.h"
@@ -446,9 +447,14 @@ int guiMain(void *button)
     flag_idle = 0;
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
+    //logo
     g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(delete_event), NULL);
     GtkImage *image = GTK_IMAGE(gtk_image_new());
     gtk_widget_set_size_request(GTK_WIDGET(window), 640, 480);
+
+    char path_icon[80] = "";
+    sprintf(path_icon, "%s/.momo/theme/images/视频1.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));//设置聊天窗口图标
     g_idle_add(idleDraw, image);
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(image));
     gtk_widget_show_all(GTK_WIDGET(window));
