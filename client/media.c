@@ -116,15 +116,20 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
                     memcpy(&entry->addr, &opaddr, opAddrLen);
                     CRPNETNATReadySend(sockfd, entry->localSession, entry->peerUid, entry->peerSession);
                 }
+                else
+                {
+                    char hexKey[65] = {0};
+                    for (int i = 0; i < 32; ++i)
+                    {
+                        sprintf(hexKey + i * 2, "%02x", (int) buffer[i]);
+                    }
+                    log_info("Key", "WrongKey%s\n", hexKey);
+                }
 
             }
             else
             {
                 perror("recv");
-            }
-            if (timeout.tv_usec > 0)
-            {
-                usleep((useconds_t) timeout.tv_usec);
             }
         }
         else
@@ -306,10 +311,6 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
                     }
                     log_info("Key", "WrongKey%s\n", hexKey);
                 }
-            }
-            if (timeout.tv_usec > 0)
-            {
-                usleep((useconds_t) timeout.tv_usec);
             }
         }
         else
