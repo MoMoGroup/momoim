@@ -17,13 +17,5 @@ struct UserTextInformation
 };
 extern struct UserTextInformation UserWordInfo;
 
-typedef struct
-{
-    gdouble x;
-    gdouble y;
-    gdouble width;
-    gdouble height;
-    gboolean press;
-} JieTuDATA; //保存鼠标坐标位置的数据结构
 int OnAudioCloseMsg(gpointer p);
 int OnAudioRefuseMsg(gpointer p);

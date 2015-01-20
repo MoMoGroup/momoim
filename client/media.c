@@ -9,6 +9,7 @@
 #include "MainInterface.h"
 #include "../media/video.h"
 #include "../media/audio.h"
+#include "chart.h"
 
 //这个结构体用来保存请求音视频的记录
 struct log_request_friend_discover the_log_request_friend_discover;
