@@ -16,6 +16,7 @@
 #include "manage_friend/friend.h"
 #include "media.h"
 #include "../media/audio.h"
+#include "chart.h"
 
 pthread_t ThreadKeepAlive;
 
