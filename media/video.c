@@ -234,7 +234,7 @@ void cancle_mem()
 gint delete_event(GtkWindow *window)
 {
     closewindow();
-    popup("消息","视频已结束");
+    //popup("消息","视频已结束");
     return FALSE;
 }
 
@@ -479,6 +479,7 @@ void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
     update_video_flag=update_flag;
     pthread_t pthd_video_recv;
     pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
+    pthread_join(&pthd_video_recv, NULL);
 }
 
 //视频聊天的函数入口
