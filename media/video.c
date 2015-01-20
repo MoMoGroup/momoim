@@ -12,10 +12,10 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <gtk/gtk.h>
+#include <pwd.h>
 #include "yuv422_rgb.h"
 #include "video.h"
 #include "logger.h"
-#include "../client/PopupWinds.h"
 
 #define SERVERPORT 5555
 
@@ -234,7 +234,7 @@ void cancle_mem()
 gint delete_event(GtkWindow *window)
 {
     closewindow();
-    Popup("消息", "视频已结束");
+    //popup("消息","视频已结束");
     return FALSE;
 }
 
@@ -478,7 +478,8 @@ int guiMain(void *button)
 void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
     update_video_flag=update_flag;
     pthread_t pthd_video_recv;
-    pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
+    pthread_create(&pthd_video_recv, NULL, primary_video, addr);
+    pthread_join(&pthd_video_recv, NULL);
 }
 
 //视频聊天的函数入口

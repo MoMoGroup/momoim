@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <datafile/init.h>
+#include <run/cli.h>
 #include "run/jobs.h"
 
 int IsServerRunning = 1;
@@ -57,7 +58,7 @@ int main(int argc, char **argv)
     pthread_create(&ThreadListener, NULL, ListenMain, NULL);
     while (IsServerRunning)
     {
-        pause();
+        CLIHandle();
     }
     log_info("MAIN", "Stopping Listener\n");
     pthread_cancel(ThreadListener);

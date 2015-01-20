@@ -22,3 +22,5 @@ void EpollRemove(POnlineUser);
 
 //重新设置fd事件
 void EpollModify(POnlineUser);
+void BanListAdd(in_addr_t ip);
+void BanListRemove(in_addr_t ip);
