@@ -2,9 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pwd.h>
+#include <ftlist.h>
 #include "ClientSockfd.h"
+#include "ScreenShot.h"
 
-void show_picture(GdkWindow *window, FriendInfo *info) //显示截图函数
+void show_picture(GdkWindow *window, FriendInfo *info, JieTuDATA *data) //显示截图函数
 {
     GdkPixbuf *pixbuf;
     GtkWidget *image;
@@ -20,10 +22,10 @@ void show_picture(GdkWindow *window, FriendInfo *info) //显示截图函数
                           gdk_cursor_new(GDK_LEFT_PTR));
     gdk_flush(); //恢复鼠标光标图案
     pixbuf = gdk_pixbuf_get_from_window(window,
-                                        info->data->x,
-                                        info->data->y,
-                                        info->data->width,
-                                        info->data->height);  //取到矩形区域图片
+                                        data->x,
+                                        data->y,
+                                        data->width,
+                                        data->height);  //取到矩形区域图片
     gdk_pixbuf_save(pixbuf, filename, "png", NULL, NULL);
     image = gtk_image_new_from_pixbuf(pixbuf);
     GtkTextMark *mark;
@@ -113,15 +115,15 @@ void ScreenShot(FriendInfo *info)
     screen = gdk_screen_get_default();
     win = gtk_window_new(GTK_WINDOW_POPUP);
     gtk_widget_set_app_paintable(win, TRUE);
-    info->data = (JieTuDATA *) malloc(sizeof(JieTuDATA));
-    info->data->press = FALSE;
+    JieTuDATA *data = (JieTuDATA *) malloc(sizeof(JieTuDATA));
+    data->press = FALSE;
     gtk_widget_add_events(win, GDK_BUTTON_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK); //添加信号
     g_signal_connect(G_OBJECT(win), "button_press_event",
-                     G_CALLBACK(select_area_press), info->data);
+                     G_CALLBACK(select_area_press), data);
     g_signal_connect(G_OBJECT(win), "button_release_event",
-                     G_CALLBACK(select_area_release), info->data);
+                     G_CALLBACK(select_area_release), data);
     g_signal_connect(G_OBJECT(win), "motion_notify_event",
-                     G_CALLBACK(select_area_move), info->data);
+                     G_CALLBACK(select_area_move), data);
 
     GdkRGBA rgbacolor;
     rgbacolor.alpha = 1;
@@ -143,6 +145,6 @@ void ScreenShot(FriendInfo *info)
     gtk_main();
     usleep(30000);  //这里要等待一小会，不然截取的图像会有些残影
 
-    show_picture(gdk_get_default_root_window(), info);
+    show_picture(gdk_get_default_root_window(), info, data);
 
 }

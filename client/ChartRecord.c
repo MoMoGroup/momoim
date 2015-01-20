@@ -165,7 +165,6 @@ gboolean show_record_message(void *data)
         pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
         gtk_widget_override_font(record_message->info->record_date, font);
         gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
-
         if (record_message->record_message_data[i].record_user_uid == record_message->info->user.uid)
         {
             sprintf(nicheng_times,

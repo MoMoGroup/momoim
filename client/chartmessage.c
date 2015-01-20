@@ -7,7 +7,7 @@
 #include <logger.h>
 #include <sys/stat.h>
 #include "chartmessage.h"
-
+#include "chart.h"
 //解码
 void decoding_text(gchar *text, FriendInfo *info, int count)
 {
