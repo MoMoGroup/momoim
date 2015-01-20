@@ -157,8 +157,7 @@ static gint ipic1_button_release_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 //抬起 皮肤2
-static gint ipic2_button_release_event(GtkWidget *widget, GdkEventButton *event,
-                                       gpointer data)
+static gint ipic2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     if (event->button == 1)
     {
@@ -383,7 +382,7 @@ static void create_surfaces()
     surfaceresearch = ChangeThem_png("搜索.png");
     surfacefriendimage = ChangeThem_png("好友.png");
     surfacechangetheme = ChangeThem_png("换肤.png");
-    surfacechangetheme2 = ChangeThem_png("换肤.png");
+    surfacechangetheme2 = ChangeThem_png("换肤2.png");
     surfaceclose51 = ChangeThem_png("关闭按钮1.png");
     surfaceclose52 = ChangeThem_png("关闭按钮2.png");
     surfaceclose53 = ChangeThem_png("关闭按钮3.png");
@@ -1256,6 +1255,23 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+//换肤放上去
+static gint change_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    cairo_surface_t *change2 = ChangeThem_png("换肤2.png");
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) change, change2);
+    return 0;
+}
+
+//换肤移走
+static gint change_button_leave_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    cairo_surface_t *change1 = ChangeThem_png("换肤.png");
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) change, change1);
+    return 0;
+}
 
 static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event,
                                         gpointer data)
@@ -1354,10 +1370,10 @@ int MainInterFace()
                                        NULL);
 
     change_event_box = BuildEventBox(change,
+                                     NULL,
+                                     G_CALLBACK(change_button_notify_event),
+                                     G_CALLBACK(change_button_leave_event),
                                      G_CALLBACK(change_button_release_event),
-                                     NULL,
-                                     NULL,
-                                     NULL,
                                      NULL,
                                      NULL);
 

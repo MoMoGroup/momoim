@@ -793,9 +793,7 @@ static gint wordart_button_release_event(GtkWidget *widget, GdkEventButton *even
 }
 
 //鼠标移动事件
-static gint wordart_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
-
-                                       gpointer data)
+static gint wordart_enter_notify_event(GtkWidget *widget, GdkEventButton *event,gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
     gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
@@ -805,9 +803,7 @@ static gint wordart_enter_notify_event(GtkWidget *widget, GdkEventButton *event,
 
 
 //鼠标likai事件
-static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
-
-                                       gpointer data)
+static gint wordart_leave_notify_event(GtkWidget *widget, GdkEventButton *event,gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
 
