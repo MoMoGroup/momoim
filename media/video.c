@@ -57,7 +57,7 @@ struct sigaction act;
 static GtkWindow *window;
 
 static int flag_idle; //用于取消idle的旗帜
-//static int flag_main_idle;
+static int flag_main_idle;
 
 //static int len_buffer;
 
@@ -71,11 +71,20 @@ int mark()
     struct v4l2_capability cap;
     struct v4l2_format fmt;
 
-    do
-    {
-        //查询视频设备的能力
-        ret = ioctl(fd, VIDIOC_QUERYCAP, &cap);
-    } while (ret == -1 && errno == EAGAIN);
+//    do
+//    {
+//        //查询视频设备的能力
+//        ret = ioctl(fd, VIDIOC_QUERYCAP, &cap);
+//    } while (ret == -1 && errno == EAGAIN);
+
+    //这一小段用来判断摄像头能否正常使用。
+    ret= ioctl(fd,VIDIOC_QUERYCAP,&cap);
+
+    if(ret<0){
+        printf("摄像头无法正常使用\n");
+        pre_closewindow();
+        return -1;
+    }
 
     if (cap.capabilities & V4L2_CAP_VIDEO_CAPTURE)
     {
@@ -374,7 +383,7 @@ void closewindow()
     log_info("CloseWind", "Window is closing.\n");
     if(flag_idle==1) return ;
     flag_idle = 1;
-    //flag_main_idle = 1;
+    flag_main_idle = 1;
 
     //log_info("DEBUG", "cancel1");
     pthread_cancel(tid1);
@@ -443,7 +452,7 @@ void closewindow()
 //用于绘制视频窗口的入口
 int guiMain(void *button)
 {
-    //if (flag_main_idle) return 0;
+    if (flag_main_idle) return 0;
     flag_idle = 0;
     rgbBuf = (unsigned char *) malloc(640 * 480 * 4);
     window = GTK_WINDOW(gtk_window_new(GTK_WINDOW_TOPLEVEL));
@@ -452,9 +461,9 @@ int guiMain(void *button)
     GtkImage *image = GTK_IMAGE(gtk_image_new());
     gtk_widget_set_size_request(GTK_WIDGET(window), 640, 480);
 
-    char path_icon[80] = "";
-    sprintf(path_icon, "%s/.momo/theme/images/视频1.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
-    gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));//设置聊天窗口图标
+    //char path_icon[80] = "";
+    //sprintf(path_icon, "%s/.momo/theme/images/视频1.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    //gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));//设置聊天窗口图标
     g_idle_add(idleDraw, image);
     gtk_container_add(GTK_CONTAINER(window), GTK_WIDGET(image));
     gtk_widget_show_all(GTK_WIDGET(window));
@@ -557,7 +566,8 @@ void *primary_video(struct sockaddr_in *addr)
     fd = open("/dev/video0", O_RDWR, 0);
     if (fd == -1)
     {
-        perror("open");
+        perror("无法打开摄像头文件");
+        pre_closewindow();
         close(fd);
         return 0;
     }
