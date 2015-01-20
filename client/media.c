@@ -330,7 +330,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
         }
     }
     log_info("Audio", "Start Audio Module\n");
-    StartAudioChat(sockSender, &entry->addr, NULL, NULL);
+    StartAudioChat(sockSender, &entry->addr,  onAudioStop, entry->friendInfo);
     free(entry);
     return NULL;
 }
