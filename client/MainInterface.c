@@ -21,7 +21,7 @@ static GtkWidget *background1, *search, *friend, *change, *closebut, *SetUp;
 static GtkWidget *window;
 static GtkWidget *frameLayout, *MainLayout;
 static cairo_surface_t *surfacechangetheme, *surfacechangetheme2, *surfacemainbackgroud, *surfacehead2, *surfaceresearch, *surfacefriendimage, *surfaceclose51, *surfaceclose52, *surfaceclose53;
-GtkWidget *userid, *headx;
+GtkWidget *UserId, *HeadX;
 //全局变量用以实时更新昵称和头像
 int MarkNewpasswd = 0, MarkUpdateInfo = 0;
 GtkTreeView *treeView;
@@ -403,14 +403,14 @@ GtkWidget *StatusShowText;
 
 static void loadinfo()
 {
-    userid = gtk_label_new(CurrentUserInfo->nickName);
+    UserId = gtk_label_new(CurrentUserInfo->nickName);
     //设置字体大小
     PangoFontDescription *font;
     font = pango_font_description_from_string("Mono");//"Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
-    gtk_widget_override_font(userid, font);
+    gtk_widget_override_font(UserId, font);
 
-    gtk_fixed_put(GTK_FIXED(MainLayout), userid, 170, 90);
+    gtk_fixed_put(GTK_FIXED(MainLayout), UserId, 170, 90);
 
     StatusShowText = gtk_label_new("");
     pango_font_description_set_size(font, 15 * PANGO_SCALE);//设置字体大小
@@ -452,7 +452,7 @@ static void loadinfo()
         //把画笔和图片相结合。
         cairo_set_source_surface(cr, surface, 0, 0);
         cairo_paint(cr);
-        headx = gtk_image_new_from_surface(surfacehead2);
+        HeadX = gtk_image_new_from_surface(surfacehead2);
         cairo_destroy(cr);
     }
 }
@@ -1028,7 +1028,7 @@ static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, g
     if (event->button == 1)
     {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave1); //置换图标
+        //gtk_image_set_from_surface((GtkImage *) InfoSave, Surfacesave1); //置换图标
     }
     return 0;
 }
@@ -1073,7 +1073,7 @@ static gint headx_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 static gint headx_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
-    //gtk_image_set_from_surface((GtkImage *) Infosave, Surfacesave);
+    //gtk_image_set_from_surface((GtkImage *) InfoSave, Surfacesave);
     return 0;
 }
 
@@ -1411,7 +1411,7 @@ int MainInterFace()
     gtk_fixed_put(GTK_FIXED(MainLayout), friend, 1, 178);
     loadinfo();
 
-    headx_event_box = BuildEventBox(headx,
+    headx_event_box = BuildEventBox(HeadX,
                                     G_CALLBACK(headx_button_press_event),
                                     G_CALLBACK(headx_enter_notify_event),
                                     G_CALLBACK(headx_leave_notify_event),

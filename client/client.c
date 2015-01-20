@@ -1000,7 +1000,8 @@ gboolean LoadLoginLayout(gpointer user_data)
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度
     //   gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
     //   gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
-
+    gtk_entry_set_has_frame(nameEntry, FALSE);
+    gtk_entry_set_has_frame((GtkEntry *) LoginWindowPassWordBox, FALSE);
     gtk_entry_set_visibility(GTK_ENTRY(LoginWindowPassWordBox), FALSE);
     gtk_entry_set_invisible_char(GTK_ENTRY(LoginWindowPassWordBox), '*');//设置密码不可见
 
