@@ -13,13 +13,16 @@ extern int deal_audio_dicover_accept_feedback(CRPBaseHeader *);
 
 extern void dealwith_request_audio_net_discover();
 
+//一个标志位，用来显示现在是否在视频
+extern int FlagVideo;
+
 struct log_request_friend_discover
 {
     int uid;
     int requset_reason;
 };
 
-typedef struct AudioDiscoverProcessEntry
+struct AudioDiscoverProcessEntry
 {
     uint8_t key[32], peerKey[32];
     int peerKeySet, peerReady;

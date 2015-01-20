@@ -13,6 +13,7 @@
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
 #include "chart.h"
+#include "media.h"
 
 static GtkWidget *status;
 
@@ -1337,7 +1338,8 @@ static gint status_button_leave_event(GtkWidget *widget, GdkEventButton *event,
 int MainInterFace()
 {
     //一个关闭语音按钮的标志位。为１时表示语音已经打开，为０表示没有人在语音。
-
+    //一个用来标识视频的旗帜。gm
+    FlagVideo=0;
 
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
