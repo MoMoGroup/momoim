@@ -15,6 +15,7 @@
 #include "yuv422_rgb.h"
 #include "video.h"
 #include "../logger/include/logger.h"
+#include "../client/PopupWinds.h"
 
 #define SERVERPORT 5555
 
@@ -266,6 +267,7 @@ void *pthread_snd(void *socketsd)
 gint delete_event(GtkWindow *window)
 {
     closewindow();
+    popup("消息","视频已结束");
     return FALSE;
 }
 
