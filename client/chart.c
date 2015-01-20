@@ -95,7 +95,7 @@ int OnAudioRefuseMsg(gpointer p)
     isAudioRunning = 0;
     StopAudioChat();
     gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
-    popup("消息", "对方已拒绝您的音频请求");
+    Popup("消息", "对方已拒绝您的音频请求");
     return 0;
 }
 
@@ -105,7 +105,7 @@ int OnAudioCloseMsg(gpointer p)
     isAudioRunning = 0;
     StopAudioChat();
     gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
-    popup("消息", "语音聊天已结束");
+    Popup("消息", "语音聊天已结束");
     return 0;
 }
 

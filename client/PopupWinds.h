@@ -1,3 +1,3 @@
 #pragma once
 
-extern int popup(const char *title, const char *tell);
+extern int Popup(const char *title, const char *tell);

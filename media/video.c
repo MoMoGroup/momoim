@@ -283,7 +283,7 @@ void *pthread_snd(void *socketsd)
         pthread_cleanup_push(free, q_send);
                 errno = 0;
                 send(sd, &q_send->jpeglen, sizeof(int), MSG_MORE);
-                send(sd, q_send->jpeg_buf, (size_t )q_send->jpeglen, 0);
+                send(sd, q_send->jpeg_buf, (size_t) q_send->jpeglen, 0);
         pthread_cleanup_pop(1);
         q_send = NULL;
         ///////////////////////////////////////////////////////////////////////////////////////////

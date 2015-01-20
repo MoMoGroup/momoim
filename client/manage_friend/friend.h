@@ -11,4 +11,5 @@ extern int RemoveFriend(void *data);
 
 extern int AddFriendFun();
 
-extern int Friend_Request_Popup(uint32_t uid, const char *verification_message);
+//新好友验证消息
+extern int FriendRequestPopup(uint32_t uid, const char *verification_message);
