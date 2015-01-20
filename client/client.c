@@ -519,7 +519,7 @@ static gint registered_button_press_event(GtkWidget *widget,
 static gint registered_button_release_event(GtkWidget *widget, GdkEventButton *event,
                                             gpointer data)
 {
-    newface(); //调用注册界面
+    Newface(); //调用注册界面
     return 0;
 }
 

@@ -1,3 +1,3 @@
 #pragma once
 
-extern int newface();
+extern int Newface();

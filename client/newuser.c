@@ -257,7 +257,7 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-int newface()
+int Newface()
 {
     NewWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);//创建新窗口
     gtk_window_set_position(GTK_WINDOW(NewWindow), GTK_WIN_POS_CENTER);//窗口位置
