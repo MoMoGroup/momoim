@@ -56,7 +56,7 @@ static int popup_video_request_accept(gpointer p)
 
 //处理服务器发送net_friend_discover这个包的反馈函数
 //貌似音视频都可以用这个函数啊
-int deal_video_dicover_server_feedback(CRPBaseHeader *header, u_int32_t uid)
+int deal_video_dicover_server_feedback(CRPBaseHeader *header, void* data)
 {
     if (header->packetID == CRP_PACKET_FAILURE)
     {
@@ -400,7 +400,7 @@ int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request)
 }
 
 //处理发送视频请求后，对方是否同意的函数
-int deal_video_feedback(CRPBaseHeader *header, u_int32_t uid)
+int deal_video_feedback(CRPBaseHeader *header, void * data)
 {
     if (header->packetID == CRP_PACKET_NET_DISCOVER_REFUSE)
     {

@@ -269,7 +269,7 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        uint8_t gid_video;
+        uint8_t gid_video=0;
         int quantity_group = friends->groupCount;
         //用来找出gid
         int i, j = 0;

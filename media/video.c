@@ -179,7 +179,7 @@ int video()
         /*将tempbuf中的数据转换成jpeg放入p->send中*/
         p_send->jpeglen = (int) jpegWrite(tempbuf, (unsigned char *) p_send->jpeg_buf);
         free(tempbuf);
-        tempbuf = NULL;
+        //tempbuf = NULL;
         //应用程序将该帧缓冲区重新排入输入队列
         if (ioctl(fd, VIDIOC_QBUF, &buf) == -1)
         {
@@ -272,7 +272,7 @@ void *pthread_snd(void *socketsd)
         pthread_cleanup_push(free, q_send);
                 errno = 0;
                 send(sd, &q_send->jpeglen, sizeof(int), MSG_MORE);
-                send(sd, q_send->jpeg_buf, q_send->jpeglen, 0);
+                send(sd, q_send->jpeg_buf, (size_t )q_send->jpeglen, 0);
         pthread_cleanup_pop(1);
         q_send = NULL;
         ///////////////////////////////////////////////////////////////////////////////////////////
