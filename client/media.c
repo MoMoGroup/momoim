@@ -142,6 +142,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
             }
         }
     }
+    log_info("Audio", "Start Audio Module\n");
     StartAudioChat_Send(sockSender, &entry->addr);
     free(entry);
 }
@@ -324,6 +325,7 @@ void *AudioWaitDiscover(struct AudioDiscoverProcessEntry *entry)
             }
         }
     }
+    log_info("Audio", "Start Audio Module\n");
     StartAudioChat_Send(sockSender, &entry->addr);
     free(entry);
     return NULL;
