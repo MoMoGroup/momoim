@@ -1338,6 +1338,7 @@ int MainInterFace()
 {
     //一个关闭语音按钮的标志位。为１时表示语音已经打开，为０表示没有人在语音。
 
+
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
     vbox = gtk_box_new(TRUE, 5);
@@ -1347,6 +1348,10 @@ int MainInterFace()
     gtk_widget_set_size_request(GTK_WIDGET(window), 284, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+
+    char path_icon[80] = "";
+    sprintf(path_icon, "%s/.momo/theme/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));//设置聊天窗口图标
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
