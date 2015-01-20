@@ -50,4 +50,6 @@ extern UserInfo *CurrentUserInfo;
 extern pthread_t ThreadKeepAlive;
 extern pthread_t ThreadListenOnLine;
 //监听在线传输文件的线程
-extern int AddFriendflag;//判断是否打开搜索窗口
+extern int AddFriendFlag;
+//判断是否neng打开搜索窗口，1可以，0不可以
+extern int DelFriendFlag;//判断是否neng打开删除窗口，1可以，0不可以

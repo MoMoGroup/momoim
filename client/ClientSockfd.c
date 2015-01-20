@@ -25,7 +25,9 @@ UserGroup *group;
 UserInfo *CurrentUserInfo;
 //gchar *uidname;
 FILE *fp;
-int AddFriendflag = 1;//只打开一个添加好友窗口
+int AddFriendFlag = 1;
+//只打开一个添加好友窗口
+int DelFriendFlag = 1;//只打开一个删除好友窗口
 
 FriendInfo *FriendInfoHead;
 
@@ -133,6 +135,11 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
+        default:
+        {
+
+            break;
+        }
     }
 
     free(user_data);
@@ -198,7 +205,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         {
             pthread_cancel(ThreadKeepAlive);
             pthread_join(ThreadKeepAlive, NULL);
-            g_idle_add(destoryall, NULL);
+            g_idle_add(DestoryAll, NULL);
             CRPClose(sockfd);
 
             pthread_detach(pthread_self());//安全退出当前线程
@@ -311,11 +318,11 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                 };
                 case  FNT_FRIEND_INFO_CHANGED://好友资料有更新
                 {
-                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
-                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
-                    log_info("好友资料需要更新", "UID:%u\n", infodata->uid);
+//                    char *mem = malloc(sizeof(CRPPacketFriendNotify));
+//                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
+//
                     session_id_t sessionid = CountSessionId();
-                    AddMessageNode(sessionid, FriendFriendInfoChange, infodata);//注册
+                    AddMessageNode(sessionid, FriendFriendInfoChange, NULL);//注册
                     CRPInfoRequestSend(sockfd, sessionid, infodata->uid);//请求这个用户的资料
                     break;
                 };
@@ -667,7 +674,6 @@ int mysockfd()
                         UserGroup *group = friends->groups + i;
 
                         for (int j = 0; j < group->friendCount; ++j)//循环好友
-
                         {
                             CRPInfoRequestSend(sockfd, group->friends[j], group->friends[j]); //请求用户资料,
                         }

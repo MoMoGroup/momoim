@@ -10,11 +10,11 @@ GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
 
 
     char filename[256];
-    HexadecimalConversion(filename, userInfo->icon);
+    HexadecimalConversion(filename, userInfo->icon);//计算一个文件名
 //加载一个图片
     cairo_surface_t *new_friend_surface;
     new_friend_surface = cairo_image_surface_create_from_png(filename);
-    int w = cairo_image_surface_get_width(new_friend_surface);
+    int w = cairo_image_surface_get_width(new_friend_surface);//计算图片大小
     int h = cairo_image_surface_get_height(new_friend_surface);
 //创建画布
     surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 260, 60);
@@ -28,6 +28,7 @@ GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
     cairo_scale(cr, 60.0 / w, 60.0 / h);
 //把画笔和图片相结合。
     cairo_set_source_surface(cr, new_friend_surface, 0, 0);
+
 ////把图用画笔画在画布中
     if (draw_color)
     {
@@ -35,11 +36,10 @@ GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
     }
     else
     {
-        cairo_paint_with_alpha(cr, 0.4);//2不在线
+        cairo_paint_with_alpha(cr, 0.4);//0不在线
     }
 
-    //   cairo_paint_with_alpha(cr,0.5);
-    //   cairo_paint(cr);
+
     cairo_restore(cr);
 //设置源的颜色
     cairo_set_source_rgb(cr, 0, 0, 0);

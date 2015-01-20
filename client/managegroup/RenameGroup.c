@@ -21,8 +21,6 @@ typedef struct renameGroupStruct
 } renameGroupStruct;
 
 
-
-
 int rename_group(void *data)
 {
     renameGroupStruct *win = data;
