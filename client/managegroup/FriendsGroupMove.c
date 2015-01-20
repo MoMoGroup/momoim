@@ -1,24 +1,24 @@
 #include"../ClientSockfd.h"
 #include "../MainInterface.h"
 #include<stdlib.h>
-#include <logger.h>
 #include <common.h>
 #include"ManageGroup.h"
 
 //好友移动所在分组……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 //…………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 
-
+//结构体用来保存移动分组的信息
 typedef struct move_info
 {
     //保存移动好友需要的信息
     uint32_t currentuid;
+    //移动好友的uid
     uint32_t currentGid;
-    uint32_t toGid;
+    //移动好友的gid
+    uint32_t toGid;     //目标gid
     GtkTreeIter itergroup;
-    GtkTreeIter iteruser;
-
-
+    //目标分组iter
+    GtkTreeIter iteruser;//好友iter
 } move_info;
 
 
@@ -31,6 +31,7 @@ gboolean mov(void *data)
     GdkPixbuf *pixbuf;
     uint32_t uid;
     int64_t priority;
+    //拿到原来好友的pixbuf，uid，等信息
     gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &move_info_detail->iteruser,
                        PIXBUF_COL, &pixbuf,
                        FRIENDUID_COL, &uid,
@@ -38,8 +39,9 @@ gboolean mov(void *data)
                        -1
                       );
 
-
+//在一个分组新加一列，加入移动的好友
     gtk_tree_store_append(TreeViewListStore, &iteruser, &move_info_detail->itergroup);
+    //设置属性
     gtk_tree_store_set(TreeViewListStore, &iteruser,
                        PIXBUF_COL, pixbuf,
                        FRIENDUID_COL, uid,
@@ -48,9 +50,9 @@ gboolean mov(void *data)
 
     UserGroup *frome = UserFriendsGroupGet(friends, (uint8_t) move_info_detail->currentGid);
     UserGroup *to = UserFriendsGroupGet(friends, (uint8_t) move_info_detail->toGid);
-    UserFriendsUserMove(frome, to, uid);
+    UserFriendsUserMove(frome, to, uid);//更新分组信息
 
-    gtk_tree_store_remove(TreeViewListStore, &move_info_detail->iteruser);
+    gtk_tree_store_remove(TreeViewListStore, &move_info_detail->iteruser);//移走原来的好友
 
 
     return 0;
@@ -86,16 +88,16 @@ int mov_friend(GtkWidget *widget, GdkEventButton *event, gpointer data)
     return 0;
 }
 
-
+//返回一个子菜单，移动好友时显示当前用户所有分组，
 GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
 {
     move_info moveInfo;
-    uint32_t curren_group_id;
     GtkWidget *show;
+    uint32_t curren_group_id;
     uint32_t groupid;
+    uint32_t current_friend_uid;
     GtkTreeIter itergroup, iteruser;
 //首先拿到选中好友所在分组id,和好友uid
-    uint32_t current_friend_uid;
     GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
     GtkTreeModel *model = gtk_tree_view_get_model(treeview);
     gtk_tree_selection_get_selected(selection, &model, &iteruser);//拿到选中的列
@@ -105,8 +107,6 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
 
     gtk_tree_model_iter_parent(GTK_TREE_MODEL(TreeViewListStore), &itergroup, &iteruser);//拿到父列
     gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &itergroup, FRIENDUID_COL, &curren_group_id, -1);
-    log_info("curren_group_id", "%d\n", curren_group_id);
-    log_info("current_friend_uid", "%d\n", current_friend_uid);
 
     moveInfo.currentuid = current_friend_uid;//选中好友uid
     moveInfo.currentGid = curren_group_id;//选择的组id
@@ -121,10 +121,12 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
     GtkTreeIter to_group_iter;
     //第一个分组id的信息
 
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter);
+
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter);//拿到第一个分组的iter
 
     do
     {
+        //拿到分组gid
         gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter,
                            FRIENDUID_COL, &groupid,
                            -1);
@@ -142,8 +144,9 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
         g_signal_connect(G_OBJECT(show), "button_press_event",
                          G_CALLBACK(mov_friend), (void *) current_friend_uid);
 
-        gtk_widget_show(show);
+        gtk_widget_show(show);//显示
     }
-    while (gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter));
-    return mov_menu;
+    while (gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter));//如果能拿到分组，继续遍历
+
+    return mov_menu;//返回一个子菜单
 }

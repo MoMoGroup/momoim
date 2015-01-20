@@ -18,9 +18,9 @@ extern void DestoryMainInterface();
 
 extern gboolean MyThread(gpointer user_data);
 
-extern gboolean destoryall(gpointer user_data);
+extern gboolean DestoryAll(gpointer user_data);
 
-extern gboolean loadloginLayout(gpointer user_data);
+extern gboolean LoadLoginLayout(gpointer user_data);
 
 
 gboolean DestroyLayout(gpointer user_data);

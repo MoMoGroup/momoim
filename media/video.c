@@ -15,8 +15,7 @@
 #include <pwd.h>
 #include "yuv422_rgb.h"
 #include "video.h"
-#include "../logger/include/logger.h"
-#include "../client/PopupWinds.h"
+#include "logger.h"
 
 #define SERVERPORT 5555
 
@@ -37,6 +36,8 @@ static int fd;
 
 //获取视频信息，发送视频信息，接受视频信息分别三个线程id
 static pthread_t tid1, tid2, tid3;
+
+void *primary_video(struct sockaddr_in *addr);
 
 /*下面的代码用来做循环队列*/
 static pthread_mutex_t mutex_send, mutex_recv;
@@ -62,6 +63,8 @@ static int flag_main_idle;
 
 void closewindow();
 
+//用来更新视频标志位的函数指针
+static int (*update_video_flag)();
 
 
 int mark()
@@ -231,7 +234,7 @@ void cancle_mem()
 gint delete_event(GtkWindow *window)
 {
     closewindow();
-    popup("消息","视频已结束");
+    //popup("消息","视频已结束");
     return FALSE;
 }
 
@@ -280,7 +283,7 @@ void *pthread_snd(void *socketsd)
         pthread_cleanup_push(free, q_send);
                 errno = 0;
                 send(sd, &q_send->jpeglen, sizeof(int), MSG_MORE);
-                send(sd, q_send->jpeg_buf, (size_t )q_send->jpeglen, 0);
+                send(sd, q_send->jpeg_buf, (size_t) q_send->jpeglen, 0);
         pthread_cleanup_pop(1);
         q_send = NULL;
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -445,7 +448,9 @@ void closewindow()
     //log_info("DEBUG", "free buf");
     //close(netSocket);
 
-
+    //退出置前将标志位置为0;
+    //FlagVideo=0;
+    update_video_flag();
     free(rgbBuf);
 }
 
@@ -470,6 +475,12 @@ int guiMain(void *button)
     return 0;
 }
 
+void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
+    update_video_flag=update_flag;
+    pthread_t pthd_video_recv;
+    pthread_create(&pthd_video_recv, NULL, primary_video, addr);
+    pthread_join(&pthd_video_recv, NULL);
+}
 
 //视频聊天的函数入口
 void *primary_video(struct sockaddr_in *addr)
@@ -566,7 +577,7 @@ void *primary_video(struct sockaddr_in *addr)
     if (fd == -1)
     {
         perror("无法打开摄像头文件");
-        pre_closewindow();
+        //pre_closewindow();
         close(fd);
         return 0;
     }
