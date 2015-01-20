@@ -100,8 +100,7 @@ void *recv_routine(void *data)
     while (1)
     {
         p_recv = (char *) malloc(1000);
-        recvfrom(netSocket, p_recv, 1000, 0, NULL, NULL);
-        perror("recv");
+        recvfrom(netSocket, p_recv, 1000, 0, &addr_sendto, &addr_sendto_len);
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
         {
