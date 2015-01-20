@@ -101,7 +101,7 @@ void *recv_routine(void *data)
     {
         p_recv = (char *) malloc(1000);
         recvfrom(netSocket, p_recv, 1000, 0, NULL, NULL);
-        log_info("Recv", "recving\n");
+        perror("recv");
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
         {
@@ -198,6 +198,7 @@ static void cleanupAudioChat(void *__noused)
     pthread_mutex_destroy(&mutex_recv);
     pthread_cond_destroy(&recv_idle);
     pthread_cond_destroy(&recv_busy);
+    close(netSocket);
 }
 
 static void *process(void *data)
