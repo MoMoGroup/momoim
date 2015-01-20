@@ -219,6 +219,14 @@ void cancle_mem()
     }
 }
 
+gint delete_event(GtkWindow *window)
+{
+    closewindow();
+    popup("消息","视频已结束");
+    return FALSE;
+}
+
+
 void *pthread_video(void *arg)
 {
     video_on();
@@ -272,12 +280,7 @@ void *pthread_snd(void *socketsd)
 }
 
 
-gint delete_event(GtkWindow *window)
-{
-    closewindow();
-    popup("消息","视频已结束");
-    return FALSE;
-}
+
 
 void pre_closewindow(){
     g_idle_add(delete_event, NULL);
