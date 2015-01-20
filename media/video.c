@@ -520,7 +520,7 @@ void *primary_video(struct sockaddr_in *addr)
         if (netSocket == -1)
         {
             perror("socket\n");
-            return NULL;
+            goto ERR;
         }
         setsockopt(netSocket, IPPROTO_TCP, TCP_NODELAY, (char *) &on, sizeof(int));
 
@@ -530,7 +530,7 @@ void *primary_video(struct sockaddr_in *addr)
         {
             perror("connect");
             close(netSocket);
-            return NULL;
+            goto ERR;
         }
     }
     else
@@ -546,13 +546,13 @@ void *primary_video(struct sockaddr_in *addr)
         if (ret == -1)
         {
             perror("bind");
-            exit(1);
+            goto ERR;
         }
         ret = listen(listener, 1);
         if (ret == -1)
         {
             perror("listen\n");
-            exit(1);
+            goto ERR;
         }
 
 
@@ -560,7 +560,7 @@ void *primary_video(struct sockaddr_in *addr)
         {
             perror("accept");
             close(listener);
-            return NULL;
+            goto ERR;
         }
         close(listener);
     }
@@ -570,6 +570,7 @@ void *primary_video(struct sockaddr_in *addr)
     if (sigaction(SIGPIPE, &act, NULL) == -1)
     {
         perror("sign error");
+        goto ERR;
     }
 
 
@@ -579,7 +580,7 @@ void *primary_video(struct sockaddr_in *addr)
         perror("无法打开摄像头文件");
         //pre_closewindow();
         close(fd);
-        return 0;
+        goto ERR;
     }
 
 
@@ -592,6 +593,8 @@ void *primary_video(struct sockaddr_in *addr)
     pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
     pthread_join(tid3, NULL);
+
+    ERR:
     close(netSocket);
     return 0;
 }
