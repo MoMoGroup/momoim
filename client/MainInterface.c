@@ -157,8 +157,7 @@ static gint ipic1_button_release_event(GtkWidget *widget, GdkEventButton *event,
 }
 
 //抬起 皮肤2
-static gint ipic2_button_release_event(GtkWidget *widget, GdkEventButton *event,
-                                       gpointer data)
+static gint ipic2_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     if (event->button == 1)
     {
@@ -383,7 +382,7 @@ static void create_surfaces()
     surfaceresearch = ChangeThem_png("搜索.png");
     surfacefriendimage = ChangeThem_png("好友.png");
     surfacechangetheme = ChangeThem_png("换肤.png");
-    surfacechangetheme2 = ChangeThem_png("换肤.png");
+    surfacechangetheme2 = ChangeThem_png("换肤2.png");
     surfaceclose51 = ChangeThem_png("关闭按钮1.png");
     surfaceclose52 = ChangeThem_png("关闭按钮2.png");
     surfaceclose53 = ChangeThem_png("关闭按钮3.png");
@@ -1256,6 +1255,23 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+//换肤放上去
+static gint change_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    cairo_surface_t *change2 = ChangeThem_png("换肤2.png");
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_HAND2));
+    gtk_image_set_from_surface((GtkImage *) change, change2);
+    return 0;
+}
+
+//换肤移走
+static gint change_button_leave_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    cairo_surface_t *change1 = ChangeThem_png("换肤.png");
+    gdk_window_set_cursor(gtk_widget_get_window(GTK_WIDGET(window)), gdk_cursor_new(GDK_ARROW));
+    gtk_image_set_from_surface((GtkImage *) change, change1);
+    return 0;
+}
 
 static gint change_button_release_event(GtkWidget *widget, GdkEventButton *event,
                                         gpointer data)
@@ -1321,7 +1337,7 @@ static gint status_button_leave_event(GtkWidget *widget, GdkEventButton *event,
 int MainInterFace()
 {
     //一个关闭语音按钮的标志位。为１时表示语音已经打开，为０表示没有人在语音。
-    flag_audio_close = 0;
+
 
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表
@@ -1332,6 +1348,10 @@ int MainInterFace()
     gtk_widget_set_size_request(GTK_WIDGET(window), 284, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
+
+    char path_icon[80] = "";
+    sprintf(path_icon, "%s/.momo/theme/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));//设置聊天窗口图标
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
@@ -1355,10 +1375,10 @@ int MainInterFace()
                                        NULL);
 
     change_event_box = BuildEventBox(change,
+                                     NULL,
+                                     G_CALLBACK(change_button_notify_event),
+                                     G_CALLBACK(change_button_leave_event),
                                      G_CALLBACK(change_button_release_event),
-                                     NULL,
-                                     NULL,
-                                     NULL,
                                      NULL,
                                      NULL);
 
