@@ -13,7 +13,7 @@
 #include "newuser.h"
 #include "PopupWinds.h"
 #include "common.h"
-
+#include "chart.h"
 static GtkWidget *imageremember, *imagehead, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
 const gchar *name, *pwd;
@@ -115,9 +115,6 @@ void open_setting_file(FILE *fp)
                     memcpy(&UserWordInfo.color_red, ptext, 2);
                     memcpy(&UserWordInfo.color_green, ptext + 2, 2);
                     memcpy(&UserWordInfo.color_blue, ptext + 4, 2);
-                    g_print("the red is %u\n", UserWordInfo.color_red);
-                    g_print("the green is %u\n", UserWordInfo.color_green);
-                    g_print("the blue is %u\n", UserWordInfo.color_blue);
 
                     ptext = ptext + 6;
                     break;
@@ -153,11 +150,11 @@ gboolean MyThread(gpointer user_data)//合并
     {
         UserWordInfo.font = (gchar *) malloc(50);
         UserWordInfo.description = pango_font_description_new();
-        pango_font_description_set_family(UserWordInfo.description, "Mono");
+        pango_font_description_set_family(UserWordInfo.description, "sans");
         pango_font_description_set_style(UserWordInfo.description, PANGO_STYLE_NORMAL);
         pango_font_description_set_weight(UserWordInfo.description, PANGO_WEIGHT_NORMAL);
         pango_font_description_set_size(UserWordInfo.description, 14 * PANGO_SCALE);
-        memcpy(UserWordInfo.font, "Mono", strlen("Mono"));
+        memcpy(UserWordInfo.font, "sans", strlen("sans"));
         UserWordInfo.style = PANGO_STYLE_NORMAL;
         UserWordInfo.weight = PANGO_WEIGHT_NORMAL;
         UserWordInfo.size = 14;
@@ -920,6 +917,7 @@ gboolean loadloginLayout(gpointer user_data)
 
     g_signal_connect(G_OBJECT(window), "delete_event",
                      G_CALLBACK(gtk_main_quit), NULL);
+
 
     //gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置

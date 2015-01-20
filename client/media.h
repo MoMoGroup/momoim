@@ -41,9 +41,9 @@ gboolean treatment_request_audio_discover(gpointer);
 
 gboolean treatment_request_video_discover(gpointer);
 
-int deal_video_dicover_server_feedback(CRPBaseHeader *, u_int32_t);
+int deal_video_dicover_server_feedback(CRPBaseHeader *, void*);
 
-int deal_video_feedback(CRPBaseHeader *, u_int32_t);
+int deal_video_feedback(CRPBaseHeader *, void*);
 
 int processNatDiscoveredOnAudio(CRPBaseHeader *, void *);
 

@@ -4,7 +4,6 @@
 #include <protocol/info/Data.h>
 #include <imcommon/message.h>
 #include "client.h"
-#include "chart.h"
 extern int mysockfd();
 
 typedef struct FriendInfo
@@ -24,7 +23,6 @@ typedef struct FriendInfo
     GtkWidget *input_text, *show_text;
     GtkScrolledWindow *sw1, *sw2;
     GtkTextBuffer *input_buffer, *show_buffer;
-    JieTuDATA *data;
     //聊天记录界面
     GtkWidget *record_window;
     GtkWidget *record_layout;
