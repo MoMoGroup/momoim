@@ -169,7 +169,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
         };
         case CRP_PACKET_NET_NAT_REFUSE:
         {
-            g_idle_add(popup_audio_request_refuse, entry->friendInfo);
+            g_idle_add(OnAudioRefuseMsg, entry->friendInfo);
             return 0;
         };
         case CRP_PACKET_NET_NAT_ACCEPT:

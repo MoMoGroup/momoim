@@ -26,3 +26,4 @@ typedef struct
     gboolean press;
 } JieTuDATA; //保存鼠标坐标位置的数据结构
 int OnAudioCloseMsg(gpointer p);
+int OnAudioRefuseMsg(gpointer p);

@@ -84,7 +84,7 @@ static void create_surfaces(FriendInfo *information)
     cairo_surface_destroy(surface);
 }
 //对方拒绝请求时的弹窗
-static int OnAudioRefuseMsg(gpointer p)
+int OnAudioRefuseMsg(gpointer p)
 {
     FriendInfo *info = p;
     isAudioRunning = 0;
