@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <alsa/asoundlib.h>
 #include "audio.h"
-#include "../logger/include/logger.h"
+#include "logger.h"
 
 static pthread_t mainThread;
 static int netSocket;
@@ -88,7 +88,15 @@ void *send_routine(void *data)
         tail_send = circle_buf_send + (tail_send - circle_buf_send + 1) % (sizeof(circle_buf_send) / sizeof(*circle_buf_send));
         pthread_cond_signal(&send_idle);
         pthread_mutex_unlock(&mutex_send);
-        sendto(netSocket, q_send, 1000, 0, (struct sockaddr *) &addr_sendto, sizeof(struct sockaddr_in));
+        if (sendto(netSocket,
+                   q_send,
+                   1000,
+                   MSG_NOSIGNAL,
+                   (struct sockaddr *) &addr_sendto,
+                   sizeof(struct sockaddr_in)) < 0)
+        {
+            StopAudioChat();
+        }
         free(q_send);
     }
 }
@@ -100,7 +108,14 @@ void *recv_routine(void *data)
     while (1)
     {
         p_recv = (char *) malloc(1000);
-        recvfrom(netSocket, p_recv, 1000, 0, &addr_sendto, &addr_sendto_len);
+        if (recvfrom(netSocket, p_recv, 1000, MSG_NOSIGNAL, &addr_sendto, &addr_sendto_len) <= 0)
+        {
+            StopAudioChat();
+        }
+        if (memcmp(p_recv, (char[1000]) {0}, 1000) == 0)
+        {
+            StopAudioChat();
+        }
         pthread_mutex_lock(&mutex_recv);
         while (*head_recv)
         {
@@ -235,6 +250,7 @@ void StartAudioChat(int sendSock, struct sockaddr_in *addr, int (*onCancel)(void
     InitAudioChat();
     addr_sendto = *addr;
     netSocket = sendSock;
+
     pthread_create(&mainThread, NULL, process, NULL);
     cleanupFunc = onCancel;
     cleanupArg = data;
@@ -242,6 +258,10 @@ void StartAudioChat(int sendSock, struct sockaddr_in *addr, int (*onCancel)(void
 
 void StopAudioChat(void)
 {
-    pthread_cancel(mainThread);
-    mainThread = 0;
+    if (mainThread)
+    {
+        pthread_t t = mainThread;
+        mainThread = 0;
+        pthread_cancel(t);
+    }
 }

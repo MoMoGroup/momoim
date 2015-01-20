@@ -15,6 +15,7 @@
 #include "ChartLook.h"
 #include "../media/audio.h"
 #include "onlylookinfo.h"
+#include "PopupWinds.h"
 
 int isAudioRunning;
 
@@ -82,7 +83,15 @@ static void create_surfaces(FriendInfo *information)
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
 }
-
+int OnAudioCloseMsg(gpointer p)
+{
+    FriendInfo *info = p;
+    isAudioRunning = 0;
+    StopAudioChat();
+    gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
+    popup("消息", "语音聊天已结束");
+    return 0;
+}
 
 //背景的eventbox
 static gint chartbackground_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -197,7 +206,7 @@ static gint voice_button_release_event(GtkWidget *widget, GdkEventButton *event,
     {
         if (isAudioRunning == 0)
         {
-            AudioRequestNATDiscover(info->uid);
+            AudioRequestNATDiscover(info);
             gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice3);
             isAudioRunning = 1;
         }

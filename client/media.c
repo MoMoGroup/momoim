@@ -6,7 +6,6 @@
 #include <arpa/inet.h>
 #include "PopupWinds.h"
 #include "media.h"
-#include "ClientSockfd.h"
 #include "MainInterface.h"
 #include "../media/video.h"
 #include "../media/audio.h"
@@ -18,12 +17,6 @@ struct log_request_friend_discover the_log_request_friend_discover;
 static int popup_audio(gpointer p)
 {
     popup("错误", "无法建立连接");
-    return 0;
-}
-
-static int audioCloseMsg(gpointer p)
-{
-    popup("消息", "语音聊天已结束");
     return 0;
 }
 
@@ -62,7 +55,7 @@ static int popup_video_request_accept(gpointer p)
 //}
 static int onAudioStop(void *data)
 {
-    g_idle_add(audioCloseMsg, data);
+    g_idle_add(OnAudioCloseMsg, data);
 }
 
 //处理服务器发送net_friend_discover这个包的反馈函数
@@ -154,7 +147,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
         }
     }
     log_info("Audio", "Start Audio Module\n");
-    StartAudioChat(sockSender, &entry->addr, onAudioStop, NULL);
+    StartAudioChat(sockSender, &entry->addr, onAudioStop, entry->friendInfo);
     free(entry);
 }
 
@@ -248,7 +241,7 @@ int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
 }
 
 //主动发起NAT发现请求
-int AudioRequestNATDiscover(uint32_t uid)
+int AudioRequestNATDiscover(FriendInfo *info)
 {
     session_id_t sessionNatDiscover = CountSessionId();//对方同意与否的处理函数session
 
@@ -260,7 +253,8 @@ int AudioRequestNATDiscover(uint32_t uid)
         randNum = rand();
         memcpy(entry->key + randi * sizeof(int), &randNum, sizeof(int));
     }
-    entry->peerUid = uid;
+    entry->peerUid = info->uid;
+    entry->friendInfo = info;
     entry->messageSent = 0;
     entry->localSession = sessionNatDiscover;
     AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
@@ -392,11 +386,12 @@ int AcceptNATDiscoverProcess(CRPBaseHeader *header, void *data)
 }
 
 //收到NAT请求,同意NAT发现
-int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request)
+int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request, FriendInfo *friendInfo)
 {
     session_id_t sid = CountSessionId();
     struct AudioDiscoverProcessEntry *entry =
             (struct AudioDiscoverProcessEntry *) calloc(1, sizeof(struct AudioDiscoverProcessEntry));
+    entry->friendInfo = friendInfo;
     int randNum;
     for (int randi = 0; randi < 32 / sizeof(int); ++randi)
     {
@@ -564,7 +559,7 @@ gboolean ProcessAudioRequest(gpointer user_data)
             gint result = gtk_dialog_run(GTK_DIALOG (dialog_request_audio_request));
             if (result == -5)
             {
-                AudioAcceptNatDiscover(entry);
+                AudioAcceptNatDiscover(entry, userinfo);
                 gtk_widget_destroy(dialog_request_audio_request);
             }
             else
