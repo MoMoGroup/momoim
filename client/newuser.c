@@ -18,8 +18,7 @@ static GtkWidget *NewWindow;
 static GtkWidget *ZhuceLayout;
 static GtkWidget *MoNickname, *NewUsername, *Passwd1, *Passwd2;
 static GtkWidget *BackGround1, *MoInfo, *EndWind;
-static cairo_surface_t *surface1, *surface3, *surface32, *surface33, *surface8, *surface82, *surface83;
-static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
+static cairo_surface_t *Surface1, *Surface3, *Surface32, *Surface33, *Surface8, *Surface82, *Surface83;
 
 int newsockfd()
 {
@@ -134,28 +133,28 @@ int newsockfd()
 
 static void create_zhucefaces()
 {
-    surface1 = ChangeThem_png("注册背景.png");
+    Surface1 = ChangeThem_png("注册背景.png");
 
-    surface3 = ChangeThem_png("注册按钮.png");
-    surface32 = ChangeThem_png("注册按钮3.png");
-    surface33 = ChangeThem_png("注册按钮2.png");
+    Surface3 = ChangeThem_png("注册按钮.png");
+    Surface32 = ChangeThem_png("注册按钮3.png");
+    Surface33 = ChangeThem_png("注册按钮2.png");
 
-    surface8 = ChangeThem_png("关闭按钮1.png");
-    surface82 = ChangeThem_png("关闭按钮2.png");
-    surface83 = ChangeThem_png("关闭按钮3.png");
+    Surface8 = ChangeThem_png("关闭按钮1.png");
+    Surface82 = ChangeThem_png("关闭按钮2.png");
+    Surface83 = ChangeThem_png("关闭按钮3.png");
 }
 
 static void destroy_surfaces()
 {
     g_print("destroying surfaces2");
 
-    cairo_surface_destroy(surface1);
-    cairo_surface_destroy(surface3);
-    cairo_surface_destroy(surface32);
-    cairo_surface_destroy(surface33);
-    cairo_surface_destroy(surface8);
-    cairo_surface_destroy(surface82);
-    cairo_surface_destroy(surface83);
+    cairo_surface_destroy(Surface1);
+    cairo_surface_destroy(Surface3);
+    cairo_surface_destroy(Surface32);
+    cairo_surface_destroy(Surface33);
+    cairo_surface_destroy(Surface8);
+    cairo_surface_destroy(Surface82);
+    cairo_surface_destroy(Surface83);
 }
 
 //背景的eventbox拖曳窗口
@@ -177,7 +176,7 @@ static gint zhuce_button_press_event(GtkWidget *widget, GdkEventButton *event, g
     if (event->button == 1)
     {        //设置注册按钮
         gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) MoInfo, surface32); //置换图标
+        gtk_image_set_from_surface((GtkImage *) MoInfo, Surface32); //置换图标
     }
     return 0;
 }
@@ -199,7 +198,7 @@ static gint zhuce_button_release_event(GtkWidget *widget, GdkEventButton *event,
 static gint zhuce_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));
-    gtk_image_set_from_surface((GtkImage *) MoInfo, surface33);
+    gtk_image_set_from_surface((GtkImage *) MoInfo, Surface33);
     return 0;
 }
 
@@ -207,7 +206,7 @@ static gint zhuce_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 static gint zhuce_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) MoInfo, surface3);
+    gtk_image_set_from_surface((GtkImage *) MoInfo, Surface3);
 
     return 0;
 }
@@ -219,7 +218,7 @@ static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event
     if (event->button == 1)
     {              //设置关闭按钮
         gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        gtk_image_set_from_surface((GtkImage *) EndWind, surface82); //置换图标
+        gtk_image_set_from_surface((GtkImage *) EndWind, Surface82); //置换图标
     }
 
     return 0;
@@ -231,7 +230,7 @@ static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *eve
 {
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
-        gtk_image_set_from_surface((GtkImage *) EndWind, surface8);  //设置关闭按钮
+        gtk_image_set_from_surface((GtkImage *) EndWind, Surface8);  //设置关闭按钮
         destroy_surfaces();
         gtk_widget_destroy(NewWindow);
     }
@@ -243,7 +242,7 @@ static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *eve
 static gint closebut_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_HAND2));
-    gtk_image_set_from_surface((GtkImage *) EndWind, surface83);
+    gtk_image_set_from_surface((GtkImage *) EndWind, Surface83);
 
     return 0;
 }
@@ -252,13 +251,14 @@ static gint closebut_enter_notify_event(GtkWidget *widget, GdkEventButton *event
 static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(NewWindow), gdk_cursor_new(GDK_ARROW));
-    gtk_image_set_from_surface((GtkImage *) EndWind, surface8);
-    gtk_image_set_from_surface((GtkImage *) MoInfo, surface3);
+    gtk_image_set_from_surface((GtkImage *) EndWind, Surface8);
+    gtk_image_set_from_surface((GtkImage *) MoInfo, Surface3);
     return 0;
 }
 
 int newface()
 {
+    static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
     NewWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);//创建新窗口
     gtk_window_set_position(GTK_WINDOW(NewWindow), GTK_WIN_POS_CENTER);//窗口位置
     gtk_window_set_resizable(GTK_WINDOW (NewWindow), FALSE);//固定窗口大小
@@ -268,9 +268,9 @@ int newface()
     ZhuceLayout = gtk_fixed_new();//新建layout布局容纳控件
     create_zhucefaces();
     gtk_container_add(GTK_CONTAINER(NewWindow), ZhuceLayout);//将layout的添加到窗体中
-    BackGround1 = gtk_image_new_from_surface(surface1);//为控件加上特定的图片
-    MoInfo = gtk_image_new_from_surface(surface3);
-    EndWind = gtk_image_new_from_surface(surface8);
+    BackGround1 = gtk_image_new_from_surface(Surface1);//为控件加上特定的图片
+    MoInfo = gtk_image_new_from_surface(Surface3);
+    EndWind = gtk_image_new_from_surface(Surface8);
 
     newbackground_event_box = BuildEventBox(BackGround1,
                                             G_CALLBACK(newbackground_button_press_event),

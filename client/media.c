@@ -47,7 +47,7 @@ static int popup_video_request_accept(gpointer p)
 
 //提示弹窗
 int popup_request_num_limit(gpointer p){
-    popup("消息","同一时间只能对一个好友发起视频请求哦");
+    popup("消息", "同一时间只能对一个好友发起视频请求哦");
     return 0;
 }
 static int onAudioStop(void *data)
@@ -514,6 +514,7 @@ gboolean treatment_request_video_discover(gpointer user_data)
             }
             else
             {
+                FlagVideo = 0;
                 CRPNETDiscoverRefuseSend(sockfd, CountSessionId(), video_data->uid, video_data->session);
                 gtk_widget_destroy(dialog_request_video_net_discover);
             }
