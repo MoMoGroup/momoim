@@ -478,7 +478,7 @@ int guiMain(void *button)
 void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
     update_video_flag=update_flag;
     pthread_t pthd_video_recv;
-    pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
+    pthread_create(&pthd_video_recv, NULL, primary_video, addr);
     pthread_join(&pthd_video_recv, NULL);
 }
 
