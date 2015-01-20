@@ -52,8 +52,6 @@ static GtkWindow *window;
 static int flag_idle; //用于取消idle的旗帜
 static int flag_main_idle;
 
-static int len_buffer;
-
 void closewindow();
 
 
@@ -272,7 +270,7 @@ gint delete_event(GtkWindow *window)
 }
 
 void pre_closewindow(){
-    g_idle_add(delete_event, NULL);
+    g_idle_add((GSourceFunc)delete_event, NULL);
 }
 
 void *pthread_rev(void *socketrev)
@@ -294,7 +292,7 @@ void *pthread_rev(void *socketrev)
         {
             perror("recv");
             //delete_event();
-            g_idle_add(delete_event, NULL);
+            g_idle_add((GSourceFunc)delete_event, NULL);
             return NULL;
         }
         errno = 0;
@@ -302,7 +300,7 @@ void *pthread_rev(void *socketrev)
         if (ret <= 0)
         {
             perror("recv");
-            g_idle_add(delete_event, NULL);
+            g_idle_add((GSourceFunc)delete_event, NULL);
             return NULL;
         };
         pthread_mutex_lock(&mutex_recv);

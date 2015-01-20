@@ -108,7 +108,7 @@ void *recv_routine(void *data)
     while (1)
     {
         p_recv = (char *) malloc(1000);
-        if (recvfrom(netSocket, p_recv, 1000, MSG_NOSIGNAL, &addr_sendto, &addr_sendto_len) <= 0)
+        if (recvfrom(netSocket, p_recv, 1000, MSG_NOSIGNAL, (struct sockaddr *) &addr_sendto, &addr_sendto_len) <= 0)
         {
             StopAudioChat();
         }

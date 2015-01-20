@@ -545,7 +545,7 @@ gboolean ProcessAudioRequest(gpointer user_data)
 
             GtkWidget *dialog_request_audio_request;
 
-            dialog_request_audio_request = gtk_message_dialog_new(userinfo->chartwindow, GTK_DIALOG_MODAL,
+            dialog_request_audio_request = gtk_message_dialog_new(GTK_WINDOW(userinfo->chartwindow), GTK_DIALOG_MODAL,
                                                                   GTK_MESSAGE_QUESTION, GTK_BUTTONS_OK_CANCEL,
                                                                   "莫默询问您：\n您想与这位好友语音聊天吗？");
             gtk_window_set_title(GTK_WINDOW (dialog_request_audio_request), "Question");
