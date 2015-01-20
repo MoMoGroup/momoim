@@ -228,7 +228,7 @@ static void destroy_infosurfaces()
 
 int okinfo(void *data)
 {
-    popup("莫默告诉你：", "恭喜你修改成功");
+    Popup("莫默告诉你：", "恭喜你修改成功");
     /*修改成功关闭修改界面*/
     memcpy(CurrentUserInfo, &weinfo, sizeof(weinfo));
     gtk_label_set_label((GtkLabel *) userid, CurrentUserInfo->nickName);//更新主界面昵称
@@ -263,14 +263,14 @@ int okinfo(void *data)
 
 int shibaiinfo(void *reason)
 {
-    popup("莫默告诉你：", reason);
+    Popup("莫默告诉你：", reason);
     free(reason);
     return 0;
 }
 
 int shibaiinfo2(void *reason2)
 {
-    popup("莫默告诉你：", reason2);
+    Popup("莫默告诉你：", reason2);
     free(reason2);
     return 0;
 }
@@ -708,7 +708,7 @@ int infosockfd()
     buf = gtk_entry_get_text(GTK_ENTRY(inickname));
     if (strlen(buf) == 0)
     {
-        popup("莫默告诉你", "给自己起个昵称");
+        Popup("莫默告诉你", "给自己起个昵称");
     }
     else
     {
@@ -914,7 +914,7 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
                 fread(buf, sizeof(buf), 1, fp);
                 if (strncmp("PNG", buf + 1, strlen("PNG")) != 0)
                 {
-                    popup("莫默告诉你：", "请选择png格式的图片");
+                    Popup("莫默告诉你：", "请选择png格式的图片");
                     //gtk_widget_destroy(dialog);
                 }
                 else

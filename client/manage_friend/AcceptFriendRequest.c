@@ -223,7 +223,7 @@ int get_nicheng(CRPBaseHeader *header, void *data)
     return 0;
 }
 
-int Friend_Request_Popup(uint32_t uid, const char *verification_message)
+int FriendRequestPopup(uint32_t uid, const char *verification_message)
 {
     tongyi *info = malloc(sizeof(struct tongyi));
     info->uid = uid;

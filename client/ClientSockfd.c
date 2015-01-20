@@ -128,7 +128,7 @@ gboolean postMessage(gpointer user_data)
             mes[packet->messageLen] = 0;
             log_info("验证消息", "%s", mes);
             memcpy(mes, packet->message, packet->messageLen);
-            Friend_Request_Popup(packet->uid, mes);
+            FriendRequestPopup(packet->uid, mes);
 
             if ((void *) packet != header->data)
             {
@@ -293,7 +293,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 //                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
 //
                     session_id_t sessionid = CountSessionId();
-                    AddMessageNode(sessionid, FriendFriendInfoChange, NULL);//注册
+                    AddMessageNode(sessionid, FriendInfoChange, NULL);//注册
                     CRPInfoRequestSend(sockfd, sessionid, infodata->uid);//请求这个用户的资料
                     break;
                 };

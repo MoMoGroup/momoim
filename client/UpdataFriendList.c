@@ -189,7 +189,7 @@ int gengxin_ziliao(void *data)
 
 
 //好友列表有人更新资料，实时更新到自己的列表的函数
-int FriendFriendInfoChange(CRPBaseHeader *header, void *data)
+int FriendInfoChange(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_INFO_DATA)
     {

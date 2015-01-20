@@ -20,34 +20,34 @@ int FlagVideo;
 //服务器送达数据包错误时弹窗
 static int popup_audio(gpointer p)
 {
-    popup("错误", "无法建立连接");
+    Popup("错误", "无法建立连接");
     return 0;
 }
 
 //对方同意请求时的弹窗
 static int popup_audio_request_accept(gpointer p)
 {
-    popup("消息", "对方已接受了您的音频请求");
+    Popup("消息", "对方已接受了您的音频请求");
     return 0;
 }
 
 //对方拒绝请求时的弹窗
 static int popup_video_request_refuse(gpointer p)
 {
-    popup("消息", "对方已拒绝您的视频请求");
+    Popup("消息", "对方已拒绝您的视频请求");
     return 0;
 }
 
 //对方同意请求时的弹窗
 static int popup_video_request_accept(gpointer p)
 {
-    popup("消息", "对方已接受了您的视频请求");
+    Popup("消息", "对方已接受了您的视频请求");
     return 0;
 }
 
 //提示弹窗
 int popup_request_num_limit(gpointer p){
-    popup("消息","同一时间只能对一个好友发起视频请求哦");
+    Popup("消息", "同一时间只能对一个好友发起视频请求哦");
     return 0;
 }
 static int onAudioStop(void *data)

@@ -139,7 +139,7 @@ static gint done_rename_event(GtkWidget *widget, GdkEventButton *event, gpointer
 
     if (win->rename_group_id == 1 || win->rename_group_id == 0)//黑名单或者我的好友
     {
-        popup("系统消息", "不能修改默认分组");
+        Popup("系统消息", "不能修改默认分组");
     }
     else
     {
@@ -242,7 +242,7 @@ int RenameGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
 
     if (win->rename_group_id == 1 || win->rename_group_id == 0)//黑名单或者我的好友
     {
-        popup("系统消息", "不能修改默认分组");
+        Popup("系统消息", "不能修改默认分组");
         return 0;
     }
     else

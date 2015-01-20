@@ -12,7 +12,7 @@ GtkTreeIter del_iterGroup;
 
 int GroupPop(void *data)
 {
-    popup("系统消息", data);
+    Popup("系统消息", data);
     return 0;
 }
 
@@ -48,7 +48,7 @@ int DeleteGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
 
         if (del_gid == 0 || del_gid == 1)//看是否为默认分组
         {
-            popup("系统消息", "不能删除默认分组");
+            Popup("系统消息", "不能删除默认分组");
         }
         else
         {
@@ -61,7 +61,7 @@ int DeleteGroupButtonPressEvent(GtkWidget *widget, GdkEventButton *event, gpoint
     }
     else//非空，不能删除
     {
-        popup("系统消息", "不能删除非空分组");
+        Popup("系统消息", "不能删除非空分组");
     }
 
     return 0;
