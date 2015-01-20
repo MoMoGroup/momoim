@@ -12,6 +12,8 @@
 #include "managegroup/ManageGroup.h"
 #include"manage_friend/friend.h"
 #include "SetupWind.h"
+#include "chart.h"
+#include "media.h"
 
 static GtkWidget *status;
 
@@ -1504,8 +1506,10 @@ int MainInterFace()
     GtkWidget *delete;
     GtkWidget *rename;
     GtkWidget *addpeople;
+    GtkWidget *Refresh;
     GtkWidget *sendmsg;
     GtkWidget *deletefriend;
+    //GtkWidget *remark;
     GtkWidget *sendfile;
     GtkWidget *lookinfo;
     //分组菜单
@@ -1533,6 +1537,9 @@ int MainInterFace()
     addpeople = gtk_menu_item_new_with_mnemonic("添加联系人");
     gtk_container_add(GTK_CONTAINER(menu1), addpeople);
     gtk_widget_show(addpeople);
+    Refresh = gtk_menu_item_new_with_mnemonic("刷新好友列表");
+    gtk_container_add(GTK_CONTAINER(menu1), Refresh);
+    gtk_widget_show(Refresh);
 
     /*g_signal_connect(G_OBJECT(treeView), "button_press_event",
                      G_CALLBACK(button2_press_event2), (gpointer) menu1);*/

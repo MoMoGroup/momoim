@@ -353,43 +353,49 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
-        uint8_t gid_video=0;
-        int quantity_group = friends->groupCount;
-        //用来找出gid
-        int i, j = 0;
-        for (i = 0; i < quantity_group; i++)
+        if(FlagVideo==0)
         {
-            for (j = 0; j < friends->groups[i].friendCount; j++)
+            uint8_t gid_video = 0;
+            int quantity_group = friends->groupCount;
+            //用来找出gid
+            int i, j = 0;
+            for (i = 0; i < quantity_group; i++)
             {
-                if (friends->groups[i].friends[j] == info->user.uid)
+                for (j = 0; j < friends->groups[i].friendCount; j++)
                 {
-                    gid_video = friends->groups[i].groupId;
-                    break;
+                    if (friends->groups[i].friends[j] == info->user.uid)
+                    {
+                        gid_video = friends->groups[i].groupId;
+                        break;
+                    }
                 }
             }
+            session_id_t session_id_video_server_feedback = CountSessionId();//SESSION用来处理请求送达与否
+            session_id_t session_id_video_feedback = CountSessionId();//这个SESSION用来处理请求同意的情况
+            //同一时间只允许发起一个请求
+            //if(the_log_request_friend_discover.uid!=-1){
+            //  g_idle_add(popup_request_num_limit, NULL);
+            //}
+            the_log_request_friend_discover.uid = info->user.uid;
+            the_log_request_friend_discover.requset_reason = NET_DISCOVER_VIDEO;
+
+            AddMessageNode(session_id_video_server_feedback, deal_video_dicover_server_feedback, NULL);
+            AddMessageNode(session_id_video_feedback, deal_video_feedback, NULL);
+
+            CRPNETFriendDiscoverSend(sockfd,
+                                     session_id_video_server_feedback,
+                                     gid_video,
+                                     info->uid,
+                                     CRPFDR_VEDIO,
+                                     session_id_video_feedback
+                                    );
+
+
+            gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1);
         }
-        session_id_t session_id_video_server_feedback = CountSessionId();//SESSION用来处理请求送达与否
-        session_id_t session_id_video_feedback = CountSessionId();//这个SESSION用来处理请求同意的情况
-        //同一时间只允许发起一个请求
-        //if(the_log_request_friend_discover.uid!=-1){
-        //  g_idle_add(popup_request_num_limit, NULL);
-        //}
-        the_log_request_friend_discover.uid = info->user.uid;
-        the_log_request_friend_discover.requset_reason = NET_DISCOVER_VIDEO;
-
-        AddMessageNode(session_id_video_server_feedback, deal_video_dicover_server_feedback, NULL);
-        AddMessageNode(session_id_video_feedback, deal_video_feedback, NULL);
-
-        CRPNETFriendDiscoverSend(sockfd,
-                                 session_id_video_server_feedback,
-                                 gid_video,
-                                 info->uid,
-                                 CRPFDR_VEDIO,
-                                 session_id_video_feedback
-                                );
-
-
-        gtk_image_set_from_surface((GtkImage *) info->imagevideo, surfacevideo1);
+        if(FlagVideo==1){
+            g_idle_add(popup_request_num_limit,NULL);
+        }
     }
     return 0;
 

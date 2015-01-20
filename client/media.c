@@ -14,6 +14,9 @@
 //这个结构体用来保存请求音视频的记录
 struct log_request_friend_discover the_log_request_friend_discover;
 
+//一个标志位，用来显示现在是否在视频
+int FlagVideo;
+
 //服务器送达数据包错误时弹窗
 static int popup_audio(gpointer p)
 {
@@ -42,11 +45,11 @@ static int popup_video_request_accept(gpointer p)
     return 0;
 }
 
-////提示弹窗
-//int popup_request_num_limit(gpointer p){
-//    popup("消息","同一时间只能对一个好友发起请求哦");
-//    return 0;
-//}
+//提示弹窗
+int popup_request_num_limit(gpointer p){
+    popup("消息","同一时间只能对一个好友发起视频请求哦");
+    return 0;
+}
 static int onAudioStop(void *data)
 {
     g_idle_add(OnAudioCloseMsg, data);
@@ -437,11 +440,17 @@ int deal_video_feedback(CRPBaseHeader *header, void * data)
         //这里运行　视频函数，需要对方ip地址
         pthread_t pthd_video;
         pthread_create(&pthd_video, NULL, primary_video, addr_opposite);
+
+        //用于标识现在是否有视频通话
+        FlagVideo=1;
         //primary_video(2,ip);
     }
     return 0;
 }
-
+//调用这个函数时，视频函数已经结束，所以把videoflag置为0
+void HandleVideoFlag(){
+    FlagVideo=0;
+}
 
 //接到视频请求后的处理函数
 //同意或者拒绝
@@ -491,8 +500,13 @@ gboolean treatment_request_video_discover(gpointer user_data)
             {
                 //若同意对方视频请求，就打开视频程序。这里不需要对面的ip地址.先打开监听程序然后再发送同意接受包
                 //primary_video(1,NULL);
-                pthread_t pthd_video_recv;
-                pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
+                //pthread_t pthd_video_recv;
+                //pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
+                StartVideoChat(NULL,HandleVideoFlag);
+
+                //用于标识现在是否有视频通话
+                FlagVideo=1;
+
                 session_id_t sessionid_accept = CountSessionId();
                 //AddMessageNode(sessionid_accept, deal_video_accept_feedback, NULL);
                 CRPNETDiscoverAcceptSend(sockfd, sessionid_accept, video_data->uid, video_data->session);
