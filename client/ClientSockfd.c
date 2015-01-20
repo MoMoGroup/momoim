@@ -206,7 +206,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
         {
             pthread_cancel(ThreadKeepAlive);
             pthread_join(ThreadKeepAlive, NULL);
-            g_idle_add(DestoryAll, NULL);
+            g_idle_add(DestoryAll, "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
             CRPClose(sockfd);
 
             pthread_detach(pthread_self());//安全退出当前线程
@@ -409,6 +409,9 @@ int mysockfd()
     if (header == NULL || header->packetID != CRP_PACKET_OK)
     {
 
+        char *mem = malloc(sizeof("认证操作被服务器拒绝"));
+        memcpy(mem, "认证操作被服务器拒绝", sizeof("认证操作被服务器拒绝"));
+        g_idle_add(DestroyLayout, mem);
         return 0;
     }
     char sendKey[32], iv[32];
@@ -416,10 +419,6 @@ int mysockfd()
     header = CRPRecv(sockfd);
     if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL)
     {
-        char *mem = malloc(21);
-        memcpy(mem, "服务器错误", 20);
-        mem[20] = 0;
-        g_idle_add(DestroyLayout, mem);
 
         log_error("SwitchProtocol", "Can not enable encrypt!\n", header->packetID);
     }

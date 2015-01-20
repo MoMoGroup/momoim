@@ -563,7 +563,7 @@ POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid)
         OnlineUserTableRemove(user->uid);//从在线用户表中移除当前用户
         EpollRemove(user);              //从epoll中移除当前用户
         JobManagerKick(user);           //删除待处理事务
-        if (user->status != UOS_HIDDEN) //如果用户当前状态不是隐身状态则广播用户离线
+        if (user->hiddenStatus != UOS_HIDDEN) //如果用户当前状态不是隐身状态则广播用户离线
         {
             UserBroadcastNotify(user, FNT_FRIEND_OFFLINE);
         }
