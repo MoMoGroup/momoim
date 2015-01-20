@@ -49,7 +49,7 @@ static void destroy_setsurfaces()
 
 int chenggong(void *data)
 {
-    popup("莫默告诉你：", "恭喜你修改成功");//调用提示框函数提醒用户
+    Popup("莫默告诉你：", "恭喜你修改成功");
     /*修改成功关闭修改界面*/
     destroy_setsurfaces();
     gtk_widget_destroy(SetupWind);
@@ -60,8 +60,8 @@ int chenggong(void *data)
 int shibai(void *reason)
 {
     /*修改密码失败的原因*/
-    popup("莫默告诉你：", reason);//调用提示框函数提醒用户
-    free(reason);//释放malloc分配的内存
+    Popup("莫默告诉你：", reason);
+    free(reason);
     return 0;
 }
 
@@ -104,7 +104,7 @@ int change_password()
         /*判断两次密码输入是否相同*/
         if (strcmp(newstrs1, newstrs2) != 0)
         {
-            popup("莫默告诉你：", "两次密码不一致");//调用提示框函数提醒用户
+            Popup("莫默告诉你：", "两次密码不一致");
             return 1;
         }
         else
@@ -120,7 +120,7 @@ int change_password()
     }
     else
     {
-        popup("莫默告诉你：", "请完善修改信息");//调用提示框函数提醒用户
+        Popup("莫默告诉你：", "请完善修改信息");
         return 1;
     }
     return 0;

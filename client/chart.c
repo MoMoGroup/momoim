@@ -95,7 +95,7 @@ int OnAudioRefuseMsg(gpointer p)
     isAudioRunning = 0;
     StopAudioChat();
     gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
-    popup("消息", "对方已拒绝您的音频请求");
+    Popup("消息", "对方已拒绝您的音频请求");
     return 0;
 }
 
@@ -105,7 +105,7 @@ int OnAudioCloseMsg(gpointer p)
     isAudioRunning = 0;
     StopAudioChat();
     gtk_image_set_from_surface((GtkImage *) info->imagevoice, surfacevoice1);
-    popup("消息", "语音聊天已结束");
+    Popup("消息", "语音聊天已结束");
     return 0;
 }
 
@@ -379,8 +379,8 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
             the_log_request_friend_discover.uid = info->user.uid;
             the_log_request_friend_discover.requset_reason = NET_DISCOVER_VIDEO;
 
-            AddMessageNode(session_id_video_server_feedback, deal_video_dicover_server_feedback, NULL);
-            AddMessageNode(session_id_video_feedback, deal_video_feedback, NULL);
+            AddMessageNode(session_id_video_server_feedback, DealVideoDicoverServerFeedback, NULL);
+            AddMessageNode(session_id_video_feedback, DealVideoFeedback, NULL);
 
             CRPNETFriendDiscoverSend(sockfd,
                                      session_id_video_server_feedback,

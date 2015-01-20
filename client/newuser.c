@@ -56,13 +56,13 @@ int newsockfd()
             if (number == charnum)//比较含数字的数量是否跟字符串长度相等
             {
                 log_info("登录名全为数字", "登录名全为数字\n");
-                popup("莫默告诉你：", "登录名全为数字");
+                Popup("莫默告诉你：", "登录名全为数字");
                 return 1;
             }
             if (g_strcmp0(newpwd, newpwd2) != 0)//比较两次密码是否相同
             {
                 log_info("密码不一致", "密码不一致\n");
-                popup("莫默告诉你：", "两次密码不一致");
+                Popup("莫默告诉你：", "两次密码不一致");
                 return 1;
             }
             int fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -106,11 +106,11 @@ int newsockfd()
             if (header->packetID != CRP_PACKET_OK)
             {
                 log_error("Hello", "Recv Packet:%d\n", header->packetID);
-                popup("莫默告诉你：", "登录名已经存在");
+                Popup("莫默告诉你：", "登录名已经存在");
                 return 1;
             }
             log_info("注册OK", "momo\n");
-            popup("莫默告诉你：", "欢迎你加入莫默");
+            Popup("莫默告诉你：", "欢迎你加入莫默");
             free(header);
             gtk_widget_destroy(NewWindow);
             CRPClose(sockfd);
@@ -118,14 +118,14 @@ int newsockfd()
         else
         {
             log_info("不合格字符", "momo\n");
-            popup("莫默告诉你：", "包含不合格字符");
+            Popup("莫默告诉你：", "包含不合格字符");
             return 1;
         }
     }
     else
     {
         log_info("注册信息不完整", "momo\n");
-        popup("莫默告诉你：", "请完善注册信息");
+        Popup("莫默告诉你：", "请完善注册信息");
         return 1;
     }
     return 0;
@@ -256,7 +256,7 @@ static gint closebut_leave_notify_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
-int newface()
+int Newface()
 {
     static GtkEventBox *closebut_event_box, *zhuce_event_box, *newbackground_event_box;
     NewWindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);//创建新窗口

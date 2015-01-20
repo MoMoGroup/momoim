@@ -128,7 +128,7 @@ gboolean postMessage(gpointer user_data)
             mes[packet->messageLen] = 0;
             log_info("验证消息", "%s", mes);
             memcpy(mes, packet->message, packet->messageLen);
-            Friend_Request_Popup(packet->uid, mes);
+            FriendRequestPopup(packet->uid, mes);
 
             if ((void *) packet != header->data)
             {
@@ -235,7 +235,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     log_info("Serve Message", "视频请求\n");
                     CRPPacketNETFriendDiscover *video_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
                     memcpy(video_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_video_discover, video_data_copy);
+                    g_idle_add(TreatmentRequestVideoDiscover, video_data_copy);
                     break;
                 };
                     //在线文件的包
@@ -293,7 +293,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
 //                    memcpy(mem, infodata, sizeof(CRPPacketFriendNotify));
 //
                     session_id_t sessionid = CountSessionId();
-                    AddMessageNode(sessionid, FriendFriendInfoChange, NULL);//注册
+                    AddMessageNode(sessionid, FriendInfoChange, NULL);//注册
                     CRPInfoRequestSend(sockfd, sessionid, infodata->uid);//请求这个用户的资料
                     break;
                 };

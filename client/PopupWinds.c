@@ -84,7 +84,7 @@ static gint ok_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpoi
     return 0;
 }
 
-int popup(const char *title, const char *tell)
+int Popup(const char *title, const char *tell)
 {
     PopupWindow = gtk_dialog_new();//新建一个dialog
     gtk_window_set_position(GTK_WINDOW(PopupWindow), GTK_WIN_POS_CENTER);//窗口位置

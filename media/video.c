@@ -37,6 +37,8 @@ static int fd;
 //获取视频信息，发送视频信息，接受视频信息分别三个线程id
 static pthread_t tid1, tid2, tid3;
 
+void *primary_video(struct sockaddr_in *addr);
+
 /*下面的代码用来做循环队列*/
 static pthread_mutex_t mutex_send, mutex_recv;
 static pthread_cond_t send_busy, send_idle, recv_busy, recv_idle;
@@ -232,7 +234,7 @@ void cancle_mem()
 gint delete_event(GtkWindow *window)
 {
     closewindow();
-    popup("消息","视频已结束");
+    //popup("消息","视频已结束");
     return FALSE;
 }
 
@@ -477,6 +479,7 @@ void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
     update_video_flag=update_flag;
     pthread_t pthd_video_recv;
     pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
+    pthread_join(&pthd_video_recv, NULL);
 }
 
 //视频聊天的函数入口
