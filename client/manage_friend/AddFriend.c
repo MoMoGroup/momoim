@@ -95,12 +95,13 @@ static gint close_button_leave_event(GtkWidget *widget, GdkEventButton *event, g
 //关闭按钮按下
 static gint close_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
+    AddFriendFlag = 1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
+    free(data);
     return 0;
 }
 
-//完成添加按钮3个事件
+
 //完成放上去
 static gint done_button_notify_event(GtkWidget *widget, GdkEventButton *event,
                                      gpointer data)
@@ -125,7 +126,9 @@ static int addfriendRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_FAILURE)
     {
+//        g_idle_add(GroupPop, "       添加失败,\n可能此好友已存在.");
         g_idle_add(GroupPop, "添加失败");
+
     }
     return 0;
 }
@@ -138,8 +141,9 @@ static gint done_button_release_event(GtkWidget *widget, GdkEventButton *event, 
     session_id_t sessionid = CountSessionId();
     AddMessageNode(sessionid, addfriendRecv, NULL);
     CRPFriendAddSend(sockfd, sessionid, p->uid, p->note);//发送添加请求
-    AddFriendflag = 1;//判断是否打开搜索窗口,置1，可以打开了
+    AddFriendFlag = 1;//判断是否打开搜索窗口,置1，可以打开了
     gtk_widget_destroy(addwindow);
+    free(p);
     return 0;
 
 }
@@ -201,6 +205,8 @@ static gint next2_button_release_event(GtkWidget *widget, GdkEventButton *event,
 
 gboolean putimage(gpointer user_data)
 {
+    struct add_friend_info *p = user_data;
+
     addlayout2 = gtk_fixed_new();
 
     // 设置窗体获取鼠标事件
@@ -213,12 +219,9 @@ gboolean putimage(gpointer user_data)
             NULL,
             NULL);
 
-    //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
-    //  gtk_fixed_put(GTK_FIXED(addlayout1), add_mov_event, 0, 0);
 
     gtk_fixed_put(GTK_FIXED(addlayout2), GTK_WIDGET(add_mov_event), 0, 0);
 
-    struct add_friend_info *p = user_data;
     static cairo_t *cr;
     cairo_surface_t *surface;
 
@@ -285,7 +288,7 @@ gboolean putimage(gpointer user_data)
             G_CALLBACK(close_button_leave_event),
             G_CALLBACK(close_button_release_event),
             NULL,
-            NULL);
+            p);//关闭的话释放p
 
     next_enent_box2 = BuildEventBox(
             next,
@@ -296,32 +299,29 @@ gboolean putimage(gpointer user_data)
             NULL,
             p);
 
-
-
-    //gtk_fixed_put(GTK_FIXED(addlayout2), back, 230, 200);
     gtk_fixed_put(GTK_FIXED(addlayout2), (GtkWidget *) next_enent_box2, 400, 200);
     gtk_fixed_put(GTK_FIXED(addlayout2), (GtkWidget *) close_event_box2, 519, 0);
 
     //gtk_widget_hide(addlayout1);//隐藏1
     gtk_widget_destroy(addlayout1);
     gtk_container_add(GTK_CONTAINER (addframelayout), addlayout2);
-
     gtk_widget_show_all(addlayout2);//显示2
+
     return FALSE;
+
 }
 
 
 static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友的资料
 {
     struct add_friend_info *p = (struct add_friend_info *) data;
+
     switch (header->packetID)
     {
         case CRP_PACKET_OK:
         {
-            log_info("更新成功", "OKBAO\n");
             return 0;
         };
-
 
         case CRP_PACKET_FAILURE:
         {
@@ -336,35 +336,37 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
         case CRP_PACKET_INFO_DATA:
         {
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-            memcpy(p->key, infodata->info.icon, 16);
             CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
-            //保存uid
+
+            //保存数据到结构体
+            memcpy(p->key, infodata->info.icon, 16);
             p->uid = infodata->info.uid;
             p->sessionid = header->sessionID;
 
-            //显示昵称上去
-            char *mem = malloc(strlen(infodata->info.nickName) + 1);
-            memcpy(mem, infodata->info.nickName, strlen(infodata->info.nickName));
-            mem[strlen(infodata->info.nickName)] = 0;
-            p->nickname = mem;
+            size_t n = strlen(infodata->info.nickName);
+            p->nickname = malloc(n + 1);
+            memcpy(p->nickname, infodata->info.nickName, n);
+            p->nickname[n] = 0;
+//            //显示昵称上去
+//            char *mem = malloc(strlen(infodata->info.nickName) + 1);
+//            memcpy(mem, infodata->info.nickName, strlen(infodata->info.nickName));
+//            mem[strlen(infodata->info.nickName)] = 0;
+
+
             //free(mem);
-            if ((const char *) infodata != header->data)
+            if ((void *) infodata != header->data)
             {
                 free(infodata);
             }
-
             //显示图片
             FindImage(p->key, data, putimage);
             break;
-
         };
+
         default:
         {
-
             break;
-
         }
-
 
     }
     return 1;
@@ -386,65 +388,74 @@ static gint next_button_release_event(GtkWidget *widget, GdkEventButton *event, 
 //构造第一个界面的地方
 int AddFriendFun()
 {
-    AddFriendflag = 0;//判断是否打开搜索窗口，置0，不能打开
-    addwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    addframelayout = gtk_layout_new(NULL, NULL);
-    addlayout1 = gtk_fixed_new();
+    if (AddFriendFlag)//判断是否打开搜索窗口
+    {
 
 
-    gtk_window_set_position(GTK_WINDOW(addwindow), GTK_WIN_POS_CENTER);//窗口出现位置
-    gtk_window_set_resizable(GTK_WINDOW (addwindow), FALSE);//窗口不可改变
-    gtk_window_set_decorated(GTK_WINDOW(addwindow), FALSE);   // 去掉边框
-    gtk_widget_set_size_request(GTK_WIDGET(addwindow), 560, 270);//窗口大小
+        AddFriendFlag = 0;//判断是否打开搜索窗口，置0，不能打开
+        addwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+        addframelayout = gtk_layout_new(NULL, NULL);
+        addlayout1 = gtk_fixed_new();
 
 
-    create_surface();
-    //第一个界面de 下一步
-    next_enent_box = BuildEventBox(
-            next,
-            NULL,
-            G_CALLBACK(next_button_notify_event),
-            G_CALLBACK(next_button_leave_event),
-            G_CALLBACK(next_button_release_event),
-            NULL,
-            NULL
-                                  );
-    //第一个界面的关闭
-    close_event_box = BuildEventBox(
-            addclose,
-            NULL,
-            G_CALLBACK(close_button_notify_event),
-            G_CALLBACK(close_button_leave_event),
-            G_CALLBACK(close_button_release_event),
-            NULL,
-            NULL
-                                   );
-
-    // 设置窗体获取鼠标事件
-    add_mov_event = BuildEventBox(
-            background1,
-            G_CALLBACK(add_mov),
-            NULL,
-            NULL,
-            NULL,
-            NULL,
-            NULL);
-
-    //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
-    gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(add_mov_event), 0, 0);
-
-    gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(next_enent_box), 400, 200);
-    gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(close_event_box), 519, 0);
+        gtk_window_set_position(GTK_WINDOW(addwindow), GTK_WIN_POS_CENTER);//窗口出现位置
+        gtk_window_set_resizable(GTK_WINDOW (addwindow), FALSE);//窗口不可改变
+        gtk_window_set_decorated(GTK_WINDOW(addwindow), FALSE);   // 去掉边框
+        gtk_widget_set_size_request(GTK_WIDGET(addwindow), 560, 270);//窗口大小
 
 
-    addtext = gtk_entry_new();//帐号输入
-    gtk_fixed_put(GTK_FIXED(addlayout1), addtext, 170, 80);
-    gtk_test_text_set(addtext, "10000");
+        create_surface();
+        //第一个界面de 下一步
+        next_enent_box = BuildEventBox(
+                next,
+                NULL,
+                G_CALLBACK(next_button_notify_event),
+                G_CALLBACK(next_button_leave_event),
+                G_CALLBACK(next_button_release_event),
+                NULL,
+                NULL
+                                      );
+        //第一个界面的关闭
+        close_event_box = BuildEventBox(
+                addclose,
+                NULL,
+                G_CALLBACK(close_button_notify_event),
+                G_CALLBACK(close_button_leave_event),
+                G_CALLBACK(close_button_release_event),
+                NULL,
+                NULL
+                                       );
 
-    gtk_container_add(GTK_CONTAINER (addwindow), addframelayout);
-    gtk_container_add(GTK_CONTAINER (addframelayout), addlayout1);
+        // 设置窗体获取鼠标事件
+        add_mov_event = BuildEventBox(
+                background1,
+                G_CALLBACK(add_mov),
+                NULL,
+                NULL,
+                NULL,
+                NULL,
+                NULL);
 
-    gtk_widget_show_all(addwindow);
+        //gtk_fixed_put(GTK_FIXED(popuplayout), pop_mov_event, 0, 0);
+        gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(add_mov_event), 0, 0);
+
+        gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(next_enent_box), 400, 200);
+        gtk_fixed_put(GTK_FIXED(addlayout1), GTK_WIDGET(close_event_box), 519, 0);
+
+
+        addtext = gtk_entry_new();//帐号输入
+        gtk_fixed_put(GTK_FIXED(addlayout1), addtext, 170, 80);
+        gtk_test_text_set(addtext, "10000");
+
+        gtk_container_add(GTK_CONTAINER (addwindow), addframelayout);
+        gtk_container_add(GTK_CONTAINER (addframelayout), addlayout1);
+
+        gtk_widget_show_all(addwindow);
+    } //调用添加好友函数
+    else
+    {
+        gtk_window_present(addwindow);
+    }
     return 0;
 }
 

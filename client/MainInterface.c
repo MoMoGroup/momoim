@@ -1100,10 +1100,13 @@ static gint setup_button_release_event(GtkWidget *widget, GdkEventButton *event,
     return 0;
 }
 
+
 //鼠标移动事件
 static gint setup_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));
+    cairo_surface_t *change2 = ChangeThem_png("设置图标2.png");
+    gtk_image_set_from_surface((GtkImage *) SetUp, change2);
     return 0;
 }
 
@@ -1111,6 +1114,8 @@ static gint setup_enter_notify_event(GtkWidget *widget, GdkEventButton *event, g
 static gint setup_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
+    cairo_surface_t *change2 = ChangeThem_png("设置图标.png");
+    gtk_image_set_from_surface((GtkImage *) SetUp, change2);
     return 0;
 }
 //设置按钮结束
@@ -1247,12 +1252,7 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
     cairo_surface_t *search1 = ChangeThem_png("搜索.png");
     gtk_image_set_from_surface((GtkImage *) search, search1);
-    if (AddFriendflag)//判断是否打开搜索窗口
-    {
-        AddFriendFun();
-        //Friend_Fequest_Popup(10001,"as");//添加爱弹出框
-
-    } //调用添加好友函数
+    AddFriendFun();
     return 0;
 }
 
@@ -1338,8 +1338,7 @@ static gint status_button_leave_event(GtkWidget *widget, GdkEventButton *event,
 int MainInterFace()
 {
     //一个关闭语音按钮的标志位。为１时表示语音已经打开，为０表示没有人在语音。
-    //一个用来标识视频的旗帜。gm
-    FlagVideo=0;
+
 
     GtkCellRenderer *renderer;
     GtkTreeViewColumn *column;//列表

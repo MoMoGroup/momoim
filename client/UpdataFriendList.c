@@ -5,6 +5,7 @@
 #include <string.h>
 #include <logger.h>
 #include "common.h"
+#include "chart.h"
 
 
 //新添加好友
@@ -46,7 +47,7 @@ int FriendListInsertEntry(void *data)
 }
 
 //给一个uid，返回那个用户的iter
-GtkTreeIter getUserIter(uint32_t frienduid)//参数为匹配需要的uid
+GtkTreeIter GetUserIter(uint32_t frienduid)//参数为匹配需要的uid
 {
     GtkTreeIter iterUser, iterGroup;
     uint32_t uid, gid;
@@ -107,7 +108,7 @@ int OnLine(void *data)//好友上线。图标变亮
     GtkTreeIter iterUser;
     GdkPixbuf *pixbuf = NULL;
 
-    iterUser = getUserIter(p->uid);//拿到iter
+    iterUser = GetUserIter(p->uid);//拿到iter
 
     FriendInfo *head = FriendInfoHead;
     while (head->next)
@@ -137,7 +138,7 @@ int OffLine(void *data)//好友下线。图标变暗
     GtkTreeIter iterUser;
     GdkPixbuf *pixbuf = NULL;
 
-    iterUser = getUserIter(p->uid);//拿到iter
+    iterUser = GetUserIter(p->uid);//拿到iter
 
     FriendInfo *head = FriendInfoHead;
     while (head->next)
@@ -166,7 +167,7 @@ int gengxin_ziliao(void *data)
 {
     FriendInfo *infodata = data;
 
-    GtkTreeIter iterUser = getUserIter(infodata->uid);//拿到好友的iter
+    GtkTreeIter iterUser = GetUserIter(infodata->uid);//拿到好友的iter
     GdkPixbuf *pixbuf = DrawFriend(&infodata->user, infodata->isonline);//重画好友头像
 
 
@@ -175,6 +176,7 @@ int gengxin_ziliao(void *data)
     if (infodata->chartwindow != NULL)//判断聊天窗口是否打开
     {
         infodata->user.uid;
+        LoadingIcon(infodata);
     }
 
     gtk_tree_store_set(TreeViewListStore, &iterUser,
@@ -199,13 +201,12 @@ int FriendFriendInfoChange(CRPBaseHeader *header, void *data)
         FindImage(infodata->info.icon, NULL, NULL);
 
         FriendInfo *p = FriendInfoHead;
-        while (p->next)//更新链表里的资料
+        while (p->next)
         {
             p = p->next;
-            if (infodata->info.uid == p->user.uid)
+            if (infodata->info.uid == p->user.uid)//找到好友资料链表里的那个节点
             {
-
-                memcpy(p->user.nickName, infodata->info.nickName, strlen(infodata->info.nickName) + 1);
+                memcpy(p->user.nickName, infodata->info.nickName, strlen(infodata->info.nickName) + 1);//更新链表里的资料
                 memcpy(p->user.icon, infodata->info.icon, sizeof(infodata->info.icon));
                 break;
             }

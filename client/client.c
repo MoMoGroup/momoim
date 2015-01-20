@@ -222,7 +222,7 @@ destroy_surfaces()
     cairo_surface_destroy(sremember2);
 }
 
-extern int DeleteEvent()
+int DeleteEvent()
 {
     gtk_main_quit();
     return TRUE;
@@ -778,7 +778,7 @@ static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event
                 fwrite(ipstrings, 1, strlen(ipstrings), ipfp);
                 fclose(ipfp);
                 gtk_widget_destroy(IpFillinWind);
-                loadloginLayout(NULL);//加载登陆界面
+                LoadLoginLayout(NULL);//加载登陆界面
             }
 
         }
@@ -874,14 +874,14 @@ int main(int argc, char *argv[])
     else
     {
         PlayMusic("开始.wav");
-        loadloginLayout("ad");//加载登陆界面
+        LoadLoginLayout("ad");//加载登陆界面
     }
     gtk_main();
     destroy_surfaces();
     return 0;
 }
 
-gboolean destoryall(gpointer user_data)
+gboolean DestoryAll(gpointer user_data)
 {
     DestoryMainInterface();//销毁主窗口,--maininterface
 
@@ -898,13 +898,13 @@ gboolean destoryall(gpointer user_data)
         free(p);
     }
 
-    loadloginLayout(NULL);
+    LoadLoginLayout(NULL);
     popup("异地登录", "您的帐号在别处登录，\n 如非本人操作，\n请尽快修改密码");
     return FALSE;
 }
 
 
-gboolean loadloginLayout(gpointer user_data)
+gboolean LoadLoginLayout(gpointer user_data)
 {
     //加载loginlayout
     create_surfaces1();
