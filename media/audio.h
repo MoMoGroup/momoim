@@ -105,7 +105,5 @@ ssize_t SNDWAV_WritePcm(SNDPCMContainer_t *sndpcm, size_t wcount);
 
 int SNDWAV_SetParams(SNDPCMContainer_t *sndpcm, WAVContainer_t *wav);
 
-void StartAudioChat_Recv(int sendSock);
-
 void StartAudioChat_Send(int sendSock,struct sockaddr_in *addr);
 void StopAudioChat(void);
