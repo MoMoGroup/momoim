@@ -12,7 +12,7 @@
 #include "chart.h"
 
 //这个结构体用来保存请求音视频的记录
-struct log_request_friend_discover the_log_request_friend_discover;
+struct LogRequestFriendDiscover the_log_request_friend_discover;
 
 //一个标志位，用来显示现在是否在视频
 int FlagVideo;
@@ -57,7 +57,7 @@ static int onAudioStop(void *data)
 
 //处理服务器发送net_friend_discover这个包的反馈函数
 //貌似音视频都可以用这个函数啊
-int deal_video_dicover_server_feedback(CRPBaseHeader *header, void* data)
+int DealVideoDicoverServerFeedback(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_FAILURE)
     {
@@ -149,7 +149,7 @@ void *AudioWaitConnection(struct AudioDiscoverProcessEntry *entry)
 }
 
 //主动发起音频方处理消息句柄
-int processNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
+int ProcessNatDiscoveredOnAudio(CRPBaseHeader *header, void *data)
 {
     struct AudioDiscoverProcessEntry *entry = (struct AudioDiscoverProcessEntry *) data;
     switch (header->packetID)
@@ -254,7 +254,7 @@ int AudioRequestNATDiscover(FriendInfo *info)
     entry->friendInfo = info;
     entry->messageSent = 0;
     entry->localSession = sessionNatDiscover;
-    AddMessageNode(sessionNatDiscover, processNatDiscoveredOnAudio, entry);
+    AddMessageNode(sessionNatDiscover, ProcessNatDiscoveredOnAudio, entry);
     CRPNETNATRegisterSend(sockfd, sessionNatDiscover, entry->key);
 }
 
@@ -413,7 +413,7 @@ int AudioAcceptNatDiscover(CRPPacketNETNATRequest *request, FriendInfo *friendIn
 }
 
 //处理发送视频请求后，对方是否同意的函数
-int deal_video_feedback(CRPBaseHeader *header, void * data)
+int DealVideoFeedback(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_NET_DISCOVER_REFUSE)
     {
@@ -454,7 +454,7 @@ void HandleVideoFlag(){
 
 //接到视频请求后的处理函数
 //同意或者拒绝
-gboolean treatment_request_video_discover(gpointer user_data)
+gboolean TreatmentRequestVideoDiscover(gpointer user_data)
 {
     CRPPacketNETFriendDiscover *video_data = (CRPPacketNETFriendDiscover *) user_data;
     //CRPPacketMessageNormal *packet = CRPMessageNormalCast(header);

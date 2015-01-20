@@ -235,7 +235,7 @@ int servemessage(CRPBaseHeader *header, void *data)//统一处理服务器发来
                     log_info("Serve Message", "视频请求\n");
                     CRPPacketNETFriendDiscover *video_data_copy = (CRPPacketNETFriendDiscover *) malloc(sizeof(CRPPacketNETFriendDiscover));
                     memcpy(video_data_copy, media_data, sizeof(CRPPacketNETFriendDiscover));
-                    g_idle_add(treatment_request_video_discover, video_data_copy);
+                    g_idle_add(TreatmentRequestVideoDiscover, video_data_copy);
                     break;
                 };
                     //在线文件的包

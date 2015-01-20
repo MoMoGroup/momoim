@@ -379,8 +379,8 @@ static gint video_button_release_event(GtkWidget *widget, GdkEventButton *event,
             the_log_request_friend_discover.uid = info->user.uid;
             the_log_request_friend_discover.requset_reason = NET_DISCOVER_VIDEO;
 
-            AddMessageNode(session_id_video_server_feedback, deal_video_dicover_server_feedback, NULL);
-            AddMessageNode(session_id_video_feedback, deal_video_feedback, NULL);
+            AddMessageNode(session_id_video_server_feedback, DealVideoDicoverServerFeedback, NULL);
+            AddMessageNode(session_id_video_feedback, DealVideoFeedback, NULL);
 
             CRPNETFriendDiscoverSend(sockfd,
                                      session_id_video_server_feedback,
