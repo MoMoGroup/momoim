@@ -54,7 +54,7 @@ void EpollRemove(POnlineUser user)
 
 static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events)
 {
-    char keyBuffer[32];
+    uint8_t keyBuffer[32];
     struct sockaddr_in idxSock;
     struct sockaddr_in addr;
     socklen_t addrLen;

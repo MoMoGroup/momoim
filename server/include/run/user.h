@@ -110,7 +110,7 @@ struct structPendingUser
     CRPContext sockfd;
     volatile OnlineUserState state;
     pthread_rwlock_t *holdLock;
-    time_t lastUpdateTime;
+    time_t timeLastPacket;
 
     //待登陆私有数据Online
     struct structPendingUser *prev, *next;
