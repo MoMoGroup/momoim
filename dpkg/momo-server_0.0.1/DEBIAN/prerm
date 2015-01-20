@@ -1,0 +1,2 @@
+#!/bin/bash
+update-alternatives --remove momosrv /opt/momo-server/server

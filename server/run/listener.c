@@ -117,7 +117,9 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                         log_warning("NATIndex", "Notify Failure\n");
                         sendto(sockIdx, (uint8_t[32]) {0,}, 32, 0, (struct sockaddr *) &idxSock, addrLen);
                     }
-                }else{
+                }
+                else
+                {
                     log_warning("NATIndex", "Length Error,%s\n", strerror(errno));
                 }
             }
@@ -234,29 +236,32 @@ void *ListenMain(void *nouse)
             {
                 break;//跳出本层pthread_cleanup_push,会执行cleanup_pop
             }
+
             pthread_cleanup_push(close, sockIdx);
+                    NatHostInitlize();
+                    pthread_cleanup_push(NatHostFinalize, 0);
+                            log_info("Listener", "主服务正在监听TCP %d\n", CONFIG_LISTEN_PORT);
+                            log_info("Listener", "NAT穿透服务正在等待UDP %d.\n", CONFIG_HOST_DISCOVER_PORT);
 
-                    log_info("Listener", "主服务正在监听TCP %d\n", CONFIG_LISTEN_PORT);
-                    log_info("Listener", "NAT穿透服务正在等待UDP %d.\n", CONFIG_HOST_DISCOVER_PORT);
+                            ServerIOPool = epoll_create1(EPOLL_CLOEXEC);
+                            {
+                                struct epoll_event event = {
+                                        .data.ptr=NULL,
+                                        .events=EPOLLET | EPOLLIN                       //EPOLLET-边沿触发. EPOLLIN-数据传入时触发
+                                };
+                                epoll_ctl(ServerIOPool,
+                                          EPOLL_CTL_ADD,
+                                          sockListener,
+                                          &event);   //将监听socket加入epoll(data.ptr==NULL)
 
-                    ServerIOPool = epoll_create1(EPOLL_CLOEXEC);
-                    {
-                        struct epoll_event event = {
-                                .data.ptr=NULL,
-                                .events=EPOLLET | EPOLLIN                               //EPOLLET-边沿触发. EPOLLIN-数据传入时触发
-                        };
-                        epoll_ctl(ServerIOPool,
-                                  EPOLL_CTL_ADD,
-                                  sockListener,
-                                  &event);   //将监听socket加入epoll(data.ptr==NULL)
-
-                        event.data.ptr = (void *) -1;
-                        event.events = EPOLLERR | EPOLLIN | EPOLLET;
-                        epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);        //NAT发现索引SOCKET
-                    }
-                    struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
-                    pthread_cleanup_push(free, events);
-                            listenLoop(sockListener, sockIdx, events);
+                                event.data.ptr = (void *) -1;
+                                event.events = EPOLLERR | EPOLLIN | EPOLLET;
+                                epoll_ctl(ServerIOPool, EPOLL_CTL_ADD, sockIdx, &event);//NAT发现索引SOCKET
+                            }
+                            struct epoll_event *events = calloc(CONFIG_EPOLL_QUEUE, sizeof(struct epoll_event));
+                            pthread_cleanup_push(free, events);
+                                    listenLoop(sockListener, sockIdx, events);
+                            pthread_cleanup_pop(1);
                     pthread_cleanup_pop(1);
             pthread_cleanup_pop(1);
     pthread_cleanup_pop(1);
