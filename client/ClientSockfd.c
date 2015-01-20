@@ -172,7 +172,7 @@ int new_friend_info(CRPBaseHeader *header, void *data)
             //node= (struct FriendInfo *)malloc(sizeof(struct FriendInfo));
             node->uid = infodata->info.uid;//添加id到结构提
             node->user = infodata->info;
-            node->isonline = 0;//是否在线
+            node->isonline = 1;//是否在线
             memcpy(node->user.nickName, infodata->info.nickName, sizeof(infodata->info.nickName));//添加昵称
             add_node(node);             //添加新节点
 

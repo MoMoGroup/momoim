@@ -207,7 +207,7 @@ int Friend_Delete_Popup(GtkWidget *widget, GdkEventButton *event, GtkTreeView *t
 
         xitong = gtk_label_new("系统消息");
 
-        gtk_fixed_put(GTK_FIXED(delete_layout), delete_drag_eventbox, 0, 0);
+        gtk_fixed_put(GTK_FIXED(delete_layout), GTK_WIDGET(delete_drag_eventbox), 0, 0);
         gtk_fixed_put(GTK_FIXED(delete_layout), xitong, 14, 10);//标题
         gtk_fixed_put(GTK_FIXED(delete_layout), txt, 50, 90);
         gtk_fixed_put(GTK_FIXED(delete_layout), GTK_WIDGET(delete_cancel_eventbox), 30, 170);

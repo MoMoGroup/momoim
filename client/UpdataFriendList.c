@@ -5,7 +5,6 @@
 #include <string.h>
 #include <logger.h>
 #include "common.h"
-#include "chart.h"
 
 
 //新添加好友
@@ -19,11 +18,11 @@ int FriendListInsertEntry(void *data)
 
 //分组好友数
 
-    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &iterGroup);//第一个分组
     uint32_t t;
+    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(TreeViewListStore), &iterGroup);//第一个分组
     gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &iterGroup, FRIENDUID_COL, &t, -1);//第一个分组id
 
-    while (t != UGI_DEFAULT)
+    while (t != UGI_DEFAULT)//遍历所有分组
     {
         if (!gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &iterGroup))//没有找到分组
         {
@@ -32,9 +31,9 @@ int FriendListInsertEntry(void *data)
         gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &iterGroup, FRIENDUID_COL, &t, -1);
     }
 
-    pixbuf = DrawFriend(&p->info, 1);
+    pixbuf = DrawFriend(&p->info, 1);//此函数返回要画的pixbuf
 
-    gtk_tree_store_append(TreeViewListStore, &iterUser, &iterGroup);//
+    gtk_tree_store_append(TreeViewListStore, &iterUser, &iterGroup);//新加一个好友iter
     gtk_tree_store_set(TreeViewListStore, &iterUser,
                        PIXBUF_COL, pixbuf,
                        FRIENDUID_COL, p->info.uid,
