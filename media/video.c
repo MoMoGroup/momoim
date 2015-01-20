@@ -281,7 +281,7 @@ void *pthread_snd(void *socketsd)
         pthread_cleanup_push(free, q_send);
                 errno = 0;
                 send(sd, &q_send->jpeglen, sizeof(int), MSG_MORE);
-                send(sd, q_send->jpeg_buf, (size_t )q_send->jpeglen, 0);
+                send(sd, q_send->jpeg_buf, (size_t) q_send->jpeglen, 0);
         pthread_cleanup_pop(1);
         q_send = NULL;
         ///////////////////////////////////////////////////////////////////////////////////////////
@@ -475,7 +475,8 @@ int guiMain(void *button)
 
 void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
     update_video_flag=update_flag;
-    primary_video(addr);
+    pthread_t pthd_video_recv;
+    pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
 }
 
 //视频聊天的函数入口

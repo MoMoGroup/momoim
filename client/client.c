@@ -341,13 +341,13 @@ static gint combo_change_event()
                 int w = cairo_image_surface_get_width(surface);
                 int h = cairo_image_surface_get_height(surface);
                 //创建画布
-                surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 164, 164);
+                surfacehead2 = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 200, 200);
                 //创建画笔
                 cr = cairo_create(surfacehead2);
                 //缩放
-                cairo_arc(cr, 82, 82, 82, 0, M_PI * 2);
+                cairo_arc(cr, 68, 68, 150, 0, M_PI * 2);
                 cairo_clip(cr);
-                cairo_scale(cr, 164.0 / w, 164.0 / h);
+                cairo_scale(cr, 170.0 / w, 170.0 / h);
                 //把画笔和图片相结合。
                 cairo_set_source_surface(cr, surface, 0, 0);
                 cairo_paint(cr);
@@ -861,7 +861,7 @@ int main(int argc, char *argv[])
     char checkmulu[80], minglingcp[256], checkmulu_theme[80];
     sprintf(checkmulu, "%s/.momo", getpwuid(getuid())->pw_dir);
     sprintf(checkmulu_ip, "%s/ip", checkmulu);
-    sprintf(minglingcp, "cp -r /opt/momo/theme %s/theme/", checkmulu);
+    sprintf(minglingcp, "cp -r /opt/momo/theme/ %s/theme/", checkmulu);
     mkdir(checkmulu, 0700);
     if (access(checkmulu_ip, 0) != 0)
     {
@@ -1031,7 +1031,7 @@ gboolean LoadLoginLayout(gpointer user_data)
 
 //放置组件的相对位置
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(backgroundevent_box), 0, 0);//起始坐标
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 30);
+    gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 26);
     gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(landbutevent_box), 75, 300);
     gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 33, 220);
