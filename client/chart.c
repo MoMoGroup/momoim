@@ -807,7 +807,7 @@ void handle_font_color(FriendInfo *info)
 {
     int num;
     UserWordInfo.coding_font_color = (gchar *) malloc(strlen(UserWordInfo.font) + 30);
-    CodingWordColor(info, UserWordInfo.coding_font_color, &UserWordInfo.codinglen); //将字体和字体颜色进行编码
+    CodingWordColor(UserWordInfo.coding_font_color, &UserWordInfo.codinglen); //将字体和字体颜色进行编码
     FILE *fp;
     char wordfile[256];
     sprintf(wordfile, "%s/.momo/%u/setting", getpwuid(getuid())->pw_dir, CurrentUserInfo->uid);
