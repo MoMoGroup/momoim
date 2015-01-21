@@ -142,15 +142,13 @@ void show_local_text(gchar *text, FriendInfo *info, char *nicheng_times, int cou
 
 
 //将服务器发过来的的消息显示在文本框上
-void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len)
+void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len, time_t time)
 {
     GtkTextIter start, end;
     GtkTextBuffer *show_buffer;
     char nicheng_times[40] = {0};
-    time_t timep;
     struct tm *p;
-    time(&timep);
-    p = localtime(&timep);
+    p = localtime(&time);
     //显示好友昵称和时间
     sprintf(nicheng_times, " %s  %d: %d: %d \n", info->user.nickName, p->tm_hour, p->tm_min, p->tm_sec);
     show_buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(info->show_text));
@@ -288,8 +286,10 @@ int deal_with_file(CRPBaseHeader *header, void *data)
                 session_id_t sessionID = CountSessionId();
                 CRPMessageNormalSend(sockfd, sessionID, UMT_FILE_OFFLINE,
                                      file_message->image_message_data->uid,
+                                     0,
                                      file_message->image_message_data->charlen,
-                                     file_message->image_message_data->message_data);
+                                     file_message->image_message_data->message_data
+                                    );
                 file_message->file_loading_end = 1;
             }
             free(filedata);
@@ -307,6 +307,7 @@ int deal_with_file(CRPBaseHeader *header, void *data)
         session_id_t sessionID = CountSessionId();
         CRPMessageNormalSend(sockfd, sessionID, UMT_FILE_OFFLINE,
                              file_message->image_message_data->uid,
+                             0,
                              file_message->image_message_data->charlen,
                              file_message->image_message_data->message_data);
         ret = 0;
@@ -477,7 +478,7 @@ int deal_with_message(CRPBaseHeader *header, void *data)
                 {
                     session_id_t sessionID = CountSessionId();
                     CRPMessageNormalSend(sockfd, sessionID, UMT_TEXT,
-                                         photomessage->image_message_data->uid,
+                                         photomessage->image_message_data->uid, 0,
                                          photomessage->image_message_data->charlen,
                                          photomessage->image_message_data->message_data);
                     free(photomessage->image_message_data->message_data);
@@ -499,7 +500,7 @@ int deal_with_message(CRPBaseHeader *header, void *data)
         if (photomessage->image_message_data->imagecount == 0 && photomessage->image_message_data->image_find_end == 1)
         {
             CRPMessageNormalSend(sockfd, photomessage->image_message_data->uid, UMT_TEXT,
-                                 photomessage->image_message_data->uid, photomessage->image_message_data->charlen,
+                                 photomessage->image_message_data->uid, 0, photomessage->image_message_data->charlen,
                                  photomessage->image_message_data->message_data);
             free(photomessage->image_message_data->message_data);
             free(photomessage->image_message_data);
@@ -615,7 +616,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
 
     if (isimageflag == 0)
     {
-        CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, charlen, char_text);
+        CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, 0, charlen, char_text);
         free(char_text);
         free(image_message_data_state);
         return 0;

@@ -2,4 +2,6 @@
 
 //extern void* primary_video(struct sockaddr_in*);
 
-extern void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)());
+void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)(),int(*pupup_window)(char const*,char const*));
+
+void pre_closewindow();

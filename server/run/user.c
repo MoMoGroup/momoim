@@ -603,6 +603,7 @@ void PostMessage(UserMessage *message)
                              0,
                              (USER_MESSAGE_TYPE) message->messageType,
                              message->from,
+                             message->time,
                              message->messageLen,
                              message->content);
         UserDrop(toUser);

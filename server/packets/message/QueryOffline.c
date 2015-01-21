@@ -27,6 +27,7 @@ int ProcessPacketMessageQueryOffline(POnlineUser user, uint32_t session, CRPPack
                                      0,
                                      (USER_MESSAGE_TYPE) (p[i]->messageType),
                                      p[i]->from,
+                                     p[i]->time,
                                      p[i]->messageLen,
                                      p[i]->content);
                 free(p[i]);

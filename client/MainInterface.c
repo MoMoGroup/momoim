@@ -12,8 +12,6 @@
 #include "ManageGroup.h"
 #include"friend.h"
 #include "SetupWind.h"
-#include "chart.h"
-#include "media.h"
 
 static GtkWidget *status;
 
@@ -658,7 +656,7 @@ gboolean recv_progress_bar_crcle(void *data)
         gchar filemulu[200] = {0};
         sprintf(filemulu, "文件保存地址为%s", recv_file_bar_crcle->filemulu);
         ShoweRmoteText(filemulu, recv_file_bar_crcle->userinfo,
-                       strlen(filemulu)); //让输出文本框显示文件存放位置
+                       strlen(filemulu), recv_file_bar_crcle->time); //让输出文本框显示文件存放位置
         free(recv_file_bar_crcle->filename);
         free(recv_file_bar_crcle);
         return 0;
@@ -717,7 +715,7 @@ int deal_with_recv_file(CRPBaseHeader *header, void *data)
 }
 
 //接收文件处理函数
-int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
+int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen, time_t time)
 {
     if (info->chartwindow != NULL)
     {
@@ -749,6 +747,7 @@ int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
             file_message_data->file_loading_end = 0;  //文件传输是否结束标志
             file_message_data->file_count = 0;//已接收的文件内容大小
             file_message_data->userinfo = info;
+            file_message_data->time = time;
 
             PangoFontDescription *font;
             session_id_t session_id;
@@ -823,7 +822,7 @@ int file_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
 }
 
 //文件接收函数
-void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid)
+void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid, time_t time)
 {
     log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
     int uidfindflag = 0;
@@ -850,7 +849,7 @@ void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid)
         {
             gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
-        file_message_recv(rcvd_text, userinfo, len);
+        file_message_recv(rcvd_text, userinfo, len, time);
     }
 }
 
@@ -862,7 +861,7 @@ int deal_with_recv_message(void *data)
     if (recv_message->imagecount == 0)   //当图片全都从服务器下载后
     {
         ShoweRmoteText(recv_message->message_data, recv_message->userinfo,
-                       recv_message->charlen);
+                       recv_message->charlen, recv_message->time);
         free(recv_message->message_data);
         free(recv_message);
     }
@@ -870,7 +869,7 @@ int deal_with_recv_message(void *data)
 }
 
 //接收图片和文字函数，对信息进行半解码，判断是否存在图片
-int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
+int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen, time_t time)
 {
     int i = 0;
     int isimageflag = 0;
@@ -881,6 +880,7 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
     image_message_data->imagecount = 0;  //图片数量
     image_message_data->message_data = message_recv; //信息内容
     image_message_data->userinfo = info;
+    image_message_data->time = time;
     image_message_data->charlen = charlen; //信息长度
     while (i < charlen)
     {
@@ -945,7 +945,7 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
     if (isimageflag == 0)  //判断如若没有一个图片时
     {
         ShoweRmoteText(image_message_data->message_data, image_message_data->userinfo,
-                       image_message_data->charlen);
+                       image_message_data->charlen, image_message_data->time);
         free(message_recv);
         return 0;
     }
@@ -954,7 +954,7 @@ int image_message_recv(const gchar *recv_text, FriendInfo *info, int charlen)
 }
 
 //接收由服务器中转过来的好友发的信息
-void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
+void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid, time_t time)
 {
 
     log_info("DEBUG", "Recv Message.From %u,Text:%s\n", recd_uid, rcvd_text);
@@ -982,7 +982,7 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid)
         {
             gtk_window_present(GTK_WINDOW(userinfo->chartwindow));
         }
-        image_message_recv(rcvd_text, userinfo, len); //处理信息函数
+        image_message_recv(rcvd_text, userinfo, len, time); //处理信息函数
 
     }
 }
@@ -1370,7 +1370,8 @@ int MainInterFace()
 
     char path_icon[80] = "";
     sprintf(path_icon, "%s/.momo/theme/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
-    gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
+    //gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
+    gtk_window_set_icon(GTK_WINDOW(window),gdk_pixbuf_new_from_file(path_icon,NULL));
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);

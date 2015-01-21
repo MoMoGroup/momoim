@@ -29,9 +29,9 @@ extern UserFriends *friends;
 
 extern int MainChart(FriendInfo *friendinfonode);
 
-extern void RecdServerMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid);
+extern void RecdServerMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid, time_t time);
 
-extern void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid);
+extern void RecdServerFileMsg(const gchar *rcvd_text, uint16_t len, u_int32_t recd_uid, time_t time);
 extern int MessageLoopFunc();
 
 extern void AddMessageNode(uint32_t sessionid, int (*fn)(CRPBaseHeader *, void *), void *data);
@@ -44,6 +44,7 @@ struct RECVImageMessagedata
     int imagecount;
     int charlen;
     char *message_data;
+    time_t time;
     FriendInfo *userinfo;
 };
 struct RECVFileMessagedata
@@ -56,6 +57,7 @@ struct RECVFileMessagedata
     int charlen;
     char *filename;
     FILE *Wfp;
+    time_t time;
     gchar filemulu[100];
     FriendInfo *userinfo;
 };

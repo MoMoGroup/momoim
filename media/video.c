@@ -12,7 +12,6 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include <gtk/gtk.h>
-#include <pwd.h>
 #include "yuv422_rgb.h"
 #include "video.h"
 #include "logger.h"
@@ -27,7 +26,6 @@ typedef struct VideoBuffer
     size_t length;
 } VideoBuffer;
 
-
 static VideoBuffer *buffers = NULL;
 static unsigned char *rgbBuf;
 
@@ -37,7 +35,7 @@ static int fd;
 //获取视频信息，发送视频信息，接受视频信息分别三个线程id
 static pthread_t tid1, tid2, tid3;
 
-void *primary_video(struct sockaddr_in *addr);
+void *primary_video(void *);
 
 /*下面的代码用来做循环队列*/
 static pthread_mutex_t mutex_send, mutex_recv;
@@ -65,6 +63,8 @@ void closewindow();
 
 //用来更新视频标志位的函数指针
 static int (*update_video_flag)();
+
+static int(*popup)(char const*,char const*);
 
 
 int mark()
@@ -234,7 +234,7 @@ void cancle_mem()
 gint delete_event(GtkWindow *window)
 {
     closewindow();
-    //popup("消息","视频已结束");
+    popup("消息","视频已结束");
     return FALSE;
 }
 
@@ -475,16 +475,18 @@ int guiMain(void *button)
     return 0;
 }
 
-void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
+void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)(),int(*pupup_window)(char const*,char const*)){
+    popup=pupup_window;
     update_video_flag=update_flag;
     pthread_t pthd_video_recv;
-    pthread_create(&pthd_video_recv, NULL, primary_video, addr);
-    pthread_join(&pthd_video_recv, NULL);
+    pthread_create(&pthd_video_recv, NULL, primary_video, (void*)addr);
+    pthread_join(pthd_video_recv, NULL);
 }
 
 //视频聊天的函数入口
-void *primary_video(struct sockaddr_in *addr)
+void *primary_video(void *add)
 {
+    struct sockaddr_in *addr=add;
 
     //用于取消idle的环境变量
     flag_main_idle = 0;
