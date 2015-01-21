@@ -5,10 +5,10 @@
 #include <cairo-script-interpreter.h>
 #include <protocol/friend/Delete.h>
 #include <protocol/friend/Notify.h>
+#include <UpdataFriendList.h>
+#include <MainInterface.h>
 #include "common.h"
-#include "MainInterface.h"
 #include "ManageGroup.h"
-#include "UpdataFriendList.h"
 
 static GtkWidget *delete_window;
 static uint32_t delete_uid, delete_gid;
