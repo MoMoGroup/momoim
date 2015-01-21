@@ -10,7 +10,7 @@
 #include "chartmessage.h"
 #include "onlylookinfo.h"
 #include "ManageGroup.h"
-#include"manage_friend/friend.h"
+#include"friend.h"
 #include "SetupWind.h"
 #include "chart.h"
 #include "media.h"

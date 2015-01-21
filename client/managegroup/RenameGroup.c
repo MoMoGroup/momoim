@@ -4,6 +4,8 @@
 #include <logger.h>
 #include <common.h>
 #include <string.h>
+#include <MainInterface.h>
+#include <PopupWinds.h>
 #include"ManageGroup.h"
 #include "PopupWinds.h"
 
