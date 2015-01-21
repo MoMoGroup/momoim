@@ -531,46 +531,6 @@ static void destroy_surfaces()  //销毁资源
 
 }
 
-////单击分组显示右键菜单
-//gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data)
-//{
-//    GdkEventButton *event_button;
-//    GtkWidget *menu = GTK_WIDGET(data);
-//    GtkTreeIter iter;
-//    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
-//    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
-//    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
-//    gtk_tree_selection_get_selected(selection, &model, &iter);
-//
-//    if (event->type == GDK_BUTTON_PRESS)
-//    {
-//        int i;
-//        GtkTreePath *path;
-//        path = gtk_tree_model_get_path(model, &iter);
-//        i = gtk_tree_path_get_indices(path)[0];
-//
-//        event_button = (GdkEventButton *) event;
-//
-//        if (event->button == 0x1)
-//        {
-//            return FALSE;
-//        }
-//        if (event->button == 0x2)
-//        {
-//            return FALSE;
-//        }
-//        if (event->button == 0x3)
-//        {
-//            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
-//            {
-//                gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
-//                return FALSE;
-//            }
-//        }
-//    }
-//
-//    return FALSE;
-//}
 
 gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -1030,6 +990,7 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid, time
     }
 }
 
+//背景
 static gint background_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     //设置在非按钮区域内移动窗口
@@ -1058,8 +1019,6 @@ static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event
 static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
-//    x = event->x;  // 取得鼠标相对于窗口的位置
-//    y = event->y;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
@@ -1094,7 +1053,6 @@ static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, g
     if (event->button == 1)
     {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        //gtk_image_set_from_surface((GtkImage *) InfoSave, Surfacesave1); //置换图标
     }
     return 0;
 }

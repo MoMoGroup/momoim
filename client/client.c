@@ -1042,7 +1042,7 @@ gboolean LoadLoginLayout(gpointer user_data)
             AboutUs,
             NULL,
             NULL, NULL,
-            aboutus_button_release_event,
+            G_CALLBACK(aboutus_button_release_event),
             NULL, NULL);
 
     frameLayout = gtk_layout_new(NULL, NULL);
