@@ -17,13 +17,13 @@ static cairo_surface_t *surface_upward, *surface_calendar;
 //加载资源
 static void create_surfaces()
 {
-        surface_record_background = ChangeThem_png("消息记录界面.png");
-        surface_next = ChangeThem_png("翻页.png");
-        surface_upward = ChangeThem_png("上翻页.png");
-        surfaceclosebut1 = ChangeThem_png("关闭按钮1.png");
-        surfaceclosebut2 = ChangeThem_png("关闭按钮2.png");
-        surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
-        surface_calendar = ChangeThem_png("日历.png");
+    surface_record_background = ChangeThem_png("消息记录界面.png");
+    surface_next = ChangeThem_png("翻页.png");
+    surface_upward = ChangeThem_png("上翻页.png");
+    surfaceclosebut1 = ChangeThem_png("关闭按钮1.png");
+    surfaceclosebut2 = ChangeThem_png("关闭按钮2.png");
+    surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
+    surface_calendar = ChangeThem_png("日历.png");
 }
 
 //对聊天记录进行解码
@@ -156,33 +156,74 @@ gboolean show_record_message(void *data)
         buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(record_message->info->record_text)); //获得缓冲区buffer
         gtk_text_buffer_get_bounds(buffer, &start, &end);   //获取插入文本的始末位置
         p = localtime(&record_message->record_message_data[i].time); //获得该条聊天记录的聊天时间
+        /*在窗口里显示第一条记录的时间*/
         if (i == 0)
         {
             char date[50];
             sprintf(date, "  %d/%d/%d \n", p->tm_year + 1900, 1 + p->tm_mon, p->tm_mday);
-            gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date); //设置在聊天记录里的窗口
+            gtk_label_set_text(GTK_LABEL(record_message->info->record_date), date); //设置在聊天记录里的窗口时间
             PangoFontDescription *font;
             font = pango_font_description_from_string("Mono");//"Mono"字体名
             pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
             gtk_widget_override_font(record_message->info->record_date, font);
             gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
         }
+
+        time_t current_time;
+        time(&current_time);
+        struct tm current_ptime = *p;
         //判断此条聊天记录的发送者
         if (record_message->record_message_data[i].record_user_uid == record_message->info->user.uid)
         {
-            //是好友，则显示好友昵称
-            sprintf(nicheng_times,
-                    " %s  %d: %d: %d \n", record_message->info->user.nickName,
-                    p->tm_hour,
-                    p->tm_min,
-                    p->tm_sec);
+            //判断与当前时间是否相差18个小时，若相差大于18小时，则显示年月日
+            if (((current_time - record_message->record_message_data[i].time) / 3600) > 18)
+            {
+                //是好友，则显示好友昵称
+                sprintf(nicheng_times,
+                        " %s  %d/%d/%d %d: %d: %d \n", record_message->info->user.nickName,
+                        p->tm_year + 1900,
+                        p->tm_mon + 1,
+                        p->tm_mday,
+                        p->tm_hour,
+                        p->tm_min,
+                        p->tm_sec);
+            }
+            else
+            {
+                sprintf(nicheng_times,
+                        " %s  %d: %d: %d \n", record_message->info->user.nickName,
+                        p->tm_hour,
+                        p->tm_min,
+                        p->tm_sec);
+            }
             gtk_text_buffer_insert_with_tags_by_name(buffer, &end,
                                                      nicheng_times, -1, "blue_foreground", "size1", NULL);
         }
             //是用户自己则显示用户昵称
         else if (record_message->record_message_data[i].record_user_uid == CurrentUserInfo->uid)
         {
-            sprintf(nicheng_times, " %s  %d: %d: %d \n", CurrentUserInfo->nickName, p->tm_hour, p->tm_min, p->tm_sec);
+
+            //判断与当前时间是否相差18个小时，若相差大于18小时，则显示年月日
+            if (((current_time - record_message->record_message_data[i].time) / 3600) > 18)
+            {
+                //是好友，则显示好友昵称
+                sprintf(nicheng_times,
+                        " %s  %d/%d/%d %d: %d: %d \n", CurrentUserInfo->nickName,
+                        p->tm_year + 1900,
+                        p->tm_mon + 1,
+                        p->tm_mday,
+                        p->tm_hour,
+                        p->tm_min,
+                        p->tm_sec);
+            }
+            else
+            {
+                sprintf(nicheng_times,
+                        " %s  %d: %d: %d \n", CurrentUserInfo->nickName,
+                        p->tm_hour,
+                        p->tm_min,
+                        p->tm_sec);
+            }
             gtk_text_buffer_insert_with_tags_by_name(buffer, &end,
                                                      nicheng_times, -1, "red_foreground", "size1", NULL);
         }
@@ -444,7 +485,7 @@ static gint upward_button_release_event(GtkWidget *widget, GdkEventButton *event
         message_query_conditon->to = record_message->info->user.uid;
         message_query_conditon->time = -1;
         message_query_conditon->timeOperator = -2;
-        message_query_conditon->limit = 10;
+        message_query_conditon->limit = 8;
         message_query_conditon->messageType = UMT_TEXT;
         message_query_conditon->id = record_message->min_id;  //获得当前页最小id
         message_query_conditon->idOperator = -2; //申请小于当前页最小id的10条记录
@@ -480,13 +521,13 @@ static gint upward_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 static void calendar_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     RcordMessage *record_message = (RcordMessage *) data;
-    struct tm ptime;
+    struct tm ptime = {0};
     time_t times;
     guint year;
     guint month;
     guint day;
     gtk_calendar_get_date(GTK_CALENDAR(record_message->info->calendar), &year, &month, &day);/*取得选择的年月日*/
-    ptime.tm_year = year;
+    ptime.tm_year = year - 1900;
     ptime.tm_mon = month;
     ptime.tm_mday = day;
     times = mktime(&ptime);  //根据年月日取得时间戳
@@ -498,7 +539,7 @@ static void calendar_event(GtkWidget *widget, GdkEventButton *event, gpointer da
     message_query_conditon->to = record_message->info->user.uid;
     message_query_conditon->time = times;
     message_query_conditon->timeOperator = 1; //大于等于当前日期的
-    message_query_conditon->limit = 10;
+    message_query_conditon->limit = 8;
     message_query_conditon->messageType = UMT_TEXT;
     message_query_conditon->id = -1;
     message_query_conditon->idOperator = -2;
@@ -766,7 +807,7 @@ void ChartRecord(FriendInfo *info)
     message_query_conditon->to = record_message->info->user.uid;
     message_query_conditon->time = date_time;
     message_query_conditon->timeOperator = -2;  //小于当前时间
-    message_query_conditon->limit = 10;
+    message_query_conditon->limit = 8;
     message_query_conditon->messageType = UMT_TEXT;
     message_query_conditon->id = -1;
     message_query_conditon->idOperator = -2;

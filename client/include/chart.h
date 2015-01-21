@@ -17,6 +17,8 @@ struct UserTextInformation
 };
 extern struct UserTextInformation UserWordInfo;
 
+extern void LoadingIcon(FriendInfo *info);
+
 int OnAudioCloseMsg(gpointer p);
 int OnAudioRefuseMsg(gpointer p);
 gboolean ProcessAudioRequest(gpointer user_data);
