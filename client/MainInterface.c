@@ -9,11 +9,9 @@
 #include "common.h"
 #include "chartmessage.h"
 #include "onlylookinfo.h"
-#include "managegroup/ManageGroup.h"
-#include"manage_friend/friend.h"
+#include "ManageGroup.h"
+#include"friend.h"
 #include "SetupWind.h"
-#include "chart.h"
-#include "media.h"
 
 static GtkWidget *status;
 

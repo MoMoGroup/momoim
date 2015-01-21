@@ -1,5 +1,5 @@
-#include"../ClientSockfd.h"
-#include "../MainInterface.h"
+#include"../include/ClientSockfd.h"
+#include "../include/MainInterface.h"
 #include<stdlib.h>
 #include <common.h>
 #include <string.h>
