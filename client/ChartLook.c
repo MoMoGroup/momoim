@@ -85,15 +85,15 @@ void ChartLook(FriendInfo *info, gdouble event_x, gdouble event_y)
     gtk_widget_set_opacity(info->look_layout, 0.8); //设置窗口透明度
 
     //加载表情
-    smile = ChangeFace_file("1.png");
-    goodbye = ChangeFace_file("2.png");
-    lovely = ChangeFace_file("3.png");
-    angry = ChangeFace_file("4.png");
-    cry = ChangeFace_file("5.png");
-    poor = ChangeFace_file("6.png");
-    shy = ChangeFace_file("7.png");
-    nose = ChangeFace_file("8.png");
-    laughter = ChangeFace_file("9.png");
+    smile = gtk_image_new_from_file("/opt/momo/face/1.png");
+    goodbye = gtk_image_new_from_file("/opt/momo/face/2.png");
+    lovely = gtk_image_new_from_file("/opt/momo/face/3.png");
+    angry = gtk_image_new_from_file("/opt/momo/face/4.png");
+    cry = gtk_image_new_from_file("/opt/momo/face/5.png");
+    poor = gtk_image_new_from_file("/opt/momo/face/6.png");
+    shy = gtk_image_new_from_file("/opt/momo/face/7.png");
+    nose = gtk_image_new_from_file("/opt/momo/face/8.png");
+    laughter = gtk_image_new_from_file("/opt/momo/face/9.png");
 
     //添加表情事件
     smile_event_box = BuildEventBox(
