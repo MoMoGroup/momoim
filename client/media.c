@@ -24,12 +24,12 @@ static int popup_audio(gpointer p)
     return 0;
 }
 
-//对方同意请求时的弹窗
-static int popup_audio_request_accept(gpointer p)
-{
-    Popup("消息", "对方已接受了您的音频请求");
-    return 0;
-}
+////对方同意请求时的弹窗
+//static int popup_audio_request_accept(gpointer p)
+//{
+//    Popup("消息", "对方已接受了您的音频请求");
+//    return 0;
+//}
 
 //对方拒绝请求时的弹窗
 static int popup_video_request_refuse(gpointer p)
@@ -38,12 +38,12 @@ static int popup_video_request_refuse(gpointer p)
     return 0;
 }
 
-//对方同意请求时的弹窗
-static int popup_video_request_accept(gpointer p)
-{
-    Popup("消息", "对方已接受了您的视频请求");
-    return 0;
-}
+////对方同意请求时的弹窗
+//static int popup_video_request_accept(gpointer p)
+//{
+//    Popup("消息", "对方已接受了您的视频请求");
+//    return 0;
+//}
 
 //提示弹窗
 int popup_request_num_limit(gpointer p){
@@ -56,8 +56,9 @@ static int onAudioStop(void *data)
 }
 
 //调用这个函数时，视频函数已经结束，所以把videoflag置为0
-void HandleVideoFlag(){
+int HandleVideoFlag(){
     FlagVideo=0;
+    return 0;
 }
 
 
@@ -447,7 +448,7 @@ int DealVideoFeedback(CRPBaseHeader *header, void *data)
 //        pthread_t pthd_video;
 //        pthread_create(&pthd_video, NULL, primary_video, addr_opposite);
         FlagVideo=1;
-        StartVideoChat(addr_opposite,HandleVideoFlag);
+        StartVideoChat(addr_opposite,HandleVideoFlag,Popup);
 
         //用于标识现在是否有视频通话
 
@@ -509,7 +510,7 @@ gboolean TreatmentRequestVideoDiscover(gpointer user_data)
                 //primary_video(1,NULL);
                 //pthread_t pthd_video_recv;
                 //pthread_create(&pthd_video_recv, NULL, primary_video, NULL);
-                StartVideoChat(NULL,HandleVideoFlag);
+                StartVideoChat(NULL,HandleVideoFlag,Popup);
 
 
 

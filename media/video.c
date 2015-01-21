@@ -64,6 +64,8 @@ void closewindow();
 //用来更新视频标志位的函数指针
 static int (*update_video_flag)();
 
+static int(*popup)(char const*,char const*);
+
 
 int mark()
 {
@@ -232,7 +234,7 @@ void cancle_mem()
 gint delete_event(GtkWindow *window)
 {
     closewindow();
-    //popup("消息","视频已结束");
+    popup("消息","视频已结束");
     return FALSE;
 }
 
@@ -473,7 +475,8 @@ int guiMain(void *button)
     return 0;
 }
 
-void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)()){
+void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)(),int(*pupup_window)(char const*,char const*)){
+    popup=pupup_window;
     update_video_flag=update_flag;
     pthread_t pthd_video_recv;
     pthread_create(&pthd_video_recv, NULL, primary_video, (void*)addr);
