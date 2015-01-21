@@ -59,8 +59,6 @@ static void create_surfaces(FriendInfo *information)
     surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
     surfacecolor = ChangeThem_png("颜色.png");
     surfacechartrecord = ChangeThem_png("消息记录.png");
-
-
 }
 
 //加载聊天窗口头像

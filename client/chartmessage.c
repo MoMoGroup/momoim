@@ -266,22 +266,22 @@ int deal_with_file(CRPBaseHeader *header, void *data)
     }
     log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
 
-    if (header->packetID == CRP_PACKET_OK)
+    if (header->packetID == CRP_PACKET_OK)      //服务器准备接收函数
     {
-        if (file_message->file_loading_end == 0)
+        if (file_message->file_loading_end == 0)        //当文件未上传完毕时
         {
             char *filedata = (char *) malloc(4096);
             num = fread(filedata, sizeof(char), 4096, file_message->fp);
             if (num > 0)
             {
-                CRPFileDataSend(sockfd, header->sessionID, num, file_message->seq, filedata);
+                CRPFileDataSend(sockfd, header->sessionID, num, file_message->seq, filedata);   //上传文件内容
                 file_message->file_count = file_message->file_count + num;
                 file_message->seq++;
             }
-            else
+            else        //文件读取完毕时
             {
                 fclose(file_message->fp);
-                CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
+                CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);  //发送结束的信号
                 ret = 0;
                 session_id_t sessionID = CountSessionId();
                 CRPMessageNormalSend(sockfd, sessionID, UMT_FILE_OFFLINE,
@@ -290,7 +290,7 @@ int deal_with_file(CRPBaseHeader *header, void *data)
                                      file_message->image_message_data->charlen,
                                      file_message->image_message_data->message_data
                                     );
-                file_message->file_loading_end = 1;
+                file_message->file_loading_end = 1;       //文件结束
             }
             free(filedata);
 
@@ -369,6 +369,7 @@ void UploadingFile(gchar *filename, FriendInfo *info)
     memcpy(file_messge->image_message_data->message_data + filename_len - i + 3, strdest, 16);
     file_messge->image_message_data->charlen = filename_len - i + 3 + 16;
 
+    //设置进度条上的内容
     if (stat_buf.st_size / 1048576.0 > 0)
     {
         sprintf(sendfile_size, "\t %s \n \t大小为：%.2f M", filename + i + 1, stat_buf.st_size / 1048576.0);
@@ -398,7 +399,6 @@ void CodingTextImage(FriendInfo *info, gchar *coding, int *count)
 {
     gchar *char_rear = coding + *count;
     gunichar c;
-
     GtkTextIter iter;
     GtkTextChildAnchor *anchor;
     int num;
@@ -406,40 +406,41 @@ void CodingTextImage(FriendInfo *info, gchar *coding, int *count)
     gtk_text_buffer_get_start_iter(info->input_buffer, &iter);
 
     //编码字符串和图片
-    while (!gtk_text_iter_is_end(&iter))
+    while (!gtk_text_iter_is_end(&iter))    //让缓冲区一直往下找内容，直到找不到为止
     {
         anchor = gtk_text_iter_get_child_anchor(&iter);
-        if (anchor == NULL)
+        if (anchor == NULL)                                //对普通文字的编码
         {
 
             c = gtk_text_iter_get_char(&iter);
             num = g_unichar_to_utf8(c, char_rear);
             char_rear = char_rear + num;
         }
-        else
+        else                                    //对图片的编码
         {
             char_rear[0] = 0;
             char_rear[1] = 0;
             char_rear = char_rear + 2;
             GList *list = gtk_text_child_anchor_get_widgets(anchor);
-            GtkWidget *imageWidget = g_list_nth_data(list, 0);
+            GtkWidget *imageWidget = g_list_nth_data(list, 0);  //得到控件
             g_list_free(list);
-            gchar *src = g_object_get_data(G_OBJECT(imageWidget), "ImageSrc");
+            gchar *src = g_object_get_data(G_OBJECT(imageWidget), "ImageSrc");  //从控件里拿到存储的路径
             Md5Coding(src, (unsigned char *) char_rear);
             char targetfilename[256] = {0};
             HexadecimalConversion(targetfilename, (const unsigned char *) char_rear); //进制转换，将MD5值的字节流转换成十六进制
             CopyFile(src, targetfilename);
             char_rear = char_rear + MD5_DIGEST_LENGTH;
         }
-        gtk_text_iter_forward_char(&iter);
+        gtk_text_iter_forward_char(&iter);  //让缓冲区一直往下找内容，直到找不到为止
     }
-    *count = char_rear - coding;
+    *count = char_rear - coding;    //编码的总数
 
 }
 
+//与服务器交互的处理消息图片函数，上传图片
 int deal_with_message(CRPBaseHeader *header, void *data)
 {
-    struct PictureMessageFileUploadingData *photomessage = (struct PictureMessageFileUploadingData *) data;
+    struct PictureMessageFileUploadingData *photomessage = (struct PictureMessageFileUploadingData *) data; //每个图片的结构体
     char *imagedata = (char *) malloc(4096);
     size_t num;
     int ret = 1;
@@ -458,7 +459,7 @@ int deal_with_message(CRPBaseHeader *header, void *data)
     }
     log_info("Message", "Packet id :%d,SessionID:%d\n", header->packetID, header->sessionID);
 
-    if (header->packetID == CRP_PACKET_OK)
+    if (header->packetID == CRP_PACKET_OK)      //服务器准备接收上传
     {
         if (photomessage->fp != NULL)
         {
@@ -466,14 +467,16 @@ int deal_with_message(CRPBaseHeader *header, void *data)
             num = fread(imagedata, sizeof(char), 4096, photomessage->fp);
             if (num > 0)
             {
-                CRPFileDataSend(sockfd, header->sessionID, num, photomessage->seq, imagedata);
+                CRPFileDataSend(sockfd, header->sessionID, num, photomessage->seq, imagedata); //上传图片内容
                 photomessage->seq++;
             }
-            else
+            else    //当这个图片读完时
             {
                 fclose(photomessage->fp);
                 CRPFileDataEndSend(sockfd, header->sessionID, FEC_OK);
-                photomessage->image_message_data->imagecount--;
+                photomessage->image_message_data->imagecount--;         //待上传的图片总数减1
+
+                //确定图片完全找到和完全上传
                 if (photomessage->image_message_data->imagecount == 0 && photomessage->image_message_data->image_find_end == 1)
                 {
                     session_id_t sessionID = CountSessionId();
@@ -489,14 +492,17 @@ int deal_with_message(CRPBaseHeader *header, void *data)
             }
         }
     }
+        //当服务器已经存在这个图片时
     else if (header->packetID == CRP_PACKET_FILE_DATA_END)
     {
         if (photomessage->fp != NULL)
         {
             fclose(photomessage->fp);
         }
-        photomessage->image_message_data->imagecount--;
+        photomessage->image_message_data->imagecount--; //待上传的图片总数减1
         log_info("sdaos", "%d pictures remaining\n", photomessage->image_message_data->imagecount);
+
+        //确定图片完全找到和完全上传
         if (photomessage->image_message_data->imagecount == 0 && photomessage->image_message_data->image_find_end == 1)
         {
             CRPMessageNormalSend(sockfd, photomessage->image_message_data->uid, UMT_TEXT,
@@ -513,11 +519,12 @@ int deal_with_message(CRPBaseHeader *header, void *data)
     return ret;
 }
 
+//发送消息
 int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
 {
     int i = 0;
-    int isimageflag = 0;
-
+    int isimageflag = 0; //判断是否有图片的标志位
+    //初始化文件的信息
     struct ImageMessageFileData *image_message_data_state
             = (struct ImageMessageFileData *) malloc(sizeof(struct ImageMessageFileData));
     image_message_data_state->imagecount = 0;
@@ -527,7 +534,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
     image_message_data_state->image_find_end = 0;
     while (i < charlen)
     {
-        if (char_text[i] != '\0')
+        if (char_text[i] != '\0')   //普通文字
         {
             i++;
         }
@@ -536,7 +543,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
 
             switch (char_text[i + 1])
             {
-                case 1:
+                case 1:          //字体类型
                 {
                     i++;
                     while (char_text[i] != '\0')
@@ -546,7 +553,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                     i++;
                     break;
                 };
-                case 2 :
+                case 2 :        //是否斜体
                 {
                     i += 3;
                 };
@@ -568,7 +575,7 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                 };
                 case 0 : //上传图片
                 {
-                    isimageflag = 1;
+                    isimageflag = 1; //存在图片
                     char filename[256] = {0};
                     unsigned char strdest[17] = {0};
                     struct stat stat_buf;
@@ -576,14 +583,14 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
                     struct PictureMessageFileUploadingData *imagemessge
                             = (struct PictureMessageFileUploadingData *) malloc(sizeof(struct PictureMessageFileUploadingData));
                     i += 2;
-                    memcpy(strdest, &char_text[i], 16);
+                    memcpy(strdest, &char_text[i], 16); //获取key值
                     HexadecimalConversion(filename, strdest); //进制转换，将MD5值的字节流转换成十六进制
                     stat(filename, &stat_buf);
                     session_id = CountSessionId();
                     imagemessge->seq = 0;
-                    imagemessge->fp = (fopen(filename, "r"));
-                    imagemessge->image_message_data = image_message_data_state;
-                    imagemessge->image_message_data->imagecount++;
+                    imagemessge->fp = (fopen(filename, "r"));  //打开文件准备读的状态
+                    imagemessge->image_message_data = image_message_data_state; //存储着消息的数据
+                    imagemessge->image_message_data->imagecount++;              //图片的个数
                     AddMessageNode(session_id, deal_with_message, imagemessge);
                     CRPFileStoreRequestSend(sockfd,
                                             session_id,
@@ -610,11 +617,11 @@ int image_message_send(gchar *char_text, FriendInfo *info, int charlen)
         }
         else
         {
-            image_message_data_state->image_find_end = 1;
+            image_message_data_state->image_find_end = 1;  //判断消息里的图片是否全部找到
         }
     }
 
-    if (isimageflag == 0)
+    if (isimageflag == 0)       //当仅有文字信息时
     {
         CRPMessageNormalSend(sockfd, info->user.uid, UMT_TEXT, info->user.uid, 0, charlen, char_text);
         free(char_text);
@@ -636,7 +643,7 @@ void SendText(FriendInfo *info)
         printf("Malloc error!\n");
         exit(1);
     }
-    // CodingWordColor(info, char_text, &count); //字体编码
+    //判断字体是否已经编码过了。
     if (UserWordInfo.coding_font_color != NULL)
     {
         memcpy(char_text, UserWordInfo.coding_font_color, UserWordInfo.codinglen);
@@ -646,7 +653,7 @@ void SendText(FriendInfo *info)
     {
         CodingWordColor(info, char_text, &count); //字体编码
     }
-    cmpcount = count;
+    cmpcount = count;  //cmpcount是字体编码的长度
     CodingTextImage(info, char_text, &count); //字符串和图片编码
     if (count > cmpcount)        //避免无内容的发送
     {
