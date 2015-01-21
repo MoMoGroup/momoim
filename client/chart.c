@@ -169,6 +169,7 @@ gboolean ProcessAudioRequest(gpointer user_data)
         }
     }
     free(user_data);
+    return 0;
 }
 
 //背景的eventbox
