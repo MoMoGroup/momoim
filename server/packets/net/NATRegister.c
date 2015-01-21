@@ -22,7 +22,6 @@ static int DiscoverCancelHandler(POnlineUser user, PUserOperation op)
         free(discoverOperation);
     }
     op->onCancel = NULL;
-    UserOperationUnregister(user, op);
     return 0;
 }
 

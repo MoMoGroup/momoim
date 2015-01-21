@@ -116,7 +116,7 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                     if (-1 == fd)
                     {
 
-                        if (errno == EWOULDBLOCK)   //如果已经没有客户端可Accept了
+                        if (errno == EWOULDBLOCK || errno == EAGAIN)   //如果已经没有客户端可Accept了
                         {
                             break;//退出循环,执行下一个事件
                         }
@@ -130,7 +130,7 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                     }
 
                     pthread_mutex_lock(&banListLock);
-
+                    //处理禁止访问IP表
                     for (size_t i = 0; i < banCount; ++i)
                     {
                         if (banList[i] == addr.sin_addr.s_addr)
@@ -154,21 +154,20 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
             else if (events[i].data.ptr == (void *) -1) //NAT发现
             {
                 addrLen = sizeof(idxSock);
+                //尝试接收32字节密钥
                 if (32 == recvfrom(sockIdx, keyBuffer, sizeof(keyBuffer), 0, (struct sockaddr *) &idxSock, &addrLen))
                 {
+                    //尝试发现
                     if (NatHostDiscoverNotify(&idxSock, keyBuffer))
                     {
+                        //发现成功,回复发现密钥
                         sendto(sockIdx, keyBuffer, 32, 0, (struct sockaddr *) &idxSock, addrLen);
                     }
                     else
                     {
-                        log_warning("NATIndex", "Notify Failure\n");
+                        //发现失败,回复32字节0
                         sendto(sockIdx, (uint8_t[32]) {0,}, 32, 0, (struct sockaddr *) &idxSock, addrLen);
                     }
-                }
-                else
-                {
-                    log_warning("NATIndex", "Length Error,%s\n", strerror(errno));
                 }
             }
             else

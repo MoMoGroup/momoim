@@ -9,7 +9,7 @@
 #include <server.h>
 #include <ctype.h>
 
-//
+//命令列表
 const char *commands[] = {
         "list",
         "kick",
@@ -17,6 +17,7 @@ const char *commands[] = {
         "unban",
         "stop"
 };
+//命令描述
 const char *commandDesc[] = {
         "List all online users",
         "Kick out user",
@@ -24,6 +25,7 @@ const char *commandDesc[] = {
         "Allow an host connect to server",
         "Safely stop server"
 };
+//命令参数说明
 const char *commandArgs[] = {
         "",
         "<uid>",
@@ -32,7 +34,7 @@ const char *commandArgs[] = {
         ""
 };
 
-
+//命令执行函数
 void (*const commandFunc[])(const char *) = {
         CLIList,
         CLIKick,
@@ -41,6 +43,7 @@ void (*const commandFunc[])(const char *) = {
         CLIStop
 };
 
+// 打印菜单
 static void printMenu()
 {
     printf("MoMO Server:\n");
@@ -51,11 +54,14 @@ static void printMenu()
     printf(":");
 }
 
+//停止服务器
 void CLIStop(const char *arg)
 {
+    //将IsServerRunning标记为0就好了
     IsServerRunning = 0;
 }
 
+//将用户踢出服务器
 void CLIKick(const char *arg)
 {
     uint32_t uid = (uint32_t) atol(arg);
@@ -70,7 +76,7 @@ void CLIKick(const char *arg)
         printf("User not found.\n");
     }
 }
-
+//禁止指定IP连接到服务器
 void CLIBan(const char *arg)
 {
     struct in_addr ip;
@@ -84,7 +90,7 @@ void CLIBan(const char *arg)
         printf("OK\n");
     }
 }
-
+//解除IP限制
 void CLIUnban(const char *arg)
 {
 
@@ -99,13 +105,13 @@ void CLIUnban(const char *arg)
         printf("OK\n");
     }
 }
-
+//列出所有在线用户
 void CLIList(const char *arg)
 {
     printf("Online User List:\n");
     UserManagerListOnline();
 }
-
+//处理一次CLI界面指令
 int CLIHandle()
 {
     printMenu();

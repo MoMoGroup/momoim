@@ -15,5 +15,5 @@ cp */*.so ../momo-client_0.0.1/opt/momo
 chmod -x ../momo-client_0.0.1/opt/momo/*.so
 cp client/client ../momo-client_0.0.1/opt/momo/client
 cd ../
-dpkg-deb -b momo-server_0.0.1 deb
-dpkg-deb -b momo-client_0.0.1 deb
+fakeroot dpkg-deb -b momo-server_0.0.1 deb
+fakeroot dpkg-deb -b momo-client_0.0.1 deb

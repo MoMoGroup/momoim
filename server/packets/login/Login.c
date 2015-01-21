@@ -38,9 +38,9 @@ int ProcessPacketLoginLogin(POnlineUser user, uint32_t session, CRPPacketLogin *
             }
             time(&onlineUser->info->loginTime);
             user = onlineUser;
-            EpollAdd(user);      //允许下一帧数据包
             log_info("Login-Login", "User %s (ID:%u) Login Successful.\n", packet->username, uid);
             CRPLoginAcceptSend(user->crp, session, uid);
+            EpollAdd(user);      //允许下一帧数据包
         }
     }
     else

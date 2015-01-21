@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <openssl/md5.h>
 
-#define CLIENT_COUNT 200
+#define CLIENT_COUNT 100
 
 pthread_t child[CLIENT_COUNT];
 unsigned char hash[16];
