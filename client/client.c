@@ -22,7 +22,7 @@ static GtkWidget *window;
 typedef struct cunchu
 {
     char cunchu_name[40];
-    char cunchu_pwd[16];
+    char cuncshijhu_pwd[16];
     uint32_t cunchu_uid;
     char cunchu_lujing[16];
 };
@@ -333,7 +333,7 @@ static gint combo_change_event()
         {
             if (strcmp(name, str_cunchu[i].cunchu_name) == 0)
             {
-                gtk_test_text_set(LoginWindowPassWordBox, str_cunchu[i].cunchu_pwd);
+                gtk_test_text_set(LoginWindowPassWordBox, str_cunchu[i].cuncshijhu_pwd);
                 HexadecimalConversion(buflujing, str_cunchu[i].cunchu_lujing);
                 //加载一个图片
                 surface = cairo_image_surface_create_from_png(buflujing);
@@ -1047,6 +1047,12 @@ gboolean LoadLoginLayout(gpointer user_data)
 
     g_signal_connect(LoginWindowUserNameBox, "changed", G_CALLBACK(combo_change_event), NULL);//账号修改触发
     g_signal_connect(LoginWindowPassWordBox, "changed", G_CALLBACK(passwd_change_event), NULL);//密码修改触发
+
+    g_signal_connect(G_OBJECT(nameEntry), "activate", G_CALLBACK(on_button_clicked), nameEntry);
+    g_signal_connect(G_OBJECT(LoginWindowPassWordBox),
+                     "activate",
+                     G_CALLBACK(on_button_clicked),
+                     LoginWindowPassWordBox);
 
 //从本地读取账号记录
     sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
