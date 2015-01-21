@@ -344,7 +344,7 @@ void *pthread_rev(void *socketrev)
     return NULL;
 }
 
-
+//循环画视频界面
 gboolean idleDraw(gpointer data)
 {
     if (flag_idle) return 0;
@@ -362,9 +362,9 @@ gboolean idleDraw(gpointer data)
     pthread_cond_signal(&recv_idle);
     pthread_mutex_unlock(&mutex_recv);
     //read_JPEG_file(q_recv.jpeg_buf, rgbBuf);
+    //将jpeg格式图片转换为rgb
     if (read_JPEG_file(q_recv->jpeg_buf, (char *) rgbBuf, (size_t) q_recv->jpeglen))
     {
-        ////////////////////////////////////////////////////////////////////////////////////////////
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(rgbBuf, GDK_COLORSPACE_RGB, 0, 8, 640, 480, 640 * 3, NULL, NULL);
         GtkImage *image = (GtkImage *) data;
         gtk_image_set_from_pixbuf(image, pixbuf);
@@ -372,7 +372,6 @@ gboolean idleDraw(gpointer data)
     }
     free(q_recv);
     q_recv = NULL;
-    ///////////////////////////////////////////////////////////////////////////////////////////
     return 1;
 }
 
@@ -383,7 +382,7 @@ void closewindow()
 //    pthread_detach(tid2);
 //    pthread_detach(tid3);
 
-    log_info("CloseWind", "Window is closing.\n");
+    //log_info("CloseWind", "Window is closing.\n");
     if(flag_idle==1) return ;
     flag_idle = 1;
     flag_main_idle = 1;
@@ -480,7 +479,6 @@ void StartVideoChat(struct sockaddr_in *addr,int (*update_flag)(),int(*pupup_win
     update_video_flag=update_flag;
     pthread_t pthd_video_recv;
     pthread_create(&pthd_video_recv, NULL, primary_video, (void*)addr);
-    pthread_join(pthd_video_recv, NULL);
 }
 
 //视频聊天的函数入口
