@@ -37,9 +37,9 @@ cairo_surface_t *surface_status, *surface_status2;
 //换肤变量
 static GtkWidget *huanfuwindow;
 static GtkWidget *huanfuLayout;
-static GtkWidget *iback, *isure, *icancel, *ipic1, *ipic2, *ipic3;
-static cairo_surface_t *sbackground, *ssure1, *ssure2, *scancel1, *scancel2, *spic11, *spic12, *spic21, *spic22, *spic31, *spic32;
-static GtkEventBox *back_event_box, *sure_event_box, *cancel_event_box, *ipic1_event_box, *ipic2_event_box, *ipic3_event_box;
+static GtkWidget *iback, *isure, *icancel, *ipic1, *ipic2, *ipic3, *ipic4;
+static cairo_surface_t *sbackground, *ssure1, *ssure2, *scancel1, *scancel2, *spic11, *spic12, *spic21, *spic22, *spic31, *spic32, *spic41, *spic42;
+static GtkEventBox *back_event_box, *sure_event_box, *cancel_event_box, *ipic1_event_box, *ipic2_event_box, *ipic3_event_box, *ipic4_event_box;
 int FlagChange = 1;
 
 /**********换肤窗口********/
@@ -119,6 +119,19 @@ static gint sure_button_release_event(GtkWidget *widget, GdkEventButton *event,
             DestoryMainInterface();
             MainInterFace();
         }
+        if (FlagChange == 4)
+        {
+            //换肤成lol
+            char mulu_benji[80], mulu_thempath[80], mulu_themnewpath[80];
+            sprintf(mulu_benji, "%s/.momo", getpwuid(getuid())->pw_dir);//获取本机主目录
+            sprintf(mulu_thempath, "%s/current_theme", mulu_benji);
+            unlink(mulu_thempath);
+            sprintf(mulu_themnewpath, "theme/animal/");
+            symlink(mulu_themnewpath, mulu_thempath);
+
+            DestoryMainInterface();
+            MainInterFace();
+        }
         gtk_widget_destroy(huanfuwindow);
     }
 
@@ -161,6 +174,7 @@ static gint ipic1_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) ipic1, spic12);
         gtk_image_set_from_surface((GtkImage *) ipic2, spic21);
         gtk_image_set_from_surface((GtkImage *) ipic3, spic31);
+        gtk_image_set_from_surface((GtkImage *) ipic4, spic41);
         FlagChange = 1;
     }
 
@@ -175,6 +189,7 @@ static gint ipic2_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) ipic2, spic22);
         gtk_image_set_from_surface((GtkImage *) ipic1, spic11);
         gtk_image_set_from_surface((GtkImage *) ipic3, spic31);
+        gtk_image_set_from_surface((GtkImage *) ipic4, spic41);
         FlagChange = 2;
     }
 
@@ -190,7 +205,24 @@ static gint ipic3_button_release_event(GtkWidget *widget, GdkEventButton *event,
         gtk_image_set_from_surface((GtkImage *) ipic3, spic32);
         gtk_image_set_from_surface((GtkImage *) ipic1, spic11);
         gtk_image_set_from_surface((GtkImage *) ipic2, spic21);
+        gtk_image_set_from_surface((GtkImage *) ipic4, spic41);
         FlagChange = 3;
+    }
+
+    return 0;
+}
+
+//抬起 皮肤4
+static gint ipic4_button_release_event(GtkWidget *widget, GdkEventButton *event,
+                                       gpointer data)
+{
+    if (event->button == 1)
+    {
+        gtk_image_set_from_surface((GtkImage *) ipic4, spic42);
+        gtk_image_set_from_surface((GtkImage *) ipic1, spic11);
+        gtk_image_set_from_surface((GtkImage *) ipic2, spic21);
+        gtk_image_set_from_surface((GtkImage *) ipic3, spic31);
+        FlagChange = 4;
     }
 
     return 0;
@@ -221,7 +253,8 @@ void changethemeface()
     spic22 = ChangeThem_png("小清新2.png");
     spic31 = ChangeThem_png("LOL.png");
     spic32 = ChangeThem_png("LOL2.png");
-
+    spic41 = ChangeThem_png("萌宠.png");
+    spic42 = ChangeThem_png("萌宠2.png");
 
     iback = gtk_image_new_from_surface(sbackground);
     isure = gtk_image_new_from_surface(ssure1);
@@ -229,6 +262,7 @@ void changethemeface()
     ipic1 = gtk_image_new_from_surface(spic11);
     ipic2 = gtk_image_new_from_surface(spic21);
     ipic3 = gtk_image_new_from_surface(spic31);
+    ipic4 = gtk_image_new_from_surface(spic41);
 
 
 
@@ -264,6 +298,13 @@ void changethemeface()
                                     G_CALLBACK(ipic3_button_release_event),
                                     NULL,
                                     NULL);
+    ipic4_event_box = BuildEventBox(ipic4,
+                                    NULL,
+                                    NULL,
+                                    NULL,
+                                    G_CALLBACK(ipic4_button_release_event),
+                                    NULL,
+                                    NULL);
 
     sure_event_box = BuildEventBox(isure,
                                    G_CALLBACK(sure_button_press_event),
@@ -284,9 +325,10 @@ void changethemeface()
     //布局
     gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(back_event_box), 0, 0);//起始坐标
     gtk_widget_set_size_request(GTK_WIDGET(iback), 432, 238);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic1_event_box), 20, 70);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic2_event_box), 155, 70);
-    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic3_event_box), 290, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic1_event_box), 10, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic2_event_box), 125, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic3_event_box), 240, 70);
+    gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(ipic4_event_box), 355, 70);
     gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(sure_event_box), 240, 205);
     gtk_fixed_put(GTK_FIXED(huanfuLayout), GTK_WIDGET(cancel_event_box), 340, 205);
 
@@ -1248,9 +1290,12 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
 
 static void tray_on_click(GtkStatusIcon *status_icon, gpointer user_data)
 {
-    if(gtk_widget_get_visible(window)){
+    if (gtk_widget_get_visible(window))
+    {
         gtk_widget_hide(window);
-    }else{
+    }
+    else
+    {
         gtk_widget_show(window);
     }
 }
@@ -1534,10 +1579,8 @@ int MainInterFace()
     GtkWidget *delete;
     GtkWidget *rename;
     GtkWidget *addpeople;
-    GtkWidget *Refresh;
     GtkWidget *sendmsg;
     GtkWidget *deletefriend;
-    //GtkWidget *remark;
     GtkWidget *sendfile;
     GtkWidget *lookinfo;
     //分组菜单
@@ -1565,9 +1608,6 @@ int MainInterFace()
     addpeople = gtk_menu_item_new_with_mnemonic("添加联系人");
     gtk_container_add(GTK_CONTAINER(menu1), addpeople);
     gtk_widget_show(addpeople);
-    Refresh = gtk_menu_item_new_with_mnemonic("刷新好友列表");
-    gtk_container_add(GTK_CONTAINER(menu1), Refresh);
-    gtk_widget_show(Refresh);
 
     /*g_signal_connect(G_OBJECT(treeView), "button_press_event",
                      G_CALLBACK(button2_press_event2), (gpointer) menu1);*/
@@ -1608,9 +1648,6 @@ int MainInterFace()
     //remark = gtk_menu_item_new_with_mnemonic("修改备注");
     //gtk_container_add(GTK_CONTAINER(menu2), remark);
     //gtk_widget_show(remark);
-    sendfile = gtk_menu_item_new_with_mnemonic("发送文件");
-    gtk_container_add(GTK_CONTAINER(menu2), sendfile);
-    gtk_widget_show(sendfile);
     lookinfo = gtk_menu_item_new_with_mnemonic("查看资料");
     gtk_container_add(GTK_CONTAINER(menu2), lookinfo);
     gtk_widget_show(lookinfo);
