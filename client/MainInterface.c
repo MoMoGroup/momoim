@@ -12,6 +12,8 @@
 #include "ManageGroup.h"
 #include"friend.h"
 #include "SetupWind.h"
+#include "chart.h"
+#include "media.h"
 
 static GtkWidget *status;
 

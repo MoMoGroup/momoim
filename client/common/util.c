@@ -3,8 +3,8 @@
 #include <protocol/base.h>
 #include <glib-unix.h>
 #include "common.h"
-#include "../include/ClientSockfd.h"
-#include "../include/MainInterface.h"
+#include "ClientSockfd.h"
+#include "MainInterface.h"
 #include <string.h>
 #include <pwd.h>
 
