@@ -10,7 +10,7 @@
 #include <sys/stat.h>
 #include <pwd.h>
 #include <arpa/inet.h>
-#include "MainInterface.h"
+#include <friend.h>
 #include "common.h"
 #include "UpdataFriendList.h"
 #include "media.h"
@@ -92,14 +92,14 @@ gboolean postMessage(gpointer user_data)
     switch (packet->messageType)
     {
 
-        case UMT_FILE_OFFLINE:
+        case UMT_FILE_OFFLINE://文件传输
         {
             //好友消息声音
             PlayMusic("好友消息.wav");
             char *message = (char *) malloc(packet->messageLen);
             memcpy(message, packet->message, packet->messageLen);
             //fun();
-            RecdServerFileMsg(message, packet->messageLen, packet->uid);
+            RecdServerFileMsg(message, packet->messageLen, packet->uid, packet->time);
             free(message);
             if ((void *) packet != header->data)
             {
@@ -107,13 +107,13 @@ gboolean postMessage(gpointer user_data)
             }
             break;
         }
-        case UMT_TEXT:
+        case UMT_TEXT://文本消息
         { //好友消息声音
             PlayMusic("好友消息.wav");
             char *message = (char *) malloc(packet->messageLen);
             memcpy(message, packet->message, packet->messageLen);
             //fun();
-            RecdServerMsg(message, packet->messageLen, packet->uid);
+            RecdServerMsg(message, packet->messageLen, packet->uid, packet->time);
             free(message);
             if ((void *) packet != header->data)
             {

@@ -177,6 +177,7 @@ int gengxin_ziliao(void *data)
     {
         infodata->user.uid;
         LoadingIcon(infodata);
+
     }
 
     gtk_tree_store_set(TreeViewListStore, &iterUser,

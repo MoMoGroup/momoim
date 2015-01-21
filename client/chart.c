@@ -59,8 +59,6 @@ static void create_surfaces(FriendInfo *information)
     surfaceclosebut3 = ChangeThem_png("关闭按钮3.png");
     surfacecolor = ChangeThem_png("颜色.png");
     surfacechartrecord = ChangeThem_png("消息记录.png");
-
-
 }
 
 //加载聊天窗口头像
@@ -89,6 +87,9 @@ void LoadingIcon(FriendInfo *info)
     cairo_paint(cr);
     cairo_destroy(cr);
     cairo_surface_destroy(surface);
+    //头像
+    info->imagehead3 = gtk_image_new_from_surface(surfacehead3);
+    gtk_fixed_put(GTK_FIXED(info->chartlayout), info->imagehead3, 15, 8);
 }
 //对方拒绝请求时的弹窗
 int OnAudioRefuseMsg(gpointer p)
@@ -1082,8 +1083,6 @@ int MainChart(FriendInfo *friendinfonode)
     gtk_window_set_decorated(GTK_WINDOW(friendinfonode->chartwindow), FALSE);   // 去掉边框
 
     create_surfaces(friendinfonode);
-    LoadingIcon(friendinfonode);
-
     friendinfonode->imageflowerbackgroud = gtk_image_new_from_surface(schartbackgroud);
     friendinfonode->imagesend = gtk_image_new_from_surface(surfacesend1);
     friendinfonode->imagevoice = gtk_image_new_from_surface(surfacevoice1);
@@ -1222,6 +1221,8 @@ int MainChart(FriendInfo *friendinfonode)
 
 //背景
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(chartbackground_event_box), 0, 0);
+
+    LoadingIcon(friendinfonode);
     //逆臣  //daxiao
     GtkWidget *nicheng;
     PangoFontDescription *font;
@@ -1260,9 +1261,7 @@ int MainChart(FriendInfo *friendinfonode)
     //聊天记录
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(chartrecord_event_box), 420, 410);
     //
-//头像
-    friendinfonode->imagehead3 = gtk_image_new_from_surface(surfacehead3);
-    gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), friendinfonode->imagehead3, 15, 8);
+
 
     //创建发送文本框，和接受文本框
     friendinfonode->input_text = gtk_text_view_new();
