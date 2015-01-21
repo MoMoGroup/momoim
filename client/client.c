@@ -23,6 +23,7 @@ typedef struct cunchu
 {
     char cunchu_name[40];
     char cunchu_pwd[16];
+    uint32_t cunchu_uid;
     char cunchu_lujing[16];
 };
 struct cunchu str_cunchu[20];
@@ -32,7 +33,7 @@ int FlagRemember = 0;
 int FirstPwd = 0;
 char mulu_username[80] = "", mulu_benji[80] = "";
 
-static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd, *sremember1, *sremember2;
+static cairo_surface_t *sbackground, *sheadimage, *slandbut1, *slandbut2, *slandbut3, *sremember1, *sremember2;
 static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *scancel10_1, *scancel10_2, *scancel10_3;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
 static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
@@ -183,12 +184,9 @@ create_surfaces1()
     ssun = ChangeThem_file("1.gif");
     sbackground = ChangeThem_png("背景2.png");
     sheadimage = ChangeThem_png("头像.png");
-    swhite = ChangeThem_png("白色.png");
     slandbut1 = ChangeThem_png("登陆按钮.png");
     slandbut2 = ChangeThem_png("登陆按钮2.png");
     slandbut3 = ChangeThem_png("登陆按钮3.png");
-    saccount = ChangeThem_png("账号.png");
-    spasswd = ChangeThem_png("密码.png");
     sregistered1 = ChangeThem_png("注册账号.png");
     sregistered2 = ChangeThem_png("注册账号2.png");
     sclosebut1 = ChangeThem_png("关闭按钮1.png");
@@ -207,12 +205,9 @@ destroy_surfaces()
     g_print("destroying surfaces1");
     cairo_surface_destroy(sbackground);
     cairo_surface_destroy(sheadimage);
-    cairo_surface_destroy(swhite);
     cairo_surface_destroy(slandbut1);
     cairo_surface_destroy(slandbut2);
     cairo_surface_destroy(slandbut3);
-    cairo_surface_destroy(saccount);
-    cairo_surface_destroy(spasswd);
     cairo_surface_destroy(sregistered1);
     cairo_surface_destroy(sregistered2);
     cairo_surface_destroy(sclosebut1);
@@ -327,6 +322,7 @@ static gint combo_change_event()
     //把画笔和图片相结合。
     cairo_set_source_surface(cr, surface, 0, 0);
     cairo_paint(cr);
+
     gtk_image_set_from_surface((GtkImage *) imagehead, surfacehead2);
 
     name = gtk_combo_box_text_get_active_text(LoginWindowUserNameBox);
@@ -955,7 +951,7 @@ gboolean LoadLoginLayout(gpointer user_data)
 {
     //加载loginlayout
     create_surfaces1();
-    GtkWidget *imagebackground, *imagewhite, *imageaccount, *imagepasswd;
+    GtkWidget *imagebackground;
     GtkWidget *iwait;
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 
@@ -972,10 +968,7 @@ gboolean LoadLoginLayout(gpointer user_data)
     iwait = ChangeThem_file("等待.gif");
     imagebackground = gtk_image_new_from_surface(sbackground);
     imagehead = gtk_image_new_from_surface(sheadimage);
-    imagewhite = gtk_image_new_from_surface(swhite);
     imagelandbut = gtk_image_new_from_surface(slandbut1);
-    imageaccount = gtk_image_new_from_surface(saccount);
-    imagepasswd = gtk_image_new_from_surface(spasswd);
     imageregistered = gtk_image_new_from_surface(sregistered1);
     imageclosebut = gtk_image_new_from_surface(sclosebut1);
     imagecancel = gtk_image_new_from_surface(scancel10_1);
@@ -1038,15 +1031,15 @@ gboolean LoadLoginLayout(gpointer user_data)
     pendingLayout = gtk_fixed_new();
     loginLayout = gtk_fixed_new();
 
+
     //设置两个输入框
     LoginWindowUserNameBox = gtk_combo_box_text_new_with_entry();
     GtkEntry *nameEntry = GTK_ENTRY(gtk_bin_get_child(LoginWindowUserNameBox));
-    gtk_entry_set_width_chars(nameEntry, 15);
+    gtk_entry_set_width_chars(nameEntry,19);
 
     LoginWindowPassWordBox = gtk_entry_new();
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度
-    //   gtk_combo_box_set_active(LoginWindowUserNameBox, 0); //设置id0为默认的输入
-    //   gtk_combo_box_set_active(LoginWindowPassWordBox, 1); //设置id0为默认的输入
+
     gtk_entry_set_has_frame(nameEntry, FALSE);
     gtk_entry_set_has_frame((GtkEntry *) LoginWindowPassWordBox, FALSE);
     gtk_entry_set_visibility(GTK_ENTRY(LoginWindowPassWordBox), FALSE);
@@ -1080,10 +1073,7 @@ gboolean LoadLoginLayout(gpointer user_data)
 //放置组件的相对位置
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(backgroundevent_box), 0, 0);//起始坐标
     gtk_fixed_put(GTK_FIXED(loginLayout), imagehead, 61, 26);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagewhite, 25, 200);
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(landbutevent_box), 75, 300);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imageaccount, 33, 220);
-    gtk_fixed_put(GTK_FIXED(loginLayout), imagepasswd, 33, 260);
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(registeredevent_box), 5, 380);
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(closebutevent_box), 247, 0);
     gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(sunevent_box), 3, 3);
