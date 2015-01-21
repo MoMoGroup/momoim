@@ -6,7 +6,7 @@ extern void SendText(FriendInfo *info);
 
 extern void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len, time_t time);
 
-extern void CodingWordColor(FriendInfo *info, gchar *coding, int *count);
+extern void CodingWordColor(gchar *coding, int *count);
 
 extern void UploadingFile(gchar *filename, FriendInfo *info);
 

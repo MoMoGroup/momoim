@@ -160,7 +160,7 @@ void ShoweRmoteText(const gchar *rcvd_text, FriendInfo *info, uint16_t len, time
 }
 
 //编码字体和颜色
-void CodingWordColor(FriendInfo *info, gchar *coding, int *count)
+void CodingWordColor(gchar *coding, int *count)
 {
     gchar *char_rear = coding;
     //字体类型
@@ -651,7 +651,7 @@ void SendText(FriendInfo *info)
     }
     else
     {
-        CodingWordColor(info, char_text, &count); //字体编码
+        CodingWordColor(char_text, &count); //字体编码
     }
     cmpcount = count;  //cmpcount是字体编码的长度
     CodingTextImage(info, char_text, &count); //字符串和图片编码

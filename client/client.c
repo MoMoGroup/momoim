@@ -14,7 +14,8 @@
 #include "PopupWinds.h"
 #include "common.h"
 #include "chart.h"
-static GtkWidget *imageremember, *imagehead, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel;
+
+static GtkWidget *imageremember, *imagehead, *ssun, *imagelandbut, *imageregistered, *imageclosebut, *imagecancel, *AboutUs;
 GtkWidget *LoginWindowUserNameBox, *LoginWindowPassWordBox;
 const gchar *name, *pwd;
 static pthread_t threadMainLoop;
@@ -33,10 +34,11 @@ int FlagRemember = 0;
 int FirstPwd = 0;
 char mulu_username[80] = "", mulu_benji[80] = "";
 
-static cairo_surface_t *sbackground, *sheadimage, *slandbut1, *slandbut2, *slandbut3, *sremember1, *sremember2;
+static cairo_surface_t *sbackground, *sheadimage, *swhite, *slandbut1, *slandbut2, *slandbut3, *saccount, *spasswd, *sremember1, *sremember2, *suraboutus;
 static cairo_surface_t *sregistered1, *sregistered2, *sclosebut1, *sclosebut2, *sclosebut3, *scancel10_1, *scancel10_2, *scancel10_3;
 static GtkWidget *loginLayout, *pendingLayout, *frameLayout;
-static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box, *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box;
+static GtkEventBox *remember_box, *sunevent_box, *landbutevent_box, *registeredevent_box,
+        *closebutevent_box, *cancelevent_box, *backgroundevent_box, *waitevent_box, *aboutusevent_box;
 
 //IP填写界面所需变量
 static GtkWidget *IpFillinWind, *IpLayout;
@@ -197,6 +199,7 @@ create_surfaces1()
     scancel10_3 = ChangeThem_png("取消3.png");
     sremember1 = ChangeThem_png("记住密码1.png");
     sremember2 = ChangeThem_png("记住密码2.png");
+    suraboutus = ChangeThem_png("关于我们.png");
 }
 
 static void
@@ -218,6 +221,7 @@ destroy_surfaces()
     cairo_surface_destroy(scancel10_3);
     cairo_surface_destroy(sremember1);
     cairo_surface_destroy(sremember2);
+    cairo_surface_destroy(suraboutus);
 }
 
 int DeleteEvent()
@@ -807,6 +811,12 @@ static gint ipsure_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
+static gint aboutus_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    Popup("关于我们", "嗯，我是高铭");
+    return 0;
+}
+
 int FillinIp(char *filename)
 {
     static GtkEventBox *IpBackg_event_box, *IpSure_event_box;
@@ -959,6 +969,12 @@ gboolean LoadLoginLayout(gpointer user_data)
                      G_CALLBACK(gtk_main_quit), NULL);
 
 
+    char path_icon[80] = "";
+    sprintf(path_icon, "%s/.momo/theme/images/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
+    //gtk_window_set_icon(GTK_WINDOW(window),gdk_pixbuf_new_from_file(path_icon,NULL));
+
+
     //gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置
     gtk_window_set_resizable(GTK_WINDOW (window), FALSE);//窗口不可改变
@@ -973,6 +989,7 @@ gboolean LoadLoginLayout(gpointer user_data)
     imageclosebut = gtk_image_new_from_surface(sclosebut1);
     imagecancel = gtk_image_new_from_surface(scancel10_1);
     imageremember = gtk_image_new_from_surface(sremember1);
+    AboutUs = gtk_image_new_from_surface(suraboutus);
 
     backgroundevent_box = BuildEventBox(
             imagebackground,
@@ -1025,6 +1042,13 @@ gboolean LoadLoginLayout(gpointer user_data)
             G_CALLBACK(cancel_enter_notify_event),
             G_CALLBACK(cancel_leave_notify_event),
             G_CALLBACK(cancel_button_release_event),
+            NULL, NULL);
+
+    aboutusevent_box = BuildEventBox(
+            AboutUs,
+            NULL,
+            NULL, NULL,
+            G_CALLBACK(aboutus_button_release_event),
             NULL, NULL);
 
     frameLayout = gtk_layout_new(NULL, NULL);
@@ -1088,6 +1112,7 @@ gboolean LoadLoginLayout(gpointer user_data)
     gtk_fixed_put(GTK_FIXED(pendingLayout), GTK_WIDGET(cancelevent_box), 75, 350);
     gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowUserNameBox, 82, 215);
     gtk_fixed_put(GTK_FIXED(loginLayout), LoginWindowPassWordBox, 82, 256);
+    gtk_fixed_put(GTK_FIXED(loginLayout), GTK_WIDGET(aboutusevent_box), 210, 380);
 
 
     gtk_container_add(GTK_CONTAINER (window), frameLayout);//frameLayout 加入到window
