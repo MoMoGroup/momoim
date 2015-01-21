@@ -5,7 +5,6 @@
 #include <string.h>
 #include <logger.h>
 #include "common.h"
-#include "chart.h"
 
 
 //新添加好友
