@@ -1,7 +1,7 @@
 Package: momo-client
 Version: 0.0.1
 Architecture: amd64
-Installed-Size: 10971065
+Installed-Size: 10971
 Pre-Depends: dpkg (>= 1.14.0)
 Depends: libmcrypt4, libasound2, libjpeg8, libgtk-3-0, libc6 (>= 2.15), libssl1.0.0, sox
 Section: web
