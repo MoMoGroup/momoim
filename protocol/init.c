@@ -7,6 +7,7 @@
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
 #include <openssl/md5.h>
+#include <mutils/mcrypt.h>
 
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_KEEP_ALIVE]               = (void *(*)(CRPBaseHeader *)) CRPKeepAliveCast,
@@ -370,6 +371,7 @@ ssize_t CRPSend(CRPContext context,
     }
     return ret;
 }
+
 // 接收一个数据包
 // 参数:CRPContext context - CRP句柄
 // 返回:函数返回NULL表失败,其他表成功
@@ -391,7 +393,18 @@ CRPBaseHeader *CRPRecv(CRPContext context)
         encryptedLength <<= 5;
         packet = (CRPBaseHeader *) malloc(encryptedLength);
         //接收数据包实际内容
-        ret = recv(context->fd, packet, encryptedLength, MSG_WAITALL);
+        size_t remain = encryptedLength;
+        while (remain> 0)
+        {
+            ret = recv(context->fd, packet, remain, MSG_WAITALL);
+            if (ret <= 0)
+            {
+                free(packet);
+                return NULL;
+            }
+            remain -= ret;
+        }
+
         if (ret != encryptedLength)
         {
             free(packet);
@@ -420,12 +433,17 @@ CRPBaseHeader *CRPRecv(CRPContext context)
             return NULL;
         }
         packet = (CRPBaseHeader *) malloc(h.totalLength);
-        ret = recv(context->fd, packet, h.totalLength, MSG_WAITALL);
-        if (ret != h.totalLength)
+        size_t remain = h.totalLength;
+        while (remain > 0)
         {
-            fprintf(stderr, "Recv Error 2-%d bytes.%d/%s\n", (int) ret, errno, strerror(errno));
-            free(packet);
-            return NULL;
+            ret = recv(context->fd, packet, remain, MSG_WAITALL);
+            if (ret <= 0)
+            {
+                perror("recv");
+                free(packet);
+                return NULL;
+            }
+            remain -= ret;
         }
     }
     pthread_mutex_unlock(&context->recvLock);

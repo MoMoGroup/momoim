@@ -262,7 +262,7 @@ void on_button_clicked()
         for (charnum = 0; name[charnum];)
         {
             if ((isalnum(name[charnum]) != 0) || (name[charnum] == '@')
-                                                 || (name[charnum] == '.') || (name[charnum] == '-') || (name[charnum] == '_'))
+                || (name[charnum] == '.') || (name[charnum] == '-') || (name[charnum] == '_'))
             {
                 if (isdigit(name[charnum]) != 0)
                 {
@@ -756,12 +756,27 @@ static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event
                     .sin_addr.s_addr=inp.s_addr,
                     .sin_port=htons(8014)
             };
-            if (connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr)))
+            fcntl(fd, F_SETFL, O_NONBLOCK);
+            connect(fd, (struct sockaddr *) &server_addr, sizeof(server_addr));
+            fd_set fds;
+            struct timeval timeout = {
+                    .tv_sec=3
+            };
+            FD_ZERO(&fds);
+            FD_SET(fd, &fds);
+            int n = select(fd + 1,
+                           NULL,
+                           &fds,
+                           NULL,
+                           &timeout);
+            if (n <= 0)
             {
                 perror("Connect");
                 Popup("莫默告诉你：", "连接不到服务器");
+                close(fd);
                 return 0;
             }
+            fcntl(fd, F_SETFL, 0);
             CRPContext sockfd = CRPOpen(fd);
             log_info("Hello", "Sending Hello\n");
             CRPHelloSend(sockfd, 0, 1, 1, 1, 0);
@@ -770,7 +785,6 @@ static gint ipsure_button_release_event(GtkWidget *widget, GdkEventButton *event
             header = CRPRecv(sockfd);
             if (header == NULL || header->packetID != CRP_PACKET_OK)
             {
-                log_error("Hello", "Recv Packet:%d\n", header->packetID);
                 Popup("莫默告诉你：", "连接不到服务器");
                 return 1;
             }
@@ -813,7 +827,7 @@ static gint ipsure_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
 
 static gint aboutus_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
-    Popup("关于我们", "嗯，我是高铭");
+    Popup("关于我们", "组员:翟召轩,许灵慧,王文敏\n         夏黎明,李豪,高铭");
     return 0;
 }
 
@@ -883,7 +897,7 @@ int main(int argc, char *argv[])
     else
     {
         PlayMusic("开始.wav");
-        LoadLoginLayout("ad");//加载登陆界面
+        LoadLoginLayout(NULL);//加载登陆界面
     }
     gtk_main();
     destroy_surfaces();
@@ -1059,7 +1073,7 @@ gboolean LoadLoginLayout(gpointer user_data)
     //设置两个输入框
     LoginWindowUserNameBox = gtk_combo_box_text_new_with_entry();
     GtkEntry *nameEntry = GTK_ENTRY(gtk_bin_get_child(LoginWindowUserNameBox));
-    gtk_entry_set_width_chars(nameEntry,19);
+    gtk_entry_set_width_chars(nameEntry, 19);
 
     LoginWindowPassWordBox = gtk_entry_new();
     gtk_entry_set_max_length(LoginWindowPassWordBox, 20);//最大输入长度

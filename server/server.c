@@ -74,10 +74,10 @@ int main(int argc, char **argv)
         pthread_cancel(PacketWorker[i].WorkerThread);
     }
     log_info("MAIN", "UserManagerFinalize\n");
-    UserManagerFinalize();
-    log_info("MAIN", "JobManagerFinalize\n");
     JobManagerFinalize();
     log_info("MAIN", "DataModuleFinalize\n");
+    UserManagerFinalize();
+    log_info("MAIN", "JobManagerFinalize\n");
     DataModuleFinalize();
     log_info("MAIN", "Server Exit\n");
     return EXIT_SUCCESS;

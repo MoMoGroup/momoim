@@ -56,15 +56,15 @@ void *WorkerMain(void *arg)
             {
                 isPendingUser = 1;
             }
-            struct timespec start, end;
-            clock_gettime(CLOCK_MONOTONIC, &start);
+            //struct timespec start, end;
+            //clock_gettime(CLOCK_MONOTONIC, &start);
             if (ProcessUser(user, header) == 0)
             {
                 OnlineUserDelete(user);
                 free(header);
                 continue;
             }
-            clock_gettime(CLOCK_MONOTONIC, &end);
+            /*clock_gettime(CLOCK_MONOTONIC, &end);
             if (end.tv_sec - start.tv_sec > 0 || end.tv_nsec - start.tv_nsec > 10000000)
             {
                 log_warning("PerfMonitor",
@@ -72,7 +72,7 @@ void *WorkerMain(void *arg)
                             header->packetID,
                             end.tv_sec - start.tv_sec,
                             end.tv_nsec - start.tv_nsec);
-            }
+            }*/
             free(header);
         }
         if (!isPendingUser)//等待用户不允许被Drop

@@ -1110,9 +1110,6 @@ int MainChart(FriendInfo *friendinfonode)
                       friendinfonode->chartlayout2);//chartlayout2 加入到window
     gtk_container_add(GTK_CONTAINER (friendinfonode->chartlayout2), friendinfonode->chartlayout);
 
-    g_signal_connect(G_OBJECT(friendinfonode->chartwindow), "delete_event",
-                     G_CALLBACK(gtk_main_quit), NULL);
-
     gtk_window_set_default_size(GTK_WINDOW(friendinfonode->chartwindow), 500, 550);
     gtk_window_set_position(GTK_WINDOW(friendinfonode->chartwindow), GTK_WIN_POS_CENTER);//窗口出现位置
     //gtk_window_set_resizable (GTK_WINDOW (window), FALSE);//窗口不可改变

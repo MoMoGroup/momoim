@@ -98,10 +98,9 @@ static void cleanupUserTable(POnlineUsersTableType table)
             table->next[i] = NULL;
         }
     }
-    if (table->user != (POnlineUser) -1)
+    if (table->user && table->user != (POnlineUser) -1)
     {
         OnlineUserDelete(table->user);
-        free(table);
     }
 }
 
