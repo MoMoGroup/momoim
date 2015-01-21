@@ -61,7 +61,6 @@ int ProcessPacketFileStoreRequest(POnlineUser user, uint32_t session, CRPPacketF
             storeOperation->fd = creat(storeOperation->tmpfile, 0600);
             if (storeOperation->fd < 0)
             {
-                free(storeOperation);
                 UserOperationUnregister(user, operation);
                 CRPFailureSend(user->crp, session, EIO, "无法创建文件");
                 return 1;
