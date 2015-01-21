@@ -55,6 +55,7 @@ static gint back_button_press_event(GtkWidget *widget, GdkEventButton *event, gp
     return 0;
 
 }
+
 //按下确定
 static gint sure_button_press_event(GtkWidget *widget, GdkEventButton *event,
                                     gpointer data)
@@ -997,7 +998,6 @@ static gint background_button_press_event(GtkWidget *widget, GdkEventButton *eve
                                    event->x_root, event->y_root, event->time);
     }
     return 0;
-
 }
 
 //鼠标点击事件
@@ -1246,6 +1246,14 @@ static gint lookinfo_button_press_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+static void tray_on_click(GtkStatusIcon *status_icon, gpointer user_data)
+{
+    if(gtk_widget_get_visible(window)){
+        gtk_widget_hide(window);
+    }else{
+        gtk_widget_show(window);
+    }
+}
 
 //搜索放上去
 static gint search_button_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -1270,6 +1278,7 @@ static gint search_button_release_event(GtkWidget *widget, GdkEventButton *event
     gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_ARROW));
     cairo_surface_t *search1 = ChangeThem_png("搜索.png");
     gtk_image_set_from_surface((GtkImage *) search, search1);
+
     AddFriendFun();
     return 0;
 }
@@ -1369,9 +1378,9 @@ int MainInterFace()
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 
     char path_icon[80] = "";
-    sprintf(path_icon, "%s/.momo/theme/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    sprintf(path_icon, "%s/.momo/theme/images/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
     //gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
-    gtk_window_set_icon(GTK_WINDOW(window),gdk_pixbuf_new_from_file(path_icon,NULL));
+    gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
@@ -1627,6 +1636,10 @@ int MainInterFace()
                      G_CALLBACK(lookinfo_button_press_event), (gpointer) treeView);
 
     gtk_widget_show_all(window);
+    GtkStatusIcon *tray = gtk_status_icon_new_from_file(path_icon);
+    gtk_status_icon_set_visible(tray, TRUE);
+    g_signal_connect(G_OBJECT(tray), "activate", G_CALLBACK(tray_on_click), window);
+
     //隐藏水平滚动条
     gtk_widget_hide(widget);
     //gtk_main();
