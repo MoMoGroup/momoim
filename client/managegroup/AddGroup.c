@@ -28,7 +28,7 @@ static gint add_group_mov(GtkWidget *widget, GdkEventButton *event, gpointer dat
     return 0;
 }
 
-//关闭按钮
+//关闭按钮事件
 static gint close_add_group_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     addGroupStruct *window_widget = data;//拿到传来的参数，
@@ -38,6 +38,7 @@ static gint close_add_group_notify_event(GtkWidget *widget, GdkEventButton *even
     return 0;
 }
 
+//关闭按钮移走事件
 static gint close_add_group_leave_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     addGroupStruct *window_widget = data;
@@ -55,7 +56,7 @@ static gint add_close_button_release_event(GtkWidget *widget, GdkEventButton *ev
     return 0;
 }
 
-//添加分组的请求发出后，接收服务器的函数
+//添加分组的请求发出后，添加分组的函数
 int add_group_recv(CRPBaseHeader *header, void *data)
 {
     UserGroup *group = data;
@@ -142,6 +143,7 @@ static gint add_group_done(GtkWidget *widget, GdkEventButton *event, gpointer da
 }
 
 
+//添加分组函数入口
 int AddGroupButtonPressEvent()
 {
 

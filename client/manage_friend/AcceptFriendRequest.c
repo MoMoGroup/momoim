@@ -110,6 +110,7 @@ static gint pop_mov(GtkWidget *widget, GdkEventButton *event, gpointer data)
     return 0;
 }
 
+//把请求添加自己为好友的人的资料显示
 int put(void *data)
 {
     tongyi *info = data;//这个函数不能释放，销毁窗口用到了
