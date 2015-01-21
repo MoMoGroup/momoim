@@ -1368,10 +1368,10 @@ int MainInterFace()
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
 
-    char path_icon[80] = "";
-    sprintf(path_icon, "%s/.momo/theme/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    //char path_icon[80] = "";
+    //sprintf(path_icon, "%s/.momo/theme/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
     //gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
-    gtk_window_set_icon(GTK_WINDOW(window),gdk_pixbuf_new_from_file(path_icon,NULL));
+    //gtk_window_set_icon(GTK_WINDOW(window),gdk_pixbuf_new_from_file(path_icon,NULL));
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
