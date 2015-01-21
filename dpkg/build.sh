@@ -1,6 +1,6 @@
 #!/bin/bash
-rm -rf deb server-build client-build
-mkdir deb server-build client-build
+#rm -rf deb server-build client-build
+mkdir -p deb server-build client-build
 
 cd server-build
 cmake ../../ -DCMAKE_BUILD_TYPE=Release -DMOMO_TARGET=Server

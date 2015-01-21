@@ -14,7 +14,7 @@ struct UserTextInformation
     guint16 color_green;
     guint16 color_blue;
     int codinglen;
-};
+};  //存放用户字体的结构体
 extern struct UserTextInformation UserWordInfo;
 
 extern void LoadingIcon(FriendInfo *info);
