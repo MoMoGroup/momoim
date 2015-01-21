@@ -335,8 +335,8 @@ static int searchfriend(CRPBaseHeader *header, void *data)//接收查找好友�
         };
         case CRP_PACKET_INFO_DATA:
         {
+
             CRPPacketInfoData *infodata = CRPInfoDataCast(header);
-            CRPFileRequestSend(sockfd, header->sessionID, 0, infodata->info.icon);//发送用户头像请求
 
             //保存数据到结构体
             memcpy(p->key, infodata->info.icon, 16);

@@ -307,7 +307,7 @@ static gint combo_change_event()
     char buflujing[256];
     FlagRemember = 0;
     gtk_image_set_from_surface((GtkImage *) imageremember, sremember1);//置换不记住图片
-    gtk_test_text_set(LoginWindowPassWordBox, "");
+    gtk_entry_set_text(GTK_ENTRY(LoginWindowPassWordBox), "");
 
     cairo_surface_t *surface, *surfacehead2;//设置默认头像
     static cairo_t *cr;
