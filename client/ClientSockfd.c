@@ -413,7 +413,7 @@ int mysockfd()
         g_idle_add(DestroyLayout, mem);
         return 0;
     }
-    char sendKey[32], iv[32];
+    /*char sendKey[32], iv[32];
     CRPSwitchProtocolSend(sockfd, 1, sendKey, iv);
     header = CRPRecv(sockfd);
     if (header->packetID != CRP_PACKET_SWITCH_PROTOCOL)
@@ -429,7 +429,7 @@ int mysockfd()
         {
             free(packet);
         }
-    }
+    }*/
 
     if (FlagRemember == 0)
     {

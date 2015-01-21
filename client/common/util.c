@@ -258,7 +258,7 @@ int recv_new_friend_image(CRPBaseHeader *header, void *data)
         }
 
     }
-    return 0;
+    return 1;
 }
 
 void FindImage(const char *key, const void *data, gboolean (*fn)(void *data))

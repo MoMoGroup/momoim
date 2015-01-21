@@ -390,8 +390,6 @@ int AddFriendFun()
 {
     if (AddFriendFlag)//判断是否打开搜索窗口
     {
-
-
         AddFriendFlag = 0;//判断是否打开搜索窗口，置0，不能打开
         addwindow = gtk_window_new(GTK_WINDOW_TOPLEVEL);
         addframelayout = gtk_layout_new(NULL, NULL);
@@ -454,7 +452,7 @@ int AddFriendFun()
     } //调用添加好友函数
     else
     {
-        gtk_window_present(addwindow);
+        gtk_window_present(GTK_WINDOW(addwindow));
     }
     return 0;
 }

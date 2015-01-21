@@ -4,7 +4,7 @@
 #include "MainInterface.h"
 #include "ManageGroup.h"
 
-
+//在线状态请求发出后，接收服务器通知
 int changeOnlineRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_OK)
@@ -17,6 +17,7 @@ int changeOnlineRecv(CRPBaseHeader *header, void *data)
     return 0;
 }
 
+//隐身状态请求发出后，接收服务器通知
 int changeHideLineRecv(CRPBaseHeader *header, void *data)
 {
     if (header->packetID == CRP_PACKET_OK)
@@ -28,6 +29,7 @@ int changeHideLineRecv(CRPBaseHeader *header, void *data)
     return 0;
 }
 
+//改变在线状态
 int ChangeOnLine()
 {
 
@@ -37,6 +39,7 @@ int ChangeOnLine()
     return 0;
 }
 
+//改变隐身状态
 int ChangeHideLine()
 {
 
