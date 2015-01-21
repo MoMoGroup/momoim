@@ -1,7 +1,7 @@
 Package: momo-server
 Version: 0.0.1
 Architecture: amd64
-Installed-Size: 10971065
+Installed-Size: 1097
 Pre-Depends: dpkg (>= 1.14.0)
 Depends: libmcrypt4, libc6, libssl1.0.0
 Section: web

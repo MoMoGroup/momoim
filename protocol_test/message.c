@@ -7,7 +7,7 @@
 
 int TestPacketMessage()
 {
-    if (!CRPMessageNormalSend(cs, 0, UMT_TEXT, 0x21, 8, "JDKAJDKA"))
+    if (!CRPMessageNormalSend(cs, 0, UMT_TEXT, 0x21, 0x1010, 8, "JDKAJDKA"))
     {
         log_error("message", "Send返回失败\n");
         perror("");
@@ -28,9 +28,9 @@ int TestPacketMessage()
 //包数据检测正确与否
     CRPPacketMessageNormal *msgHello = CRPMessageNormalCast(packet);
     if (msgHello->uid != 0x21 ||
-            msgHello->messageType != UMT_TEXT ||
-            msgHello->messageLen != 8 ||
-            memcmp(msgHello->message, "JDKAJDKA", 8)
+        msgHello->messageType != UMT_TEXT ||
+        msgHello->messageLen != 8 ||
+        memcmp(msgHello->message, "JDKAJDKA", 8)
             )
     {
 
