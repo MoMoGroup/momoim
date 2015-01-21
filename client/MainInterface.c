@@ -531,46 +531,6 @@ static void destroy_surfaces()  //销毁资源
 
 }
 
-////单击分组显示右键菜单
-//gboolean button2_press_event2(GtkWidget *widget, GdkEventButton *event, gpointer data)
-//{
-//    GdkEventButton *event_button;
-//    GtkWidget *menu = GTK_WIDGET(data);
-//    GtkTreeIter iter;
-//    GtkTreeView *treeview = GTK_TREE_VIEW(widget);
-//    GtkTreeModel *model = gtk_tree_view_get_model(treeview);
-//    GtkTreeSelection *selection = gtk_tree_view_get_selection(treeview);
-//    gtk_tree_selection_get_selected(selection, &model, &iter);
-//
-//    if (event->type == GDK_BUTTON_PRESS)
-//    {
-//        int i;
-//        GtkTreePath *path;
-//        path = gtk_tree_model_get_path(model, &iter);
-//        i = gtk_tree_path_get_indices(path)[0];
-//
-//        event_button = (GdkEventButton *) event;
-//
-//        if (event->button == 0x1)
-//        {
-//            return FALSE;
-//        }
-//        if (event->button == 0x2)
-//        {
-//            return FALSE;
-//        }
-//        if (event->button == 0x3)
-//        {
-//            if ((gtk_tree_model_iter_has_child(model, &iter)) || (friends->groups[i].friendCount == 0))
-//            {
-//                gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event_button->button, event_button->time);
-//                return FALSE;
-//            }
-//        }
-//    }
-//
-//    return FALSE;
-//}
 
 gboolean button2_dblclick_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
@@ -1030,6 +990,7 @@ void RecdServerMsg(const gchar *rcvd_text, uint16_t len, uint32_t recd_uid, time
     }
 }
 
+//背景
 static gint background_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     //设置在非按钮区域内移动窗口
@@ -1058,8 +1019,6 @@ static gint closebut_button_press_event(GtkWidget *widget, GdkEventButton *event
 static gint closebut_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
-//    x = event->x;  // 取得鼠标相对于窗口的位置
-//    y = event->y;
     if (event->button == 1)       // 判断是否是点击关闭图标
 
     {
@@ -1094,7 +1053,6 @@ static gint headx_button_press_event(GtkWidget *widget, GdkEventButton *event, g
     if (event->button == 1)
     {
         gdk_window_set_cursor(gtk_widget_get_window(window), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
-        //gtk_image_set_from_surface((GtkImage *) InfoSave, Surfacesave1); //置换图标
     }
     return 0;
 }
@@ -1424,8 +1382,8 @@ int MainInterFace()
 
     char path_icon[80] = "";
     sprintf(path_icon, "%s/.momo/theme/images/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
-    //gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
-    gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));
+    gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
+    // gtk_window_set_icon(GTK_WINDOW(window), gdk_pixbuf_new_from_file(path_icon, NULL));
 
     MainLayout = gtk_fixed_new();
     frameLayout = gtk_layout_new(NULL, NULL);
@@ -1542,7 +1500,6 @@ int MainInterFace()
 
     treeView = (GtkTreeView *) gtk_tree_view_new_with_model(createModel());//list
 
-    //gtk_tree_view_column_set_resizable(column,TRUE);//加了就bug了
     gtk_tree_view_set_headers_visible(treeView, 0);//去掉头部空白
 
     //添加树形视图
@@ -1550,7 +1507,7 @@ int MainInterFace()
     column = gtk_tree_view_column_new_with_attributes(NULL, renderer,
                                                       "pixbuf", PIXBUF_COL,
                                                       NULL);
-    //gtk_tree_view_column_set_sort_column_id(column, 0);
+
     gtk_tree_view_append_column(GTK_TREE_VIEW(treeView), column);
     gtk_tree_view_column_set_resizable(column, TRUE);
 
@@ -1567,10 +1524,7 @@ int MainInterFace()
     gtk_container_add(GTK_CONTAINER(sw), (GtkWidget *) treeView);
     gtk_fixed_put(GTK_FIXED(MainLayout), (GtkWidget *) sw, 0, 225);
     gtk_widget_set_size_request((GtkWidget *) sw, 284, 358);
-//
-//    g_signal_connect(G_OBJECT(treeView), "button_press_event",
-//            G_CALLBACK(button_press_event), treeView);
-//
+
     //    //右键菜单
     GtkWidget *menu1, *menu2;
     GtkWidget *up;
@@ -1581,7 +1535,6 @@ int MainInterFace()
     GtkWidget *addpeople;
     GtkWidget *sendmsg;
     GtkWidget *deletefriend;
-    GtkWidget *sendfile;
     GtkWidget *lookinfo;
     //分组菜单
     menu1 = gtk_menu_new();
@@ -1609,8 +1562,6 @@ int MainInterFace()
     gtk_container_add(GTK_CONTAINER(menu1), addpeople);
     gtk_widget_show(addpeople);
 
-    /*g_signal_connect(G_OBJECT(treeView), "button_press_event",
-                     G_CALLBACK(button2_press_event2), (gpointer) menu1);*/
     //分组上移事件
     g_signal_connect(G_OBJECT(up), "button_release_event",
                      G_CALLBACK(UpGroupButtonPressEvent), treeView);
@@ -1633,9 +1584,6 @@ int MainInterFace()
 
     g_signal_connect(G_OBJECT(addpeople), "button_release_event",
                      G_CALLBACK(search_button_release_event), treeView);
-//    //添加好友鼠标放上去
-//    g_signal_connect(G_OBJECT(addpeople), "button_press_event",
-//                     G_CALLBACK(search_button_notify_event), addpeople);
 
     //好友菜单
     menu2 = gtk_menu_new();
@@ -1645,9 +1593,6 @@ int MainInterFace()
     deletefriend = gtk_menu_item_new_with_mnemonic("删除好友");
     gtk_container_add(GTK_CONTAINER(menu2), deletefriend);
     gtk_widget_show(deletefriend);
-    //remark = gtk_menu_item_new_with_mnemonic("修改备注");
-    //gtk_container_add(GTK_CONTAINER(menu2), remark);
-    //gtk_widget_show(remark);
     lookinfo = gtk_menu_item_new_with_mnemonic("查看资料");
     gtk_container_add(GTK_CONTAINER(menu2), lookinfo);
     gtk_widget_show(lookinfo);

@@ -969,6 +969,12 @@ gboolean LoadLoginLayout(gpointer user_data)
                      G_CALLBACK(gtk_main_quit), NULL);
 
 
+    char path_icon[80] = "";
+    sprintf(path_icon, "%s/.momo/theme/images/logo.png", getpwuid(getuid())->pw_dir);//获取本机主题目录
+    gtk_window_set_default_icon_from_file(path_icon, NULL);//设置聊天窗口图标
+    //gtk_window_set_icon(GTK_WINDOW(window),gdk_pixbuf_new_from_file(path_icon,NULL));
+
+
     //gtk_window_set_default_size(GTK_WINDOW(window), 283, 411);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);//窗口出现位置
     gtk_window_set_resizable(GTK_WINDOW (window), FALSE);//窗口不可改变
@@ -1042,7 +1048,7 @@ gboolean LoadLoginLayout(gpointer user_data)
             AboutUs,
             NULL,
             NULL, NULL,
-            aboutus_button_release_event,
+            G_CALLBACK(aboutus_button_release_event),
             NULL, NULL);
 
     frameLayout = gtk_layout_new(NULL, NULL);
