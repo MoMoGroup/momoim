@@ -1635,6 +1635,12 @@ int MainInterFace()
 
 void DestoryMainInterface()
 {
+    if (tray)
+    {
+        gtk_status_icon_set_visible(tray, FALSE);
+        gtk_widget_destroy(GTK_WIDGET(tray));
+        tray = NULL;
+    }
     gtk_widget_destroy(window);
 }
 
