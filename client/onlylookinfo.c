@@ -193,6 +193,8 @@ static gint change_leave_notify_event(GtkWidget *widget, GdkEventButton *event, 
     return 0;
 }
 
+/*查看资料需调用的函数
+返回值为int型,参数是FriendInfo结构体,里面包含一些窗口控件*/
 int OnlyLookInfo(FriendInfo *friendinfonode)
 {
 
@@ -243,6 +245,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
                                      friendinfonode);
     gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), (GtkWidget *) Guanxx_event_box, 509, 0);
 
+    //如果该uid跟当前用户uid相同，则增加一个编辑按钮
     if (CurrentUserInfo->uid == friendinfonode->user.uid)
     {
         Change_event_box = BuildEventBox(friendinfonode->Infochange,
@@ -255,6 +258,8 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
         gtk_fixed_put(GTK_FIXED(friendinfonode->Infolayout), (GtkWidget *) Change_event_box, 350, 440);
     }
 
+    /*所有资料展示的窗口控件
+    下面是对控件在窗口中的定位及用户资料的处理*/
     GtkWidget *iid, *ilevel, *isex, *inickname, *iname, *ibirthday, *iconstellation, *iprovinces, *icity;
     GtkWidget *itel, *imail;
     GtkWidget *headicon, *imotto;
@@ -320,6 +325,7 @@ int OnlyLookInfo(FriendInfo *friendinfonode)
     char infohead[80] = {0};
     static cairo_t *cr;
     cairo_surface_t *surface;
+    //将16位的icon转化为图片路径
     HexadecimalConversion(infohead, friendinfonode->user.icon);
     //加载一个图片
     surface = cairo_image_surface_create_from_png(infohead);

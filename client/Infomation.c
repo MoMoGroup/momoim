@@ -413,7 +413,7 @@ int infoheadphoto(CRPBaseHeader *header, void *data)//资料更新(换头像)处
             log_info("FAILURe reason", infodata->reason);
             char *failreason = (char *) malloc(strlen(infodata->reason));
             memcpy(failreason, infodata->reason, strlen(infodata->reason - 1));
-            g_idle_add(shibaiinfo, failreason);
+            g_idle_add(shibaiinfo2, failreason);
             if ((void *) infodata != header->data)
             {
                 free(infodata);
@@ -424,6 +424,7 @@ int infoheadphoto(CRPBaseHeader *header, void *data)//资料更新(换头像)处
     return 0;
 }
 
+/*城市对应相应的省份*/
 int sheng_change_city()
 {
     const gchar *buf;
@@ -446,6 +447,8 @@ int sheng_change_city()
     return 0;
 }
 
+/*日历按钮选择后实时变化事件
+并且匹配相应的星座*/
 int calendar_event()
 {
     gtk_calendar_get_date(GTK_CALENDAR(ICalendar), &year, &month, &day);/*取得选择的年月日*/
@@ -469,6 +472,7 @@ int calendar_event()
     return 0;
 }
 
+/*将字符串型的生日信息转化成日历上展示*/
 int calendar_change_birthday()
 {
     if (RiliFlag == 0)
@@ -522,6 +526,8 @@ int calendar_change_birthday()
     return 0;
 }
 
+/*处理服务器回复的消息
+收到ok包将图片文件发给服务器*/
 int dealwith_photo(CRPBaseHeader *header, void *data)
 {
     struct HeadPictureData *photo_message = (struct HeadPictureData *) data;
@@ -586,18 +592,20 @@ int dealwith_photo(CRPBaseHeader *header, void *data)
     return ret;
 }
 
+//对获取的图片名进行处理
 int new_head(const char *filename)
 {
     session_id_t session_id;
     struct HeadPictureData *mynewhead = (struct HeadPictureData *) malloc(sizeof(struct HeadPictureData));
     struct stat stat_buf;
     unsigned char *codetext = (unsigned char *) malloc(16);
-    char finalfile[256] = {0};
-    Md5Coding(filename, codetext);
+    char finalfile[512] = {0};
+    Md5Coding(filename, codetext);//将文件名转化成16位字符码
     HexadecimalConversion(finalfile, codetext);
-    CopyFile(filename, finalfile);
-    stat(finalfile, &stat_buf);
-    session_id = CountSessionId();
+    CopyFile(filename, finalfile);//拷贝文件
+    stat(finalfile, &stat_buf);//获取文件状态
+    session_id = CountSessionId();//生成唯一的SessionId
+    //初始化结构体
     mynewhead->seq = 0;
     mynewhead->fp = (fopen(finalfile, "r"));
     mynewhead->uid = CurrentUserInfo->uid;
@@ -628,9 +636,13 @@ static void create_infofaces()
     gtk_widget_set_size_request(GTK_WIDGET(InfoBackground), 550, 488);
 }
 
-//保存按钮后
+//保存按钮后，保存用户更改的信息
 int infosockfd()
 {
+    if (filename)
+    {
+        new_head(filename);
+    }
     weinfo = *CurrentUserInfo;
     const gchar *buf;
 
@@ -713,10 +725,7 @@ int infosockfd()
     {
         memset(weinfo.nickName, 0, strlen(weinfo.nickName));
         memcpy(weinfo.nickName, buf, strlen(buf));
-        if (filename)
-        {
-            new_head(filename);
-        }
+
         session_id_t newinfoid = CountSessionId();
         AddMessageNode(newinfoid, infoupdate, NULL);
         CRPInfoDataSend(sockfd, newinfoid, 0, &weinfo);
@@ -900,6 +909,7 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
         while (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT)
         {
             filename = (char *) malloc(256);
+            //获取到图片名
             filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
             FILE *fp = fopen(filename, "rb");
             if (fp == NULL)
@@ -919,6 +929,7 @@ static gint touxiang_button_release_event(GtkWidget *widget, GdkEventButton *eve
                 else
                 {
                     gtk_widget_destroy(dialog);
+                    /*选择的图片更换到编辑界面的头像框内,以便用户选择*/
                     static cairo_t *cr;
                     cairo_surface_t *surface;
                     //加载一个图片
@@ -962,6 +973,7 @@ static gint touxiang_leave_notify_event(GtkWidget *widget, GdkEventButton *event
     return 0;
 }
 
+/*资料编辑的控件,跟资料展示不同的是可编辑性*/
 void infotv()
 {
     char idstring[80] = {0};//id
@@ -1116,6 +1128,8 @@ void infotv()
     //gtk_fixed_put(GTK_FIXED(InfoLayout), BianJi, 70, 110);
 }
 
+/*资料编辑所需函数
+返回值为int型,无须参数*/
 int ChangeInfo()
 {
     static GtkEventBox *Infobackg_event_box, *Save_event_box, *Cancel_event_box, *Guanxx_event_box;
