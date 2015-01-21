@@ -979,12 +979,6 @@ static gint color_leave_notify_event(GtkWidget *widget, GdkEventButton *event,
     return 0;
 }
 
-
-////颜色点击事件
-//static gint color_click_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
-//{
-//
-//}
 //聊天记录
 //鼠标点击事件
 static gint chartrecord_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
@@ -1042,17 +1036,60 @@ static gint chartrecord_leave_notify_event(GtkWidget *widget, GdkEventButton *ev
 }
 
 //点击聊天窗口的好友昵称使其打开好友资料
-static gint nicheng_button_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+//昵称
+//鼠标点击事件
+static gint nicheng_button_press_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
     FriendInfo *info = (FriendInfo *) data;
-    if (info->Infowind == NULL)
+
+    if (event->button == 1)
     {
-        OnlyLookInfo(info);
+        gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
     }
-    else
+
+    return 0;
+}
+
+//昵称
+//鼠标抬起事件
+static gint nicheng_button_release_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+
+    if (event->button == 1)       // 判断是否是点击关闭图标
+
     {
-        gtk_window_present(GTK_WINDOW(info->Infowind));
+        gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
+        if (info->Infowind == NULL)
+        {
+            OnlyLookInfo(info);
+        }
+        else
+        {
+            gtk_window_present(GTK_WINDOW(info->Infowind));
+        }
     }
+    return 0;
+
+}
+
+//昵称
+//鼠标移动事件
+static gint nicheng_enter_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+
+    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_HAND2));  //设置鼠标光标
+
+    return 0;
+}
+
+//昵称
+//鼠标likai事件
+static gint nicheng_leave_notify_event(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+    FriendInfo *info = (FriendInfo *) data;
+    gdk_window_set_cursor(gtk_widget_get_window(info->chartwindow), gdk_cursor_new(GDK_ARROW));
     return 0;
 }
 
@@ -1227,14 +1264,17 @@ int MainChart(FriendInfo *friendinfonode)
     GtkWidget *nicheng;
     PangoFontDescription *font;
     nicheng = gtk_label_new(friendinfonode->user.nickName);
-
     font = pango_font_description_from_string("Mono");//"Mono"字体名
     pango_font_description_set_size(font, 20 * PANGO_SCALE);//设置字体大小
     gtk_widget_override_font(nicheng, font);
     nicheng_event_box = BuildEventBox(
             nicheng,
-            G_CALLBACK(nicheng_button_event),
-            NULL, NULL, NULL, NULL, friendinfonode);
+            G_CALLBACK(nicheng_button_press_event),
+            G_CALLBACK(nicheng_enter_notify_event),
+            G_CALLBACK(nicheng_leave_notify_event),
+            G_CALLBACK(nicheng_button_release_event),
+            NULL,
+            friendinfonode);
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(nicheng_event_box), 100, 20);
 //发送
     gtk_fixed_put(GTK_FIXED(friendinfonode->chartlayout), GTK_WIDGET(send_event_box), 390, 512);
