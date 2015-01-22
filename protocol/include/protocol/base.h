@@ -24,12 +24,18 @@ CRP_STRUCTURE
 } CRPBaseHeader;
 typedef struct
 {
-    int fd;//Socket文件描述符
-    MCRYPT sendTd, recvTd;//加密解密句柄
-    char sendKey[32], sendIV[32];//加密密钥和IV
-    char recvKey[32], recvIV[32];//解密密钥和IV
-    pthread_mutex_t sendLock, recvLock;//发送和接收通道锁定
-
+    //Socket文件描述符
+    int fd;
+    //加密解密句柄
+    MCRYPT sendTd, recvTd;
+    //加密密钥和IV
+    char sendKey[32], sendIV[32];
+    //解密密钥和IV
+    char recvKey[32], recvIV[32];
+    //发送和接收通道锁定
+    pthread_mutex_t sendLock, recvLock;
+    uint8_t *buffer;
+    CRP_LENGTH_TYPE bLengthAct;
 } __CRPContext;
 typedef __CRPContext *CRPContext;
 
@@ -38,6 +44,8 @@ extern int CRPEncryptEnable(CRPContext context, const char sendKey[32], const ch
 extern int CRPEncryptTest(const char key[32], const char iv[32]);
 
 extern void CRPEncryptDisable(CRPContext context);
+
+extern void CRPSetupBuffer(CRPContext context);
 
 extern CRPContext CRPOpen(int fd);
 

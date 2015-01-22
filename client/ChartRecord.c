@@ -166,7 +166,7 @@ gboolean show_record_message(void *data)
             font = pango_font_description_from_string("Mono");//"Mono"字体名
             pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
             gtk_widget_override_font(record_message->info->record_date, font);
-            gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
+            //gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
         }
 
         time_t current_time;
@@ -575,6 +575,7 @@ static gint calendar_button_release_event(GtkWidget *widget, GdkEventButton *eve
             record_message->info->calendar = gtk_calendar_new(); //创建日历控件
             gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->calendar, 20, 60);
             gtk_widget_show(record_message->info->calendar);
+            gtk_widget_queue_draw(record_message->info->calendar);
             //添加日历时间双击日期的事件
             g_signal_connect(record_message->info->calendar,
                              "day-selected-double-click",

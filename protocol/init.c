@@ -7,7 +7,6 @@
 #include <protocol/base.h>
 #include <protocol/CRPPackets.h>
 #include <openssl/md5.h>
-#include <mutils/mcrypt.h>
 
 void *(*const PacketsDataCastMap[CRP_PACKET_ID_MAX + 1])(CRPBaseHeader *) = {
         [CRP_PACKET_KEEP_ALIVE]               = (void *(*)(CRPBaseHeader *)) CRPKeepAliveCast,
@@ -106,6 +105,8 @@ CRPContext CRPOpen(int fd)
         context->fd = fd;
         context->sendTd = NULL;
         context->recvTd = NULL;
+        context->buffer = NULL;
+        context->bLengthAct = 0;
         pthread_mutex_init(&context->sendLock, NULL);
         pthread_mutex_init(&context->recvLock, NULL);
     }
@@ -125,6 +126,10 @@ int CRPClose(CRPContext context)
     CRPEncryptDisableUnlock(context);
     shutdown(context->fd, SHUT_RDWR);
     close(context->fd);
+    if (context->buffer)
+    {
+        free(context->buffer);
+    }
     pthread_mutex_destroy(&context->sendLock);
     pthread_mutex_destroy(&context->recvLock);
     free(context);
@@ -372,6 +377,12 @@ ssize_t CRPSend(CRPContext context,
     return ret;
 }
 
+void CRPSetupBuffer(CRPContext context)
+{
+    context->buffer = (uint8_t *) malloc(INT16_MAX);
+    context->bLengthAct = 0;
+}
+
 // 接收一个数据包
 // 参数:CRPContext context - CRP句柄
 // 返回:函数返回NULL表失败,其他表成功
@@ -385,67 +396,171 @@ CRPBaseHeader *CRPRecv(CRPContext context)
     {
         //接收加密块长度
         CRP_LENGTH_TYPE encryptedLength;
-        ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
-        if (ret != sizeof(encryptedLength))
+        if (context->buffer)
         {
-            return NULL;
+            if (context->bLengthAct < sizeof(CRP_LENGTH_TYPE))
+            {
+                ret = recv(context->fd,
+                           context->buffer + context->bLengthAct,
+                           sizeof(CRP_LENGTH_TYPE) - context->bLengthAct,
+                           0);
+                if (ret <= 0)
+                {
+                    packet = NULL;
+                    goto cleanup;
+                }
+                context->bLengthAct += ret;
+                if (context->bLengthAct < sizeof(CRP_LENGTH_TYPE))
+                {
+                    errno = EAGAIN;
+                    packet = NULL;
+                    goto cleanup;
+                }
+            }
+            memcpy(&encryptedLength, context->buffer, sizeof(CRP_LENGTH_TYPE));
+            if (context->bLengthAct < encryptedLength)
+            {
+                ret = recv(context->fd,
+                           context->buffer + context->bLengthAct,
+                           encryptedLength - context->bLengthAct,
+                           0);
+                if (ret <= 0)
+                {
+                    packet = NULL;
+                    goto cleanup;
+                }
+                context->bLengthAct += ret;
+
+                if (context->bLengthAct < encryptedLength + sizeof(CRP_LENGTH_TYPE))
+                {
+                    errno = EAGAIN;
+                    packet = NULL;
+                    goto cleanup;
+                }
+            }
+            packet = (CRPBaseHeader *) malloc(encryptedLength);
+            memcpy(packet, context->buffer + sizeof(CRP_LENGTH_TYPE), encryptedLength);
+            context->bLengthAct = 0;
         }
-        encryptedLength <<= 5;
-        packet = (CRPBaseHeader *) malloc(encryptedLength);
-        //接收数据包实际内容
-        size_t remain = encryptedLength;
-        while (remain> 0)
+        else
         {
-            ret = recv(context->fd, packet, remain, MSG_WAITALL);
-            if (ret <= 0)
+            ret = recv(context->fd, &encryptedLength, sizeof(CRP_LENGTH_TYPE), MSG_WAITALL);
+            if (ret != sizeof(encryptedLength))
+            {
+                packet = NULL;
+                goto cleanup;
+            }
+            encryptedLength <<= 5;
+            packet = (CRPBaseHeader *) malloc(encryptedLength);
+            //接收数据包实际内容
+            size_t remain = encryptedLength;
+            while (remain > 0)
+            {
+                ret = recv(context->fd, packet, remain, MSG_WAITALL);
+                if (ret <= 0)
+                {
+                    free(packet);
+                    packet = NULL;
+                    goto cleanup;
+                }
+                remain -= ret;
+            }
+
+            if (ret != encryptedLength)
             {
                 free(packet);
-                return NULL;
+                packet = NULL;
+                goto cleanup;
             }
-            remain -= ret;
-        }
-
-        if (ret != encryptedLength)
-        {
-            free(packet);
-            return NULL;
         }
         //尝试解密数据包
         if (0 != mdecrypt_generic(context->recvTd, packet, encryptedLength))
         {
             free(packet);
-            return NULL;
+            packet = NULL;
+            goto cleanup;
         }
         //魔数校验,判断解密成功还是失败
         if (packet->magicCode != 0x464F5573)
         {
             free(packet);
-            return NULL;
+            packet = NULL;
+            goto cleanup;
         }
     }
     else
     {   //接收通道未加密时
         CRPBaseHeader h;
-        ret = recv(context->fd, &h, sizeof(CRPBaseHeader), MSG_PEEK | MSG_WAITALL);
-        if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
+        if (context->buffer)
         {
-            fprintf(stderr, "ret:%d,errno:%d,strerror:%s\n", (int) ret, errno, strerror(errno));
-            return NULL;
-        }
-        packet = (CRPBaseHeader *) malloc(h.totalLength);
-        size_t remain = h.totalLength;
-        while (remain > 0)
-        {
-            ret = recv(context->fd, packet, remain, MSG_WAITALL);
-            if (ret <= 0)
+            if (context->bLengthAct < sizeof(CRPBaseHeader))
             {
-                perror("recv");
-                free(packet);
+                ret = recv(context->fd,
+                           context->buffer + context->bLengthAct,
+                           sizeof(CRPBaseHeader) - context->bLengthAct,
+                           0);
+                if (ret <= 0)
+                {
+                    packet = NULL;
+                    goto cleanup;
+                }
+                context->bLengthAct += ret;
+                if (context->bLengthAct < sizeof(CRPBaseHeader))
+                {
+                    errno = EAGAIN;
+                    packet = NULL;
+                    goto cleanup;
+                }
+            }
+            packet = (CRPBaseHeader *) context->buffer;
+            if (context->bLengthAct < packet->totalLength)
+            {
+                ret = recv(context->fd,
+                           context->buffer + context->bLengthAct,
+                           packet->totalLength - context->bLengthAct,
+                           0);
+                if (ret <= 0)
+                {
+                    packet = NULL;
+                    goto cleanup;
+                }
+                context->bLengthAct += ret;
+
+                if (context->bLengthAct < packet->totalLength)
+                {
+                    errno = EAGAIN;
+                    packet = NULL;
+                    goto cleanup;
+                }
+            }
+            packet = (CRPBaseHeader *) malloc(packet->totalLength);
+            memcpy(packet, context->buffer, context->bLengthAct);
+            context->bLengthAct = 0;
+        }
+        else
+        {
+            ret = recv(context->fd, &h, sizeof(CRPBaseHeader), MSG_PEEK | MSG_WAITALL);
+            if (ret != sizeof(CRPBaseHeader) || h.magicCode != 0x464F5573)
+            {
+                fprintf(stderr, "ret:%d,errno:%d,strerror:%s\n", (int) ret, errno, strerror(errno));
                 return NULL;
             }
-            remain -= ret;
+            packet = (CRPBaseHeader *) malloc(h.totalLength);
+            size_t remain = h.totalLength;
+            while (remain > 0)
+            {
+                ret = recv(context->fd, packet, remain, MSG_WAITALL);
+                if (ret <= 0)
+                {
+                    perror("recv");
+                    free(packet);
+                    return NULL;
+                }
+                remain -= ret;
+            }
         }
     }
+    cleanup:
     pthread_mutex_unlock(&context->recvLock);
     return packet;
 }

@@ -146,8 +146,9 @@ static void listenLoop(int sockListener, int sockIdx, struct epoll_event *events
                         close(fd);
                         continue;
                     }
-                    //fcntl(fd, F_SETFL, O_NONBLOCK);
+                    fcntl(fd, F_SETFL, O_NONBLOCK);
                     PPendingUser user = UserNew(fd);//分配一个用户对象空间(只做简单初始化)
+                    CRPSetupBuffer(user->sockfd);
                     EpollAdd((POnlineUser) user);//将其加入事务池
                 }
             }

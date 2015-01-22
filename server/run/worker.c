@@ -3,9 +3,11 @@
 #include <logger.h>
 #include <protocol/base.h>
 #include <run/worker.h>
+#include <asm-generic/errno-base.h>
 
 #include "run/user.h"
 #include "run/jobs.h"
+#include<errno.h>
 
 
 void *WorkerMain(void *arg)
@@ -42,8 +44,15 @@ void *WorkerMain(void *arg)
         pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);//正在处理数据,此时不允许被取消
         if (header == NULL)
         {
-            OnlineUserDelete(user);
-            continue;
+            if (errno != EAGAIN)
+            {
+                OnlineUserDelete(user);
+                continue;
+            }
+            else
+            {
+                EpollAdd(user);
+            }
         }
         else
         {
