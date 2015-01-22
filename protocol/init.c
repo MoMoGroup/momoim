@@ -398,6 +398,9 @@ CRPBaseHeader *CRPRecv(CRPContext context)
         CRP_LENGTH_TYPE encryptedLength;
         if (context->buffer)
         {
+            //非阻塞模式接收数据
+
+            //接收加密快数据大小
             if (context->bLengthAct < sizeof(CRP_LENGTH_TYPE))
             {
                 ret = recv(context->fd,
@@ -418,6 +421,7 @@ CRPBaseHeader *CRPRecv(CRPContext context)
                 }
             }
             memcpy(&encryptedLength, context->buffer, sizeof(CRP_LENGTH_TYPE));
+            encryptedLength <<= 5;
             if (context->bLengthAct < encryptedLength)
             {
                 ret = recv(context->fd,
