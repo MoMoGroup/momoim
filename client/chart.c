@@ -10,7 +10,6 @@
 #include "ChartRecord.h"
 #include <sys/stat.h>
 #include <logger.h>
-#include <glib-unix.h>
 #include "media.h"
 #include "ScreenShot.h"
 #include "ChartLook.h"
@@ -169,6 +168,7 @@ gboolean ProcessAudioRequest(gpointer user_data)
         }
     }
     free(user_data);
+    return 0;
 }
 
 //背景的eventbox
