@@ -206,7 +206,7 @@ gboolean show_record_message(void *data)
             //判断与当前时间是否相差18个小时，若相差大于18小时，则显示年月日
             if (((current_time - record_message->record_message_data[i].time) / 3600) > 18)
             {
-                //是好友，则显示好友昵称
+                //是用户自己，则显示用户昵称
                 sprintf(nicheng_times,
                         " %s  %d/%d/%d %d: %d: %d \n", CurrentUserInfo->nickName,
                         p->tm_year + 1900,
@@ -426,10 +426,10 @@ static gint record_next_button_release_event(GtkWidget *widget, GdkEventButton *
         message_query_conditon->to = record_message->info->user.uid;
         message_query_conditon->time = -1;
         message_query_conditon->timeOperator = -2;
-        message_query_conditon->limit = 10;
+        message_query_conditon->limit = 8;
         message_query_conditon->messageType = UMT_TEXT;
         message_query_conditon->id = record_message->max_id;//获得当前页最大id
-        message_query_conditon->idOperator = 2; //申请比最大id大的id的10条聊天记录
+        message_query_conditon->idOperator = 2; //申请比最大id大的id的8条聊天记录
         message_query_conditon->fromtoOperator = 4;
         get_record(record_message, message_query_conditon);
 
@@ -488,7 +488,7 @@ static gint upward_button_release_event(GtkWidget *widget, GdkEventButton *event
         message_query_conditon->limit = 8;
         message_query_conditon->messageType = UMT_TEXT;
         message_query_conditon->id = record_message->min_id;  //获得当前页最小id
-        message_query_conditon->idOperator = -2; //申请小于当前页最小id的10条记录
+        message_query_conditon->idOperator = -2; //申请小于当前页最小id的8条记录
         message_query_conditon->fromtoOperator = 4;
         get_record(record_message, message_query_conditon);
 
@@ -570,14 +570,22 @@ static gint calendar_button_release_event(GtkWidget *widget, GdkEventButton *eve
     RcordMessage *record_message = (RcordMessage *) data;
     if (event->button == 1)       // 判断是否是点击关闭图标
     {
-        record_message->info->calendar = gtk_calendar_new(); //创建日历控件
-        gtk_widget_show(record_message->info->calendar);
-        gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->calendar, 20, 60);
-        //添加日历时间双击日期的事件
-        g_signal_connect(record_message->info->calendar,
-                         "day-selected-double-click",
-                         G_CALLBACK(calendar_event),
-                         record_message);
+        if (record_message->info->calendar == NULL)
+        {
+            record_message->info->calendar = gtk_calendar_new(); //创建日历控件
+            gtk_widget_show(record_message->info->calendar);
+            gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->calendar, 20, 60);
+            //添加日历时间双击日期的事件
+            g_signal_connect(record_message->info->calendar,
+                             "day-selected-double-click",
+                             G_CALLBACK(calendar_event),
+                             record_message);
+        }
+        else
+        {
+            gtk_widget_destroy(record_message->info->calendar);
+            record_message->info->calendar = NULL;
+        }
     }
     return 0;
 
@@ -715,14 +723,7 @@ void ChartRecord(FriendInfo *info)
             G_CALLBACK(record_next_button_release_event),
             NULL,
             record_message);
-    calendar_event_box = BuildEventBox(
-            image_calendar,
-            G_CALLBACK(calendar_button_press_event),
-            G_CALLBACK(calendar_enter_notify_event),
-            G_CALLBACK(calendar_leave_notify_event),
-            G_CALLBACK(calendar_button_release_event),
-            NULL,
-            record_message);
+
     record_close_event_box = BuildEventBox(
             record_message->info->image_record_close,
             G_CALLBACK(close_but_button_press_event),
@@ -748,8 +749,6 @@ void ChartRecord(FriendInfo *info)
     gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), GTK_WIDGET(record_upward_event_box), 10, 510);
     //右上角关闭按钮
     gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), GTK_WIDGET(record_close_event_box), 280, 0);
-    //日历
-    gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), GTK_WIDGET(calendar_event_box), 2, 60);
 
     //创建文本框
 
@@ -784,6 +783,17 @@ void ChartRecord(FriendInfo *info)
     gtk_widget_set_size_request(GTK_WIDGET(record_message->info->record_sw), 315, 380);
     GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
     gtk_widget_override_background_color(record_message->info->record_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
+//日历
+
+    calendar_event_box = BuildEventBox(
+            image_calendar,
+            G_CALLBACK(calendar_button_press_event),
+            G_CALLBACK(calendar_enter_notify_event),
+            G_CALLBACK(calendar_leave_notify_event),
+            G_CALLBACK(calendar_button_release_event),
+            NULL,
+            record_message);
+    gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), GTK_WIDGET(calendar_event_box), 2, 60);
 
 //获取当前时间
     char date[40] = {0};

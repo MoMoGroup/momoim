@@ -5,8 +5,9 @@
 #include <ftlist.h>
 #include "ClientSockfd.h"
 #include "ScreenShot.h"
-
 /*此文件实现聊天窗口的截图功能*/
+
+//函数为显示截图后图片的函数
 void show_picture(GdkWindow *window, FriendInfo *info, JieTuDATA *data) //显示截图函数
 {
     GdkPixbuf *pixbuf;
