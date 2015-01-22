@@ -199,8 +199,6 @@ int FriendInfoChange(CRPBaseHeader *header, void *data)
             if (infodata->info.uid == p->user.uid)
             {
                 p->user = infodata->info;
-//                memcpy(p->user.nickName, infodata->info.nickName, strlen(infodata->info.nickName) + 1);//更新链表里的资料
-//                memcpy(p->user.icon, infodata->info.icon, sizeof(infodata->info.icon));
                 break;
             }
         }
@@ -212,22 +210,6 @@ int FriendInfoChange(CRPBaseHeader *header, void *data)
             free(infodata);
         }
 
-//        FriendInfo *p = FriendInfoHead;//遍历文件找到好友资料链表里的那个节点
-//        while (p->next)
-//        {
-//            p = p->next;
-//            if (infodata->info.uid == p->user.uid)
-//            {
-//                p->user=infodata->info;
-////                memcpy(p->user.nickName, infodata->info.nickName, strlen(infodata->info.nickName) + 1);//更新链表里的资料
-////                memcpy(p->user.icon, infodata->info.icon, sizeof(infodata->info.icon));
-//                break;
-//            }
-//        }
-//
-
-
-        // g_idle_add(gengxin_ziliao, p);//调用更新资料的函数
 
     }
 

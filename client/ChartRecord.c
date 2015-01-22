@@ -166,12 +166,10 @@ gboolean show_record_message(void *data)
             font = pango_font_description_from_string("Mono");//"Mono"字体名
             pango_font_description_set_size(font, 12 * PANGO_SCALE);//设置字体大小
             gtk_widget_override_font(record_message->info->record_date, font);
-            gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->record_date, 30, 60);
         }
 
         time_t current_time;
         time(&current_time);
-        struct tm current_ptime = *p;
         //判断此条聊天记录的发送者
         if (record_message->record_message_data[i].record_user_uid == record_message->info->user.uid)
         {
