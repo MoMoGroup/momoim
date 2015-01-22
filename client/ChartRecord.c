@@ -573,8 +573,8 @@ static gint calendar_button_release_event(GtkWidget *widget, GdkEventButton *eve
         if (record_message->info->calendar == NULL)
         {
             record_message->info->calendar = gtk_calendar_new(); //创建日历控件
-            gtk_widget_show(record_message->info->calendar);
             gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2), record_message->info->calendar, 20, 60);
+            gtk_widget_show(record_message->info->calendar);
             //添加日历时间双击日期的事件
             g_signal_connect(record_message->info->calendar,
                              "day-selected-double-click",
@@ -766,7 +766,7 @@ void ChartRecord(FriendInfo *info)
     gtk_text_buffer_create_tag(record_message->info->record_buffer, "size1", "font", "12", NULL);
     //创建滚动窗口
     record_message->info->record_sw = GTK_SCROLLED_WINDOW(gtk_scrolled_window_new(NULL, NULL));
-    //将滚动窗口添加到text_view中
+    //将text_view添加到滚动条中
     gtk_container_add(GTK_CONTAINER(record_message->info->record_sw), record_message->info->record_text);
     //设置自动换行
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(record_message->info->record_text), GTK_WRAP_WORD_CHAR);
@@ -778,13 +778,12 @@ void ChartRecord(FriendInfo *info)
     gtk_fixed_put(GTK_FIXED(record_message->info->record_layout2),
                   GTK_WIDGET(record_message->info->record_sw),
                   2,
-                  100);//文本框位置
+                  110);//文本框位置
     //滚动条大小
     gtk_widget_set_size_request(GTK_WIDGET(record_message->info->record_sw), 315, 380);
     GdkRGBA rgba = {0.92, 0.88, 0.74, 1};
     gtk_widget_override_background_color(record_message->info->record_text, GTK_STATE_FLAG_NORMAL, &rgba);//设置透明
 //日历
-
     calendar_event_box = BuildEventBox(
             image_calendar,
             G_CALLBACK(calendar_button_press_event),
