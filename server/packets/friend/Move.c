@@ -10,16 +10,21 @@ int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendM
         pthread_rwlock_wrlock(user->info->friendsLock);
         UserGroup *groupFrom = UserFriendsGroupGet(friends, packet->fromGid),
                 *groupTo = UserFriendsGroupGet(friends, packet->toGid);
+        if (groupFrom == groupTo)
+        {
+            CRPFailureSend(user->crp, session, ENOENT, "原分组与目标分组相同");
+            goto cleanup;
+        }
         if (!groupFrom || !groupTo)
         {
             CRPFailureSend(user->crp, session, ENOENT, "分组未找到");
-            return 1;
+            goto cleanup;
         }
 
         if (!UserFriendsUserAdd(groupTo, packet->uid))//现加后删,一旦删除操作奇葩的失败了.这次失败也有办法还原
         {
             CRPFailureSend(user->crp, session, ENOMEM, "无法添加用户到目标分组");
-            return 1;
+            goto cleanup;
         }
         UserFriendsUserDelete(groupFrom, packet->uid);
         CRPFriendNotifySend(user->crp, 0, FNT_FRIEND_MOVE, packet->uid, packet->fromGid, packet->toGid);
@@ -45,6 +50,7 @@ int ProcessPacketFriendMove(POnlineUser user, uint32_t session, CRPPacketFriendM
                 }
             }
         }
+        cleanup:
         pthread_rwlock_unlock(user->info->friendsLock);
     }
     else

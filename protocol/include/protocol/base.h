@@ -24,11 +24,11 @@ CRP_STRUCTURE
 } CRPBaseHeader;
 typedef struct
 {
-    int fd;
-    MCRYPT sendTd, recvTd;
-    char sendKey[32], sendIV[32];
-    char recvKey[32], recvIV[32];
-    pthread_mutex_t sendLock, recvLock;
+    int fd;//Socket文件描述符
+    MCRYPT sendTd, recvTd;//加密解密句柄
+    char sendKey[32], sendIV[32];//加密密钥和IV
+    char recvKey[32], recvIV[32];//解密密钥和IV
+    pthread_mutex_t sendLock, recvLock;//发送和接收通道锁定
 
 } __CRPContext;
 typedef __CRPContext *CRPContext;

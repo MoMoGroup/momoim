@@ -130,21 +130,23 @@ GtkWidget *MovFriendButtonEvent(GtkTreeView *treeview)
         gtk_tree_model_get(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter,
                            FRIENDUID_COL, &groupid,
                            -1);
+        if (curren_group_id != groupid)
+        {
+            move_info *move_info_detail = (move_info *) malloc(sizeof(move_info));
+            *move_info_detail = moveInfo;
+            move_info_detail->itergroup = to_group_iter;//to分组iter
+            move_info_detail->toGid = groupid;
 
-        move_info *move_info_detail = (move_info *) malloc(sizeof(move_info));
-        *move_info_detail = moveInfo;
-        move_info_detail->itergroup = to_group_iter;//to分组iter
-        move_info_detail->toGid = groupid;
+            friendGroup = UserFriendsGroupGet(friends, (uint8_t) groupid);//保存好友信息
+            show = gtk_menu_item_new_with_mnemonic(friendGroup->groupName);//显示名字
+            gtk_container_add(GTK_CONTAINER(mov_menu), show);//添加到菜单
 
-        friendGroup = UserFriendsGroupGet(friends, (uint8_t) groupid);//保存好友信息
-        show = gtk_menu_item_new_with_mnemonic(friendGroup->groupName);//显示名字
-        gtk_container_add(GTK_CONTAINER(mov_menu), show);//添加到菜单
+            g_object_set_data_full(G_OBJECT(show), "moveInfo", move_info_detail, free);
+            g_signal_connect(G_OBJECT(show), "button_press_event",
+                             G_CALLBACK(mov_friend), (void *) current_friend_uid);
 
-        g_object_set_data_full(G_OBJECT(show), "moveInfo", move_info_detail, free);
-        g_signal_connect(G_OBJECT(show), "button_press_event",
-                         G_CALLBACK(mov_friend), (void *) current_friend_uid);
-
-        gtk_widget_show(show);//显示
+            gtk_widget_show(show);//显示
+        }
     }
     while (gtk_tree_model_iter_next(GTK_TREE_MODEL(TreeViewListStore), &to_group_iter));//如果能拿到分组，继续遍历
 

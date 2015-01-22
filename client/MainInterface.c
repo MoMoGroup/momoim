@@ -40,6 +40,7 @@ static GtkWidget *huanfuLayout;
 static GtkWidget *iback, *isure, *icancel, *ipic1, *ipic2, *ipic3, *ipic4;
 static cairo_surface_t *sbackground, *ssure1, *ssure2, *scancel1, *scancel2, *spic11, *spic12, *spic21, *spic22, *spic31, *spic32, *spic41, *spic42;
 static GtkEventBox *back_event_box, *sure_event_box, *cancel_event_box, *ipic1_event_box, *ipic2_event_box, *ipic3_event_box, *ipic4_event_box;
+static GtkStatusIcon *tray;
 int FlagChange = 1;
 
 /**********换肤窗口********/
@@ -1375,6 +1376,8 @@ int MainInterFace()
     vbox = gtk_box_new(TRUE, 5);
 
     window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+    g_signal_connect(G_OBJECT(window), "delete_event",
+                     G_CALLBACK(gtk_main_quit), NULL);
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);//固定窗口大小
     gtk_widget_set_size_request(GTK_WIDGET(window), 284, 600);
     gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_MOUSE);
@@ -1618,10 +1621,12 @@ int MainInterFace()
                      G_CALLBACK(lookinfo_button_press_event), (gpointer) treeView);
 
     gtk_widget_show_all(window);
-    GtkStatusIcon *tray = gtk_status_icon_new_from_file(path_icon);
-    gtk_status_icon_set_visible(tray, TRUE);
-    g_signal_connect(G_OBJECT(tray), "activate", G_CALLBACK(tray_on_click), window);
-
+    if (tray == NULL)
+    {
+        tray = gtk_status_icon_new_from_file(path_icon);
+        gtk_status_icon_set_visible(tray, TRUE);
+        g_signal_connect(G_OBJECT(tray), "activate", G_CALLBACK(tray_on_click), window);
+    }
     //隐藏水平滚动条
     gtk_widget_hide(widget);
     //gtk_main();
@@ -1630,6 +1635,12 @@ int MainInterFace()
 
 void DestoryMainInterface()
 {
+    if (tray)
+    {
+        gtk_status_icon_set_visible(tray, FALSE);
+        gtk_widget_destroy(GTK_WIDGET(tray));
+        tray = NULL;
+    }
     gtk_widget_destroy(window);
 }
 

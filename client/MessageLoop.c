@@ -2,25 +2,25 @@
 #include <protocol/base.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <logger.h>
 #include "ClientSockfd.h"
 #include "MainInterface.h"
 
 
 static pthread_rwlock_t lock = PTHREAD_RWLOCK_INITIALIZER;
 
-
+//  uint32_t sessionid;						区别不同的会话
+//  uint16_t packetID;          			包ID，用于区分不同数据包
+//  int  (*fn)(CRPBaseHeader *, void *data);  收到消息之后，主消息循环要执行的函数
+//  void *data;
 typedef struct messageloop
 {
     uint32_t sessionid;
     uint16_t packetID;           //包ID，用于区分不同数据包
 
     int  (*fn)(CRPBaseHeader *, void *data);
-
     void *data;
-
-
     struct messageloop *next;
+
 } messageloop;
 
 messageloop messagehead;
@@ -67,43 +67,41 @@ void DeleteMessageNode(uint32_t sessid)
 
 int MessageLoopFunc()
 {
-    CRPBaseHeader *header;
+    CRPBaseHeader *header;//服务器发来的数据包
     while (1)
     {
         header = CRPRecv(sockfd);
-        if (header == NULL)
+        if (header == NULL)                    //服务器异常关闭
         {
             pthread_cancel(ThreadKeepAlive);
             pthread_join(ThreadKeepAlive, NULL);
             g_idle_add(DestoryAll, "服务器异常关闭");
             CRPClose(sockfd);
-            pthread_detach(pthread_self());//安全退出当前线程
+            pthread_detach(pthread_self());        //安全退出当前线程
             pthread_exit(NULL);
         }
         else
         {
-            pthread_rwlock_rdlock(&lock);//读锁定
+            pthread_rwlock_rdlock(&lock);        //读锁定
             messageloop *prev = &messagehead, *p;
-            log_info("CRPPacket", "packet id %02hx,session id %u\n", header->packetID, header->sessionID);
             int flag = 1;
             while (prev->next)
             {
                 p = prev->next;
-                if (p->sessionid == header->sessionID)
+                if (p->sessionid == header->sessionID)    //匹配到会话id
                 {
                     break;
-
                 }
                 prev = prev->next;
             }
             pthread_rwlock_unlock(&lock);//取消锁
 
-            if (prev->next)
+            if (prev->next)                            //如果不为空，说明匹配到
             {
                 flag = p->fn(header, p->data);//执行此节点的函数，并拿到返回值
             }
 
-            if (flag == 0)//根据返回值判断是否需要删除此节点
+            if (flag == 0)        //返回值0，要删除此节点
             {
                 pthread_rwlock_wrlock(&lock);//写锁定
                 prev->next = p->next;

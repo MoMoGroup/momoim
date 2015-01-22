@@ -95,13 +95,12 @@ static void cleanupUserTable(POnlineUsersTableType table)
         if (table->next[i])
         {
             cleanupUserTable(table->next[i]);
-            table->next[i]= NULL;
+            table->next[i] = NULL;
         }
     }
-    if (table->user != (POnlineUser) -1)
+    if (table->user && table->user != (POnlineUser) -1)
     {
         OnlineUserDelete(table->user);
-        free(table);
     }
 }
 
@@ -122,7 +121,7 @@ static void listOnlineTable(POnlineUsersTableType table)
         }
     }
     struct sockaddr_in addr;
-    socklen_t len= sizeof(addr);
+    socklen_t len = sizeof(addr);
     if (table->user && table->user != (void *) -1)
     {
         getpeername(table->user->crp->fd, (struct sockaddr *) &addr, &len);
@@ -555,8 +554,9 @@ POnlineUser UserSetState(POnlineUser user, OnlineUserState state, uint32_t uid)
         pthread_mutexattr_settype(&recursiveAttr, PTHREAD_MUTEX_RECURSIVE);
         pthread_mutex_init(&user->operations.lock, &recursiveAttr);
         user->state = OUS_ONLINE;
+        OnlineUserTableSet(user);
         UserBroadcastNotify(user, FNT_FRIEND_ONLINE);           //向好友们广播上线消息
-        return OnlineUserTableSet(user);
+        return user;
     }
     else if (user->state == OUS_ONLINE && state == OUS_PENDING_CLEAN)
     {  //在线转待清理.(代码比较多.info对象销毁部分在OnlineUserDelete函数中)

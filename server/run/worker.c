@@ -10,8 +10,8 @@
 
 void *WorkerMain(void *arg)
 {
-    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);//允许被取消
-    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);//允许任意时间被取消
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);//允许线程被取消
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);//允许线程在任意时间被取消
     char workerName[10];
     CRPBaseHeader *header;
     POnlineUser user;
@@ -21,8 +21,11 @@ void *WorkerMain(void *arg)
 
     while (IsServerRunning)
     {
-        if (worker->workerId == 0)
+        if (worker->workerId == 0)//工作线程号为0的有一个额外任务就是去处理垃圾回收
         {
+            //线程号为0的线程每处理一个数据包,都有一定概率触发垃圾回收.
+            //使用概率触发能够避免服务器空闲时,浪费服务器处理机资源.
+            //在服务器忙时,能够及时回收服务器资源
             if (random() / (double) RAND_MAX < CONFIG_GC_RADIO)
             {
                 UserGC();
@@ -53,15 +56,15 @@ void *WorkerMain(void *arg)
             {
                 isPendingUser = 1;
             }
-            struct timespec start, end;
-            clock_gettime(CLOCK_MONOTONIC, &start);
+            //struct timespec start, end;
+            //clock_gettime(CLOCK_MONOTONIC, &start);
             if (ProcessUser(user, header) == 0)
             {
                 OnlineUserDelete(user);
                 free(header);
                 continue;
             }
-            clock_gettime(CLOCK_MONOTONIC, &end);
+            /*clock_gettime(CLOCK_MONOTONIC, &end);
             if (end.tv_sec - start.tv_sec > 0 || end.tv_nsec - start.tv_nsec > 10000000)
             {
                 log_warning("PerfMonitor",
@@ -69,7 +72,7 @@ void *WorkerMain(void *arg)
                             header->packetID,
                             end.tv_sec - start.tv_sec,
                             end.tv_nsec - start.tv_nsec);
-            }
+            }*/
             free(header);
         }
         if (!isPendingUser)//等待用户不允许被Drop

@@ -20,7 +20,11 @@ void NatHostFinalize()
 {
     pthread_rwlock_destroy(&lock);
 }
-
+//注册NAT主机发现密钥
+//参数:const uint8_t key[32] - 发现密钥
+//参数:int(*fn)(struct sockaddr_in const *, void *) - 主机被发现时回调函数
+//参数:void *data - 回调函数附加数据
+//返回:主机发现项,用于注销
 HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32],
                                            int(*fn)(struct sockaddr_in const *, void *),
                                            void *data)
@@ -49,7 +53,9 @@ HostDiscoverEntry *NatHostDiscoverRegister(const uint8_t key[32],
     pthread_rwlock_unlock(&lock);
     return entry;
 }
-
+//注销NAT主机发现密钥
+//参数:HostDiscoverEntry *entry - 主机发现项
+//返回:1
 int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
 {
     char hexKey[65] = {0};
@@ -78,7 +84,10 @@ int NatHostDiscoverUnregister(HostDiscoverEntry *entry)
     pthread_rwlock_unlock(&lock);
     return 1;
 }
-
+//NAT发现通知,通知一个key
+//参数:struct sockaddr_in const *address - 主机地址
+//参数:const uint8_t key[32] - 发现密钥
+//返回:成功通知返回1,失败返回0
 int NatHostDiscoverNotify(struct sockaddr_in const *address, const uint8_t key[32])
 {
     char hexKey[65] = {0};

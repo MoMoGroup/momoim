@@ -19,7 +19,6 @@ static int onRequestCancel(POnlineUser user, PUserOperation op)
         free(opData);
         op->onCancel = NULL;
         CRPFileDataEndSend(user->crp, op->session, FEC_CANCELED);
-        UserOperationUnregister(user, op);
         return 0;
     }
     return 1;

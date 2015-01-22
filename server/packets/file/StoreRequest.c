@@ -16,8 +16,6 @@ int onCancel(POnlineUser user, PUserOperation operation)
         close(storeOperation->fd);
         unlink(storeOperation->tmpfile);
     }
-
-    UserOperationUnregister(user, operation);
     free(storeOperation);
     return 0;
 }

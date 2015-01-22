@@ -2,6 +2,10 @@
 #include <logger.h>
 #include "common.h"
 
+//绘制好友列表的函数
+//const UserInfo *userInfo   要重画的好友信息
+//int draw_color 			好友头像色彩
+
 GdkPixbuf *DrawFriend(const UserInfo *userInfo, int draw_color)
 {
     GdkPixbuf *pixbuf;

@@ -1,11 +1,8 @@
 #include "MainInterface.h"
-#include"ClientSockfd.h"
-#include "MainInterface.h"
 #include<stdlib.h>
 #include <common.h>
 #include <PopupWinds.h>
 #include"ManageGroup.h"
-#include "PopupWinds.h"
 //删除分组………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 //……………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………………
 
@@ -18,7 +15,7 @@ int GroupPop(void *data)
     return 0;
 }
 
-//接收服务器，判断是否删除成功
+//接收服务器，判断删除成功后删除分组，
 int delete_group_recv(CRPBaseHeader *header, void *data)
 {
 

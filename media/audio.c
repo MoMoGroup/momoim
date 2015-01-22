@@ -213,26 +213,25 @@ static void cleanupAudioChat(void *__noused)
     pthread_cond_destroy(&recv_idle);
     pthread_cond_destroy(&recv_busy);
     close(netSocket);
+    cleanupFunc(cleanupArg);
 }
 
 static void *process(void *data)
 {
-    pthread_cleanup_push(cleanupFunc, cleanupArg);
-            pthread_cleanup_push(cleanupAudioChat, 0);
-                    pthread_t t_record, t_send, t_recv, t_play;
-                    pthread_create(&t_send, NULL, send_routine, NULL);
-                    pthread_create(&t_recv, NULL, recv_routine, NULL);
-                    pthread_create(&t_record, NULL, record_routine, NULL);
-                    pthread_create(&t_play, NULL, play_routine, NULL);
-                    pthread_cleanup_push(pthread_cancel, t_send);
-                            pthread_cleanup_push(pthread_cancel, t_recv);
-                                    pthread_cleanup_push(pthread_cancel, t_record);
-                                            pthread_cleanup_push(pthread_cancel, t_play);
-                                                    pthread_join(t_send, NULL);
-                                                    pthread_join(t_recv, NULL);
-                                                    pthread_join(t_record, NULL);
-                                                    pthread_join(t_play, NULL);
-                                            pthread_cleanup_pop(1);
+    pthread_cleanup_push(cleanupAudioChat, 0);
+            pthread_t t_record, t_send, t_recv, t_play;
+            pthread_create(&t_send, NULL, send_routine, NULL);
+            pthread_create(&t_recv, NULL, recv_routine, NULL);
+            pthread_create(&t_record, NULL, record_routine, NULL);
+            pthread_create(&t_play, NULL, play_routine, NULL);
+            pthread_cleanup_push(pthread_cancel, t_send);
+                    pthread_cleanup_push(pthread_cancel, t_recv);
+                            pthread_cleanup_push(pthread_cancel, t_record);
+                                    pthread_cleanup_push(pthread_cancel, t_play);
+                                            pthread_join(t_send, NULL);
+                                            pthread_join(t_recv, NULL);
+                                            pthread_join(t_record, NULL);
+                                            pthread_join(t_play, NULL);
                                     pthread_cleanup_pop(1);
                             pthread_cleanup_pop(1);
                     pthread_cleanup_pop(1);
