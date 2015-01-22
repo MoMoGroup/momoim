@@ -202,13 +202,15 @@ int FriendInfoChange(CRPBaseHeader *header, void *data)
                 break;
             }
         }
-        //仅仅是为了建立那个文件
+
+        // 请求到图片之后执行更新函数
         FindImage(infodata->info.icon, p, gengxin_ziliao);
 
         if ((void *) infodata != header->data)//释放内存
         {
             free(infodata);
         }
+
 
 
     }
