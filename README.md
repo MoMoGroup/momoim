@@ -22,9 +22,9 @@ ssl for md5<br />
 
 Contributors
 -----------------------------------
-xulinghui - UI Designer<br />
+xulinghui - UI Designer,Remember password, Skin<br />
 wangwenmin - Chat module (without audio/video)<br />
-xia45399 - Group Manager, Main Panel..<br />
-lh <lh_la@qq.com> - User Info & Password ..<br />
+xia45399 - User&Group, Main Panel..<br />
+lh <lh_la@qq.com> - User Info , New User, Change Password, Message Box ..<br />
 AntiMagicIsACoolHERO - Video<br />
 Kxuan - Server & Protocol<br />
